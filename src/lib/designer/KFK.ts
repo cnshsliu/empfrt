@@ -11,9 +11,6 @@ let $ = jQuery;
 if(typeof window !== "undefined"){
   window.jQuery = jQuery;
   window.$ = jQuery;
-  console.log($);
-  console.log(window.jQuery);
-  console.log(jQuery);
 }
 
 Array.prototype.clear = function () {
@@ -3375,7 +3372,7 @@ KFK.init = async function () {
   }
   KFK.loadModule("AdvOps");
   KFK.loadModule("DivStyler");
-  $("body").css("overflow", "hidden");
+  //$("body").css("overflow", "hidden");
   if ($("#S1").length < 1) {
     console.warn("S1 not found, designer is missing, should not happen");
     return;

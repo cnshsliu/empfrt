@@ -5,7 +5,7 @@
 	export let template: Template;
 
 	let description:string;
-	let jqueryui;
+	let jqueryui:any;
 	onMount(async () => {
 		description = "This is my template";
 		const module = await import('jquery-ui-dist/jquery-ui');
@@ -15,6 +15,7 @@
 	});
 </script>
 
+HELLLO
 <div id="S1">
 	<div id="C1">
 			<div id="C9"></div>

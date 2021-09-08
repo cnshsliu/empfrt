@@ -22,7 +22,6 @@
 
 <svelte:head>
 	<title>{user.username} • Templates</title>
-	<link rel="stylesheet" href="@node_modules/jquery-ui-dist/jquery-ui.min.css">
 </svelte:head>
 
 <slot />

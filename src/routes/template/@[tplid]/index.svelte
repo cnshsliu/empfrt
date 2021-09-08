@@ -17,11 +17,14 @@
 	import { onMount } from 'svelte';
 	export let template: Template;
 
-	let Designer;
+	let Designer:any;
 	onMount(async()=>{
 		console.log("import Designer...");
+		await import('jquery-ui-dist/jquery-ui.min.css');
 		const module = await import('$lib/designer/Designer.svelte');
 		Designer = module.default;
+
+	
 	});
 </script>
 
