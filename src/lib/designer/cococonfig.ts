@@ -59,6 +59,7 @@ const config = {
     AND: {edittable: true, resizable: false, },
     OR: {edittable: true, resizable: false, },
   },
+  defaultSize:{},
   layout: {
     spacing: {
       vert: 20,
@@ -87,6 +88,7 @@ const config = {
   },
   viewConfig:{
     showbounding: false,
+    snap: false,
   }
 };
 

@@ -2,7 +2,7 @@
 
 import zlib from 'zlib';
 
-export const gzip = function (input, options)  {
+export const gzip = function (input, options?:any)  {
     const promise = new Promise(function(resolve, reject) {
       zlib.gzip(input, options, function (error, result) {
         if(!error) resolve(result);
@@ -12,7 +12,7 @@ export const gzip = function (input, options)  {
     return promise;
   };
 
-export const gunzip = function (input, options) {
+export const gunzip = function (input, options?:any) {
     const promise = new Promise(function(resolve, reject) {
       zlib.gunzip(input, options, function (error, result) {
         if(!error) resolve(result);

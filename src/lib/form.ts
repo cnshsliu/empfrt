@@ -1,38 +1,41 @@
 // this action (https://svelte.dev/tutorial/actions) allows us to
 // progressively enhance a <form> that already works without JS
+
 export function enhance(
 	form: HTMLFormElement,
 	{
+		token,
 		pending,
 		error,
 		result
 	}: {
+		token?: string;
 		pending?: (data: FormData, form: HTMLFormElement) => void;
 		error?: (res: Response, error: Error, form: HTMLFormElement) => void;
 		result: (res: Response, form: HTMLFormElement) => void;
 	}
-) {
-	let current_token: {};
+):any { //eslint-disable-line 
 
 	async function handle_submit(e: Event) {
-		const token = (current_token = {});
 
 		e.preventDefault();
 
-		const body = new FormData(form);
+		const data = Object.fromEntries(new FormData(form));
+		const body = JSON.stringify(data);
 
-		if (pending) pending(body, form);
+		if (pending) pending(data, form);
 
 		try {
 			const res = await fetch(form.action, {
 				method: form.method,
 				headers: {
-					accept: 'application/json'
+					'Content-Type': 'application/json',
+					'Accept': 'application/json',
+					'Authorization': token
 				},
 				body
 			});
 
-			if (token !== current_token) return;
 
 			if (res.ok) {
 				result(res, form);

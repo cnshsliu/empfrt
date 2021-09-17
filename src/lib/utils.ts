@@ -1,4 +1,4 @@
-export function post(endpoint, data) {
+export async function post(endpoint, data):Promise<Response> {
 	return fetch(endpoint, {
 		method: 'POST',
 		credentials: 'include',

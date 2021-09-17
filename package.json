@@ -15,6 +15,7 @@
     "@types/cookie": "^0.4.0",
     "@types/jquery": "^3.5.6",
     "@types/jqueryui": "^1.12.16",
+    "@types/lodash": "^4.14.172",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
     "eslint": "^7.22.0",
@@ -34,9 +35,13 @@
     "@lukeed/uuid": "^2.0.0",
     "@svgdotjs/svg.js": "^3.1.1",
     "@types/sizzle": "^2.3.3",
+    "buffer": "^6.0.3",
     "cookie": "^0.4.1",
     "jquery": "^3.2.1",
     "jquery-ui-dist": "^1.12.1",
-    "short-uuid": "^4.2.0"
+    "lodash": "^4.17.21",
+    "short-uuid": "^4.2.0",
+    "svelte-navigator": "^3.1.5",
+    "sveltestrap": "^5.6.3"
   }
 }

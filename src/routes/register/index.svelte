@@ -2,7 +2,7 @@
 	import { enhance } from '$lib/form';
 	import type { Load } from '@sveltejs/kit';
 
-	export const load:Load =async ({ session }) => {
+	export const load: Load = async ({ session }) => {
 		if (session.user) {
 			return { redirect: '/', status: 302 };
 		}
@@ -16,9 +16,9 @@
 	import { post } from '$lib/utils';
 	import ListErrors from '$lib/ListErrors.svelte';
 
-	let username:string = '';
-	let email:string = '';
-	let password:string = '';
+	let username: string = '';
+	let email: string = '';
+	let password: string = '';
 	let errors = null;
 
 	async function submit(event) {
@@ -29,7 +29,7 @@
 
 		if (response.user) {
 			$session.user = response.user;
-			console.log("set session.user to", $session.user);
+			console.log('set session.user to', $session.user);
 			goto('/');
 		}
 	}
@@ -48,21 +48,37 @@
 					<a href="/login">Have an account?</a>
 				</p>
 
-				<ListErrors {errors}/>
+				<ListErrors {errors} />
 
 				<form on:submit|preventDefault={submit}>
 					<fieldset class="form-group">
-						<input class="form-control form-control-lg" type="text" required placeholder="Your Name" bind:value={username}>
+						<input
+							class="form-control form-control-lg"
+							type="text"
+							required
+							placeholder="Your Name"
+							bind:value={username}
+						/>
 					</fieldset>
 					<fieldset class="form-group">
-						<input class="form-control form-control-lg" type="email" required placeholder="Email" bind:value={email}>
+						<input
+							class="form-control form-control-lg"
+							type="email"
+							required
+							placeholder="Email"
+							bind:value={email}
+						/>
 					</fieldset>
 					<fieldset class="form-group">
-						<input class="form-control form-control-lg" type="password" required placeholder="Password" bind:value={password}>
+						<input
+							class="form-control form-control-lg"
+							type="password"
+							required
+							placeholder="Password"
+							bind:value={password}
+						/>
 					</fieldset>
-					<button class="btn btn-lg btn-primary pull-xs-right">
-						Sign up
-					</button>
+					<button class="btn btn-lg btn-primary pull-xs-right"> Sign up </button>
 				</form>
 			</div>
 		</div>

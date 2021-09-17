@@ -30,7 +30,11 @@ export function getSession({ locals }) {
 			username: locals.user.username,
 			email: locals.user.email,
 			avatar: locals.user.avatar,
-			bio: locals.user.bio
+			bio: locals.user.bio,
+			sessionToken: locals.user.sessionToken,
+		},
+		config: {
+			sort:{field:'createdAt', order:-1}
 		}
 	};
 }

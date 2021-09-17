@@ -2,6 +2,8 @@
 	import type { Template } from '$lib/types';
 	import { session } from '$app/stores';
 	import TemplatePreview from './_TemplatePreview.svelte';
+	import { scale } from 'svelte/transition';
+	import { flip } from 'svelte/animate';
 
 	export let templates: Template[];
 </script>
@@ -11,7 +13,9 @@
 {:else}
 	<div>
 		{#each templates as template (template._id)}
-			<TemplatePreview {template} />
+			<div class="todo" transition:scale|local={{ start: 0.7 }} animate:flip={{ duration: 200 }}>
+				<TemplatePreview {template} />
+			</div>
 		{/each}
 	</div>
 {/if}

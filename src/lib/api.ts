@@ -1,7 +1,12 @@
 const base = 'http://localhost:5008';
 
+type OPTS = {
+	method: string;
+	headers: any;
+	body?: string;
+};
 async function send({ method, path, data, token }) {
-	const opts = { method, headers: {} };
+	const opts: OPTS = { method, headers: {} };
 
 	if (data) {
 		opts.headers['Content-Type'] = 'application/json';
@@ -9,7 +14,7 @@ async function send({ method, path, data, token }) {
 	}
 
 	if (token) {
-		console.log("api send with token", token);
+		console.log('api send with token', token);
 		opts.headers['Authorization'] = token;
 	}
 
@@ -24,18 +29,18 @@ async function send({ method, path, data, token }) {
 		});
 }
 
-export function get(path, token) {
-	return send({ method: 'GET', path, token });
+export function get(path:string, token:string):Promise<string> {
+	return send({ method: 'GET', path, data:null, token });
 }
 
-export function del(path, token) {
-	return send({ method: 'DELETE', path, token });
+export function del(path:string, token:string):Promise<string> {
+	return send({ method: 'DELETE', path, data:null, token });
 }
 
-export function post(path, data, token) {
+export function post(path:string, data:JSON, token:string):Promise<string> {
 	return send({ method: 'POST', path, data, token });
 }
 
-export function put(path, data, token) {
+export function put(path:string, data:JSON, token:string):Promise<string> {
 	return send({ method: 'PUT', path, data, token });
 }

@@ -23,6 +23,7 @@
 		"baseUrl": ".",
 		"allowJs": true,
 		"checkJs": true,
+		"noUnusedLocals": false,
 		"paths": {
 			"$lib": ["src/lib"],
 			"$lib/*": ["src/lib/*"]

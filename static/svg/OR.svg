@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   preserveAspectRatio="none"
+   viewBox="0 0 15 15"
+   version="1.1"
+   id="svg1146"
+   sodipodi:docname="OR.svg"
+   inkscape:version="1.0 (4035a4f, 2020-05-01)">
+  <metadata
+     id="metadata1152">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs1150" />
+  <sodipodi:namedview
+     inkscape:document-rotation="0"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1282"
+     inkscape:window-height="950"
+     id="namedview1148"
+     showgrid="false"
+     inkscape:zoom="12.097988"
+     inkscape:cx="20.569192"
+     inkscape:cy="0.04522541"
+     inkscape:window-x="0"
+     inkscape:window-y="23"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="g1144" />
+  <g
+     stroke="#6666f6"
+     pointer-events="none"
+     id="g1144">
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:8.13751px;line-height:1.25;font-family:sans-serif;fill:#6666f6;fill-opacity:1;stroke:none;stroke-width:0.203698;stroke-miterlimit:4;stroke-dasharray:none"
+       x="1.1985543"
+       y="10.470502"
+       id="text1809"
+       transform="matrix(1.011681,0.01431527,-0.01251725,0.98827678,0,0)"><tspan
+         sodipodi:role="line"
+         id="tspan1807"
+         x="1.1985543"
+         y="10.470502"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8.13751px;font-family:'Arial Rounded MT Bold';-inkscape-font-specification:'Arial Rounded MT Bold, ';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#6666f6;fill-opacity:1;stroke-width:0.203698;stroke-miterlimit:4;stroke-dasharray:none">OR</tspan></text>
+  </g>
+</svg>

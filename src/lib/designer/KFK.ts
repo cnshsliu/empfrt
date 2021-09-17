@@ -1,608 +1,1206 @@
-import url from "url";
-import { SVG } from "@svgdotjs/svg.js";
-import suuid from "short-uuid";
-import jQuery from "jquery";
-import lodash from "lodash";
-import {gzip, gunzip} from "$lib/gzip";
-import cocoConfig from "./cococonfig";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+import { SVG } from '@svgdotjs/svg.js';
+import suuid from 'short-uuid';
+import jQuery from 'jquery';
+import lodash from 'lodash';
+import { gunzip } from '$lib/gzip';
+import cocoConfig from './cococonfig';
+import APP from './appConfig';
+import { Buffer } from 'buffer';
+import assetIcons from './assetIcons';
+import NodeController from './NodeController';
+import RegHelper from './RegHelper';
+import * as api from '$lib/api';
 
-
-let $ = jQuery;
-if(typeof window !== "undefined"){
-  window.jQuery = jQuery;
-  window.$ = jQuery;
+declare global {
+	interface Array<T> {
+		remove(elem: T): Array<T>;
+		clear(): Array<T>;
+	}
+	interface Window {
+		jQuery: any;
+		$: any;
+	}
+	interface Document {
+		selection: any;
+	}
 }
 
-Array.prototype.clear = function () {
-  this.splice(0, this.length);
-};
-Array.prototype.remove = function () {
-  var what,
-    a = arguments,
-    L = a.length,
-    ax;
-  while (L && this.length) {
-    what = a[--L];
-    while ((ax = this.indexOf(what)) !== -1) {
-      this.splice(ax, 1);
-    }
-  }
-  return this;
-};
-
-const KFK = {};
-KFK.APP={
-  model:{
-    cocodoc:{
-      readonly: false,
-    }
-  }
-};
-
-const NotSet = function (val) {
-  if (val === undefined || val === null) return true;
-  else return false;
-};
-KFK.NotSet = NotSet;
-const IsSet = function (val) {
-  return !NotSet(val);
-};
-KFK.IsSet = IsSet;
-const IsBlank = function (val) {
-  if (val === undefined || val === null || val === "") return true;
-  else return false;
-};
-const BlankToDefault = function (val, defaultValue) {
-  if (IsBlank(val)) return defaultValue;
-  else return val;
-};
-const NotBlank = function (val) {
-  return !IsBlank(val);
-};
-const IsFalse = function (val) {
-  if (val === undefined || val === null || val === false) return true;
-  else return false;
-};
-
-
-KFK.version = "1.0";
-KFK.inNoteEditor = false;
-KFK.config = cocoConfig;
-KFK.duringVideo = false;
-KFK.HSpace = 80;
-KFK.VSpace = 20;
-KFK.hideNavbarTick = 0;
-KFK.pct = 1; //Peers count;
-KFK.mdNoteEditorEventListener = true;
-KFK.typewriting = false;
-KFK.column = "no";
-KFK.accordion = {};
-KFK.rtcUsers = {};
-KFK.tmpBalls = [];
-KFK.mdnotes = null;
-KFK.mdnoteUpdateTimers = new Map();
-KFK.noCopyPaste = false;
-KFK.scaleRatio = 1;
-KFK.currentPage = 0;
-KFK.loadedProjectId = null;
-KFK.keypool = "";
-KFK.showStatus = {};
-KFK.svgDraw = null; //画svg的画布
-KFK.jumpStack = [];
-KFK.duplicateBrNode = false;
-KFK.presentMaskMode = false;
-KFK.isFreeHandDrawing = false;
-KFK.isShowingModal = false;
-KFK.jumpStackPointer = -1;
-KFK.wsTryTimesBeforeGiveup = 60;
-KFK.toolboxMouseDown = false;
-KFK.toolboxMouseDownOn = null;
-KFK.isZoomingShape = false;
-KFK.ctrlMouseToPan = false;
-KFK.idRowMap = {};
-KFK.dynamicSize = {};
-KFK.idSwitchMap = {};
-KFK.FROM_SERVER = true; //三个常量
-KFK.FROM_CLIENT = false;
-KFK.NO_SHIFT = false;
-KFK.badgeTimers = {}; //用于存放用户badge显示间隔控制的timer，这样，不是每一个mousemove都要上传，在Timer内，只上传最后一次mouse位置
-KFK.updateReceived = 0; //记录接收到的其他用户的改动次数，在startActiveLogWatcher中，使用这个数字来控制是否到服务器端去拉取更新列表
-KFK.tempSvgLine = null; //这条线是在划线或者链接node时，那条随着鼠标移动的线
-KFK.LOGLEVEL_NOTHING = 0;
-KFK.LOGLEVEL_ERROR = 1;
-KFK.LOGLEVEL_WARN = 2;
-KFK.LOGLEVEL_INFO = 3;
-KFK.LOGLEVEL_DEBUG = 4;
-KFK.LOGLEVEL_DETAIL = 5;
-KFK.LOGLEVEL_KEY = 6;
-KFK.tplNode_width = 32;
-KFK.tplNode_height = 32;
-KFK.loglevel = KFK.LOGLEVEL_DETAIL; //控制log的等级, 级数越小，显示信息越少
-//在designer页面输入logerror, logwarn, loginfo, lodebug...
-KFK.designerConf = {
-  scale: 1,
-  left: 0,
-  top: 0,
-}; //用于在zoom控制计算中
-
-KFK.state = {
-  TRX_FLAG: 0,
-};
-KFK.CONST = {
-  THIS_IS_A_UNDOREDO: true,
-  THIS_IS_NOT_A_UNDOREDO: false,
-  MAX_SHAPE_WIDTH: 6,
-};
-KFK.opArray = [];
-KFK.opstack = []; //Operation Stack, 数组中记录操作记录，用于undo/redo
-KFK.opstacklen = 20; //undo，redo记录次数
-KFK.opz = -1; // opstack 当前记录指针
-KFK.mouseTimer = null; //定时器用于控制鼠标移动上传的频次
-KFK.lockTool = false;
-KFK.C3 = null;
-KFK.JC3 = null;
-KFK.onC3 = false;
-KFK.tapped = false;
-KFK.inFullScreenMode = false;
-KFK.inPresentingMode = false;
-KFK.inOverviewMode = false;
-KFK.controlButtonsOnly = false;
-KFK.showRightTools = true;
-KFK.zoomFactor = 0;
-KFK.lineTransfomerDragging = false;
-KFK.scaleBy = 1.01;
-KFK.centerPos = {
-  x: 0,
-  y: 0,
-};
-KFK.centerPos = {
-  x: 0,
-  y: 0,
-};
-KFK.lastFocusOnJqNode = null;
-KFK.justCreatedJqNode = null;
-KFK.lastCreatedJqNode = null;
-KFK.justCreatedShape = null;
-KFK._jqhoverdiv = null;
-KFK._svghoverline = null;
-KFK.inited = false;
-KFK.divInClipboard = undefined;
-KFK.lineTemping = false;
-KFK.ignoreClick = false;
-KFK.scrollBugPatched = false;
-KFK.actionLogToView = {
-  editor: "",
-  actionlog: [],
-};
-KFK.actionLogToViewIndex = 0;
-KFK.explorerRefreshed = false;
-KFK.numberOfNodeToCreate = 0;
-KFK.numberOfNodeCreated = 0;
-KFK.freeHandPoints = [];
-KFK.freeHandDrawing = null;
-KFK.firstShown = {
-  right: false,
-  chat: false,
-};
-KFK.badgeIdMap = {}
-// A4
-// KFK.PageWidth = 842;
-// KFK.PageHeight = 595;
-//上面是A4的真实大小,但因为网格线是20位单位,所以近似看下面两个值
-KFK.PageWidth = 840 * 2;
-KFK.PageHeight = 600 * 2;
-KFK.PageNumberHori = 2;
-KFK.PageNumberVert = 2;
-KFK.LeftB = KFK.PageWidth;
-KFK.TopB = KFK.PageHeight;
-KFK._width = KFK.PageWidth * KFK.PageNumberHori;
-KFK._height = KFK.PageHeight * KFK.PageNumberVert;
-KFK.minimapMouseDown = false;
-
-KFK.defaultNodeWidth = 40;
-KFK.defaultNodeHeight = 40;
-KFK.links = [];
-KFK.tipLinks = [];
-KFK.tips = [];
-KFK.images = {};
-KFK.avatars = {};
-KFK.pickedNode = null;
-KFK.pickedTip = null;
-KFK.mode = "pointer";
-KFK.isEditting = false;
-KFK.resizing = false;
-KFK.dragging = false;
-KFK.shapeDragging = false;
-KFK.afterDragging = false;
-KFK.afterResizing = false;
-KFK.linkPosNode = [];
-KFK.jumpNodes = [];
-KFK.drawPoints = [];
-KFK.drawMode = "line";
-KFK.tween = null;
-KFK.KEYDOWN = {
-  ctrl: false,
-  shift: false,
-  alt: false,
-  meta: false,
-};
-KFK.originZIndex = 1;
-KFK.lastActionLogJqDIV = null;
-
-KFK.brainstormMode = true;
-KFK.brNodeId = undefined;
-
-KFK.JC1 = $("#C1");
-KFK.C1 = el(KFK.JC1);
-KFK.scrollContainer = $("#S1");
-KFK.lockMode = false;
-KFK.selectedDIVs = [];
-KFK.selectedShapes = [];
-KFK.kuangXuanMouseIsDown = false;
-KFK.kuangXuanStartPoint = {
-  x: 0,
-  y: 0,
-};
-KFK.kuangXuanEndPoint = {
-  x: 0,
-  y: 0,
-};
-KFK.duringKuangXuan = false;
-
-KFK.currentMousePos = {
-  x: -1,
-  y: -1,
-};
-KFK.JCBKG = $("#containerbkg");
-
-KFK.urlMode = "";
-KFK.shareCode = null;
-
-KFK.fsElem = document.documentElement;
-
-KFK.C3GotFocus = () => {
-  KFK.onC3 = true;
-};
-
-KFK.C3Blur = () => {
-  KFK.onC3 = false;
-};
-
-KFK.getScrollPos = function () {
-  let sc = $("#S1");
-  return {
-    x: sc.scrollLeft(),
-    y: sc.scrollTop(),
-  };
-};
-KFK.codeToBase64 = function (code) {
-  return Buffer.from(code).toString('base64');
-};
-KFK.base64ToCode = function (base64) {
-  return Buffer.from(base64, 'base64').toString('utf-8');
-};
-
-
-//Following solution to prevetn scrolling after focus  cause a problem of juqery
-//So, dont' use it but adapt getScrollPos then scrollToPos solution
-//https://stackoverflow.com/questions/4963053/focus-to-input-without-scrolling
-// element.focus({
-//     preventScroll: true
-//   });
-KFK.focusOnC3 = () => {
-  if (KFK.isEditting || KFK.resizing || KFK.dragging) return;
-  if (KFK.JC3) {
-    let pos = KFK.getScrollPos();
-    KFK.JC3.attr("tabIndex", "0");
-    KFK.JC3.focus();
-    KFK.scrollToPos(pos);
-  } else {
-    KFK.warn("focusOnC3 failed. not exist");
-  }
-};
-
-KFK.myuid = () => {
-  return suuid.generate();
-};
-KFK.hoverJqDiv = function (jqdiv) {
-  if (jqdiv !== undefined) {
-    KFK._jqhoverdiv = jqdiv;
-    if (jqdiv !== null) KFK.hoverSvgLine(null);
-  } else {
-    return KFK._jqhoverdiv;
-  }
-};
-KFK.hoverSvgLine = function (svgline) {
-  if (svgline !== undefined) {
-    KFK._svghoverline = svgline;
-    if (svgline !== null) KFK.hoverJqDiv(null);
-  } else {
-    return KFK._svghoverline;
-  }
-};
-
-function el(jq) {
-  return jq[0];
+if (!Array.prototype.remove) {
+	Array.prototype.remove = function <T>(this: T[], elem: T): T[] {
+		return this.filter((e) => e !== elem);
+	};
+}
+if (!Array.prototype.clear) {
+	Array.prototype.clear = function <T>(this: T[]): T[] {
+		return this.splice(0, this.length);
+	};
 }
 
-KFK.loadImages = function () {
-  if (KFK.imagesLoaded) return;
-  let loadedImages = 0;
-  let numImages = assetIcons.length;
-  for (let i = 0; i < assetIcons.length; i++) {
-    let imgKey = assetIcons[i];
-    KFK.images[imgKey] = new Image();
-    KFK.images[imgKey].onload = function () {
-      if (++loadedImages >= numImages) {
-        KFK.imagesLoaded = true;
-        KFK.debug("[Loaded] images fully loaded");
-      }
-    };
-    let imgurl = cocoConfig.frontend.url + "/assets/" + imgKey + ".svg";
-    KFK.images[imgKey].src = imgurl;
-  }
-
-  // KFK.images["toggle_line"].src = KFK.images["line"].src;
+const $ = jQuery;
+if (typeof window !== 'undefined') {
+	window.jQuery = jQuery;
+	window.$ = jQuery;
+}
+type Point = {
+	x: number;
+	y: number;
+};
+type Size = {
+	w: number;
+	h: number;
 };
 
+type Position = {
+	center: Point;
+	points: Point[];
+};
 
-class Node {
-  constructor(id, type, variant, x, y, w, h, attach, attach2) {
-    this.id = id;
-    this.type = type;
-    this.variant = variant;
-    this.iconscale = 0.8;
-    this.x = x;
-    this.y = y;
-    this.width = w;
-    this.height = h;
-    this.attach = attach;
-    this.attach2 = attach2;
-    if (
-      isNaN(this.x) ||
-      isNaN(this.y) ||
-      isNaN(this.width) ||
-      isNaN(this.height)
-    ) {
-      console.error("in Node contructor, x, y, w, h should be number");
-      console.error(
-        "this.x:",
-        this.x,
-        "this.y:",
-        this.y,
-        "this.width:",
-        this.width,
-        "this.height:",
-        this.height
-      );
-    }
-    if (KFK.APP.model.viewConfig.snap && type !== "svg") {
-      let tmpLeft = this.x - this.width * 0.5;
-      let tmpTop = this.y - this.height * 0.5;
-      let newLeft = tmpLeft;
-      let newTop = tmpTop;
-      if (tmpLeft % KFK.APP.model.gridWidth < KFK.APP.model.gridWidth * 0.5) {
-        newLeft =
-          Math.floor(tmpLeft / KFK.APP.model.gridWidth) *
-          KFK.APP.model.gridWidth;
-      } else {
-        newLeft =
-          (Math.floor(tmpLeft / KFK.APP.model.gridWidth) + 1) *
-          KFK.APP.model.gridWidth;
-      }
-      if (tmpTop % KFK.APP.model.gridWidth < KFK.APP.model.gridWidth * 0.5) {
-        newTop =
-          Math.floor(tmpTop / KFK.APP.model.gridWidth) *
-          KFK.APP.model.gridWidth;
-      } else {
-        newTop =
-          (Math.floor(tmpTop / KFK.APP.model.gridWidth) + 1) *
-          KFK.APP.model.gridWidth;
-      }
+type Rectangle = {
+	left: number;
+	top: number;
+	right: number;
+	bottom: number;
+	width: number;
+	height: number;
+};
 
-      this.x += newLeft - tmpLeft;
-      this.y += newTop - tmpTop;
-    }
-  }
+type User = {
+	username: string;
+	email: string;
+	avatar: string;
+	bio: string;
+	sessionToken: string;
+};
+
+interface myJQuery {
+	keydown: any;
+	hasClass: any;
+	attr: any;
+	prop: any;
+	find: any;
+	css: any;
+	append: any;
+	removeAttr: any;
+	addClass: any;
+	removeClass: any;
+	off: any;
+	on: any;
+	draggable: any;
+	clone: any;
+	hover: any;
+	mousedown: any;
+	click: any;
+	dblclick: any;
+	focus: any;
+	resizable: any;
+	droppable: any;
+	remove: any;
 }
 
-class Link {
-  constructor(id, fromId, toId, route) {
-    this.id = id;
-    this.from = fromId;
-    this.to = toId;
-    this.route = route === undefined ? "" : route === null ? "" : route;
-  }
+function el(jq: any) {
+	return jq[0];
 }
 
-
-KFK.focusOnNode = function (jqNodeDIV) {
-  KFK.lastFocusOnJqNode = jqNodeDIV;
-  KFK.lastSetNoteJq = jqNodeDIV;
-  KFK.justCreatedJqNode = null;
-  KFK.justCreatedShape = null;
-
-  //TODO: focusOnNode show property form
-  console.log("FocusOnNode", jqNodeDIV);
-  if (jqNodeDIV !== null) {
-    KFK.showPropForm(jqNodeDIV);
-  } else {
-    KFK.showPropForm(null);
-  }
+const IsBlank = function (val: string) {
+	if (val === undefined || val === null || val === '') return true;
+	else return false;
+};
+const BlankToDefault = function (val: string, defaultValue: string) {
+	if (IsBlank(val)) return defaultValue;
+	else return val;
+};
+const NotBlank = function (val: string) {
+	return !IsBlank(val);
+};
+//eslint-disable-next-line
+const IsFalse = function (val: any) {
+	if (val === undefined || val === null || val === false) return true;
+	else return false;
 };
 
+class KFKclass {
+	APP: typeof APP = APP;
+	mode: string = 'POINTER';
+	tpl: myJQuery = null;
+	tplid: string = '';
+	currentTplId: string = '';
+	wfid: string = '';
+	tpl_mode: string = 'edit';
+	version: string = '1.0';
+	inNoteEditor: boolean = false;
+	config: typeof cocoConfig = cocoConfig;
+	duringVideo: boolean = false;
+	HSpace: number = 80;
+	VSpace: number = 20;
+	tmpBalls: any[] = [];
+	mdnotes: any = null;
+	noCopyPaste: boolean = false;
+	scaleRatio: number = 1;
+	currentPage: number = 0;
+	loadedProjectId: string = null;
+	keypool: string = '';
+	svgDraw: any = null; //画svg的画布
+	isFreeHandDrawing: boolean = false;
+	isShowingModal: boolean = false;
+	toolboxMouseDown: boolean = false;
+	isZoomingShape: boolean = false;
+	ctrlMouseToPan: boolean = false;
+	FROM_SERVER: boolean = true;
+	FROM_CLIENT: boolean = false;
+	NO_SHIFT: boolean = false;
+	badgeTimers: any = {}; //用于存放用户badge显示间隔控制的timer，这样，不是每一个mousemove都要上传，在Timer内，只上传最后一次mouse位置
+	msgTimer: any = null;
+	nodeMessageTimer: any = null;
+	templateChangeTimer: any = null;
+	scrollPosTimer: any = null;
+	updateReceived: number = 0; //记录接收到的其他用户的改动次数，在startActiveLogWatcher中，使用这个数字来控制是否到服务器端去拉取更新列表
+	tempSvgLine: any = null; //这条线是在划线或者链接node时，那条随着鼠标移动的线
+	LOGLEVEL_NOTHING: number = 0;
+	LOGLEVEL_ERROR: number = 1;
+	LOGLEVEL_WARN: number = 2;
+	LOGLEVEL_INFO: number = 3;
+	LOGLEVEL_DEBUG: number = 4;
+	LOGLEVEL_DETAIL: number = 5;
+	LOGLEVEL_KEY: number = 6;
+	tplNode_width: number = 32;
+	tplNode_height: number = 32;
+	loglevel: number = 5; //控制log的等级, 级数越小，显示信息越少
+	//在designer页面输入logerror, logwarn, loginfo, lodebug...
+	designerConf: any = { scale: 1, left: 0, top: 0 }; //用于在zoom控制计算中
 
-/**
- * 切换备注编辑器全屏显示状态时顶部菜单栏的显示,编辑器全屏,隐藏菜单栏,编辑器复原,恢复菜单栏
- */
+	state: any = { TRX_FLAG: 0 };
+	CONST: any = { THIS_IS_A_UNDOREDO: true, THIS_IS_NOT_A_UNDOREDO: false, MAX_SHAPE_WIDTH: 6 };
+	opArray: any[] = [];
+	opstack: any[] = []; //Operation Stack, 数组中记录操作记录，用于undo/redo
+	opstacklen: number = 20; //undo，redo记录次数
+	opz: number = -1; // opstack 当前记录指针
+	lockTool: boolean = false;
+	C3: any = null;
+	JC3: any = null;
+	onC3: boolean = false;
+	tapped: boolean = false;
+	inFullScreenMode: boolean = false;
+	inPresentingMode: boolean = false;
+	inOverviewMode: boolean = false;
+	controlButtonsOnly: boolean = false;
+	showRightTools: boolean = true;
+	zoomFactor: number = 0;
+	lineTransfomerDragging: boolean = false;
+	scaleBy: number = 1.01;
+	centerPos: any = { x: 0, y: 0 };
+	lastFocusOnJqNode: myJQuery = null;
+	lastSetNoteJq: myJQuery = null;
+	justCreatedJqNode: any = null;
+	lastCreatedJqNode: any = null;
+	justCreatedShape: any = null;
+	_jqhoverdiv: any = null;
+	_svghoverline: any = null;
+	inited: boolean = false;
+	divInClipboard: any = undefined;
+	lineTemping: boolean = false;
+	ignoreClick: boolean = false;
+	scrollBugPatched: boolean = false;
+	actionLogToView: any = { editor: '', actionlog: [] };
+	actionLogToViewIndex: number = 0;
+	explorerRefreshed: boolean = false;
+	numberOfNodeToCreate: number = 0;
+	numberOfNodeCreated: number = 0;
+	firstShown: any = { right: false, chat: false };
+	badgeIdMap: any = {};
+	// A4
+	// PageWidth : 842,
+	// PageHeight : 595,
+	//上面是A4的真实大小,但因为网格线是20位单位,所以近似看下面两个值
+	PageWidth: number = 0;
+	PageHeight: number = 0;
+	PageNumberHori: number = 0;
+	PageNumberVert: number = 0;
+	LeftB: number = 0;
+	TopB: number = 0;
+	_width = 0;
+	_height: number = 0;
+	minimapMouseDown: boolean = false;
 
-/**
- * 切换备注编辑器显示与否
- *
- */
+	defaultNodeWidth: number = 40;
+	defaultNodeHeight: number = 40;
+	links: any[] = [];
+	tipLinks: any[] = [];
+	tips: any[] = [];
+	images: any = {};
+	avatars: any = {};
+	pickedNode: any = null;
+	pickedTip: any = null;
+	isEditting: boolean = false;
+	resizing: boolean = false;
+	dragging: boolean = false;
+	shapeDragging: boolean = false;
+	afterDragging: boolean = false;
+	afterResizing: boolean = false;
+	linkPosNode: any[] = [];
+	jumpNodes: any[] = [];
+	drawPoints: any[] = [];
+	drawMode: string = 'line';
+	KEYDOWN: any = { ctrl: false, shift: false, alt: false, meta: false };
+	originZIndex: number = 1;
+	lastActionLogJqDIV: any = null;
+	brainstormMode: boolean = true;
+	JC1: any = null;
+	C1: any = null;
+	JS1: any = null;
+	S1: any = null;
+	scrollContainer: any = null;
+	lockMode: boolean = false;
+	selectedDIVs: any[] = [];
+	selectedShapes: any[] = [];
+	kuangXuanMouseIsDown: boolean = false;
+	kuangXuanStartPoint: any = { x: 0, y: 0 };
+	kuangXuanEndPoint: any = { x: 0, y: 0 };
+	duringKuangXuan: boolean = false;
+	currentMousePos: Point = { x: -1, y: -1 };
+	JCBKG: any = null;
+	hoveredConnectId: string = null;
+	imagesLoaded: boolean = false;
+	tmpPos: Position = null;
+	shapeToRemember: myJQuery = null;
+	polyId: string = '';
+	polyShape: myJQuery = null;
+	pickedShape: myJQuery = null;
+	tempShape: any = null;
+	YIQColorAux: string = '';
+	tobeTransformJqLine: myJQuery = null;
+	materialPicked: any = null;
+	panStartAt: Point = null;
+	refreshC3Event: any = null;
+	zoomEvent: any = null;
+	changedEvent: any = null;
+	shapeOriginColor: string = '';
+	currentJqNode: myJQuery = null;
+	moveLinePoint: string = 'from';
+	lineToResize: any = null;
+	mousePosToRemember: Point = null;
+	shapeToZoom: any = null;
+	shapeSizeCenter: Point = null;
+	shapeSizeOrigin: Size = null;
+	shapeZoomStartPoint: Point = null;
 
-/**
- * 把备注编辑器的内容设置为节点的备注
- *
- */
+	shapeToDrag: any = null;
+	shapeDraggingStartPoint: Point = null;
+	shapeFirstDraggingStartPoint: Point = null;
 
+	fromJQ: myJQuery = null;
+	positionBeforeDrag: Point = null;
+	DivStyler: any = null;
+	AdvOps: any = null;
+	shouldMovedInParalles: any[] = [];
+	edittingJQ: boolean = false;
+	ball: any = false;
+	inlineEditor: myJQuery = null;
+	copyCandidateDIVs: any[] = [];
+	copyCandidateLines: any[] = [];
+	lineToCopy: any = null;
+	YIQColor: string = '';
+	template: any = null;
+	pageBounding: any = null;
+	urlBase: string = 'urlBase://';
+	NodeController: any = NodeController;
+	documentEventHandlerSet: boolean = false;
+	globalMouseX: number = 0;
+	globalMouseY: number = 0;
+	pasteAt: Point = { x: 0, y: 0 };
+	fileToUpload: any = null;
+	blobToPaste: any = null;
+	workflow: any = null;
+	dropAtPos: Point = { x: 0, y: 0 };
+	sts: string = null;
+	pointAfterResize: Point = null;
+	selectedTodo: any = null;
+	user: User = null;
 
+	constructor() {
+		this.JC1 = $('#C1');
+		this.C1 = el(this.JC1);
+		this.JCBKG = $('#containerbkg');
+		this.PageWidth = 840 * 2;
+		this.PageHeight = 600 * 2;
+		this.PageNumberHori = 2;
+		this.PageNumberVert = 2;
+		this.LeftB = this.PageWidth;
+		this.TopB = this.PageHeight;
+		this._width = this.PageWidth * this.PageNumberHori;
+		this._height = this.PageHeight * this.PageNumberVert;
+		this.scrollContainer = $('#S1');
+	}
 
-KFK.log = function (...info) {
-  console.log("LOG>", ...info);
-};
-KFK.error = function (...info) {
-  if (KFK.loglevel >= KFK.LOGLEVEL_ERROR) console.log("ERROR>", ...info);
-};
-KFK.warn = function (...info) {
-  if (KFK.loglevel >= KFK.LOGLEVEL_WARN) console.log("WARN >", ...info);
-};
-KFK.info = function (...info) {
-  if (KFK.loglevel >= KFK.LOGLEVEL_INFO) console.log("INFO >", ...info);
-};
-KFK.debug = function (...info) {
-  if (KFK.loglevel >= KFK.LOGLEVEL_DEBUG) console.log("DEBUG>", ...info);
-};
-KFK.detail = function (...info) {
-  if (KFK.loglevel >= KFK.LOGLEVEL_DETAIL) console.log("DETAL>", ...info);
-};
-KFK.logKey = function (...info) {
-  if (KFK.loglevel >= KFK.LOGLEVEL_KEY) console.log("KEY>", ...info);
-};
+	// eslint-disable-next-line
+	static NotSet(val: any): boolean {
+		if (val === undefined || val === null) return true;
+		else return false;
+	}
 
-KFK.scrLog = function (msg, staytime = 5000) {
-  let parent = $("#MSG").parent();
-  let msgDIV = $("#MSG");
-  let cloneDIV = $("#fadeoutmsg");
-  if (cloneDIV.length > 0) {
-    if (KFK.msgTimer) {
-      clearTimeout(KFK.msgTimer);
-      KFK.msgTimer = undefined;
-    }
-    cloneDIV.remove();
-  }
-  cloneDIV = msgDIV.clone().appendTo(parent);
-  cloneDIV.removeClass("noshow");
-  cloneDIV.attr("id", "fadeoutmsg");
-  cloneDIV.html(msg);
-  KFK.msgTimer = setTimeout(() => {
-    cloneDIV.animate({
-      opacity: 0,
-    },
-      500,
-      async function () {
-        cloneDIV.remove();
-      }
-    );
-  }, staytime);
-};
+	// eslint-disable-next-line
+	static IsSet(val: any): boolean {
+		return !KFKclass.NotSet(val);
+	}
+	static px(v: any) {
+		if (typeof v === 'string') {
+			if (v.endsWith('px')) {
+				return v;
+			} else {
+				return v + 'px';
+			}
+		} else {
+			return v + 'px';
+		}
+	}
 
-KFK.getConnectorPoints = function (from, to, rad) {
-  const dx = to.x - from.x;
-  const dy = to.y - from.y;
-  let angle = Math.atan2(-dy, dx);
+	static unpx(v: any) {
+		if (typeof v === 'string' && v.endsWith('px')) {
+			return parseInt(v.substr(0, v.length - 2));
+		} else {
+			return v;
+		}
+	}
+	static hide(jq: any) {
+		if (typeof jq === 'string') jq = $(jq);
+		jq.addClass('noshow');
+	}
+	static show(jq: any) {
+		if (typeof jq === 'string') jq = $(jq);
+		jq.removeClass('noshow');
+	}
+	static mouseNear(p1: Point, p2: Point, distance: number) {
+		return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)) <= distance;
+	}
 
-  let radius = rad;
+	static moveDIVCenterToPos(jqDiv: myJQuery, pos: Point) {
+		jqDiv.css('left', pos.x - KFKclass.unpx(jqDiv.css('width')) * 0.5);
+		jqDiv.css('top', pos.y - KFKclass.unpx(jqDiv.css('height')) * 0.5);
+	}
 
-  return [
-    from.x + -radius * Math.cos(angle + Math.PI),
-    from.y + radius * Math.sin(angle + Math.PI),
-    to.x + -radius * Math.cos(angle),
-    to.y + radius * Math.sin(angle),
-  ];
-};
+	C3MousePos(evt: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return {
+			x: that.scalePoint(that.scrXToJc3X(evt.clientX)),
+			y: that.scalePoint(that.scrYToJc3Y(evt.clientY))
+		};
+	}
+	ScreenMousePos(pos: Point) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return {
+			x: pos.x - that.scrollContainer.scrollLeft(),
+			y: pos.y - that.scrollContainer.scrollTop()
+		};
+	}
+	hideLineTransformer() {
+		KFKclass.hide($('#linetransformer'));
+	}
+	showLineTransformer() {
+		KFKclass.show($('#linetransformer'));
+	}
+	cancelTempLine() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.lineTemping) {
+			that.lineTemping = false;
+			if (that.tempSvgLine) that.tempSvgLine.hide();
+			that.linkPosNode.clear();
+			that.drawPoints.clear();
+		}
+	}
+	//eslint-disable-next-line
+	setMode(mode: string, event?: any): void {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		console.log(mode, event);
+		if (that.docIsReadOnly()) mode = 'POINTER';
 
-KFK.replaceNodeInSelectedDIVs = function (jqDIV) {
-  for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-    if (KFK.selectedDIVs[i].attr("id") === jqDIV.attr("id")) {
-      KFK.selectedDIVs[i] = jqDIV;
-    }
-  }
-};
+		const shiftKey = event ? event.shiftKey : false;
 
-/**
- * 计算节点对象的五点坐标
- *
- * jqDIV {jquery node object}- 被计算五点坐标的对象
- *
- * @returns {JSON} A JSON object describing the 5 key points of an object like:
- *      {
- *         center: {x: 100, y: 100},
- *         points: [
- *          {x: 90,  y: 100},
- *          {x: 100, y: 90},
- *          {x: 110, y: 100},
- *          {x: 100, y: 110}
- *          ]
- *      }
- *
- *      the above returned value describes an object which is centered at (100,00),
- *      and has a width of 20 and a height of 20, thus, it's left-middle point (points[0]) is (90,110), it's top-center point (points[1]) is (100, 90), it's right-middle point(points[2]) is (110, 100), it's bottom-center point (points[3]) is (100, 110)
- */
-KFK.calculateNodeConnectPoints = function (jqDIV) {
-  let divLeft = KFK.unpx(jqDIV.css("left"));
-  let divTop = KFK.unpx(jqDIV.css("top"));
-  let divWidth = KFK.unpx(jqDIV.css("width"));
-  let divHeight = KFK.unpx(jqDIV.css("height"));
-  let pos = {
-    center: {
-      x: divLeft + divWidth * 0.5,
-      y: divTop + divHeight * 0.5,
-    },
-    points: [{
-      x: KFK.unpx(jqDIV.css("left")),
-      y: KFK.unpx(jqDIV.css("top")) + KFK.unpx(jqDIV.css("height")) * 0.5,
-    },
-    {
-      x: KFK.unpx(jqDIV.css("left")) + KFK.unpx(jqDIV.css("width")) * 0.5,
-      y: KFK.unpx(jqDIV.css("top")),
-    },
-    {
-      x: KFK.unpx(jqDIV.css("left")) + KFK.unpx(jqDIV.css("width")),
-      y: KFK.unpx(jqDIV.css("top")) + KFK.unpx(jqDIV.css("height")) * 0.5,
-    },
-    {
-      x: KFK.unpx(jqDIV.css("left")) + KFK.unpx(jqDIV.css("width")) * 0.5,
-      y: KFK.unpx(jqDIV.css("top")) + KFK.unpx(jqDIV.css("height")),
-    },
-    ],
-  };
-  return pos;
-};
+		const oldMode = that.mode;
+		that.mode = mode;
+		for (const key in that.APP.toolActiveState) {
+			that.APP.toolActiveState[key] = false;
+		}
+		if (that.APP.toolActiveState[mode] == undefined)
+			console.warn(`APP.toolActiveState[${mode}] does not exist`);
+		else that.APP.toolActiveState[mode] = true;
 
-/**
- * Draw connect between two nodes, and make sure the connect is the shorttest one among all possible links between connect points from two nodes.
- *
- * @param {jqNode} A - The beginning node
- * @param {jqNode} B - The endding node
- * @param {Array} posLimitA - Allowed connect points of A
- * @param {Array} posLimitB - Allowed connect points ofB
- * @param {boolean} drawLine - Whether draw the line or not
- */
-KFK.drawConnect = async function (
-  A,
-  B,
-  caseValue,
-  posLimitA = [0, 1, 2, 3],
-  posLimitB = [0, 1, 2, 3],
-  drawLine = true
-) {
-  let APos = KFK.calculateNodeConnectPoints(A);
-  let BPos = KFK.calculateNodeConnectPoints(B);
-  let fromPoint = null;
-  let toPoint = null;
-  let AIndex = 0;
-  let BIndex = 0;
-  /*
+		if ((oldMode === 'line' && mode !== 'line') || (oldMode === 'CONNECT' && mode !== 'CONNECT')) {
+			that.cancelTempLine();
+		}
+
+		if (shiftKey) {
+			if (that.mode === 'CONNECT') {
+				that.lockTool = true;
+			} else {
+				that.lockTool = false;
+			}
+		} else {
+			that.lockTool = false;
+		}
+
+		$('#modeIndicator').hide();
+
+		if (that.mode === 'text') {
+			that.APP.setData('show', 'shape_property', true);
+			that.APP.setData('show', 'customshape', false);
+			that.APP.setData('show', 'custombacksvg', false);
+			that.APP.setData('show', 'customfont', true);
+			that.APP.setData('show', 'layercontrol', true);
+			that.APP.setData('show', 'customline', false);
+		} else if (that.mode === 'textblock') {
+			that.APP.setData('show', 'shape_property', true);
+			that.APP.setData('show', 'customshape', true);
+			that.APP.setData('show', 'customfont', true);
+			that.APP.setData('show', 'custombacksvg', true);
+			that.APP.setData('show', 'layercontrol', true);
+			that.APP.setData('show', 'customline', false);
+		} else if (that.mode === 'yellowtip' || that.mode === 'comment') {
+			that.APP.setData('show', 'shape_property', true);
+			that.APP.setData('show', 'customfont', true);
+			that.APP.setData('show', 'custombacksvg', true);
+			that.APP.setData('show', 'customshape', false);
+			that.APP.setData('show', 'layercontrol', true);
+			that.APP.setData('show', 'customline', false);
+		} else if (that.mode === 'line') {
+			that.APP.setData('show', 'shape_property', true);
+			that.APP.setData('show', 'customshape', false);
+			that.APP.setData('show', 'custombacksvg', false);
+			that.APP.setData('show', 'customfont', false);
+			that.APP.setData('show', 'layercontrol', false);
+			that.APP.setData('show', 'customline', true);
+		}
+		console.log(that.APP.toolActiveState);
+		that.focusOnC3();
+	}
+
+	docIsReadOnly(): boolean {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return that.APP.model.cocodoc.readonly || that.tpl_mode !== 'edit';
+		//return that.APP.model.cocodoc.readonly;
+	}
+
+	docIsNotReadOnly(): boolean {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return !that.docIsReadOnly();
+	}
+
+	nodeLocked(jqNode: myJQuery): boolean {
+		//Even works for svline, because svg line has .hasClass function as well
+		return jqNode.hasClass('lock');
+	}
+
+	lineLocked(svgLine: myJQuery): boolean {
+		return svgLine.hasClass('lock');
+	}
+
+	static stringToArray(str: string): string[] {
+		let arr: string[] = [];
+		if (str) {
+			arr = str.split(',');
+			if (arr.length === 1 && arr[0] === '') arr = [];
+		}
+		return arr;
+	}
+
+	getNodeLinkIds(jq1: myJQuery, direction: string): string[] {
+		const linksStr: string = jq1.attr(direction);
+		const linksArr: string[] = KFKclass.stringToArray(linksStr);
+		//过滤掉不存在的节点
+		// linksArr = linksArr.filter((aId) => {
+		//   return $(`#${aId}`).length > 0;
+		// })
+		return linksArr;
+	}
+
+	getNodeIdsFromConnectId(cid: string) {
+		let nid = cid;
+		let tid = cid;
+		nid = nid.substr(nid.indexOf('_') + 1);
+		nid = nid.substr(0, nid.indexOf('_'));
+		tid = tid.substr(tid.lastIndexOf('_') + 1);
+		return [nid, tid];
+	}
+
+	async removeConnectById(connect_id: string): Promise<void> {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		try {
+			await that.svgDraw.find(`.${connect_id}`).remove();
+			//eslint-disable-next-line
+		} catch (err) {}
+		const triangle_id = connect_id + '_triangle';
+		try {
+			await that.svgDraw.find(`.${triangle_id}`).remove();
+			//eslint-disable-next-line
+		} catch (err) {}
+		const text_id = connect_id + '_text';
+		try {
+			await that.svgDraw.find(`.${text_id}`).remove();
+			//eslint-disable-next-line
+		} catch (err) {}
+		try {
+			const tmpNodeIdPair = that.getNodeIdsFromConnectId(connect_id);
+			const fromNode_id = tmpNodeIdPair[0];
+			const toNode_id = tmpNodeIdPair[1];
+			console.log(`.link[from="${fromNode_id}"][to="${toNode_id}"]`);
+			const aLinkInTemplate = that.tpl.find(`.link[from="${fromNode_id}"][to="${toNode_id}"]`);
+			console.log(aLinkInTemplate);
+			$(aLinkInTemplate).remove();
+		} catch (err) {
+			console.error(err);
+		}
+	}
+
+	C3GotFocus() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.onC3 = true;
+		console.log('that.onC3', that.onC3);
+	}
+
+	C3Blur() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.onC3 = false;
+		console.log('that.onC3', that.onC3);
+	}
+
+	getScrollPos() {
+		const sc = $('#S1');
+		return {
+			x: sc.scrollLeft(),
+			y: sc.scrollTop()
+		};
+	}
+	codeToBase64(code: string) {
+		return Buffer.from(code).toString('base64');
+	}
+	base64ToCode(base64: string) {
+		return Buffer.from(base64, 'base64').toString('utf-8');
+	}
+
+	scrollToPos(pos: Point) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.JS1.scrollLeft(pos.x);
+		that.JS1.scrollTop(pos.y);
+	}
+
+	//Following solution to prevetn scrolling after focus  cause a problem of juqery
+	//So, dont' use it but adapt getScrollPos then scrollToPos solution
+	//https://stackoverflow.com/questions/4963053/focus-to-input-without-scrolling
+	// element.focus({
+	//     preventScroll: true
+	//   });
+	focusOnC3() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.isEditting || that.resizing || that.dragging) return;
+		if (that.JC3) {
+			const pos = that.getScrollPos();
+			that.JC3.attr('tabIndex', '0');
+			that.JC3.focus();
+			that.scrollToPos(pos);
+		} else {
+			that.warn('focusOnC3 failed. not exist');
+		}
+	}
+
+	myuid() {
+		return suuid.generate();
+	}
+
+	loadImages() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.imagesLoaded) return;
+		let loadedImages = 0;
+		const numImages = assetIcons.length;
+		for (let i = 0; i < assetIcons.length; i++) {
+			const imgKey = assetIcons[i];
+			that.images[imgKey] = new Image();
+			that.images[imgKey].onload = function () {
+				if (++loadedImages >= numImages) {
+					that.imagesLoaded = true;
+					that.debug('[Loaded] images fully loaded');
+				}
+			};
+			const imgurl = cocoConfig.frontend.url + '/assets/' + imgKey + '.svg';
+			that.images[imgKey].src = imgurl;
+		}
+		// that.images["toggle_line"].src = that.images["line"].src;
+	}
+
+	setNodeLabel(jqDIV: myJQuery, label: string) {
+		let isDirty = false;
+		label = label.trim();
+		let node_label = '';
+		if (jqDIV.find('p').length > 0) {
+			node_label = jqDIV.find('p').first().text().trim();
+			if (node_label !== label) {
+				isDirty = true;
+				console.log('Dirty: label changed');
+				jqDIV.find('p').first().prop('innerText', label);
+			}
+		} else {
+			jqDIV.append('<p>' + label + '</p>');
+			console.log('Dirty: append p-label');
+			isDirty = true;
+		}
+		return isDirty ? 1 : 0;
+	}
+
+	setNodeId(jqDIV: myJQuery, id: string) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		let isDirty = false;
+		if (jqDIV.attr('id').trim() !== id.trim() && NotBlank(id.trim())) {
+			jqDIV.attr('id', id.trim());
+			console.log('Dirty: id changed');
+			isDirty = true;
+		}
+		if (IsBlank(id.trim())) {
+			if (IsBlank(jqDIV.attr('id').trim())) {
+				jqDIV.attr('id', that.myuid());
+				console.log('Dirty: id changed');
+				isDirty = true;
+			}
+		}
+		return isDirty ? 1 : 0;
+	}
+	//
+	//删除添加eventHandler带来的额外的、会引起复制节点event响应不正常的内容
+	removeNodeEventFootprint(jqNodeDIV: myJQuery) {
+		jqNodeDIV.find('.ui-resizable-handle').remove();
+		jqNodeDIV.find('.locklabel').remove();
+		jqNodeDIV.removeClass(
+			'ui-resizable ui-draggable ui-draggable-handle ui-draggable-dragging ui-droppable selected ui-resizable-autohide shadow1 shadow2 lock'
+		);
+	}
+
+	drawingToTemplateDoc() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		const nodes = that.JC3.find('.node');
+		const connects = that.svgDraw.find('.connect');
+		let tplDocHtml = `<div class="template" id="${that.currentTplId}">`;
+
+		nodes.each((_index: any, aNode: any) => {
+			//eslint-disable-line
+			const origJqNode = $(aNode);
+			//eslint-disable-next-line
+			let jqNode: myJQuery = origJqNode.clone();
+			that.removeNodeEventFootprint(jqNode);
+			jqNode.removeClass('kfknode');
+			const nodeHtml = jqNode.prop('outerHTML');
+			tplDocHtml += nodeHtml;
+		});
+		connects.each((aConnect: any) => {
+			let linkHtml = `<div class="link" from="${aConnect.attr('fid')}" to="${aConnect.attr(
+				'tid'
+			)}"></div>`;
+			if (lodash.isEmpty(aConnect.attr('case')) === false) {
+				linkHtml = `<div class="link" from="${aConnect.attr('fid')}" to="${aConnect.attr(
+					'tid'
+				)}" case="${aConnect.attr('case')}"></div>`;
+			}
+			tplDocHtml += linkHtml;
+		});
+		tplDocHtml += '</div>';
+
+		return tplDocHtml;
+	}
+
+	onChange(reason: string) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		console.log('onChange', reason);
+		that.templateChangeTimer && clearTimeout(that.templateChangeTimer);
+		that.templateChangeTimer = setTimeout(async () => {
+			console.log('saving...');
+			const tpldoc = that.drawingToTemplateDoc();
+			console.log(tpldoc);
+			//eslint-disable-next-line
+			//Client.putTemplate(tpldoc);
+			let token = that.user.sessionToken;
+			let ret = await api.post('template/put', { doc: tpldoc }, token);
+			//return ret.data;
+			console.log(ret);
+
+			that.templateChangeTimer = undefined;
+		}, 2000);
+	}
+
+	/**
+	 * appDataToNode.
+	 * Sync the APP data to node properties
+	 *
+	 * @param {} jqDIV, if not set, use currentJqNode, if not set then, do nothing
+	 */
+	appDataToNode(reason: string) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.tpl_mode !== 'edit') return;
+		//如果连当前的也不存在，就要返回
+		if (KFKclass.NotSet(that.currentJqNode)) return;
+		const jqDIV = that.currentJqNode;
+		//是否属性有变化
+		let dirtyCount = 0;
+		if (jqDIV.hasClass('ACTION')) {
+			dirtyCount += that.setNodeLabel(jqDIV, that.APP.node.ACTION.label);
+			dirtyCount += that.setNodeId(jqDIV, that.APP.node.ACTION.id);
+			let theRole = jqDIV.attr('role');
+			theRole = theRole ? theRole.trim() : '';
+			if (
+				theRole !== that.APP.node.ACTION.role.trim() &&
+				that.APP.node.ACTION.role.trim() !== 'DEFAULT' &&
+				NotBlank(that.APP.node.ACTION.role.trim())
+			) {
+				jqDIV.attr('role', that.APP.node.ACTION.role.trim());
+				console.log('Dirty: role changed');
+				dirtyCount += 1;
+			}
+			const appData_kvars = that.APP.node.ACTION.kvars.trim();
+			let codeInBase64 = '';
+			if (NotBlank(appData_kvars)) {
+				try {
+					//let json = JSON.parse(appData_kvars);
+					codeInBase64 = that.codeToBase64(appData_kvars);
+				} catch (error) {
+					codeInBase64 = 'ERROR';
+				}
+			}
+			if (codeInBase64 === 'ERROR') {
+				console.log('JSON format error:', appData_kvars);
+			} else {
+				if (jqDIV.find('.kvars').length > 0) {
+					if (jqDIV.find('.kvars').first().text().trim() !== codeInBase64) {
+						console.log('Dirty: kvars changed');
+						dirtyCount += 1;
+						jqDIV.find('.kvars').first().prop('innerText', codeInBase64);
+					}
+				} else {
+					jqDIV.append('<div class="kvars">' + codeInBase64 + '</div>');
+					console.log('Dirty: append kvars');
+					dirtyCount += 1;
+				}
+			}
+
+			const appData_katts = that.APP.node.ACTION.katts.trim();
+			codeInBase64 = '';
+			if (NotBlank(appData_katts)) {
+				try {
+					//let json = JSON.parse(appData_katts);
+					codeInBase64 = that.codeToBase64(appData_katts);
+				} catch (error) {
+					codeInBase64 = 'ERROR';
+				}
+			}
+			if (codeInBase64 === 'ERROR') {
+				console.log('JSON format error:', appData_katts);
+			} else {
+				if (jqDIV.find('.katts').length > 0) {
+					if (jqDIV.find('.katts').first().text().trim() !== codeInBase64) {
+						console.log('Dirty: katts changed');
+						dirtyCount += 1;
+						jqDIV.find('.katts').first().prop('innerText', codeInBase64);
+					}
+				} else {
+					jqDIV.append('<div class="katts">' + codeInBase64 + '</div>');
+					console.log('Dirty: append katts');
+					dirtyCount += 1;
+				}
+			}
+		} else if (jqDIV.hasClass('SCRIPT')) {
+			dirtyCount += that.setNodeId(jqDIV, that.APP.node.SCRIPT.id);
+			dirtyCount += that.setNodeLabel(jqDIV, that.APP.node.SCRIPT.label);
+			const appData_code = that.APP.node.SCRIPT.code.trim();
+			let codeInBase64 = '';
+			if (NotBlank(appData_code)) {
+				codeInBase64 = that.codeToBase64(appData_code);
+			}
+			if (jqDIV.find('code').length > 0) {
+				if (jqDIV.find('code').first().text().trim() !== codeInBase64) {
+					console.log('Dirty: code changed');
+					dirtyCount += 1;
+					jqDIV.find('code').prop('innerText', codeInBase64);
+				}
+			} else {
+				jqDIV.append('<code>' + codeInBase64 + '</code>');
+				console.log('Dirty: append code');
+				dirtyCount += 1;
+			}
+		} else if (jqDIV.hasClass('INFORM')) {
+			dirtyCount += that.setNodeLabel(jqDIV, that.APP.node.INFORM.label);
+			const subject = that.APP.node.INFORM.subject.trim();
+			const content = that.APP.node.INFORM.content.trim();
+			let node_subject = '';
+			let node_content = '';
+			let theRole = jqDIV.attr('role');
+			theRole = theRole ? theRole.trim() : '';
+			if (
+				theRole !== that.APP.node.INFORM.role.trim() &&
+				that.APP.node.INFORM.role.trim() !== 'DEFAULT' &&
+				NotBlank(that.APP.node.INFORM.role.trim())
+			) {
+				jqDIV.attr('role', that.APP.node.INFORM.role.trim());
+				console.log('Dirty: role changed');
+				dirtyCount += 1;
+			}
+			if (jqDIV.find('subject').length > 0) {
+				node_subject = jqDIV.find('subject').first().text().trim();
+				if (node_subject !== subject) {
+					dirtyCount += 1;
+					console.log('Dirty: subject changed');
+					jqDIV.find('subject').prop('innerText', subject);
+				}
+			} else {
+				jqDIV.append('<subject>' + subject + '</subject>');
+				console.log('Dirty: append subject');
+				dirtyCount += 1;
+			}
+			if (jqDIV.find('content').length > 0) {
+				node_content = jqDIV.find('content').first().text().trim();
+				if (node_content !== content) {
+					dirtyCount += 1;
+					console.log('Dirty: content changed');
+					jqDIV.find('content').prop('innerText', content);
+				}
+			} else {
+				jqDIV.append('<content>' + content + '</content>');
+				console.log('Dirty: append content');
+				dirtyCount += 1;
+			}
+		} else if (jqDIV.hasClass('TIMER')) {
+			dirtyCount += that.setNodeLabel(jqDIV, that.APP.node.TIMER.label);
+			const appData_code = that.APP.node.TIMER.code.trim();
+			if (jqDIV.find('code').length > 0) {
+				if (jqDIV.find('code').first().text().trim() !== appData_code) {
+					console.log('Dirty: code changed');
+					dirtyCount += 1;
+					jqDIV.find('code').prop('innerText', appData_code);
+				}
+			} else {
+				jqDIV.append('<code>' + appData_code + '</code>');
+				console.log('Dirty: append code');
+				dirtyCount += 1;
+			}
+		} else if (jqDIV.hasClass('SUB')) {
+			dirtyCount += that.setNodeId(jqDIV, that.APP.node.SUB.id);
+			dirtyCount += that.setNodeLabel(jqDIV, that.APP.node.SUB.label);
+			const appData_sub = that.APP.node.SUB.sub.trim();
+			if (jqDIV.attr('sub').trim() !== appData_sub) {
+				console.log('Dirty: sub changed');
+				dirtyCount += 1;
+				jqDIV.attr('sub', appData_sub);
+			}
+		} else {
+			console.warn(jqDIV.attr('class'), 'appDataToNode not implemented.');
+		}
+		if (dirtyCount > 0) {
+			//属性有变化，则出发保存
+			console.log(reason);
+			that.onChange('Property Changed');
+		}
+	}
+
+	/**
+	 * nodeToAppData.
+	 * set App data with Node properties
+	 *
+	 * @param {} jqDIV
+	 */
+	nodeToAppData(jqDIV?: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (KFKclass.NotSet(jqDIV)) jqDIV = that.currentJqNode;
+		if (jqDIV.hasClass('START')) {
+			console.error('TODO: here');
+		} else if (jqDIV.hasClass('ACTION')) {
+			that.APP.node.ACTION.id = jqDIV.attr('id').trim();
+			that.APP.node.ACTION.role = BlankToDefault(jqDIV.attr('role'), 'DEFAULT');
+			that.APP.node.ACTION.label = BlankToDefault(
+				jqDIV.find('p').first().text(),
+				'Activity'
+			).trim();
+			let kvarsString = BlankToDefault(jqDIV.find('.kvars').text(), 'e30=');
+			kvarsString = that.base64ToCode(kvarsString);
+			that.APP.node.ACTION.kvars = kvarsString;
+			let kattsString = BlankToDefault(jqDIV.find('.katts').text(), 'e30=');
+			kattsString = that.base64ToCode(kattsString);
+			that.APP.node.ACTION.katts = kattsString;
+		} else if (jqDIV.hasClass('SCRIPT')) {
+			that.APP.node.SCRIPT.id = jqDIV.attr('id');
+			that.APP.node.SCRIPT.label = BlankToDefault(jqDIV.find('p').first().text(), '').trim();
+			let str = BlankToDefault(jqDIV.find('code').first().text(), '').trim();
+			str = that.base64ToCode(str);
+			that.APP.node.SCRIPT.code = str;
+		} else if (jqDIV.hasClass('INFORM')) {
+			that.APP.node.INFORM.id = jqDIV.attr('id');
+			that.APP.node.INFORM.label = BlankToDefault(jqDIV.find('p').first().text(), 'Email').trim();
+			that.APP.node.INFORM.role = BlankToDefault(jqDIV.attr('role'), 'DEFAULT');
+			that.APP.node.INFORM.subject = BlankToDefault(
+				jqDIV.find('subject').first().text(),
+				''
+			).trim();
+			that.APP.node.INFORM.content = BlankToDefault(
+				jqDIV.find('content').first().text(),
+				''
+			).trim();
+		} else if (jqDIV.hasClass('TIMER')) {
+			that.APP.node.TIMER.id = jqDIV.attr('id');
+			that.APP.node.TIMER.label = BlankToDefault(jqDIV.find('p').first().text(), '').trim();
+			const str = BlankToDefault(jqDIV.find('code').first().text(), '').trim();
+			that.APP.node.TIMER.code = str;
+		} else if (jqDIV.hasClass('SUB')) {
+			that.APP.node.SUB.id = jqDIV.attr('id');
+			that.APP.node.SUB.label = BlankToDefault(jqDIV.find('p').first().text(), '').trim();
+			const str = BlankToDefault(jqDIV.attr('sub'), '').trim();
+			that.APP.node.SUB.sub = str;
+		} else {
+			console.warn(jqDIV.attr('class'), 'nodetoAppData not implemented.');
+		}
+	}
+	//on click node, node prop
+	showPropForm(jqDIV: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		//如果传递过来的是空或者null，就隐藏掉rightPanel
+		if (KFKclass.NotSet(jqDIV)) {
+			if (that.currentJqNode) that.appDataToNode('set nodisplay on undefined jqDIV');
+			$('#rightPanel').addClass('nodisplay');
+			return;
+		}
+		//否则，就要把rightPanel显示出来
+		$('#rightPanel').removeClass('nodisplay');
+		//先把针对不同节点类型的属性DIV全部隐藏起来
+		$('#rightPanel')
+			.find('div.prop_form')
+			.each((_index, aDiv) => {
+				$(aDiv).addClass('nodisplay');
+			});
+		//然后针对edit/view的section全部隐藏起来
+		$('#rightPanel')
+			.find('div.prop_section')
+			.each((_index, aDiv) => {
+				$(aDiv).addClass('nodisplay');
+			});
+		if (jqDIV) {
+			if (that.currentJqNode && that.currentJqNode !== jqDIV) {
+				//如果之前有节点，则先保存它的值
+				that.appDataToNode('Save previous');
+			}
+
+			let formToShow = '';
+			that.currentJqNode = jqDIV;
+			if (jqDIV.hasClass('START')) {
+				formToShow = 'START';
+				that.nodeToAppData(jqDIV);
+			} else if (jqDIV.hasClass('ACTION')) {
+				formToShow = 'ACTION';
+				that.nodeToAppData(jqDIV);
+			} else if (jqDIV.hasClass('SCRIPT')) {
+				formToShow = 'SCRIPT';
+				that.nodeToAppData(jqDIV);
+			} else if (jqDIV.hasClass('INFORM')) {
+				formToShow = 'INFORM';
+				that.nodeToAppData(jqDIV);
+			} else if (jqDIV.hasClass('TIMER')) {
+				formToShow = 'TIMER';
+				that.nodeToAppData(jqDIV);
+			} else if (jqDIV.hasClass('SUB')) {
+				formToShow = 'SUB';
+				that.nodeToAppData(jqDIV);
+			} else if (jqDIV.hasClass('AND')) {
+				formToShow = 'AND';
+				that.nodeToAppData(jqDIV);
+			} else if (jqDIV.hasClass('OR')) {
+				formToShow = 'OR';
+				that.nodeToAppData(jqDIV);
+			} else {
+				console.warn(jqDIV.attr('class'), 'property form not implemented');
+			}
+			if (formToShow !== '') {
+				$(`#prop_${formToShow}`).removeClass('nodisplay');
+				$(`#prop_${formToShow} .${that.tpl_mode}`).removeClass('nodisplay');
+			}
+		}
+	}
+
+	focusOnNode(jqNodeDIV: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.lastFocusOnJqNode = jqNodeDIV;
+		that.lastSetNoteJq = jqNodeDIV;
+		that.justCreatedJqNode = null;
+		that.justCreatedShape = null;
+
+		//TODO: focusOnNode show property form
+		console.log('FocusOnNode', jqNodeDIV);
+		if (jqNodeDIV !== null) {
+			that.showPropForm(jqNodeDIV);
+		} else {
+			that.showPropForm(null);
+		}
+	}
+
+	/**
+	 * 切换备注编辑器全屏显示状态时顶部菜单栏的显示,编辑器全屏,隐藏菜单栏,编辑器复原,恢复菜单栏
+	 */
+
+	/**
+	 * 切换备注编辑器显示与否
+	 *
+	 */
+
+	/**
+	 * 把备注编辑器的内容设置为节点的备注
+	 *
+	 */
+
+	log(...info: any[]) {
+		console.log('LOG>', ...info);
+	}
+	error(...info: any[]) {
+		if (this.loglevel >= this.LOGLEVEL_ERROR) console.log('ERROR>', ...info);
+	}
+	warn(...info: any[]) {
+		if (this.loglevel >= this.LOGLEVEL_WARN) console.log('WARN >', ...info);
+	}
+	info(...info: any[]) {
+		if (this.loglevel >= this.LOGLEVEL_INFO) console.log('INFO >', ...info);
+	}
+	debug(...info: any[]) {
+		if (this.loglevel >= this.LOGLEVEL_DEBUG) console.log('DEBUG>', ...info);
+	}
+	detail(...info: any[]) {
+		if (this.loglevel >= this.LOGLEVEL_DETAIL) console.log('DETAL>', ...info);
+	}
+	logKey(...info: any[]) {
+		if (this.loglevel >= this.LOGLEVEL_KEY) console.log('KEY>', ...info);
+	}
+
+	scrLog(msg: string, staytime = 5000) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		const parent = $('#MSG').parent();
+		const msgDIV = $('#MSG');
+		let cloneDIV = $('#fadeoutmsg');
+		if (cloneDIV.length > 0) {
+			if (that.msgTimer) {
+				clearTimeout(that.msgTimer);
+				that.msgTimer = undefined;
+			}
+			cloneDIV.remove();
+		}
+		cloneDIV = msgDIV.clone().appendTo(parent);
+		cloneDIV.removeClass('noshow');
+		cloneDIV.attr('id', 'fadeoutmsg');
+		cloneDIV.html(msg);
+		that.msgTimer = setTimeout(() => {
+			cloneDIV.animate(
+				{
+					opacity: 0
+				},
+				500,
+				async function () {
+					cloneDIV.remove();
+				}
+			);
+		}, staytime);
+	}
+
+	getConnectorPoints(from: Point, to: Point, rad: number) {
+		const dx = to.x - from.x;
+		const dy = to.y - from.y;
+		const angle = Math.atan2(-dy, dx);
+
+		const radius = rad;
+
+		return [
+			from.x + -radius * Math.cos(angle + Math.PI),
+			from.y + radius * Math.sin(angle + Math.PI),
+			to.x + -radius * Math.cos(angle),
+			to.y + radius * Math.sin(angle)
+		];
+	}
+
+	replaceNodeInSelectedDIVs(jqDIV: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		for (let i = 0; i < that.selectedDIVs.length; i++) {
+			if (that.selectedDIVs[i].attr('id') === jqDIV.attr('id')) {
+				that.selectedDIVs[i] = jqDIV;
+			}
+		}
+	}
+
+	calculateNodeConnectPoints(jqDIV: myJQuery) {
+		const divLeft = KFKclass.unpx(jqDIV.css('left'));
+		const divTop = KFKclass.unpx(jqDIV.css('top'));
+		const divWidth = KFKclass.unpx(jqDIV.css('width'));
+		const divHeight = KFKclass.unpx(jqDIV.css('height'));
+		console.log(`${jqDIV.attr('id')}: ${divLeft}  ${divTop} ${divWidth} ${divHeight}`);
+
+		const pos = {
+			center: {
+				x: divLeft + divWidth * 0.5,
+				y: divTop + divHeight * 0.5
+			},
+			points: [
+				{
+					x: divLeft,
+					y: divTop + divHeight * 0.5
+				},
+				{
+					x: divLeft + divWidth * 0.5,
+					y: divTop
+				},
+				{
+					x: divLeft + divWidth,
+					y: divTop + divHeight * 0.5
+				},
+				{
+					x: divLeft + divWidth * 0.5,
+					y: divTop + divHeight
+				}
+			]
+		};
+		return pos;
+	}
+
+	//eslint-disable-next-line
+	async drawConnect(
+		A: myJQuery,
+		B: myJQuery,
+		caseValue: string,
+		_posLimitA = [0, 1, 2, 3], //eslint-disable-line
+		_posLimitB = [0, 1, 2, 3], //eslint-disable-line
+		drawLine = true
+	) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		const APos = that.calculateNodeConnectPoints(A);
+		const BPos = that.calculateNodeConnectPoints(B);
+		let AIndex = 0;
+		let BIndex = 0;
+		/*
   //找两个节点的4个连接点中，连接距离最短的两个连接点，一个属于from节点，一个属于to节点
-  let shortestDistance = KFK.distance(APos.points[0], BPos.points[0]);
+  let shortestDistance = that.distance(APos.points[0], BPos.points[0]);
   for (let i = 0; i < APos.points.length; i++) {
     if (posLimitA.indexOf(i) < 0) continue;
     fromPoint = APos.points[i];
     for (let j = 0; j < BPos.points.length; j++) {
       if (posLimitB.indexOf(j) < 0) continue;
       toPoint = BPos.points[j];
-      let tmp_drawConnect_distance = KFK.distance(fromPoint, toPoint);
+      let tmp_drawConnect_distance = that.distance(fromPoint, toPoint);
       if (tmp_drawConnect_distance < shortestDistance) {
         shortestDistance = tmp_drawConnect_distance;
         AIndex = i;
@@ -612,14 +1210,14 @@ KFK.drawConnect = async function (
   }
   */
 
-  if (APos.points[0].x > BPos.points[2].x) {
-    AIndex = 0;
-    BIndex = 2;
-  } else if (APos.points[2].x < BPos.points[0].x) {
-    AIndex = 2;
-    BIndex = 0;
-  } else if (APos.points[1].y > BPos.points[3].y) {
-    /*
+		if (APos.points[0].x > BPos.points[2].x) {
+			AIndex = 0;
+			BIndex = 2;
+		} else if (APos.points[2].x < BPos.points[0].x) {
+			AIndex = 2;
+			BIndex = 0;
+		} else if (APos.points[1].y > BPos.points[3].y) {
+			/*
     if (APos.points[2].x < BPos.points[1].x) {
       AIndex = 2;
       BIndex = 3;
@@ -631,10 +1229,10 @@ KFK.drawConnect = async function (
       BIndex = 3;
     }
     */
-    AIndex = 1;
-    BIndex = 3;
-  } else if (APos.points[3].y < BPos.points[1].y) {
-    /*
+			AIndex = 1;
+			BIndex = 3;
+		} else if (APos.points[3].y < BPos.points[1].y) {
+			/*
     if (APos.points[2].x < BPos.points[1].x) {
       AIndex = 2;
       BIndex = 1;
@@ -646,5403 +1244,4968 @@ KFK.drawConnect = async function (
       BIndex = 1;
     }
     */
-    AIndex = 3;
-    BIndex = 1;
-  } else {
-    // 不画线
-    AIndex = 0;
-    BIndex = -1;
-  }
+			AIndex = 3;
+			BIndex = 1;
+		} else {
+			// 不画线
+			AIndex = 0;
+			BIndex = -1;
+		}
 
-  if (drawLine && BIndex >= 0) {
-    //只有当BIndex>=0时画线
-    await KFK.svgConnectNode(
-      A.attr("id"),
-      B.attr("id"),
-      AIndex,
-      BIndex,
-      APos.points[AIndex].x,
-      APos.points[AIndex].y,
-      BPos.points[BIndex].x,
-      BPos.points[BIndex].y, caseValue, {}
-    );
-  }
-  return [AIndex, BIndex];
-};
+		if (drawLine && BIndex >= 0) {
+			//只有当BIndex>=0时画线
+			console.log(`svgConnectNode from ${A.attr('id')}:${AIndex} to ${B.attr('id')}:${BIndex}`);
+			await that.svgConnectNode(
+				A.attr('id'),
+				B.attr('id'),
+				AIndex,
+				BIndex,
+				APos.points[AIndex].x,
+				APos.points[AIndex].y,
+				BPos.points[BIndex].x,
+				BPos.points[BIndex].y,
+				caseValue
+			);
+		}
+		return [AIndex, BIndex];
+	}
 
-KFK.yarkLinkNode = function (jqDIV, shiftKey, text) {
-  if (KFK.shapeDragging) return;
-  if (KFK.nodeLocked(jqDIV)) return;
-  KFK.tmpPos = KFK.calculateNodeConnectPoints(jqDIV);
-  KFK.linkPosNode.push(jqDIV);
-  KFK.procLinkNode(shiftKey, text);
-};
+	yarkLinkNode(jqDIV: myJQuery, shiftKey: boolean) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.shapeDragging) return;
+		if (that.nodeLocked(jqDIV)) return;
+		that.tmpPos = that.calculateNodeConnectPoints(jqDIV);
+		that.linkPosNode.push(jqDIV);
+		that.procLinkNode(shiftKey);
+	}
 
-KFK.yarkJumpNode = async function (jqDIV, shiftKey, text) {
-  if (KFK.shapeDragging) return;
-  if (KFK.nodeLocked(jqDIV)) return;
-  KFK.jumpNodes.push(jqDIV);
-  await KFK.procJumpNode();
-};
+	async yarkJumpNode(jqDIV: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.shapeDragging) return;
+		if (that.nodeLocked(jqDIV)) return;
+		that.jumpNodes.push(jqDIV);
+		await that.procJumpNode();
+	}
 
-KFK.cancelLinkNode = function () {
-  KFK.cancelTempLine();
-  KFK.linkPosNode.splice(0, 2);
-  if (KFK.lockTool === false) KFK.setMode("pointer");
-};
+	cancelLinkNode() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.cancelTempLine();
+		that.linkPosNode.splice(0, 2);
+		if (that.lockTool === false) that.setMode('POINTER');
+	}
 
-/**
- * Tool link, tool connect
- */
-KFK.procLinkNode = function (shiftKey, text) {
-  // Tool link, tool connect
-  // connect two nodes
-  // connect two nodes
-  if (KFK.linkPosNode.length < 2) {
-    KFK.showNodeMessage(KFK.linkPosNode[0], "A点选定，请继续点选B点");
-    return;
-  } else if (KFK.linkPosNode[0].attr("id") === KFK.linkPosNode[1].attr("id")) {
-    KFK.linkPosNode.splice(1, 1);
-    return;
-  }
-  if (KFK.tempSvgLine) KFK.tempSvgLine.hide();
-  KFK.lineTemping = false;
-  KFK.cancelAlreadySelected();
-  KFK.clearNodeMessage();
-  KFK.buildConnectionBetween(KFK.linkPosNode[0], KFK.linkPosNode[1]);
-  KFK.redrawLinkLines(KFK.linkPosNode[0], "connect", false);
-  //看两个节点的Linkto属性，在添加一个连接线后有没有什么变化，
-  //如果有变化，就上传U， 如果没变化，就不用U
-  //没有变化的情况：之前就有从linkPosNode[0]到 linkPosNode[1]的链接存在
-  //有变化的情况：1. 之前不存在； 2. 之前存在方向相反的链接，从linkPosNode[1]到linkPosNode[0]的
-  //以上两种情况中，1会只导致只U第一个； 2会导致U；两端两个节点
+	procLinkNode(shiftKey: boolean) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.linkPosNode.length < 2) {
+			that.showNodeMessage(that.linkPosNode[0], 'A点选定，请继续点选B点');
+			return;
+		} else if (that.linkPosNode[0].attr('id') === that.linkPosNode[1].attr('id')) {
+			that.linkPosNode.splice(1, 1);
+			return;
+		}
+		if (that.tempSvgLine) that.tempSvgLine.hide();
+		that.lineTemping = false;
+		that.cancelAlreadySelected();
+		that.clearNodeMessage();
+		that.buildConnectionBetween(that.linkPosNode[0], that.linkPosNode[1]);
+		that.redrawLinkLines(that.linkPosNode[0], 'connect', false);
+		//看两个节点的Linkto属性，在添加一个连接线后有没有什么变化，
+		//如果有变化，就上传U， 如果没变化，就不用U
+		//没有变化的情况：之前就有从linkPosNode[0]到 linkPosNode[1]的链接存在
+		//有变化的情况：1. 之前不存在； 2. 之前存在方向相反的链接，从linkPosNode[1]到linkPosNode[0]的
+		//以上两种情况中，1会只导致只U第一个； 2会导致U；两端两个节点
 
-  if (!shiftKey) {
-    KFK.linkPosNode.splice(0, 2);
-  } else {
-    KFK.linkPosNode[0] = KFK.linkPosNode[1];
-    KFK.linkPosNode.splice(1, 1);
-  }
-};
+		if (!shiftKey) {
+			that.linkPosNode.splice(0, 2);
+		} else {
+			that.linkPosNode[0] = that.linkPosNode[1];
+			that.linkPosNode.splice(1, 1);
+		}
+	}
 
-KFK.procJumpNode = async function () {
-  if (KFK.jumpNodes.length < 2) {
-    KFK.showNodeMessage(KFK.jumpNodes[0], "起始节点，请选择跳往节点");
-    return;
-  } else if (KFK.jumpNodes[0].attr("id") === KFK.jumpNodes[1].attr("id")) {
-    KFK.jumpNodes.splice(1, 1);
-    return;
-  }
-  KFK.showNodeMessage(
-    KFK.jumpNodes[1],
-    "点原节点右上角跳转，或按f，即可跳转到这里"
-  );
-  let oldDIV = KFK.jumpNodes[0].clone();
-  KFK.jumpNodes[0].attr("jump", KFK.jumpNodes[1].attr("id"));
-  await KFK.syncNodePut(
-    "U",
-    KFK.jumpNodes[0].clone(),
-    "add jump",
-    oldDIV,
-    false,
-    0,
-    1
-  );
-  KFK.jumpNodes.splice(0, 2);
-  KFK.setMode("pointer");
-};
+	async procJumpNode() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.jumpNodes.length < 2) {
+			that.showNodeMessage(that.jumpNodes[0], '起始节点，请选择跳往节点');
+			return;
+		} else if (that.jumpNodes[0].attr('id') === that.jumpNodes[1].attr('id')) {
+			that.jumpNodes.splice(1, 1);
+			return;
+		}
+		that.showNodeMessage(that.jumpNodes[1], '点原节点右上角跳转，或按f，即可跳转到这里');
+		that.jumpNodes[0].attr('jump', that.jumpNodes[1].attr('id'));
+		that.jumpNodes.splice(0, 2);
+		that.setMode('POINTER');
+	}
 
-KFK.clearNodeMessage = function (jqDiv) {
-  if (KFK.nodeMessageTimer) {
-    clearTimeout(KFK.nodeMessageTimer);
-  }
-  $(".nodeMessage").remove();
-};
-KFK.showNodeMessage = function (jqDiv, msg, lastSec = 3) {
-  if (KFK.APP.model.viewConfig.nodemessage === false) return;
-  if (KFK.nodeMessageTimer) {
-    clearTimeout(KFK.nodeMessageTimer);
-    $(".nodeMessage").remove();
-  }
-  let msgDiv = $("<div></div>");
-  msgDiv.addClass("nodeMessage");
-  msgDiv.appendTo(jqDiv);
-  msgDiv.prop("innerHTML", msg);
-  KFK.nodeMessageTimer = setTimeout(() => {
-    msgDiv.remove();
-    KFK.nodeMessageTimer = undefined;
-  }, lastSec * 1000);
-};
+	clearNodeMessage() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.nodeMessageTimer) {
+			clearTimeout(that.nodeMessageTimer);
+		}
+		$('.nodeMessage').remove();
+	}
+	showNodeMessage(jqDiv: JQuery<HTMLElement>, msg: string, lastSec = 3) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.APP.model.viewConfig.nodemessage === false) return;
+		if (that.nodeMessageTimer) {
+			clearTimeout(that.nodeMessageTimer);
+			$('.nodeMessage').remove();
+		}
+		const msgDiv = $('<div></div>');
+		msgDiv.addClass('nodeMessage');
+		msgDiv.appendTo(jqDiv);
+		msgDiv.prop('innerHTML', msg);
+		that.nodeMessageTimer = setTimeout(() => {
+			msgDiv.remove();
+			that.nodeMessageTimer = undefined;
+		}, lastSec * 1000);
+	}
 
-KFK.setShapeToRemember = function (theShape) {
-  KFK.shapeToRemember = theShape.clone();
-  KFK.shapeToRemember.attr("id", theShape.attr("id"));
-  KFK.shapeToRemember.attr("stroke-width", theShape.attr("origin-width"));
-};
+	setShapeToRemember(theShape: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.shapeToRemember = theShape.clone();
+		that.shapeToRemember.attr('id', theShape.attr('id'));
+		that.shapeToRemember.attr('stroke-width', theShape.attr('origin-width'));
+	}
 
-KFK.closePolyPoint = function (x, y, shiftKey) {
-  KFK.polyId = undefined;
-  KFK.drawPoints.splice(0, KFK.drawPoints.length);
+	//shape event
+	addShapeEventListner(theShape: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		//mouseover shape
+		theShape.on('mouseover', (evt: MouseEvent) => {
+			if (that.shapeDragging || that.isFreeHandDrawing) return;
+			that.hoverSvgLine(theShape);
+			const color = theShape.attr('origin-color');
+			that.shapeOriginColor = color;
+			const color1 = that.reverseColor(color);
+			that.onC3 = true;
+			const originWidth = theShape.attr('origin-width');
+			const newWidth =
+				originWidth * 2 > that.CONST.MAX_SHAPE_WIDTH ? originWidth : that.CONST.MAX_SHAPE_WIDTH;
+			if (theShape.hasClass('selected') === false) {
+				theShape.stroke({
+					width: newWidth,
+					color: color1
+				});
+			}
+			if (that.lineLocked(theShape)) {
+				KFKclass.hide($('#linetransformer'));
+				return;
+			}
 
-  let shapeId = KFK.polyShape.attr("id");
-  KFK.addShapeEventListner(KFK.polyShape);
-  KFK.setShapeToRemember(KFK.polyShape);
+			$(document.body).css('cursor', 'pointer');
+			if (theShape.array && theShape.hasClass('kfkline')) {
+				const parr = theShape.array();
+				if (
+					KFKclass.mouseNear(
+						that.C3MousePos(evt),
+						{
+							x: parr[0][0],
+							y: parr[0][1]
+						},
+						20
+					)
+				) {
+					KFKclass.show('#linetransformer');
+					that.moveLinePoint = 'from';
+					that.lineToResize = theShape;
+					that.setShapeToRemember(theShape);
+					that.moveLineMoverTo(
+						that.jc3PosToJc1Pos({
+							x: parr[0][0],
+							y: parr[0][1]
+						})
+					);
+				} else if (
+					KFKclass.mouseNear(
+						that.C3MousePos(evt),
+						{
+							x: parr[1][0],
+							y: parr[1][1]
+						},
+						20
+					)
+				) {
+					KFKclass.show('#linetransformer');
+					that.moveLinePoint = 'to';
+					that.lineToResize = theShape;
+					that.setShapeToRemember(theShape);
+					that.moveLineMoverTo(
+						that.jc3PosToJc1Pos({
+							x: parr[1][0],
+							y: parr[1][1]
+						})
+					);
+				} else {
+					KFKclass.hide('#linetransformer');
+				}
+			}
+		});
+		//mouseout shape
+		theShape.on('mouseout', () => {
+			if (that.shapeDragging === false) {
+				that.hoverSvgLine(null);
+				$(document.body).css('cursor', 'default');
+				if (theShape.hasClass('selected') === false) {
+					theShape.stroke({
+						width: theShape.attr('origin-width'),
+						color: theShape.attr('origin-color')
+					});
+				}
+			}
+		});
+		theShape.on('mousedown', (evt: MouseEvent) => {
+			//that.closeActionLog();
+			if (that.mode === 'lock') {
+				//that.tryToLockUnlock(evt.shiftKey);
+				return;
+			}
 
-  KFK.APP.setData("show", "shape_property", true);
-  KFK.APP.setData("show", "customshape", false);
-  KFK.APP.setData("show", "customline", true);
-  KFK.APP.setData("show", "custombacksvg", false);
-  KFK.APP.setData("show", "customfont", false);
-  KFK.APP.setData("show", "layercontrol", false);
+			that.mousePosToRemember = {
+				x: that.currentMousePos.x,
+				y: that.currentMousePos.y
+			};
+			//begin shape zoom, begin zoom shape
+			if (evt.ctrlKey || evt.metaKey) {
+				that.isZoomingShape = true;
+				//这里必须重新plot一遍，否则，在zoom时会出错
+				if (theShape.array) {
+					const arr = theShape.array();
+					theShape = theShape.plot(arr);
+				}
+				that.shapeToZoom = theShape;
+				that.setShapeToRemember(theShape);
+				that.shapeSizeCenter = {
+					x: that.scalePoint(theShape.cx()),
+					y: that.scalePoint(theShape.cy())
+				};
+				that.shapeSizeOrigin = {
+					w: theShape.width(),
+					h: theShape.height()
+				};
+				that.shapeZoomStartPoint = {
+					x: that.scalePoint(that.scrXToJc3X(evt.clientX)),
+					y: that.scalePoint(that.scrYToJc3Y(evt.clientY))
+				};
+				//let dis = that.distance(that.shapeSizeCenter, that.shapeZoomStartPoint);
+			} else {
+				//begin drag shape, begin shape drag
+				that.isZoomingShape = false;
+				that.shapeToDrag = theShape;
+				that.setShapeToRemember(theShape);
+				that.shapeDraggingStartPoint = {
+					x: that.scalePoint(that.scrXToJc3X(evt.clientX)),
+					y: that.scalePoint(that.scrYToJc3Y(evt.clientY))
+				};
+				that.shapeFirstDraggingStartPoint = {
+					x: that.scalePoint(that.scrXToJc3X(evt.clientX)),
+					y: that.scalePoint(that.scrYToJc3Y(evt.clientY))
+				};
+			}
+		});
+		//click line click shape
+		theShape.on('click', (evt: MouseEvent) => {
+			evt.stopImmediatePropagation();
+			evt.stopPropagation();
+			evt.preventDefault();
+			that.hoverSvgLine(theShape);
+			if (that.anyLocked(theShape)) return;
+			// if (that.firstShown['right'] === false && that.docIsNotReadOnly()) {
+			// KFKclass.show('#right');
+			// that.firstShown['right'] = true;
+			// }
+			// that.shapeToDrag = null;
+			that.focusOnNode(null);
+			that.APP.setData('show', 'shape_property', true);
+			that.APP.setData('show', 'customshape', false);
+			that.APP.setData('show', 'customline', true);
+			that.APP.setData('show', 'custombacksvg', false);
+			that.APP.setData('show', 'customfont', false);
+			that.APP.setData('show', 'layercontrol', false);
 
-  KFK.pickedShape = KFK.polyShape;
-  let color = KFK.polyShape.attr("origin-color");
-  let width = KFK.polyShape.attr("origin-width");
-  let linecap = KFK.polyShape.attr("stroke-linecap");
-  $("#lineColor").spectrum("set", color);
-  $("#spinner_line_width").spinner("value", width);
+			that.setShapeToRemember(theShape);
+			that.selectShape(theShape);
 
-  KFK.syncLinePut("C", KFK.polyShape, "create new", null, false);
-};
+			that.pickedShape = theShape;
+			const color = theShape.attr('origin-color');
+			const width = theShape.attr('origin-width');
+			const linecap = theShape.attr('stroke-linecap');
+			//$('#lineColor').spectrum('set', that.shapeOriginColor);
+			$('#spinner_line_width').spinner('value', width);
+			const lineSetting = {
+				color: color,
+				width: width,
+				linecap: linecap === 'round' ? true : false
+			};
+			that.APP.setData('model', 'line', lineSetting);
+		});
+	}
 
-KFK.yarkShapePoint = function (x, y, shiftKey) {
-  if (KFK.shapeDragging) return;
-  if (KFK.isFreeHandDrawing) return;
+	closePolyPoint() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.polyId = undefined;
+		that.drawPoints.splice(0, that.drawPoints.length);
 
-  //如果这是划线时，所点的第二个点(此时，开始画线)
-  if (KFK.drawMode === "line" && KFK.drawPoints.length === 1) {
-    //如果按着alt键，则应该画直线
-    if (KFK.KEYDOWN.alt) {
-      //如果更起始点的x距离比y距离更小，则画垂直线，否则画水平线
-      if (
-        Math.abs(x - KFK.drawPoints[0].center.x) <
-        Math.abs(y - KFK.drawPoints[0].center.y)
-      ) {
-        //画垂直线(x相等)
-        x = KFK.drawPoints[0].center.x;
-      } else {
-        //画水平线(y相等)
-        y = KFK.drawPoints[0].center.y;
-      }
-    }
-  }
-  KFK.drawPoints.push({
-    type: "point",
-    center: {
-      x: x,
-      y: y,
-    },
-    points: [{
-      x: x,
-      y: y,
-    },],
-  });
-  KFK.procDrawShape(shiftKey);
-};
-KFK.procDrawShape = function (shiftKey) {
-  if (KFK.drawPoints.length < 2) {
-    return;
-  } else {
-    if (KFK.tempShape) KFK.tempShape.hide();
-    KFK.lineTemping = false;
-  }
-  if (["line", "rectangle", "ellipse"].indexOf(KFK.drawMode) >= 0)
-    KFK.justCreatedShape = KFK.svgDrawShape(
-      KFK.drawMode,
-      KFK.myuid(),
-      KFK.drawPoints[0].center.x,
-      KFK.drawPoints[0].center.y,
-      KFK.drawPoints[1].center.x,
-      KFK.drawPoints[1].center.y, {
-      color: KFK.YIQColorAux || KFK.APP.model.svg[KFK.drawMode].color,
-      width: KFK.APP.model.svg[KFK.drawMode].width,
-      linecap: KFK.APP.model.svg[KFK.drawMode].linecap ? "round" : "square",
-    }
-    );
-  else if (["polyline", "polygon"].indexOf(KFK.drawMode) >= 0) {
-    if (KFK.polyId === undefined) {
-      KFK.polyId = KFK.myuid();
-    }
-    KFK.justCreatedShape = KFK.svgDrawPoly(KFK.drawMode, KFK.polyId, {
-      color: KFK.YIQColorAux || KFK.APP.model.svg[KFK.drawMode].color,
-      width: KFK.APP.model.svg[KFK.drawMode].width,
-      linecap: KFK.APP.model.svg[KFK.drawMode].linecap ? "round" : "square",
+		that.addShapeEventListner(that.polyShape);
+		that.setShapeToRemember(that.polyShape);
+
+		that.APP.setData('show', 'shape_property', true);
+		that.APP.setData('show', 'customshape', false);
+		that.APP.setData('show', 'customline', true);
+		that.APP.setData('show', 'custombacksvg', false);
+		that.APP.setData('show', 'customfont', false);
+		that.APP.setData('show', 'layercontrol', false);
+
+		that.pickedShape = that.polyShape;
+		//const _color = that.polyShape.attr('origin-color');
+		const width = that.polyShape.attr('origin-width');
+		//let linecap = that.polyShape.attr('stroke-linecap');
+		//$('#lineColor').spectrum('set', color);
+		$('#spinner_line_width').spinner('value', width);
+	}
+
+	yarkShapePoint(x: number, y: number) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.shapeDragging) return;
+		if (that.isFreeHandDrawing) return;
+
+		//如果这是划线时，所点的第二个点(此时，开始画线)
+		if (that.drawMode === 'line' && that.drawPoints.length === 1) {
+			//如果按着alt键，则应该画直线
+			if (that.KEYDOWN.alt) {
+				//如果更起始点的x距离比y距离更小，则画垂直线，否则画水平线
+				if (Math.abs(x - that.drawPoints[0].center.x) < Math.abs(y - that.drawPoints[0].center.y)) {
+					//画垂直线(x相等)
+					x = that.drawPoints[0].center.x;
+				} else {
+					//画水平线(y相等)
+					y = that.drawPoints[0].center.y;
+				}
+			}
+		}
+		that.drawPoints.push({
+			type: 'point',
+			center: {
+				x: x,
+				y: y
+			},
+			points: [
+				{
+					x: x,
+					y: y
+				}
+			]
+		});
+		that.procDrawShape();
+	}
+
+	svgDrawPoly(shapeType: string, id: string, option: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		const shapeClass = 'kfkshape';
+		const shapeId = 'shape_' + id;
+		let theShape = that.svgDraw.findOne(`.${shapeId}`);
+		try {
+			theShape.remove();
+		} catch (error) {} //eslint-disable-line
+
+		const arr = [];
+		for (let i = 0; i < that.drawPoints.length; i++) {
+			arr.push([that.drawPoints[i].center.x, that.drawPoints[i].center.y]);
+		}
+		if (shapeType === 'polyline') theShape = that.svgDraw.polyline(arr).fill('none').stroke(option);
+		else theShape = that.svgDraw.polygon(arr).fill('none').stroke(option);
+
+		theShape.attr('id', shapeId);
+		theShape
+			.addClass(shapeClass)
+			.addClass(shapeId)
+			.addClass('kfk' + shapeType)
+			.stroke(option);
+		theShape.attr('shapetype', shapeType);
+		theShape.attr('origin-width', option.width);
+		theShape.attr('origin-color', option.color);
+		// that.addShapeEventListner(theShape);
+		return theShape;
+	}
+
+	procDrawShape() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.drawPoints.length < 2) {
+			return;
+		} else {
+			if (that.tempShape) that.tempShape.hide();
+			that.lineTemping = false;
+		}
+		if (['line', 'rectangle', 'ellipse'].indexOf(that.drawMode) >= 0)
+			that.justCreatedShape = that.svgDrawShape(
+				that.drawMode,
+				that.myuid(),
+				that.drawPoints[0].center.x,
+				that.drawPoints[0].center.y,
+				that.drawPoints[1].center.x,
+				that.drawPoints[1].center.y,
+				{
+					color: that.YIQColorAux || that.APP.model.svg[that.drawMode].color,
+					width: that.APP.model.svg[that.drawMode].width,
+					linecap: that.APP.model.svg[that.drawMode].linecap ? 'round' : 'square'
+				}
+			);
+		else if (['polyline', 'polygon'].indexOf(that.drawMode) >= 0) {
+			if (that.polyId === undefined) {
+				that.polyId = that.myuid();
+			}
+			that.justCreatedShape = that.svgDrawPoly(that.drawMode, that.polyId, {
+				color: that.YIQColorAux || that.APP.model.svg[that.drawMode].color,
+				width: that.APP.model.svg[that.drawMode].width,
+				linecap: that.APP.model.svg[that.drawMode].linecap ? 'round' : 'square'
+			});
+			that.polyShape = that.justCreatedShape;
+		}
+
+		const theShape = that.justCreatedShape;
+		that.setShapeToRemember(theShape);
+
+		that.APP.setData('show', 'shape_property', true);
+		that.APP.setData('show', 'customshape', false);
+		that.APP.setData('show', 'customline', true);
+		that.APP.setData('show', 'custombacksvg', false);
+		that.APP.setData('show', 'customfont', false);
+		that.APP.setData('show', 'layercontrol', false);
+
+		that.pickedShape = theShape;
+		//const color = theShape.attr('stroke');
+		const width = theShape.attr('origin-width');
+		//let linecap = theShape.attr('stroke-linecap');
+		//eslint-disable-next-line
+		//$('#lineColor').spectrum('set', color);
+		$('#spinner_line_width').spinner('value', width);
+
+		if (['line', 'rectangle', 'ellipse'].indexOf(that.drawMode) >= 0) {
+			that.drawPoints.splice(0, 2);
+		}
+	}
+
+	addLinkTo(jq1: myJQuery, jq2: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		const id1 = jq1.attr('id');
+		const id2 = jq2.attr('id');
+		const filter = `.link[from="${id1}"][to="${id2}"]`;
+		console.log(filter);
+		const links = that.tpl.find(filter);
+		if (links.length > 0) {
+			return;
+		} else {
+			that.tpl.append(`<div class="link" from="${id1}" to="${id2}"></div>`);
+		}
+	}
+	/**
+	 * 断掉两个节点之间的连接
+	 * @param jq 连接的from节点
+	 * @param idToRemove 连接的to节点的id
+	 */
+	removeLinkTo(jq: myJQuery, idToRemove: string) {
+		const str = jq.attr('linkto');
+		const arr = KFKclass.stringToArray(str);
+		//如对手节点在反方向存在，就把反方向的对手节点去掉
+		const index = arr.indexOf(idToRemove);
+		if (index >= 0) {
+			arr.splice(index, 1);
+			if (arr.length > 0) jq.attr('linkto', arr.join(','));
+			else jq.removeAttr('linkto');
+		}
+	}
+	buildConnectionBetween(jq1: myJQuery, jq2: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.addLinkTo(jq1, jq2);
+		that.removeLinkTo(jq2, jq1.attr('id'));
+	}
+
+	/**
+	 * 获得一个节点的所有父节点
+	 * @param jq 子节点
+	 * @return 一个包含所有父节点的数组
+	 */
+	getParent(jq: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		const ret = [];
+		const myId = jq.attr('id');
+		that.JC3.find('.kfknode').each((_index: any, aNode: any) => {
+			const jqConnectFrom = $(aNode);
+			if (jqConnectFrom.attr('id') !== myId) {
+				const arr = KFKclass.stringToArray(jqConnectFrom.attr('linkto'));
+				if (arr.indexOf(myId) >= 0) ret.push(jqConnectFrom);
+			}
+		});
+		return ret;
+	}
+
+	/**
+	 * 获得一个节点的所有子节点
+	 * @param jq 父节点
+	 * @return 所有子节点
+	 */
+	getChildren(jq: myJQuery) {
+		const str = jq.attr('linkto');
+		if (KFKclass.NotSet(str)) return [];
+		let arr = KFKclass.stringToArray(str);
+		arr = arr.filter((id) => {
+			if ($('#' + id).length > 0) {
+				return true;
+			} else {
+				return false;
+			}
+		});
+		const ret = arr.map((id) => {
+			return $('#' + id);
+		});
+		return ret;
+	}
+
+	/**
+	 * 两个节点之间是否有连接？
+	 * @param jq1  from节点
+	 * @param jq2  to节点
+	 */
+	hasConnection(jq1: myJQuery, jq2: myJQuery) {
+		const str = jq1.attr('linkto');
+		if (KFKclass.NotSet(str)) return false;
+		const arr = KFKclass.stringToArray(str);
+
+		let linkToId = '';
+		if (typeof jq2 === 'string') {
+			linkToId = jq2;
+		} else {
+			linkToId = jq2.attr('id');
+		}
+
+		const index = arr.indexOf(linkToId);
+		return index >= 0;
+	}
+
+	distance(p1: Point, p2: Point) {
+		return Math.sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
+	}
+
+	getZIndex(jqDiv: myJQuery) {
+		let zz = parseInt(jqDiv.css('z-index'));
+		zz = isNaN(zz) ? 0 : zz;
+		return zz;
+	}
+	setZIndex(jqDiv: myJQuery, zz: any) {
+		jqDiv.css('z-index', zz);
+	}
+	//unselect all, deselect all
+	cancelAlreadySelected() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		while (that.selectedDIVs.length > 0) {
+			that.deselectNode(that.selectedDIVs[0]);
+		}
+		that.selectedDIVs = [];
+		that.focusOnNode(null);
+	}
+
+	getLineIdFromString(str: string) {
+		const m = str.match(/id\s*=\s*('|")([^"]+)('|")/);
+		if (m) {
+			return m[2];
+		} else return null;
+	}
+
+	async setNodeEventHandler(jqNodeDIV: myJQuery, callback?: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		//drag node
+		try {
+			const click = {
+				x: 0,
+				y: 0
+			};
+			jqNodeDIV.off('mouseover mouseout');
+			jqNodeDIV.on('mouseover', () => {
+				that.driveNodeBalls(jqNodeDIV);
+			});
+			jqNodeDIV.on('mouseout', async () => {
+				await that.stopNodeBalls();
+			});
+			jqNodeDIV.draggable({
+				scroll: true,
+				containment: 'parent',
+				// eslint-disable-next-line @typescript-eslint/no-unused-vars
+				start: (evt: MouseEvent, _ui: any) => {
+					that.stopNodeBalls();
+					click.x = evt.clientX;
+					click.y = evt.clientY;
+					that.fromJQ = jqNodeDIV.clone();
+					evt.stopImmediatePropagation();
+					evt.stopPropagation();
+					that.originZIndex = that.getZIndex(jqNodeDIV);
+					jqNodeDIV.css('z-index', '99999');
+					that.dragging = true;
+					that.positionBeforeDrag = {
+						x: that.divLeft(jqNodeDIV),
+						y: that.divTop(jqNodeDIV)
+					};
+				},
+				drag: (
+					evt: MouseEvent,
+					ui: { originalPosition: any; position: { left: number; top: number } }
+				) => {
+					const original = ui.originalPosition;
+
+					// jQuery will simply use the same object we alter here
+					ui.position = {
+						left: (evt.clientX - click.x + original.left) / that.scaleRatio,
+						top: (evt.clientY - click.y + original.top) / that.scaleRatio
+					};
+				},
+				stop: async (evt: MouseEvent) => {
+					that.dragging = false;
+					await that.stopNodeBalls();
+
+					//如果做了这个标记，则不再做U操作，否则，节点又会被同步回来
+					/*
+					if (jqNodeDIV.shouldBeDeleted === true) {
+						return;
+					}
+					*/
+					if (that.updateable(jqNodeDIV) === false) {
+						console.log('upateable === false');
+						return;
+					}
+					if (that.APP.model.viewConfig.snap) {
+						const newPos = that.DivStyler.snapToGrid(jqNodeDIV);
+						that.DivStyler.moveDivTo(jqNodeDIV, newPos.x, newPos.y);
+					}
+					if (that.AdvOps.existsInGroup(that.selectedDIVs, jqNodeDIV) === false) {
+						that.cancelAlreadySelected();
+					}
+					that.startTrx();
+					try {
+						const deltaOfDragging = {
+							x: that.divLeft(jqNodeDIV) - that.positionBeforeDrag.x,
+							y: that.divTop(jqNodeDIV) - that.positionBeforeDrag.y
+						};
+
+						const tobeMovedNodes = [];
+						//如果按住了shiftkey, 则只移动当前node, 不移动其他被选定Node
+						//move nodes, move divs, drag divs end, end drag divs
+						// dragend drag end
+						if (!evt.shiftKey) {
+							//拖动其它被同时选中的对象
+							that.shouldMovedInParalles = [];
+							const treeMap = new Map();
+							for (let i = 0; i < that.selectedDIVs.length; i++) {
+								if (that.selectedDIVs[i].attr('id') !== jqNodeDIV.attr('id')) {
+									that.shouldMovedInParalles.push(that.selectedDIVs[i]);
+								}
+							}
+
+							for (let i = 0; i < that.selectedDIVs.length; i++) {
+								await that.AdvOps.getDescendants(
+									that.selectedDIVs[i],
+									that.selectedDIVs[i],
+									that.shouldMovedInParalles,
+									treeMap
+								);
+							}
+
+							if (that.shouldMovedInParalles.length > 0) {
+								that.debug('others should be moved');
+								//要移动的个数是被选中的全部
+								for (let i = 0; i < that.shouldMovedInParalles.length; i++) {
+									//虽然这出跳过了被拖动的节点，但在后面这个节点一样要被移动
+									//因此，所有被移动的节点数量就是所有被选中的节点数量
+									if (that.updateable(that.shouldMovedInParalles[i])) {
+										const tmp = that.shouldMovedInParalles[i].clone();
+										that.DivStyler.moveDivByDelta(
+											that.shouldMovedInParalles[i],
+											deltaOfDragging.x,
+											deltaOfDragging.y
+										);
+										tobeMovedNodes.push({
+											from: tmp,
+											to: that.shouldMovedInParalles[i]
+										});
+									}
+								}
+								for (let i = 0; i < that.shouldMovedInParalles.length; i++) {
+									that.redrawLinkLines(that.shouldMovedInParalles[i], 'codrag', true);
+								}
+							}
+						}
+
+						that.afterDragging = true;
+						jqNodeDIV.css('z-index', that.originZIndex);
+						that.originZIndex = 1;
+						//节点移动后，对连接到节点上的连接线重新划线
+						that.redrawLinkLines(jqNodeDIV, 'after moving');
+						that.setSelectedNodesBoundingRect();
+
+						tobeMovedNodes.push({
+							from: that.fromJQ,
+							to: jqNodeDIV
+						});
+					} finally {
+						console.log('END DRAG TRX');
+						that.yarkOpHistory({
+							obj: 'node',
+							from: that.fromJQ.clone(),
+							to: jqNodeDIV.clone()
+						});
+						that.onChange('Dragged');
+						that.focusOnNode(jqNodeDIV);
+						that.endTrx();
+					}
+				}
+			});
+		} catch (error) {
+			console.error(error);
+		}
+
+		try {
+			jqNodeDIV.hover(
+				() => {
+					$(document.body).css('cursor', 'pointer');
+					that.hoverJqDiv(jqNodeDIV);
+					that.onC3 = true;
+				},
+				() => {
+					$(document.body).css('cursor', 'default');
+					// jqNodeDIV.resizable('disable');
+					that.hoverJqDiv(null);
+					that.onC3 = true;
+				}
+			);
+		} catch (error) {
+			console.error(error);
+		}
+
+		try {
+			//防止点在节点上，以后，画出框选框
+			jqNodeDIV.mousedown((evt: MouseEvent) => {
+				evt.stopImmediatePropagation();
+				evt.stopPropagation();
+			});
+		} catch (error) {
+			console.error(error);
+		}
+		//click node
+		//click on node
+		try {
+			jqNodeDIV.click(async (evt: MouseEvent) => {
+				KFKclass.hide($('.clickOuterToHide'));
+				/*
+			if (that.edittingJQ) {
+				await that.handleOutsideClick(evt);
+			}
+			*/
+
+				that.pickedShape = null;
+				that.afterDragging = false;
+				that.afterResizing = false;
+				evt.stopImmediatePropagation();
+				evt.stopPropagation();
+				that.focusOnNode(jqNodeDIV);
+				if (that.mode === 'POINTER') {
+					that.selectNodeOnClick(jqNodeDIV, evt.shiftKey);
+					console.log('Set node property here ...');
+				} else if (that.mode === 'CONNECT') {
+					if (that.afterDragging === false) {
+						that.yarkLinkNode(jqNodeDIV, evt.shiftKey);
+					} else {
+						that.afterDragging = true;
+					}
+					evt.stopImmediatePropagation();
+					evt.stopPropagation();
+					evt.preventDefault();
+					return;
+				} else {
+					that.setMode('POINTER');
+				}
+			});
+		} catch (error) {
+			console.error(error);
+		}
+
+		try {
+			//dblclick to edit
+			jqNodeDIV.dblclick(async function (evt: MouseEvent) {
+				await that.procNodeDoubleClick(evt, jqNodeDIV);
+			});
+		} catch (error) {
+			console.error(error);
+		}
+
+		if (callback) await callback();
+	}
+
+	async undo() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		console.log('that.undo');
+		if (that.opz < 0) {
+			console.log('undo 到头了');
+			return;
+		}
+		console.log('UNDO....');
+		const pair = that.opstack[that.opz];
+		if (pair.obj === 'node') {
+			if (pair.from !== null && pair.to !== null) {
+				const nodeId = pair.to.attr('id');
+				let jqNode = that.JC3.find(`#${nodeId}`);
+				jqNode.prop('outerHTML', pair.from.prop('outerHTML'));
+				jqNode = that.JC3.find(`#${nodeId}`);
+				//that.addSvgLayer();
+				await that.setNodeEventHandler(jqNode);
+				await that.redrawLinkLines(jqNode, 'undo', true);
+			} else if (pair.from === null && pair.to !== null) {
+				//A create
+				const nodeId = pair.to.attr('id');
+				const jqNode = that.JC3.find(`#${nodeId}`);
+				await that.cleanUpConnection(jqNode, true);
+				jqNode.remove();
+			} else if (pair.from !== null && pair.to === null) {
+				//A delete
+				const nodeId = pair.from.attr('id');
+				that.JC3.append(pair.from);
+				const jqNode = that.JC3.find(`#${nodeId}`);
+				await that.setNodeEventHandler(jqNode);
+				await that.redrawLinkLines(jqNode, 'undo', true);
+			}
+		} else if (pair.obj === 'link') {
+			//对连接的操作
+			if (pair.from !== null && pair.to === null) {
+				const fromNodeId = pair.from.attr('from');
+				//let toNodeId = pair.from.attr('to');
+				const jqFrom = that.JC3.find(`#${fromNodeId}`);
+				if (jqFrom && jqFrom.length > 0) {
+					await that.tpl.append(pair.from);
+					await that.redrawLinkLines(jqFrom, 'undo', false);
+				}
+			}
+		}
+		that.opz = that.opz - 1;
+		that.onChange('Undo');
+	}
+
+	async redo() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		console.log('that.redo');
+		if (that.opz >= that.opstack.length - 1) {
+			console.log('redo 到头了');
+			return;
+		}
+		that.opz = that.opz + 1;
+		const pair = that.opstack[that.opz];
+		//对节点的操作
+		if (pair.obj === 'node') {
+			if (pair.from !== null && pair.to !== null) {
+				const nodeId = pair.to.attr('id');
+				let jqNode = that.JC3.find(`#${nodeId}`);
+				jqNode.prop('outerHTML', pair.to.prop('outerHTML'));
+				jqNode = that.JC3.find(`#${nodeId}`);
+				await that.setNodeEventHandler(jqNode);
+				await that.redrawLinkLines(jqNode, 'redo', true);
+			} else if (pair.from === null && pair.to !== null) {
+				const nodeId = pair.to.attr('id');
+				that.JC3.append(pair.to);
+				const jqNode = that.JC3.find(`#${nodeId}`);
+				await that.setNodeEventHandler(jqNode);
+				await that.redrawLinkLines(jqNode, 'redo', true);
+			} else if (pair.from !== null && pair.to === null) {
+				const nodeId = pair.from.attr('id');
+				const jqNode = that.JC3.find(`#${nodeId}`);
+				await that.cleanUpConnection(jqNode, true);
+				jqNode.remove();
+			}
+		} else if (pair.obj === 'link') {
+			//对连接的操作
+			if (pair.from !== null && pair.to === null) {
+				const fromNodeId = pair.from.attr('from');
+				const toNodeId = pair.from.attr('to');
+				const connectId = `connect_${fromNodeId}_${toNodeId}`;
+				await that.removeConnectById(connectId);
+			}
+		}
+		that.onChange('Redo');
+	}
+
+	initLayout() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.debug('...initLayout');
+		that.JC1 = $('#C1');
+		that.C1 = el(that.JC1);
+		that.JS1 = $('#S1');
+		that.S1 = el(that.JS1);
+		that.JC1.css({
+			width: KFKclass.px(that.PageWidth * (that.PageNumberHori + 2)),
+			height: KFKclass.px(that.PageHeight * (that.PageNumberVert + 2))
+		});
+	}
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	async makeImageDiv(_fileId: string, _x: number, _y: number, _url: string) {
+		console.log('makeImageDiv not implemented');
+	}
+
+	async placeNodeOnClick(evt: MouseEvent) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.isEditting || that.resizing || that.dragging) {
+			return;
+		}
+		evt.preventDefault();
+		KFKclass.hide($('.clickOuterToHide'));
+		if (that.ignoreClick) return;
+
+		// that.focusOnNode(null);
+		that.justCreatedJqNode = null;
+		that.justCreatedShape = null;
+
+		that.pickedShape = null;
+
+		// if (that.mode === 'lock' || that.mode === 'connect') {
+		//   that.setMode('POINTER');
+		// }
+		if (that.docIsReadOnly()) return;
+
+		if (that.tobeTransformJqLine) that.tobeTransformJqLine.removeClass('shadow2');
+		KFKclass.hide('#linetransformer');
+		that.tobeTransformJqLine = null;
+
+		if (that.afterDragging === true) {
+			that.afterDragging = false;
+			// return;
+		}
+		if (that.afterResizing === true) {
+			that.afterResizing = false;
+			// return;
+		}
+
+		//place image, place material
+		if (that.mode === 'material' && that.materialPicked) {
+			const fileId = that.myuid();
+
+			await that.makeImageDiv(
+				fileId,
+				that.scalePoint(that.scrXToJc3X(evt.clientX)),
+				that.scalePoint(that.scrYToJc3Y(evt.clientY)),
+				that.materialPicked.url
+			);
+			return;
+		} else if (
+			that.mode === 'line' &&
+			that.isFreeHandDrawing === false &&
+			IsFalse(that.isZoomingShape) &&
+			that.pmsOk('C') === true
+		) {
+			// console.log("yarkShapePoint");
+			that.yarkShapePoint(
+				that.scalePoint(that.scrXToJc3X(evt.clientX)),
+				that.scalePoint(that.scrYToJc3Y(evt.clientY))
+			);
+			return;
+		} else {
+			if (that.selectedDIVs.length > 0 || that.selectedShapes.length > 0) {
+				if (that.duringKuangXuan === false) that.cancelAlreadySelected();
+			}
+			if (cocoConfig.node[that.mode]) {
+				const variant = 'default';
+				const realX = that.scalePoint(that.scrXToJc3X(evt.clientX));
+				const realY = that.scalePoint(that.scrYToJc3Y(evt.clientY));
+				const jqDIV = await that.placeNode(
+					evt.shiftKey,
+					that.myuid(),
+					that.mode,
+					variant,
+					realX,
+					realY,
+					undefined,
+					undefined,
+					'',
+					''
+				);
+				that.focusOnNode(jqDIV);
+				that.yarkOpHistory({
+					obj: 'node',
+					from: null,
+					to: jqDIV.clone()
+				});
+				that.onChange('New Node');
+			}
+		}
+
+		evt.stopImmediatePropagation();
+		evt.stopPropagation();
+		evt.preventDefault();
+	}
+
+	/*
+toggleOverview (jc3MousePos) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+  if (that.inPresentingMode) return;
+  const main = $("#C1");
+  const scroller = $("#S1");
+  const scrCenter = that.scrCenter();
+  const window_width = scrCenter.x * 2;
+  const window_height = scrCenter.y * 2;
+  that.APP.setData("show", "actionlog", false);
+  if (that.inOverviewMode === true) {
+    that.scrLog("");
+    that.restoreDIVsWithStatus([
+      "#containerbkg",
+      "#minimap",
+      "#toplogo",
+      "#docHeaderInfo",
+      "#rtcontrol",
+      "#leftPanel",
+      "#rightPanel",
+      ".msgInputWindow",
+      "#coco_chat",
+      "#system_message",
+    ]);
+
+    that.JC3.css({
+      "transform-origin": "0px 0px",
+      "-webkit-transform-origin": "0px 0px",
+      transform: `scale(1, 1)`,
     });
-    KFK.polyShape = KFK.justCreatedShape;
-  }
-
-  let theShape = KFK.justCreatedShape;
-  KFK.setShapeToRemember(theShape);
-
-  KFK.APP.setData("show", "shape_property", true);
-  KFK.APP.setData("show", "customshape", false);
-  KFK.APP.setData("show", "customline", true);
-  KFK.APP.setData("show", "custombacksvg", false);
-  KFK.APP.setData("show", "customfont", false);
-  KFK.APP.setData("show", "layercontrol", false);
-
-  KFK.pickedShape = theShape;
-  let color = theShape.attr("stroke");
-  let width = theShape.attr("origin-width");
-  let linecap = theShape.attr("stroke-linecap");
-  $("#lineColor").spectrum("set", color);
-  $("#spinner_line_width").spinner("value", width);
-
-  if (["line", "rectangle", "ellipse"].indexOf(KFK.drawMode) >= 0) {
-    KFK.syncLinePut("C", theShape, "create new", null, false);
-    KFK.drawPoints.splice(0, 2);
-  }
-};
-
-KFK.addLinkTo = function (jq1, jq2) {
-  let id1 = jq1.attr("id");
-  let id2 = jq2.attr("id");
-  let filter = `.link[from="${id1}"][to="${id2}"]`;
-  console.log(filter);
-  let links = KFK.tpl.find(filter);
-  if (links.length > 0) {
-    return;
-  } else {
-    KFK.tpl.append(`<div class="link" from="${id1}" to="${id2}"></div>`);
-  }
-};
-KFK.removeLinkTo = function (jq1, jq2) {
-  let id1 = jq1.attr("id");
-  let id2 = jq2.attr("id");
-}
-/**
- * 建立两个节点之间的连接
- * 建立从jq1到jq2的连接，会同时删除反方向从jq2到jq1的连接
- * @param jq1 从这个节点开始
- * @param jq2 连到这个节点
- *
- *
- */
-KFK.buildConnectionBetween = function (jq1, jq2) {
-  KFK.addLinkTo(jq1, jq2);
-  KFK.removeLinkTo(jq2, jq1);
-};
-
-/**
- * 断掉两个节点之间的连接
- * @param jq 连接的from节点
- * @param idToRemove 连接的to节点的id
- */
-KFK.removeLinkTo = function (jq, idToRemove) {
-  let str = jq.attr("linkto");
-  let arr = KFK.stringToArray(str);
-  //如对手节点在反方向存在，就把反方向的对手节点去掉
-  let index = arr.indexOf(idToRemove);
-  if (index >= 0) {
-    arr.splice(index, 1);
-    if (arr.length > 0) jq.attr("linkto", arr.join(","));
-    else jq.removeAttr("linkto");
-  }
-};
-
-/**
- * 获得一个节点的所有父节点
- * @param jq 子节点
- * @return 一个包含所有父节点的数组
- */
-KFK.getParent = (jq) => {
-  let ret = [];
-  let myId = jq.attr("id");
-  KFK.JC3.find(".kfknode").each((index, aNode) => {
-    let jqConnectFrom = $(aNode);
-    if (jqConnectFrom.attr("id") !== myId) {
-      let arr = KFK.stringToArray(jqConnectFrom.attr("linkto"));
-      if (arr.indexOf(myId) >= 0) ret.push(jqConnectFrom);
-    }
-  });
-  return ret;
-};
-
-/**
- * 获得一个节点的所有子节点
- * @param jq 父节点
- * @return 所有子节点
- */
-KFK.getChildren = function (jq) {
-  let str = jq.attr("linkto");
-  if (NotSet(str)) return [];
-  let arr = KFK.stringToArray(str);
-  arr = arr.filter((id) => {
-    if ($("#" + id).length > 0) {
-      return true;
-    } else {
-      return false;
-    }
-  });
-  let ret = arr.map((id) => {
-    return $("#" + id);
-  });
-  return ret;
-};
-
-/**
- * 两个节点之间是否有连接？
- * @param jq1  from节点
- * @param jq2  to节点
- */
-KFK.hasConnection = function (jq1, jq2) {
-  let str = jq1.attr("linkto");
-  if (NotSet(str)) return fasle;
-  let arr = KFK.stringToArray(str);
-
-  let linkToId = "";
-  if (typeof jq2 === "string") {
-    linkToId = jq2;
-  } else {
-    linkToId = jq2.attr("id");
-  }
-
-  let index = arr.indexOf(linkToId);
-  return index >= 0;
-};
-
-KFK.distance = function (p1, p2) {
-  return Math.sqrt(
-    (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y)
-  );
-};
-
-KFK.getZIndex = function (jqDiv) {
-  let zz = parseInt(jqDiv.css("z-index"));
-  zz = isNaN(zz) ? 0 : zz;
-  return zz;
-};
-KFK.setZIndex = function (jqDiv, zz) {
-  jqDiv.css("z-index", zz);
-};
-//unselect all, deselect all
-KFK.cancelAlreadySelected = function () {
-  while (KFK.selectedDIVs.length > 0) {
-    KFK.deselectNode(KFK.selectedDIVs[0]);
-  }
-  KFK.selectedDIVs.clear();
-  KFK.focusOnNode(null);
-
-};
-
-
-KFK.getLineIdFromString = function (str) {
-  let m = str.match(/id\s*=\s*('|")([^"]+)('|")/);
-  if (m) {
-    return m[2];
-  } else return null;
-};
-
-KFK.undo = async () => {
-  console.log("KFK.undo");
-  if (KFK.opz < 0) {
-    console.log("undo 到头了");
-    return;
-  }
-  console.log("UNDO....");
-  let pair = KFK.opstack[KFK.opz];
-  if (pair.obj === 'node') {
-    if (pair.from !== null && pair.to !== null) {
-      let nodeId = pair.to.attr("id");
-      let jqNode = KFK.JC3.find(`#${nodeId}`);
-      jqNode.prop('outerHTML', pair.from.prop('outerHTML'));
-      jqNode = KFK.JC3.find(`#${nodeId}`);
-      //KFK.addSvgLayer();
-      await KFK.setNodeEventHandler(jqNode);
-      await KFK.redrawLinkLines(jqNode, "undo", true);
-    } else if (pair.from === null && pair.to !== null) {
-      //A create
-      let nodeId = pair.to.attr("id");
-      let jqNode = KFK.JC3.find(`#${nodeId}`);
-      await KFK.cleanUpConnection(jqNode, true);
-      jqNode.remove();
-    } else if (pair.from !== null && pair.to === null) {
-      //A delete
-      let nodeId = pair.from.attr("id");
-      KFK.JC3.append(pair.from);
-      let jqNode = KFK.JC3.find(`#${nodeId}`);
-      await KFK.setNodeEventHandler(jqNode);
-      await KFK.redrawLinkLines(jqNode, "undo", true);
-    }
-  } else if (pair.obj === "link") {
-    //对连接的操作
-    if (pair.from !== null && pair.to === null) {
-      let fromNodeId = pair.from.attr("from");
-      let toNodeId = pair.from.attr("to");
-      let jqFrom = KFK.JC3.find(`#${fromNodeId}`);
-      if (jqFrom && jqFrom.length > 0) {
-        await KFK.tpl.append(pair.from);
-        await KFK.redrawLinkLines(jqFrom, "undo", false);
-      }
-    }
-  }
-  KFK.opz = KFK.opz - 1;
-  KFK.onChange("Undo");
-};
-
-KFK.redo = async () => {
-  console.log("KFK.redo");
-  if (KFK.opz >= KFK.opstack.length - 1) {
-    console.log("redo 到头了");
-    return;
-  }
-  KFK.opz = KFK.opz + 1;
-  let pair = KFK.opstack[KFK.opz];
-  //对节点的操作
-  if (pair.obj === "node") {
-    if (pair.from !== null && pair.to !== null) {
-      let nodeId = pair.to.attr("id");
-      let jqNode = KFK.JC3.find(`#${nodeId}`);
-      jqNode.prop('outerHTML', pair.to.prop('outerHTML'));
-      jqNode = KFK.JC3.find(`#${nodeId}`);
-      await KFK.setNodeEventHandler(jqNode);
-      await KFK.redrawLinkLines(jqNode, "redo", true);
-    } else if (pair.from === null && pair.to !== null) {
-      let nodeId = pair.to.attr("id");
-      KFK.JC3.append(pair.to);
-      let jqNode = KFK.JC3.find(`#${nodeId}`);
-      await KFK.setNodeEventHandler(jqNode);
-      await KFK.redrawLinkLines(jqNode, "redo", true);
-    } else if (pair.from !== null && pair.to === null) {
-      let nodeId = pair.from.attr("id");
-      let jqNode = KFK.JC3.find(`#${nodeId}`);
-      await KFK.cleanUpConnection(jqNode, true);
-      jqNode.remove();
-    }
-  } else if (pair.obj === "link") {
-    //对连接的操作
-    if (pair.from !== null && pair.to === null) {
-      let fromNodeId = pair.from.attr("from");
-      let toNodeId = pair.from.attr("to");
-      let connectId = `connect_${fromNodeId}_${toNodeId}`;
-      await KFK.removeConnectById(connectId);
-    }
-  }
-  KFK.onChange("Redo");
-};
-
-KFK.initLayout = function () {
-  KFK.debug("...initLayout");
-  KFK.JC1 = $("#C1");
-  KFK.C1 = el(KFK.JC1);
-  KFK.JS1 = $("#S1");
-  KFK.S1 = el(KFK.JS1);
-  KFK.JC1.css({
-    width: KFK.px(KFK.PageWidth * (KFK.PageNumberHori + 2)),
-    height: KFK.px(KFK.PageHeight * (KFK.PageNumberVert + 2)),
-  });
-};
-
-KFK.scrollToPos = function (pos) {
-  KFK.JS1.scrollLeft(pos.x);
-  KFK.JS1.scrollTop(pos.y);
-};
-
-//create C3 create c3
-KFK.initC3 = function () {
-  KFK.debug("...initC3");
-  KFK.JC3 = $("#C3");
-  KFK.C3 = el(KFK.JC3);
-  KFK.JC3.css({
-    width: KFK.px(KFK.PageWidth * KFK.PageNumberHori),
-    height: KFK.px(KFK.PageHeight * KFK.PageNumberVert),
-    left: KFK.px(KFK.LeftB),
-    top: KFK.px(KFK.TopB),
-  });
-  // KFK.JC3.focus((evt) => { KFK.debug("JC3 got focus"); })
-  KFK.JCBKG = $("#containerbkg");
-  KFK.JCBKG.css({
-    width: KFK.px(KFK.PageWidth * KFK.PageNumberHori),
-    height: KFK.px(KFK.PageHeight * KFK.PageNumberVert),
-    left: KFK.px(KFK.LeftB),
-    top: KFK.px(KFK.TopB),
-  });
-
-  KFK.JC3.dblclick(async function (evt) {
-    if (KFK.isEditting && KFK.inlineEditor) {
-      KFK.endInlineEditing();
-    }
-    if (KFK.isEditting || KFK.resizing || KFK.dragging) {
-      return;
-    }
-    if (KFK.inOverviewMode === true) {
-      KFK.toggleOverview({
-        x: evt.offsetX,
-        y: evt.offsetY,
+    that.scaleRatio = 1;
+    if (jc3MousePos !== undefined) {
+      that.scrollToPos({
+        x: jc3MousePos.x - scrCenter.x + that.LeftB,
+        y: jc3MousePos.y - scrCenter.y + that.TopB,
       });
-    } else if (KFK.mode === "pointer") {
-      KFK.toggleOverview();
     }
-    KFK.cancelTempLine();
-    evt.preventDefault();
-    evt.stopImmediatePropagation();
-    evt.stopPropagation();
-  });
-  KFK.JC1.on("contextmenu", function (evt) {
-    evt.preventDefault();
-    KFK.kuangXuanMouseIsDown = false;
-  });
-  KFK.JC1.on("click", async function (evt) {
-    if (IsSet(KFK.selectedTodo)) {
-      KFK.selectedTodo.removeClass("current");
-    }
-    KFK.kuangXuanMouseIsDown = false;
-    KFK.hide($(".clickOuterToHide"));
-  });
-  KFK.JC3.keydown(function (evt) {
-    // console.log('JC3.keydown', evt.keyCode, KFK.mode, KFK.drawMode);
-    if (
-      (evt.keyCode === 13 || evt.keyCode === 27) &&
-      KFK.mode === "line" &&
-      (KFK.drawMode === "polyline" || KFK.drawMode === "polygon")
-    ) {
-      KFK.closePolyPoint();
-    }
-  });
-  //click c3
-  KFK.JC3.on("contextmenu", function (evt) {
-    evt.preventDefault();
-    evt.stopPropagation();
-    KFK.kuangXuanMouseIsDown = false;
-    if (KFK.ctrlMouseToPan === true) {
-      KFK.panStartAt = {
-        x: evt.clientX,
-        y: evt.clientY,
-      };
-    }
-  });
-  KFK.JC3.on("click", async function (evt) {
-    console.log("JC3 onClick");
-    if (evt.ctrlKey) {
-      evt.stopPropagation();
-      evt.preventDefault();
-      return;
-    }
-    KFK.focusOnNode(null);
+    that.unmaskScreen();
+    that.show(".panelSwitch");
+    that.inOverviewMode = false;
+  } else {
+    that.hideDIVsWithStatus([
+      "#containerbkg",
+      "#minimap",
+      "#toplogo",
+      "#docHeaderInfo",
+      "#rtcontrol",
+      "#leftPanel",
+      "#rightPanel",
+      ".msgInputWindow",
+      "#coco_chat",
+      "#system_message",
+      "#lineExpand",
+    ]);
 
-    let tmpPoint = {
-      x: evt.clientX,
-      y: evt.clientY,
+    that.scrollPosToRemember = {
+      x: scroller.scrollLeft(),
+      y: scroller.scrollTop(),
     };
-    //KFK.pointAfterResize 记录着DIV重新拖动大小后，释放鼠标的一霎那间的鼠标位置
-    //这样，在鼠标释放同时，click事件发起时，下面的代码避免执行
-    if (KFK.pointAfterResize) {
-      if (KFK.distance(tmpPoint, KFK.pointAfterResize) < 10) {
-        KFK.pointAfterResize = undefined;
-        return;
-      } else {
-        KFK.pointAfterResize = undefined;
-      }
-    }
-    if (KFK.docIsNotReadOnly()) {
-      await KFK.placeNodeOnClick(evt);
-    } else {
-      console.log("Not in edit mode: " + KFK.mode);
-    }
-  });
+    let scaleX = window_width / that._width;
+    let scaleY = window_height / that._height;
+    let scale = Math.min(scaleX, scaleY);
+    let scaledW = scale * that._width;
+    let scaledH = scale * that._height;
 
-  //place node on click
-  KFK.placeNodeOnClick = async function (evt) {
-    if (KFK.isEditting || KFK.resizing || KFK.dragging) {
-      return;
-    }
-    evt.preventDefault();
-    KFK.hide($(".clickOuterToHide"));
-    if (KFK.ignoreClick) return;
-
-    // KFK.focusOnNode(null);
-    KFK.justCreatedJqNode = null;
-    KFK.justCreatedShape = null;
-
-    KFK.pickedShape = null;
-    KFK.morphedShape = null;
-
-    // if (KFK.mode === 'lock' || KFK.mode === 'connect') {
-    //   KFK.setMode('pointer');
-    // }
-    if (KFK.docIsReadOnly()) return;
-
-    if (KFK.tobeTransformJqLine) KFK.tobeTransformJqLine.removeClass("shadow2");
-    KFK.hide("#linetransformer");
-    KFK.tobeTransformJqLine = null;
-    KFK.divStylerRefDiv = null;
-
-    if (KFK.afterDragging === true) {
-      KFK.afterDragging = false;
-      // return;
-    }
-    if (KFK.afterResizing === true) {
-      KFK.afterResizing = false;
-      // return;
-    }
-
-    //place image, place material
-    if (KFK.mode === "material" && KFK.materialPicked) {
-      let fileId = KFK.myuid();
-
-      await KFK.makeImageDiv(
-        fileId,
-        KFK.scalePoint(KFK.scrXToJc3X(evt.clientX)),
-        KFK.scalePoint(KFK.scrYToJc3Y(evt.clientY)),
-        KFK.materialPicked.url
+    let offsetX = Math.round((window_width - scaledW) * 0.5) / scale;
+    let offsetY = Math.round((window_height - scaledH) * 0.5) / scale;
+    that.scrollToPos({
+      x: that.LeftB,
+      y: that.TopB,
+    });
+    that.JC3.css({
+      "transform-origin": "0px 0px",
+      "-webkit-transform-origin": "0px 0px",
+    });
+    that.JC3.css("transform", `scale(${scale}, ${scale})`);
+    setTimeout(function () {
+      that.JC3.css(
+        "transform",
+        `scale(${scale}, ${scale}) translate(${offsetX}px, ${offsetY}px)`
       );
-      return;
-    } else if (
-      KFK.mode === "line" &&
-      KFK.isFreeHandDrawing === false &&
-      IsFalse(KFK.isZoomingShape) &&
-      KFK.pmsOk("C") === true
-    ) {
-      // console.log("yarkShapePoint");
-      KFK.yarkShapePoint(
-        KFK.scalePoint(KFK.scrXToJc3X(evt.clientX)),
-        KFK.scalePoint(KFK.scrYToJc3Y(evt.clientY)),
-        evt.shiftKey
-      );
-      return;
-    } else {
-      if (KFK.selectedDIVs.length > 0 || KFK.selectedShapes.length > 0) {
-        if (KFK.duringKuangXuan === false) KFK.cancelAlreadySelected();
-      }
-      if (cocoConfig.node[KFK.mode]) {
-        let variant = "default";
-        let realX = KFK.scalePoint(KFK.scrXToJc3X(evt.clientX));
-        let realY = KFK.scalePoint(KFK.scrYToJc3Y(evt.clientY));
-        let jqDIV = await KFK.placeNode(
-          evt.shiftKey,
-          KFK.myuid(),
-          KFK.mode,
-          variant,
-          realX,
-          realY,
-          undefined,
-          undefined,
-          "",
-          ""
-        );
-        KFK.focusOnNode(jqDIV);
-        KFK.yarkOpHistory(
-          {
-            obj: 'node',
-            from: null,
-            to: jqDIV.clone()
-          }
-        );
-        KFK.onChange("New Node");
-      }
-    }
-
-    evt.stopImmediatePropagation();
-    evt.stopPropagation();
-    evt.preventDefault();
-  };
-
-
-  KFK.JC3.mouseup(async (evt) => {
-    KFK.panStartAt = undefined;
-    // 下面的尝试不起作用，在pad.js中的dropevent中是起作用的
-    // console.log('JC3 mouseup');
-    // if (KFK.toolboxMouseDown === true){
-    //     console.log("place", KFK.toolboxMouseDownOn);
-    //     KFK.placeNodeOnClick(evt);
-    //     KFK.toolboxMouseDown = false;
-    //     KFK.toolboxMouseDownOn = null;
-    // }
-    KFK.ignoreClick = false;
-  });
-
-  KFK.simplifyPoints = function (polyline, points, tolerance) {
-    let lastPoint = points[0];
-    let newPoints = [];
-    newPoints.push(lastPoint);
-    let lastIndex = 0;
-    for (let i = 1; i < points.length; i++) {
-      if (KFK.distance(points[i], lastPoint) >= tolerance) {
-        lastPoint = points[i];
-        lastIndex = i;
-        newPoints.push(points[i]);
-      }
-    }
-    if (lastIndex < points.length - 1) {
-      newPoints.push(points[points.length - 1]);
-    }
-    KFK.plotFreeHandPoints(polyline, newPoints);
-  };
-
-  KFK.JC3.on("mousemove", function (evt) {
-    KFK.currentMousePos.x = evt.clientX;
-    KFK.currentMousePos.y = evt.clientY;
-
-    //跟随鼠标的indicator图标的位置, 在鼠标的位置向右右下偏移10个像素点
-    let indicatorX = KFK.scrXToJc1X(KFK.currentMousePos.x) + 10;
-    let indicatorY = KFK.scrYToJc1Y(KFK.currentMousePos.y) + 10;
-
-    $("#modeIndicator").css("left", indicatorX);
-    $("#modeIndicator").css("top", indicatorY);
-    // KFK.kuangXuanEndPoint = {
-    //   x: KFK.scrXToJc3X(evt.clientX),
-    //   y: KFK.scrYToJc3Y(evt.clientY)
-    // };
-
-    //如果文档是只读,返回就可以了
-    if (KFK.docIsReadOnly()) return;
-
-    //把屏幕鼠标位置,翻译为JC3的坐标位置,再翻译成放大缩小后的点坐标
-    let tmpPoint = {
-      x: KFK.scalePoint(KFK.scrXToJc3X(KFK.currentMousePos.x)),
-      y: KFK.scalePoint(KFK.scrYToJc3Y(KFK.currentMousePos.y)),
-    };
-
-    //检查是否为正在拖动一个形状,还是正在手绘
-    if (KFK.shapeToDrag && KFK.lineLocked(KFK.shapeToDrag) === false) {
-      if (KFK.distance(KFK.mousePosToRemember, KFK.currentMousePos) > 5) {
-        //正在拖动形状
-        KFK.shapeDragging = true;
-      }
-    } else {
-      KFK.shapeToDrag = null;
-    }
-
-    //判断是否为正在框选 .
-    //正在编辑时, 这了拖动形状是,正在拖动线条两端时,以及鼠标位于minimap上时,均不处理框选
-    if (
-      KFK.isEditting //正在编辑
-      ||
-      KFK.shapeDragging //正在拖动形状
-      ||
-      KFK.lineTransfomerDragging //正在拖动线条两端
-      || KFK.minimapMouseDown //鼠标位于minimap上
-    ) {
-      KFK.duringKuangXuan = false; //不再框选过程中
-    }
-
-    if (KFK.mode === "connect" && KFK.docIsNotReadOnly()) {
-      if (KFK.linkPosNode.length === 1) {
-        //如果当前为连接两个节点,且已经选择了起始点
-        KFK.lineTemping = true;
-        let fromPoint = null;
-        let toPoint = null;
-        let selectedFromIndex = 0;
-        let shortestDistance = KFK.distance(KFK.tmpPos.points[0], tmpPoint);
-        for (let i = 0; i < KFK.tmpPos.points.length; i++) {
-          fromPoint = KFK.tmpPos.points[i];
-          toPoint = tmpPoint;
-          let tmp_dis = KFK.distance(fromPoint, toPoint);
-          if (tmp_dis < shortestDistance) {
-            shortestDistance = tmp_dis;
-            selectedFromIndex = i;
-          }
-        }
-        //画出临时连接线
-        KFK.svgDrawTmpLine(
-          KFK.tmpPos.points[selectedFromIndex].x,
-          KFK.tmpPos.points[selectedFromIndex].y,
-          tmpPoint.x,
-          tmpPoint.y, {
-          color: KFK.YIQColorAux || "#888888",
-          stroke: 10,
-        }
-        );
-      }
-    }
-    if (KFK.mode === "line" && KFK.docIsNotReadOnly()) {
-      //如果当前模式为画线,则在鼠标移动时,画出临时线
-      if (KFK.drawPoints.length === 1) {
-        KFK.lineTemping = true;
-        KFK.svgDrawTmpShape(
-          KFK.drawMode,
-          KFK.drawPoints[0].center.x,
-          KFK.drawPoints[0].center.y,
-          tmpPoint.x,
-          tmpPoint.y, {
-          color: KFK.YIQColorAux || "#888888",
-          stroke: 10,
-        }
-        );
-      }
-    }
-    if (
-      KFK.shapeDragging &&
-      KFK.docIsReadOnly() === false &&
-      KFK.lineLocked(KFK.shapeToDrag) === false &&
-      KFK.pmsOk("U", KFK.shapeToDrag) === true
-    ) {
-      let realX = KFK.scalePoint(KFK.scrXToJc3X(evt.clientX));
-      let realY = KFK.scalePoint(KFK.scrYToJc3Y(evt.clientY));
-      let deltaX = realX - KFK.shapeDraggingStartPoint.x;
-      let deltaY = realY - KFK.shapeDraggingStartPoint.y;
-      // if (KFK.shapeToDrag.array) {
-      //     console.log(typeof KFK.shapeToDrag.array);
-      //     console.log(typeof KFK.shapeToDrag.array());
-      //     console.log(KFK.shapeToDrag.array());
-      // }
-      if (
-        KFK.shapeToDrag.hasClass("kfkpolyline") ||
-        KFK.shapeToDrag.hasClass("kfkpolygon")
-      ) {
-        let arr = KFK.shapeToDrag.array();
-        KFK.shapeToDrag.plot(arr);
-      }
-      KFK.shapeToDrag.dmove(deltaX, deltaY);
-      KFK.shapeDraggingStartPoint.x += deltaX;
-      KFK.shapeDraggingStartPoint.y += deltaY;
-    }
-  });
-
-  KFK.addMinimap();
-};
-
-KFK.isDuringKuangXuan = function () {
-  if (
-    KFK.mode === "pointer" &&
-    KFK.kuangXuanMouseIsDown &&
-    KFK.shapeDragging === false &&
-    KFK.lineTransfomerDragging === false &&
-    KFK.minimapMouseDown === false &&
-    KFK.isShowingModal === false &&
-    KFK.touchChatTodo === false &&
-    KFK.isEditting === false &&
-    KFK.isZoomingShape === false
-  )
-    return true;
-  else {
-    return false;
+    }, 200);
+    // main.css( "transform", `translate(${offsetX}px, ${offsetY}px)`)
+    that.hide(".panelSwitch");
+    that.inOverviewMode = true;
+    that.maskScreen();
+    that.scrLog("进入全局要览: 要看哪里, 就双击哪里吧", 1000);
   }
-};
+}
+*/
 
-KFK.scalePoint = (pt) => {
-  return pt / KFK.scaleRatio;
-};
+	//create C3 create c3
+	initC3() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.debug('...initC3');
+		that.JC3 = $('#C3');
+		that.C3 = el(that.JC3);
+		that.JC3.css({
+			width: KFKclass.px(that.PageWidth * that.PageNumberHori),
+			height: KFKclass.px(that.PageHeight * that.PageNumberVert),
+			left: KFKclass.px(that.LeftB),
+			top: KFKclass.px(that.TopB)
+		});
+		// that.JC3.focus((evt) => { that.debug("JC3 got focus"); })
+		that.JCBKG = $('#containerbkg');
+		that.JCBKG.css({
+			width: KFKclass.px(that.PageWidth * that.PageNumberHori),
+			height: KFKclass.px(that.PageHeight * that.PageNumberVert),
+			left: KFKclass.px(that.LeftB),
+			top: KFKclass.px(that.TopB)
+		});
 
-KFK.addMinimap = function () {
-  KFK.refreshC3Event = new CustomEvent("refreshC3");
-  KFK.zoomEvent = new CustomEvent("zoomC3");
-  KFK.changedEvent = new CustomEvent("changedC3");
-  /*
+		that.JC3.dblclick(async function (evt: MouseEvent) {
+			if (that.isEditting && that.inlineEditor) {
+				that.endInlineEditing();
+			}
+			if (that.isEditting || that.resizing || that.dragging) {
+				return;
+			}
+			/*
+			if (that.inOverviewMode === true) {
+				that.toggleOverview({
+					x: evt.offsetX,
+					y: evt.offsetY
+				});
+			} else if (that.mode === 'POINTER') {
+				that.toggleOverview();
+			}
+			*/
+			that.cancelTempLine();
+			evt.preventDefault();
+			evt.stopImmediatePropagation();
+			evt.stopPropagation();
+		});
+		that.JC1.on('contextmenu', function (evt: Event) {
+			evt.preventDefault();
+			that.kuangXuanMouseIsDown = false;
+		});
+		that.JC1.on('click', async function () {
+			if (KFKclass.IsSet(that.selectedTodo)) {
+				that.selectedTodo.removeClass('current');
+			}
+			that.kuangXuanMouseIsDown = false;
+			KFKclass.hide($('.clickOuterToHide'));
+		});
+		that.JC3.keydown(function (evt: KeyboardEvent) {
+			// console.log('JC3.keydown', evt.key, that.mode, that.drawMode);
+			if (
+				(evt.key === 'Enter' || evt.key === 'Escape') &&
+				that.mode === 'line' &&
+				(that.drawMode === 'polyline' || that.drawMode === 'polygon')
+			) {
+				that.closePolyPoint();
+			}
+		});
+		//click c3
+		that.JC3.on('contextmenu', function (evt: MouseEvent) {
+			evt.preventDefault();
+			evt.stopPropagation();
+			that.kuangXuanMouseIsDown = false;
+			if (that.ctrlMouseToPan === true) {
+				that.panStartAt = {
+					x: evt.clientX,
+					y: evt.clientY
+				};
+			}
+		});
+		that.JC3.on('click', async function (evt: MouseEvent) {
+			console.log('JC3 onClick');
+			if (evt.ctrlKey) {
+				evt.stopPropagation();
+				evt.preventDefault();
+				return;
+			}
+			that.focusOnNode(null);
+
+			const tmpPoint = {
+				x: evt.clientX,
+				y: evt.clientY
+			};
+			//that.pointAfterResize 记录着DIV重新拖动大小后，释放鼠标的一霎那间的鼠标位置
+			//这样，在鼠标释放同时，click事件发起时，下面的代码避免执行
+			if (that.pointAfterResize) {
+				if (that.distance(tmpPoint, that.pointAfterResize) < 10) {
+					that.pointAfterResize = undefined;
+					return;
+				} else {
+					that.pointAfterResize = undefined;
+				}
+			}
+			if (that.docIsNotReadOnly()) {
+				await that.placeNodeOnClick(evt);
+			} else {
+				console.log('Not in edit mode: ' + that.mode);
+			}
+		});
+
+		//place node on click
+
+		//eslint-disable-next-line
+		that.JC3.mouseup(async (_evt: MouseEvent) => {
+			that.panStartAt = undefined;
+			that.ignoreClick = false;
+		});
+
+		that.JC3.on('mousemove', function (evt: MouseEvent) {
+			that.currentMousePos.x = evt.clientX;
+			that.currentMousePos.y = evt.clientY;
+
+			//跟随鼠标的indicator图标的位置, 在鼠标的位置向右右下偏移10个像素点
+			const indicatorX = that.scrXToJc1X(that.currentMousePos.x) + 10;
+			const indicatorY = that.scrYToJc1Y(that.currentMousePos.y) + 10;
+
+			$('#modeIndicator').css('left', indicatorX);
+			$('#modeIndicator').css('top', indicatorY);
+			// that.kuangXuanEndPoint = {
+			//   x: that.scrXToJc3X(evt.clientX),
+			//   y: that.scrYToJc3Y(evt.clientY)
+			// };
+
+			//如果文档是只读,返回就可以了
+			if (that.docIsReadOnly()) return;
+
+			//把屏幕鼠标位置,翻译为JC3的坐标位置,再翻译成放大缩小后的点坐标
+			const tmpPoint = {
+				x: that.scalePoint(that.scrXToJc3X(that.currentMousePos.x)),
+				y: that.scalePoint(that.scrYToJc3Y(that.currentMousePos.y))
+			};
+
+			//检查是否为正在拖动一个形状,还是正在手绘
+			if (that.shapeToDrag && that.lineLocked(that.shapeToDrag) === false) {
+				if (that.distance(that.mousePosToRemember, that.currentMousePos) > 5) {
+					//正在拖动形状
+					that.shapeDragging = true;
+				}
+			} else {
+				that.shapeToDrag = null;
+			}
+
+			//判断是否为正在框选 .
+			//正在编辑时, 这了拖动形状是,正在拖动线条两端时,以及鼠标位于minimap上时,均不处理框选
+			if (
+				that.isEditting || //正在编辑
+				that.shapeDragging || //正在拖动形状
+				that.lineTransfomerDragging || //正在拖动线条两端
+				that.minimapMouseDown //鼠标位于minimap上
+			) {
+				that.duringKuangXuan = false; //不再框选过程中
+			}
+
+			if (that.mode === 'CONNECT' && that.docIsNotReadOnly()) {
+				if (that.linkPosNode.length === 1) {
+					//如果当前为连接两个节点,且已经选择了起始点
+					that.lineTemping = true;
+					let fromPoint = null;
+					let toPoint = null;
+					let selectedFromIndex = 0;
+					let shortestDistance = that.distance(that.tmpPos.points[0], tmpPoint);
+					for (let i = 0; i < that.tmpPos.points.length; i++) {
+						fromPoint = that.tmpPos.points[i];
+						toPoint = tmpPoint;
+						const tmp_dis = that.distance(fromPoint, toPoint);
+						if (tmp_dis < shortestDistance) {
+							shortestDistance = tmp_dis;
+							selectedFromIndex = i;
+						}
+					}
+					//画出临时连接线
+					that.svgDrawTmpLine(
+						that.tmpPos.points[selectedFromIndex].x,
+						that.tmpPos.points[selectedFromIndex].y,
+						tmpPoint.x,
+						tmpPoint.y,
+						{
+							color: that.YIQColorAux || '#888888',
+							stroke: 10
+						}
+					);
+				}
+			}
+			if (that.mode === 'line' && that.docIsNotReadOnly()) {
+				//如果当前模式为画线,则在鼠标移动时,画出临时线
+				if (that.drawPoints.length === 1) {
+					that.lineTemping = true;
+					that.svgDrawTmpShape(
+						that.drawMode,
+						that.drawPoints[0].center.x,
+						that.drawPoints[0].center.y,
+						tmpPoint.x,
+						tmpPoint.y,
+						{
+							color: that.YIQColorAux || '#888888',
+							stroke: 10
+						}
+					);
+				}
+			}
+			if (
+				that.shapeDragging &&
+				that.docIsReadOnly() === false &&
+				that.lineLocked(that.shapeToDrag) === false &&
+				that.pmsOk('U', that.shapeToDrag) === true
+			) {
+				const realX = that.scalePoint(that.scrXToJc3X(evt.clientX));
+				const realY = that.scalePoint(that.scrYToJc3Y(evt.clientY));
+				const deltaX = realX - that.shapeDraggingStartPoint.x;
+				const deltaY = realY - that.shapeDraggingStartPoint.y;
+				// if (that.shapeToDrag.array) {
+				//     console.log(typeof that.shapeToDrag.array);
+				//     console.log(typeof that.shapeToDrag.array());
+				//     console.log(that.shapeToDrag.array());
+				// }
+				if (that.shapeToDrag.hasClass('kfkpolyline') || that.shapeToDrag.hasClass('kfkpolygon')) {
+					const arr = that.shapeToDrag.array();
+					that.shapeToDrag.plot(arr);
+				}
+				that.shapeToDrag.dmove(deltaX, deltaY);
+				that.shapeDraggingStartPoint.x += deltaX;
+				that.shapeDraggingStartPoint.y += deltaY;
+			}
+		});
+
+		that.addMinimap();
+	}
+
+	isDuringKuangXuan() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (
+			that.mode === 'POINTER' &&
+			that.kuangXuanMouseIsDown &&
+			that.shapeDragging === false &&
+			that.lineTransfomerDragging === false &&
+			that.minimapMouseDown === false &&
+			that.isShowingModal === false &&
+			that.isEditting === false &&
+			that.isZoomingShape === false
+		)
+			return true;
+		else {
+			return false;
+		}
+	}
+
+	scalePoint(pt: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return pt / that.scaleRatio;
+	}
+
+	addMinimap() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.refreshC3Event = new CustomEvent('refreshC3');
+		that.zoomEvent = new CustomEvent('zoomC3');
+		that.changedEvent = new CustomEvent('changedC3');
+		/*
   import("./minimap/jquery-minimap").then((pack) => {
-    KFK.MiniMap = pack.MiniMap;
-    KFK.MiniMap.minimap($("#minimap"), KFK);
-    KFK.MiniMap.init();
+    that.MiniMap = pack.MiniMap;
+    that.MiniMap.minimap($("#minimap"), KFK);
+    that.MiniMap.init();
   });
   */
-};
-
-KFK.getImageSrc = (img) => {
-  if (KFK.APP && KFK.APP.images && KFK.APP.images[img]) {
-    return KFK.APP.images[img].src;
-  } else {
-    return undefined;
-  }
-};
-
-
-KFK.moveLineMoverTo = function (position) {
-  $("#linetransformer").css("left", position.x - 10);
-  $("#linetransformer").css("top", position.y - 10);
-};
-/**
- * 选定一个元素
- */
-KFK.selectNode = function (jqDIV) {
-  jqDIV.addClass("selected");
-  KFK.selectedDIVs.push(jqDIV);
-  KFK.setSelectedNodesBoundingRect();
-};
-
-/**
- * 根据选定的多个元素，显示其周围的边框
- */
-KFK.setSelectedNodesBoundingRect = function () {
-  let brect = $(".boundingrect");
-  if (brect.length <= 0) {
-    let rect = document.createElement("div");
-    brect = $(rect);
-    brect.addClass("boundingrect");
-    brect.appendTo(KFK.JC3);
-    brect.css("z-index", -1);
-  }
-  if (KFK.selectedDIVs.length > 1) {
-    let rect = KFK.getBoundingRectOfSelectedDIVs();
-    brect.css("left", rect.left - cocoConfig.ui.boundingrect_padding);
-    brect.css("top", rect.top - cocoConfig.ui.boundingrect_padding);
-    brect.css("width", rect.width + cocoConfig.ui.boundingrect_padding * 2);
-    brect.css("height", rect.height + cocoConfig.ui.boundingrect_padding * 2);
-    brect.show();
-  } else {
-    brect.hide();
-  }
-};
-KFK.kuangXuan = function (pt1, pt2) {
-  let x1 = pt1.x + KFK.LeftB;
-  let y1 = pt1.y + KFK.TopB;
-  let x2 = pt2.x + KFK.LeftB;
-  let y2 = pt2.y + KFK.TopB;
-  if (Math.abs(x1 - x2) < 10 && Math.abs(y1 - y2) < 10) {
-    //这里，如果滑动大小横向和纵向都小于10， 则不作为框选
-    return;
-  }
-  let jqRect = $("#selectingrect");
-  jqRect.css("left", Math.min(x1, x2));
-  jqRect.css("top", Math.min(y1, y2));
-  jqRect.css("width", Math.abs(x1 - x2));
-  jqRect.css("height", Math.abs(y1 - y2));
-  KFK.duringKuangXuan = true;
-  jqRect.show();
-};
-
-KFK.selectShape = function (theShape) {
-  let alreadySelected = false;
-  for (let i = 0; i < KFK.selectedShapes.length; i++) {
-    if (KFK.selectedShapes[i].attr("id") === theShape.attr("id")) {
-      alreadySelected = true;
-      break;
-    }
-  }
-  if (alreadySelected) return;
-  KFK.selectedShapes.push(theShape);
-  let prevWidth = theShape.attr("stroke-width");
-  prevWidth = KFK.unpx(prevWidth);
-  theShape.addClass("selected");
-  let color = theShape.attr("origin-color");
-  KFK.shapeOriginColor = color;
-  let color1 = KFK.reverseColor(color);
-  let originWidth = theShape.attr("origin-width");
-  let newWidth =
-    originWidth * 2 > KFK.CONST.MAX_SHAPE_WIDTH ?
-      originWidth :
-      KFK.CONST.MAX_SHAPE_WIDTH;
-  theShape.stroke({
-    width: newWidth,
-    color: "#0000FF",
-  });
-};
-KFK.isShapeSelected = function (theShape) {
-  if (KFK.selectedShapes.length <= 0) {
-    return false;
-  } else {
-    if (KFK.selectedShapes.indexOf(theShape) >= 0) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-};
-
-KFK.getShapeConfig = function (shapeType) {
-  return KFK.APP.model.svg[shapeType];
-};
-
-KFK.getShapeRectFromJqObj = function (shape) {
-  return KFK.getShapeRect(SVG(shape));
-};
-KFK.getShapeRect = function (svgShape) {
-  let x = svgShape.x();
-  let y = svgShape.y();
-  let width = svgShape.width();
-  let height = svgShape.height();
-  return {
-    left: x,
-    top: y,
-    right: x + width,
-    bottom: y + height,
-    center: x + width * 0.5,
-    middle: y + height * 0.5,
-    width: width,
-    height: height,
-  };
-};
-
-KFK.deselectNode = function (theDIV) {
-  $(theDIV).removeClass("selected");
-  let index = KFK.selectedDIVs.indexOf(theDIV);
-  KFK.selectedDIVs.splice(index, 1);
-  KFK.setSelectedNodesBoundingRect();
-};
-
-KFK.selectNodeOnClick = function (jqDIV, shiftKey) {
-  let exist = KFK.selectedDIVs.indexOf(jqDIV);
-  if (shiftKey) {
-    if (exist >= 0) {
-      KFK.deselectNode(KFK.selectedDIVs[exist]);
-    } else {
-      KFK.selectNode(jqDIV);
-    }
-  } else {
-    while (KFK.selectedDIVs.length > 0) {
-      KFK.deselectNode(KFK.selectedDIVs[0]);
-    }
-    KFK.selectNode(jqDIV);
-  }
-};
-
-KFK.getNearGridPoint = function (x, y) {
-  if (y === undefined && x.x) {
-    return KFK._getNearGridPoint(x.x, x.y);
-  } else {
-    return KFK._getNearGridPoint(x, y);
-  }
-};
-KFK._getNearGridPoint = function (x, y) {
-  let newX = x;
-  let newY = y;
-  if (x % KFK.APP.model.gridWidth < KFK.APP.model.gridWidth * 0.5) {
-    newX = Math.floor(x / KFK.APP.model.gridWidth) * KFK.APP.model.gridWidth;
-  } else {
-    newX =
-      (Math.floor(x / KFK.APP.model.gridWidth) + 1) * KFK.APP.model.gridWidth;
-  }
-  if (y % KFK.APP.model.gridWidth < KFK.APP.model.gridWidth * 0.5) {
-    newY = Math.floor(y / KFK.APP.model.gridWidth) * KFK.APP.model.gridWidth;
-  } else {
-    newY =
-      (Math.floor(y / KFK.APP.model.gridWidth) + 1) * KFK.APP.model.gridWidth;
-  }
-  return {
-    x: newX,
-    y: newY,
-  };
-};
-
-function unpx(v) {
-  return KFK.unpx(v);
-}
-
-function px(v) {
-  return KFK.px(v);
-}
-
-KFK.px = (v) => {
-  if (typeof v === "string") {
-    if (v.endsWith("px")) {
-      return v;
-    } else {
-      return v + "px";
-    }
-  } else {
-    return v + "px";
-  }
-};
-
-KFK.unpx = (v) => {
-  if (typeof v === "string" && v.endsWith("px")) {
-    return parseInt(v.substr(0, v.length - 2));
-  } else {
-    return v;
-  }
-};
-
-/**
- * a Node object 放在起中心位置，构建Node对象时使用的x,y指的是其中心位置
- * 在实际放置时，需要算出它的左上角位置
- *
- * @param node a Node object
- * @return the left/top point of the node
- */
-KFK.ltPos = function (node) {
-  return {
-    x: node.x - node.width * 0.5,
-    y: node.y - node.height * 0.5,
-  };
-};
-
-
-KFK.getKFKNodeNumber = function () {
-  let nodes = KFK.JC3.find(".kfknode");
-  return nodes.length;
-};
-
-
-/**
- * 在C3上放置一个对象
- * @param  shfitKey，是否按着shiftkey
- * @param  id, id of the new node,
- * @param  type  one of text/textblock/yellowtip/richtext
- * @param  variant  default, usefull for yellowtip only.
- * @param   x  the x of the center point, in C3's dimension
- * @param   y  the y of the center point, in C3's dimension
- * @param   w  the width of the node
- * @param   h  the height of the node
- * @param   attach  the inner content
- * @param   attach2  the lower inner content, which has a ossimage class which z-index is -1, normally, attach2 is suitable for place a backgrund div
- */
-KFK.placeNode = async function (shiftKey, id, nodeType, variant, x, y, w, h, attach, attach2) {
-  //create node, new node, place node
-  let nodeDIV = document.createElement("div");
-  let jqDIV = $(nodeDIV);
-  jqDIV.attr("id", id);
-  let label = "Activity";
-  switch (nodeType) {
-    case "ACTION":
-      label = "Activity";
-      break;
-    case "INFORM":
-      label = "Email";
-      break;
-    case "SCRIPT":
-      label = "Script";
-      break;
-    case "TIMER":
-      label = "Timer";
-      break;
-    case "SUB":
-      label = "Sub Process";
-      break;
-    case "AND":
-      label = "AND";
-      break;
-    case "OR":
-      label = "OR";
-      break;
-    default:
-      label = "Activity";
-  }
-  jqDIV.append("<p>" + label + "</p>");
-  if (nodeType === "ACTION") {
-    jqDIV.append('<div class="kvars">e30=</div>');
-    jqDIV.append('<div class="katts">e30=</div>');
-  }
-  console.log("placeNode", nodeType);
-  await KFK.JC3.append(nodeDIV);
-  let nodeCount = KFK.getKFKNodeNumber();
-  jqDIV.css("top", KFK.px(y - KFK.tplNode_height * 0.5));
-  jqDIV.css("left", KFK.px(x - KFK.tplNode_width * 0.5));
-  jqDIV.css("z-index", `${nodeCount + 1}`);
-  //default padding for all
-
-  jqDIV.addClass("node");
-  jqDIV.addClass("kfknode");
-  jqDIV.addClass(nodeType);
-
-  await KFK.setNodeEventHandler(jqDIV);
-
-  KFK.justCreatedJqNode = jqDIV;
-  KFK.lastCreatedJqNode = jqDIV; //如果在脑图模式下，则自动建立脑图链接
-  KFK.C3.dispatchEvent(KFK.refreshC3Event);
-  return jqDIV;
-};
-
-
-
-//删除添加eventHandler带来的额外的、会引起复制节点event响应不正常的内容
-KFK.removeNodeEventFootprint = function (jqNodeDIV) {
-  jqNodeDIV.find(".ui-resizable-handle").remove();
-  jqNodeDIV.find(".locklabel").remove();
-  jqNodeDIV.removeClass(
-    "ui-resizable ui-draggable ui-draggable-handle ui-draggable-dragging ui-droppable selected ui-resizable-autohide shadow1 shadow2 lock"
-  );
-};
-
-KFK.removeLinkto = function (jqNodeDIV) {
-  jqNodeDIV.attr("linkto", "");
-};
-
-KFK.startTrx = function () {
-  if (KFK.state.TRX_FLAG === 0) {
-    KFK.opArray = [];
-  }
-  KFK.state.TRX_FLAG += 1;
-  console.log("STARTTRX:", KFK.state.TRX_FLAG);
-};
-/**
- * Close operation transaction
- */
-KFK.endTrx = function () {
-  KFK.state.TRX_FLAG -= 1;
-  if (KFK.state.TRX_FLAG === 0) {
-    console.log("ENDTRX:", KFK.state.TRX_FLAG);
-  }
-};
-/**
- * During operation transaction or not
- */
-KFK.inTrx = function () {
-  if (KFK.state.TRX_FLAG > 0) return true;
-  else return false;
-};
-
-/**
- * 在内存中记录操作历史
- */
-KFK.yarkOpHistory = function (changedPair) {
-  //如果没有操作被记录,则提示warn,并返回. 这是一个不应该发生的异常情况.
-  KFK.opstack.splice(KFK.opz + 1, KFK.opstacklen);
-  if (KFK.opstack.length >= KFK.opstacklen) {
-    KFK.opstack.shift();
-    KFK.opz = KFK.opz - 1;
-    if (KFK.opz < -1) KFK.opz = -1;
-  }
-  KFK.opstack.push(changedPair);
-  console.log(KFK.opstack.length);
-  KFK.opz = KFK.opz + 1;
-};
-
-function getNull(value) {
-  switch (value) {
-    case undefined:
-    case null:
-    case "undefined":
-    case "null":
-      return true;
-    default:
-      return false;
-  }
-}
-
-function getBoolean(value) {
-  return ([true, "true", 1, "1", "on", "yes"].indexOf(value) >= 0);
-}
-
-
-//jqNode can be a node or even a svgline
-KFK.anyLocked = function (jqNode) {
-  if (jqNode) return KFK.docIsReadOnly() || KFK.nodeLocked(jqNode);
-  else return KFK.docIsReadOnly();
-};
-
-KFK.notAnyLocked = function (jqNode) {
-  return !KFK.anyLocked(jqNode);
-};
-
-KFK.docIsReadOnly = function () {
-  return KFK.APP.model.cocodoc.readonly || KFK.tpl_mode !== "edit";
-  //return KFK.APP.model.cocodoc.readonly;
-};
-KFK.docIsNotReadOnly = function () {
-  return !KFK.docIsReadOnly()
-};
-
-KFK.nodeLocked = function (jqNode) {
-  //Even works for svline, because svg line has .hasClass function as well
-  return jqNode.hasClass("lock");
-};
-KFK.lineLocked = function (svgLine) {
-  return svgLine.hasClass("lock");
-};
-
-KFK.setModeIndicatorForYellowTip = function (tipvariant) {
-  if ($("#modeIndicatorDiv").length < 1) {
-    KFK.debug("modeIndicatorDiv not found");
-    return;
-  }
-  $("#modeIndicatorDiv").empty();
-  let svg = $(SVGs[tipvariant]);
-  if (NotSet(svg)) {
-    svg = $(
-      "<img src='" + cocoConfig.frontend.url + "/svgs/" + tipvariant + ".svg'/>"
-    );
-  }
-  svg.css("width", "18px");
-  svg.css("height", "18px");
-  svg.appendTo($("#modeIndicatorDiv"));
-};
-
-
-KFK.stringToArray = function (str) {
-  let arr = [];
-  if (str) {
-    arr = str.split(",");
-    if (arr.length === 1 && arr[0] === "") arr = [];
-  }
-  return arr;
-};
-
-KFK.getNodeLinkIds = function (jq1, direction) {
-  let linksStr = jq1.attr(direction);
-  let linksArr = KFK.stringToArray(linksStr);
-  //过滤掉不存在的节点
-  // linksArr = linksArr.filter((aId) => {
-  //   return $(`#${aId}`).length > 0;
-  // })
-  return linksArr;
-};
-
-KFK.removeConnectById = async function (connect_id) {
-  try {
-    await KFK.svgDraw.find(`.${connect_id}`).remove();
-  } catch (err) {}
-  let triangle_id = connect_id + "_triangle";
-  try {
-    await KFK.svgDraw.find(`.${triangle_id}`).remove();
-  } catch (err) {}
-  let text_id = connect_id + "_text";
-  try {
-    await KFK.svgDraw.find(`.${text_id}`).remove();
-  } catch (err) {}
-  try {
-    let tmpNodeIdPair = KFK.getNodeIdsFromConnectId(connect_id);
-    let fromNode_id = tmpNodeIdPair[0];
-    let toNode_id = tmpNodeIdPair[1];
-    console.log(`.link[from="${fromNode_id}"][to="${toNode_id}"]`);
-    let aLinkInTemplate = KFK.tpl.find(`.link[from="${fromNode_id}"][to="${toNode_id}"]`);
-    console.log(aLinkInTemplate);
-    $(aLinkInTemplate).remove();
-  } catch (err) {console.error(err)}
-};
-
-/**
- * 从新画节点所有的连接线
- * @param jqNode 要重画连接线的节点
- * @param reason 画线的原因
- * @param bothside 如果为false， 则只画从jqNode出去的线； 如为true, 则也画连到jqNode的线
- * @param allowConnectPoints 控制画线的上下左右连接点。缺省为全部可自动根据最短路线来选择。 一共四个数组，缺省为[[0,1,2,3],[0,1,2,3],[0,1,2,3],[0,1,2,3]]
- * 第一个数组为连接出去的线条的，from的连接点控制
- * 第二个数组为连接出去的线条的，to的连接点控制
- * 第三个数组为连接进来的线条的，from的连接点控制
- * 第四个数组为连接进来的线条的，to的连接点控制
- * 每个连接点控制数组中，0表示 左中点； 1表示上中点； 2表示右中点； 3表示下中点
- */
-
-KFK.redrawLinkLines = async function (
-  jqNode,
-  reason = "unknown",
-  bothside = true,
-  allowConnectPoints = [
-    [2],
-    [0],
-    [2],
-    [0],
-  ]
-) {
-  KFK.debug('Redrawlinks', reason, 'bothside', bothside);
-  if (!(jqNode instanceof jQuery)) {
-    console.error(
-      "redrawLinkLines for a non-jquery object, sometime caused by no await"
-    );
-    return;
-  }
-  let myId = jqNode.attr("id");
-  let guiLinks = KFK.tpl.find(`.link[from="${myId}"]`);
-  //得到当前节点连接到的节点id列表
-  //let toIds = KFK.getNodeLinkIds(jqNode, "linkto");
-  //找出所有svg连接线条
-  let list = KFK.svgDraw.find(".connect");
-
-  list.each(async (connect) => {
-    //如果这根连接线条的fid属性是当前node的id
-    if (connect.attr("fid") === myId) {
-      let connect_id = connect.attr("id");
-      //移除线条
-      await connect.remove();
-      //移除三角
-      let triangle_id = connect_id + "_triangle";
-      await KFK.svgDraw.find(`.${triangle_id}`).remove();
-    }
-  });
-  //画出从当前node:jqNode到所有"连接到"节点的连接线
-  let anchorPositions = [];
-  for (let i = 0; i < guiLinks.length; i++) {
-    let toId = $(guiLinks[i]).attr("to");
-    let jqTo = $(`#${toId}`);
-    let caseValue = $(guiLinks[i]).attr("case");
-    caseValue = lodash.isEmpty(caseValue) ? "" : caseValue;
-    let anchorPair = await KFK.drawConnect(
-      jqNode,
-      jqTo,
-      caseValue,
-      allowConnectPoints[0],
-      allowConnectPoints[1],
-      true
-    );
-    //anchorPair返回一个包含两个数字的数组,第一个数字标识父节点的锚点位置,第二个数字标识子节点的锚点位置
-    anchorPositions.push(anchorPair[0]);
-  }
-
-  //如果是双边画线,则需要找出那些父节点
-  if (bothside) {
-    let guiLinks_toMe = KFK.tpl.find(`.link[to="${myId}"]`);
-
-    let anchorPositions = [];
-    for (let i = 0; i < guiLinks_toMe.length; i++) {
-      let fromId = $(guiLinks_toMe[i]).attr("from");
-      let jqFrom = $(`#${fromId}`);
-      let caseValue = $(guiLinks_toMe[i]).attr("case");
-      caseValue = lodash.isEmpty(caseValue) ? "" : caseValue;
-      let anchorPair = await KFK.drawConnect(
-        jqFrom,
-        jqNode,
-        caseValue,
-        allowConnectPoints[2],
-        allowConnectPoints[3],
-        true
-      );
-      anchorPositions.push(anchorPair[0]);
-    }
-  }
-};
-
-
-KFK.getNodeDefaultSize = function (nodeType, variant) {
-  var ret = {w: 100, h: 40};
-  if (
-    KFK.config.defaultSize[nodeType] &&
-    KFK.config.defaultSize[nodeType][variant] &&
-    KFK.config.defaultSize[nodeType][variant].width &&
-    KFK.config.defaultSize[nodeType][variant].height
-  ) {
-    ret = {
-      w: KFK.config.defaultSize[nodeType][variant].width,
-      h: KFK.config.defaultSize[nodeType][variant].height,
-    };
-  } else if (
-    KFK.config.node[nodeType] &&
-    KFK.config.node[nodeType].style &&
-    KFK.config.node[nodeType].style.width &&
-    KFK.config.node[nodeType].style.height
-  ) {
-    ret = {
-      w: KFK.config.node[nodeType].style.width,
-      h: KFK.config.node[nodeType].style.height,
-    };
-  } else {
-    ret = {
-      w: 100,
-      h: 40,
-    };
-  }
-  return ret;
-};
-
-//用于对已有的nodeEvent进行修改控制，如enable, disable, destroy
-//action: one of resizable/droppable/draggable
-//cmd: one of enable, disable destroy
-KFK.updateNodeEvent = function (jqNode, action, cmd) {
-  if (action === "resizable") {
-    if (cocoConfig.node[jqNode.attr("nodetype")].resizable) {
-      jqNode.resizable(cmd);
-    }
-  } else if (action === "droppable") {
-    if (cocoConfig.node[jqNode.attr("nodetype")].droppable) {
-      jqNode.droppable(cmd);
-    }
-  } else if (action === "draggable") {
-    jqNode.draggable(cmd);
-  }
-};
-
-/**
- * 只是检查是否不包含“noedit" class, 以及是否有innerlink属性
- */
-KFK.updateable = function (jqNode) {
-  if (KFK.isNotA(jqNode, "noedit") || jqNode.attr("innerlink")) {
-    return true;
-  } else {
-    return false;
-  }
-};
-
-KFK.procNodeDoubleClick = async function (evt, jqNodeDIV) {
-  evt.stopPropagation();
-  evt.preventDefault();
-  //Don't edit todolist direclty, show edit dialog instead.
-  //double click to edit
-  if (jqNodeDIV.hasClass("noedit")) {
-    if (jqNodeDIV.attr("id") === "coco_todo") {
-      KFK.toggleInputFor("todo");
-      await KFK.showMsgInputDlg();
-    } else if (jqNodeDIV.attr("id") === "coco_chat") {
-      KFK.toggleInputFor("chat");
-      await KFK.showMsgInputDlg();
-    }
-    return;
-  }
-  if (KFK.anyLocked(jqNodeDIV)) return;
-  //下面这句判断其实没用，因为在演示模式和概览模式下，都加了遮罩，点不到nodeDIV上
-  if (KFK.inPresentingMode === true || KFK.inOverviewMode) return;
-
-  KFK.startNodeEditing(jqNodeDIV);
-};
-
-KFK.driveNodeBalls = function (jqNodeDIV) {
-  let tplLinks = KFK.tpl.find(`.link[from="${jqNodeDIV.attr("id")}"]`);
-  let needToAdd = tplLinks.length - KFK.tmpBalls.length;
-  for (let i = 0; i < needToAdd; i++) {
-    let tmpBall = KFK.ball.clone();
-    let ballId = "ball_" + KFK.myuid();
-    tmpBall.attr("id", ballId);
-    tmpBall.addClass(ballId);
-    tmpBall.addTo(KFK.ball.parent());
-    KFK.tmpBalls.push(tmpBall);
-  }
-  for (let i = 0; i < tplLinks.length; i++) {
-    KFK.tmpBalls[i].removeClass("noshow");
-    KFK.tmpBalls[i].fill(KFK.config.connect.styles.style1.normal.color);
-  }
-  tplLinks.each(async (index, link) => {
-    let jLink = $(link);
-    let connectSelector = `.connect_${jLink.attr("from")}_${jLink.attr("to")}`;
-    let svgConnect = KFK.svgDraw.findOne(connectSelector);
-    let length = svgConnect.length();
-    let runner_duration = 1500;
-    let runner = KFK.tmpBalls[index].animate({duration: runner_duration, when: "now"});
-    runner.ease(">");
-    runner.during(function (pos) {
-      var p = svgConnect.pointAt(pos * length);
-      KFK.tmpBalls[index].center(p.x, p.y);
-    }).loop(3);
-  });
-};
-
-KFK.stopNodeBalls = async function () {
-  for (let i = 0; i < KFK.tmpBalls.length; i++) {
-    await KFK.tmpBalls[i].timeline().stop();
-    await KFK.tmpBalls[i].addClass("noshow");
-  }
-};
-
-KFK.setNodeEventHandler = async function (jqNodeDIV, callback) {
-
-  //drag node
-  try {
-    var click = {
-      x: 0,
-      y: 0,
-    };
-    jqNodeDIV.off("mouseover mouseout");
-    jqNodeDIV.on("mouseover", () => {
-      KFK.driveNodeBalls(jqNodeDIV);
-    });
-    jqNodeDIV.on("mouseout", async () => {
-      await KFK.stopNodeBalls();
-    });
-    jqNodeDIV.draggable({
-      scroll: true,
-      containment: "parent",
-      start: (evt, ui) => {
-        KFK.stopNodeBalls();
-        click.x = evt.clientX;
-        click.y = evt.clientY;
-        KFK.fromJQ = jqNodeDIV.clone();
-        evt.stopImmediatePropagation();
-        evt.stopPropagation();
-        KFK.originZIndex = KFK.getZIndex(jqNodeDIV);
-        jqNodeDIV.css("z-index", "99999");
-        KFK.dragging = true;
-        KFK.positionBeforeDrag = {
-          x: KFK.divLeft(jqNodeDIV),
-          y: KFK.divTop(jqNodeDIV),
-        };
-      },
-      drag: (evt, ui) => {
-        var original = ui.originalPosition;
-
-        // jQuery will simply use the same object we alter here
-        ui.position = {
-          left: (evt.clientX - click.x + original.left) / KFK.scaleRatio,
-          top: (evt.clientY - click.y + original.top) / KFK.scaleRatio,
-        };
-      },
-      stop: async (evt, ui) => {
-        KFK.dragging = false;
-        await KFK.stopNodeBalls();
-
-        //如果做了这个标记，则不再做U操作，否则，节点又会被同步回来
-        if (jqNodeDIV.shouldBeDeleted === true) {
-          return;
-        }
-        if (KFK.updateable(jqNodeDIV) === false) {
-          console.log("upateable === false");
-          return;
-        }
-        if (KFK.APP.model.viewConfig.snap) {
-          let newPos = KFK.DivStyler.snapToGrid(jqNodeDIV);
-          KFK.DivStyler.moveDivTo(jqNodeDIV, newPos.x, newPos.y);
-        }
-        if (KFK.AdvOps.existsInGroup(KFK.selectedDIVs, jqNodeDIV) === false) {
-          KFK.cancelAlreadySelected();
-        }
-        KFK.startTrx();
-        try {
-          let deltaOfDragging = {
-            x: KFK.divLeft(jqNodeDIV) - KFK.positionBeforeDrag.x,
-            y: KFK.divTop(jqNodeDIV) - KFK.positionBeforeDrag.y,
-          };
-
-          let tobeMovedNodes = [];
-          //如果按住了shiftkey, 则只移动当前node, 不移动其他被选定Node
-          //move nodes, move divs, drag divs end, end drag divs
-          // dragend drag end
-          if (!evt.shiftKey) {
-            //拖动其它被同时选中的对象
-            KFK.shouldMovedInParalles = [];
-            let treeMap = new Map();
-            for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-              if (KFK.selectedDIVs[i].attr("id") !== jqNodeDIV.attr("id")) {
-                KFK.shouldMovedInParalles.push(KFK.selectedDIVs[i]);
-              }
-            }
-
-            for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-              await KFK.AdvOps.getDescendants(
-                KFK.selectedDIVs[i],
-                KFK.selectedDIVs[i],
-                KFK.shouldMovedInParalles,
-                treeMap
-              );
-            }
-
-            if (KFK.shouldMovedInParalles.length > 0) {
-              KFK.debug("others should be moved");
-              //要移动的个数是被选中的全部
-              for (let i = 0; i < KFK.shouldMovedInParalles.length; i++) {
-                let tmpFromJQ = KFK.shouldMovedInParalles[i].clone();
-                //虽然这出跳过了被拖动的节点，但在后面这个节点一样要被移动
-                //因此，所有被移动的节点数量就是所有被选中的节点数量
-                if (KFK.updateable(KFK.shouldMovedInParalles[i])) {
-                  let tmp = KFK.shouldMovedInParalles[i].clone();
-                  KFK.DivStyler.moveDivByDelta(
-                    KFK.shouldMovedInParalles[i],
-                    deltaOfDragging.x,
-                    deltaOfDragging.y
-                  );
-                  tobeMovedNodes.push({
-                    from: tmp,
-                    to: KFK.shouldMovedInParalles[i],
-                  });
-                  /*
-                  await KFK.syncNodePut(
-                    "U",
-                    KFK.shouldMovedInParalles[i].clone(),
-                    "move following selected",
-                    tmpFromJQ,
-                    false
-                  );
-                  */
-                }
-              }
-              for (let i = 0; i < KFK.shouldMovedInParalles.length; i++) {
-                KFK.redrawLinkLines(
-                  KFK.shouldMovedInParalles[i],
-                  "codrag",
-                  true
-                );
-              }
-            }
-          }
-
-          KFK.afterDragging = true;
-          jqNodeDIV.css("z-index", KFK.originZIndex);
-          KFK.originZIndex = 1;
-          //节点移动后，对连接到节点上的连接线重新划线
-          KFK.redrawLinkLines(jqNodeDIV, "after moving");
-          KFK.setSelectedNodesBoundingRect();
-
-          tobeMovedNodes.push({
-            from: KFK.fromJQ,
-            to: jqNodeDIV,
-          });
-
-        } finally {
-          console.log("END DRAG TRX");
-          KFK.yarkOpHistory({
-            obj: 'node',
-            from: KFK.fromJQ.clone(),
-            to: jqNodeDIV.clone()
-          });
-          KFK.onChange("Dragged");
-          KFK.focusOnNode(jqNodeDIV);
-          KFK.endTrx();
-        }
-      },
-    });
-  } catch (error) {
-    console.error(error);
-  }
-
-  try {
-    jqNodeDIV.hover(
-      () => {
-        $(document.body).css("cursor", "pointer");
-        KFK.hoverJqDiv(jqNodeDIV);
-        KFK.onC3 = true;
-      },
-      () => {
-        $(document.body).css("cursor", "default");
-        // jqNodeDIV.resizable('disable');
-        KFK.hoverJqDiv(null);
-        KFK.onC3 = true;
-      }
-    );
-  } catch (error) {
-    console.error(error);
-  }
-
-  try {
-    //防止点在节点上，以后，画出框选框
-    jqNodeDIV.mousedown((evt) => {
-      evt.stopImmediatePropagation();
-      evt.stopPropagation();
-    });
-  } catch (error) {
-    console.error(error);
-  }
-  //click node
-  //click on node
-  try {
-    jqNodeDIV.click(async (evt) => {
-      KFK.hide($(".clickOuterToHide"));
-      if (KFK.edittingJQ) {
-        await KFK.handleOutsideClick(evt);
-      }
-
-
-      KFK.pickedShape = null;
-      KFK.afterDragging = false;
-      KFK.afterResizing = false;
-      evt.stopImmediatePropagation();
-      evt.stopPropagation();
-      KFK.focusOnNode(jqNodeDIV);
-      if (KFK.mode === "pointer") {
-        KFK.selectNodeOnClick(jqNodeDIV, evt.shiftKey);
-        console.log("Set node property here ...");
-      } else if (KFK.mode === "connect") {
-        if (KFK.afterDragging === false) {
-          KFK.yarkLinkNode(jqNodeDIV, evt.shiftKey, "", KFK.FROM_CLIENT);
-        } else {
-          KFK.afterDragging = true;
-        }
-        evt.stopImmediatePropagation();
-        evt.stopPropagation();
-        evt.preventDefault();
-        return;
-      } else {
-        KFK.setMode("pointer");
-      }
-    });
-  } catch (error) {
-    console.error(error);
-  }
-
-  try {
-    //dblclick to edit
-    jqNodeDIV.dblclick(async function (evt) {
-      await KFK.procNodeDoubleClick(evt, jqNodeDIV);
-    });
-  } catch (error) {
-    console.error(error);
-  }
-
-  if (callback) await callback();
-};
-
-/**
- * 从一个节点，向其attr jump所记录ID的节点跳转
- */
-KFK.tryToJump = async function (jqDIV) {
-  if (NotSet(jqDIV)) jqDIV = KFK.getFocusHoverLastCreate();
-  if (jqDIV && jqDIV.attr("jump")) {
-    let followDIV = $(`#${jqDIV.attr("jump")}`);
-    if (followDIV.length <= 0) {
-      return;
-    }
-    followDIV = followDIV.first();
-    await KFK.addFromTo(jqDIV, followDIV);
-    KFK.scrollToNode(followDIV);
-  }
-};
-
-KFK.tryToJumpBack = function () {
-  KFK.jumpToPrevious(false);
-};
-
-// getSelection、createRange兼容
-KFK.isSupportRange = function () {
-  return (
-    typeof document.createRange === "function" ||
-    typeof window.getSelection === "function"
-  );
-};
-
-KFK.getCurrentRange = function () {
-  let range = null;
-  let selection = null;
-  if (KFK.isSupportRange()) {
-    selection = document.getSelection();
-    if (selection.getRangeAt && selection.rangeCount) {
-      range = document.getSelection().getRangeAt(0);
-    }
-  } else {
-    range = document.selection.createRange();
-  }
-  return range;
-};
-KFK.insertHtmlAfterRange = function (html) {
-  let selection = null;
-  let range = null;
-  if (KFK.isSupportRange()) {
-    // IE > 9 and 其它浏览器
-    selection = document.getSelection();
-    if (selection.getRangeAt && selection.rangeCount) {
-      let fragment, node, lastNode;
-      range = selection.getRangeAt(0);
-      range.deleteContents();
-      let el = document.createElement("span");
-      el.innerHTML = html;
-      // 创建空文档对象,IE > 8支持documentFragment
-      fragment = document.createDocumentFragment();
-
-      while ((node = el.firstChild)) {
-        lastNode = fragment.appendChild(node);
-      }
-      range.insertNode(fragment);
-
-      if (lastNode) {
-        range = range.cloneRange();
-        range.setStartAfter(lastNode);
-        range.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(range);
-      }
-    }
-  } else if (document.selection && document.selection.type != "Control") {
-    // IE < 9
-    document.selection.createRange().pasteHTML(html);
-  }
-};
-
-KFK.cleanTextInput = function (jInner, allowBR) {
-  let html = jInner.prop("innerHTML");
-  html = html.replace("<div>", " ");
-  html = html.replace("</div>", " ");
-  if (allowBR) {
-    html = html.replace(/<br><br>$/, "<br>");
-    html = html + "<br><br>";
-  } else {
-    html = html.replace("<br>", "");
-  }
-  jInner.prop("innerHTML", html);
-  // KFK.insertHtmlAfterRange('<br><br>');
-  if (window.getSelection) {
-    //ie11 10 9 ff safari
-    jInner.focus();
-    var range = window.getSelection(); //创建range
-    range.selectAllChildren(jInner[0]); //range 选择obj下所有子内容
-    range.collapseToEnd(); //光标移至最后
-  } else if (document.selection) {
-    //ie10 9 8 7 6 5
-    var range = document.selection.createRange(); //创建选择对象
-    //var range = document.body.createTextRange();
-    range.moveToElementText(jInner[0]); //range定位到obj
-    range.collapse(false); //光标移至最后
-    range.select();
-  }
-};
-
-//启动单行文字编辑
-KFK.startInlineEditing = function (jqNodeDIV) {
-  KFK.isEditting = true;
-  jqNodeDIV.find(".innerobj").focus();
-  KFK.inlineEditor = jqNodeDIV;
-  let allowBR = jqNodeDIV.attr("nodetype") !== "text";
-  //div keydown
-  jqNodeDIV.keydown(function (evt) {
-    if (evt.keyCode === 13 && (evt.shiftKey || evt.ctrlKey || evt.metaKey)) {
-      let jInner = jqNodeDIV.find(".innerobj");
-      KFK.cleanTextInput(jInner, allowBR);
-      evt.stopPropagation();
-      evt.preventDefault();
-    } else if (evt.keyCode === 13) {
-      //ENTER || PageUp
-      let jInner = jqNodeDIV.find(".innerobj");
-      KFK.cleanTextInput(jInner, allowBR);
-      evt.stopPropagation();
-      evt.preventDefault();
-    } else if (evt.keyCode == 35 || evt.keyCode === 34) {
-      //END  || PageDown
-      //阻止浏览器滚动窗口的缺省动作
-      evt.stopPropagation();
-      evt.preventDefault();
-    } else if (evt.keyCode === 36 || evt.keyCode === 33 || evt.keyCode === 32) {
-      //HOME
-      //阻止浏览器滚动窗口的缺省动作
-      evt.stopPropagation();
-      evt.preventDefault();
-      // let jInner = jqNodeDIV.find('.innerobj');
-      // if (window.getSelection) { //ie11 10 9 ff safari
-      //   jInner.focus();
-      //   var range = window.getSelection(); //创建range
-      //   range.selectAllChildren(jInner[0]); //range 选择obj下所有子内容
-      //   range.collapseToStart(); //光标移至最后
-      // } else if (document.selection) { //ie10 9 8 7 6 5
-      //   var range = document.selection.createRange(); //创建选择对象
-      //   //var range = document.body.createTextRange();
-      //   range.moveToElementText(jInner[0]); //range定位到obj
-      //   range.moveEnd(jInner[0], 0);
-      //   range.moveStart(jInner[0], 0);
-      //   range.collapse(); //光标移至最后
-      // }
-    }
-    // on esc do not set value back to node
-    // if (evt.keyCode === 27) {
-    //   console.log("presessed ESC");
-    // }
-  });
-};
-KFK.endInlineEditing = function () {
-  KFK.isEditting = false;
-  KFK.inlineEditor = null;
-};
-
-/**
- * 开始节点编辑，根据节点类型，相应使用不同的编辑器
- * 单行文字用inline editing，  textblock和yellowtip用textarea
- */
-KFK.startNodeEditing = async function (jqNodeDIV, enterSelect) {
-  if (KFK.anyLocked(jqNodeDIV)) return;
-  if (jqNodeDIV.attr("nodetype") === "text") {
-    KFK.startInlineEditing(jqNodeDIV);
-  } else KFK.startNodeEditing_withTextArea(jqNodeDIV, enterSelect);
-};
-
-KFK.startNodeEditing_withTextArea = function (jqNodeDIV, enterSelect) {
-  if (getBoolean(jqNodeDIV.attr("edittable")) && KFK.notAnyLocked(jqNodeDIV)) {
-    KFK.fromJQ = jqNodeDIV.clone();
-    let innerText = el(jqNodeDIV.find(".innerobj"));
-    KFK.editTextNodeWithTextArea(innerText, el(jqNodeDIV), enterSelect);
-  }
-};
-
-KFK.divLeft = function (jqDiv) {
-  return KFK.unpx(jqDiv.css("left"));
-};
-KFK.divCenter = function (jqDiv) {
-  return KFK.divLeft(jqDiv) + KFK.divWidth(jqDiv) * 0.5;
-};
-KFK.divRight = function (jqDiv) {
-  return KFK.divLeft(jqDiv) + KFK.divWidth(jqDiv);
-};
-KFK.divTop = function (jqDiv) {
-  return KFK.unpx(jqDiv.css("top"));
-};
-KFK.divMiddle = function (jqDiv) {
-  return KFK.divTop(jqDiv) + KFK.divHeight(jqDiv) * 0.5;
-};
-KFK.divBottom = function (jqDiv) {
-  return KFK.divTop(jqDiv) + KFK.divHeight(jqDiv);
-};
-KFK.divWidth = function (jqDiv) {
-  // return jqDiv.width();
-  return KFK.unpx(jqDiv.css("width"));
-};
-KFK.divHeight = function (jqDiv) {
-  // return jqDiv.height();
-  return KFK.unpx(jqDiv.css("height"));
-};
-KFK.divRect = function (jqDiv) {
-  return {
-    left: KFK.divLeft(jqDiv),
-    top: KFK.divTop(jqDiv),
-    right: KFK.divRight(jqDiv),
-    bottom: KFK.divBottom(jqDiv),
-    center: KFK.divCenter(jqDiv),
-    middle: KFK.divMiddle(jqDiv),
-    width: KFK.divWidth(jqDiv),
-    height: KFK.divHeight(jqDiv),
-  };
-};
-KFK.divMove = function (jqDiv, left, top) {
-  jqDiv.css({
-    left: left,
-    top: top,
-  });
-};
-KFK.divDMove = function (jqDiv, deltaX, deltaY) {
-  let left = KFK.divLeft(jqDiv);
-  let top = KFK.divTop(jqDiv);
-  jqDiv.css({
-    left: left + deltaX,
-    top: top + deltaY,
-  });
-};
-
-/**
- * 得到所选DIVS中没有被锁定的div的个数
- * @param divs  如为undefined，则自动处理KFK.selectedDIVs
- */
-KFK.getUnlockedCount = function (divs) {
-  if (divs === undefined) {
-    divs = KFK.selectedDIVs;
-  }
-  let numberOfNotLocked = 0;
-  for (let i = 0; i < divs.length; i++) {
-    if (KFK.anyLocked(divs[i]) === false) {
-      numberOfNotLocked = numberOfNotLocked + 1;
-    }
-  }
-  return numberOfNotLocked;
-};
-
-KFK.sameSize = async function (direction) {
-  KFK.DivStyler ?
-    KFK.DivStyler.sameSize(direction) :
-    import("./divStyler").then((pack) => {
-      KFK.DivStyler = pack.DivStyler;
-      KFK.DivStyler.sameSize(direction);
-    });
-};
-KFK.arrangeNodes = async function (direction) {
-  KFK.DivStyler ?
-    KFK.DivStyler.arrangeNodes(direction) :
-    import("./divStyler").then((pack) => {
-      KFK.DivStyler = pack.DivStyler;
-      KFK.DivStyler.arrangeNodes(direction);
-    });
-};
-
-KFK.scroll_posX = function (x) {
-  return x + KFK.scrollContainer.scrollLeft();
-};
-KFK.scroll_posY = function (y) {
-  return y + KFK.scrollContainer.scrollTop();
-};
-
-KFK.offsetLineDataAttr = function (lineDIV, offset) {
-  let x1 = parseInt($(lineDIV).attr("x1"));
-  let y1 = parseInt($(lineDIV).attr("y1"));
-  let x2 = parseInt($(lineDIV).attr("x2"));
-  let y2 = parseInt($(lineDIV).attr("y2"));
-  x1 += offset.x;
-  y1 += offset.y;
-  x2 += offset.x;
-  y2 += offset.y;
-  $(lineDIV).attr("x1", x1);
-  $(lineDIV).attr("y1", y1);
-  $(lineDIV).attr("x2", x2);
-  $(lineDIV).attr("y2", y2);
-};
-
-//Delete node  remove node
-KFK.deleteNode_request = async function (jqDIV) {
-  KFK.stopNodeBalls();
-  let myId = jqDIV.attr("id");
-  let links = KFK.tpl.find(`.link[from="${myId}"], .link[to="${myId}"]`);
-  console.log(links);
-  KFK.yarkOpHistory(
-    {
-      obj: 'node',
-      from: jqDIV,
-      to: null,
-      links: links
-    }
-  );
-  await KFK.deleteLinks(jqDIV, links, true);
-  jqDIV.remove();
-  KFK.onChange("Delete");
-};
-
-KFK.deleteLinks = async function (jqDIV, links) {
-  links.each(async (index, link) => {
-    let jLink = $(link);
-    let connect_id = `connect_${jLink.attr("from")}_${jLink.attr("to")}`;
-    await KFK.removeConnectById(connect_id);
-  });
-};
-
-/**
- * 去掉一个div的所有链接
- * @param jqDIV 元素
- * @param forDelete 这个节点是要被删除吗？
- */
-KFK.cleanUpConnection = async function (jqDIV, forDelete = false) {
-  //删除linkto线条
-  let myId = jqDIV.attr("id");
-  let toIds = KFK.stringToArray(jqDIV.attr("linkto"));
-  toIds.forEach((toId) => {
-    let lineClassSelector = `.connect_${myId}_${toId}`;
-    let triClassSelector = `.connect_${myId}_${toId}_triangle`;
-    try {
-      KFK.svgDraw.findOne(lineClassSelector).remove();
-    } catch (err) {} finally {}
-    try {
-      KFK.svgDraw.findOne(triClassSelector).remove();
-    } catch (err) {} finally {}
-  });
-  //如果这个节点不是要删除，那么它的变化要被记录
-  if (forDelete === false) {
-    if (toIds.length > 0) {
-      let oldJq = jqDIV.clone();
-      jqDIV.attr("linkto", "");
-      await KFK.syncNodePut(
-        "U",
-        jqDIV.clone(),
-        "remove connect",
-        oldJq,
-        false,
-        0,
-        1
-      );
-    }
-  }
-
-  //重置全局ZIndex 同时，删除那些链接到当前节点的连接线
-  let myZI = KFK.getZIndex(jqDIV);
-  let count = 0;
-  let allnodes = KFK.JC3.find(".kfknode");
-  let tmp1 = "";
-  let tmp2 = "";
-  allnodes.each(async (index, aDIV) => {
-    count += 1;
-    let jqDIV = $(aDIV);
-    let fromId = jqDIV.attr("id");
-    let tmpzi = KFK.getZIndex(jqDIV);
-    //if (tmpzi > myZI) {
-    //KFK.setZIndex(jqDIV, tmpzi - 1);
-    //}
-    tmp1 = jqDIV.attr("linkto");
-    let arr = KFK.stringToArray(tmp1);
-    if (arr.indexOf(myId) >= 0) {
-      let oldJq = jqDIV.clone();
-      arr.splice(arr.indexOf(myId), 1);
-      jqDIV.attr("linkto", arr.join(","));
-      await KFK.syncNodePut(
-        "U",
-        jqDIV.clone(),
-        "remove connect",
-        oldJq,
-        false,
-        0,
-        1
-      );
-
-      let lineClassSelector = `.connect_${fromId}_${myId}`;
-      let triClassSelector = `.connect_${fromId}_${myId}_triangle`;
-      try {
-        KFK.svgDraw.findOne(lineClassSelector).remove();
-      } catch (err) {} finally {}
-      try {
-        KFK.svgDraw.findOne(triClassSelector).remove();
-      } catch (err) {} finally {}
-    }
-  });
-  let nodeIndex = KFK.selectedDIVs.indexOf(jqDIV);
-  if (nodeIndex >= 0) {
-    KFK.selectedDIVs.splice(nodeIndex, 1);
-    KFK.setSelectedNodesBoundingRect();
-  }
-};
-
-KFK._deleteShape = async function (svgLine) {
-  svgLine.attr({
-    "stroke-width": svgLine.attr("origin-width"),
-  });
-  await KFK.syncLinePut("D", svgLine, "delete shape", null, false);
-};
-
-KFK.getNodeIdsFromConnectId = function (cid) {
-  let nid = cid;
-  let tid = cid;
-  nid = nid.substr(nid.indexOf("_") + 1);
-  nid = nid.substr(0, nid.indexOf("_"));
-  tid = tid.substr(tid.lastIndexOf("_") + 1);
-  return [nid, tid];
-};
-
-/**
- * 删除hover或者selected 节点
- * @param evt oncut事件
- * @param cutMode， 是否是cut方式，cut方式下，删除前先复制
- */
-KFK.deleteObjects = async function (evt, cutMode = false) {
-  //如果有多个节点被选择，则优先进行多项删除
-  if (KFK.docIsReadOnly()) return;
-  let affectedParentsArray = [];
-  KFK.startTrx();
-  try {
-    KFK.copyCandidateDIVs = [];
-    KFK.copyCandidateLines = [];
-    if (KFK.selectedDIVs.length > 1 || KFK.selectedShapes.length > 1) {
-      if (KFK.selectedDIVs.length > 1) {
-        KFK.debug("delete, selected DIVS >1");
-        let notLockedCount = 0;
-        for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-          if (KFK.anyLocked(KFK.selectedDIVs[i]) === false) {
-            notLockedCount += 1;
-          }
-        }
-        KFK.debug(
-          `没锁定的节点数量是 ${notLockedCount}, 一共是${KFK.selectedDIVs.length}`
-        );
-        if (notLockedCount > 0) {
-          let delSer = 0;
-          let delCount = notLockedCount;
-          for (let i = 0; i < KFK.selectedDIVs.length;) {
-            if (KFK.anyLocked(KFK.selectedDIVs[i]) === false) {
-              if (cutMode === true) {
-                //copy时不过滤nocopy
-                let jTemp = KFK.selectedDIVs[i].clone();
-                let jTitle = jTemp.find(".coco_title");
-                if (jTitle.length > 0) {
-                  jTitle.text(jTitle.text() + "的复制");
-                }
-                KFK.copyCandidateDIVs.push(jTemp);
-              }
-              affectedParentsArray.push([
-                ...KFK.getParent(KFK.selectedDIVs[i]),
-              ]);
-              await KFK.syncNodePut(
-                "D",
-                KFK.selectedDIVs[i],
-                "delete node",
-                null,
-                false,
-                i,
-                delCount
-              );
-              i++;
-            }
-          }
-
-          affectedParentsArray = KFK.AdvOps.uniquefyKfkObjectArray(
-            affectedParentsArray
-          );
-          //TODO: for every affected Parent, re-layout it's children if it's a autolayout node
-          //TODO: place autolayout icon on the right or left of parent node
-          console.log(affectedParentsArray.length);
-        }
-      }
-      if (KFK.selectedShapes.length > 1) {
-        KFK.debug("delete, selected Shapes >1");
-        let notLockedCount = 0;
-        for (let i = 0; i < KFK.selectedShapes.length; i++) {
-          if (KFK.lineLocked(KFK.selectedShapes[i]) === false) {
-            notLockedCount += 1;
-          }
-        }
-        KFK.debug(
-          `没锁定的Shape数量是 ${notLockedCount}, 一共是${KFK.selectedShapes.length}`
-        );
-        if (notLockedCount > 0) {
-          let delSer = 0;
-          let delCount = notLockedCount;
-          for (let i = 0; i < KFK.selectedShapes.length;) {
-            if (KFK.lineLocked(KFK.selectedShapes[i]) === false) {
-              KFK._deleteShape(KFK.selectedShapes[i]);
-              i++;
-            }
-          }
-        }
-      }
-    } else {
-      //没有多项选择时，则进行单项删除
-      //首先，先处理鼠标滑过的NODE
-      if (KFK.hoverJqDiv()) {
-        let theDIV = KFK.hoverJqDiv();
-        if (KFK.anyLocked(theDIV)) return;
-        let jTemp = theDIV.clone();
-        let jTitle = jTemp.find(".coco_title");
-        if (jTitle.length > 0) {
-          jTitle.text(jTitle.text() + "的复制");
-        }
-        KFK.copyCandidateDIVs = [jTemp];
-        //这个地方加上shouldBeDeleted标志应该没有必要，不过还是加一下
-        //在拖动覆盖其它节点，内容合并后删除被拖动节点时，这个标志是一定要加的，防止draggable end事件中，重新上传U指令，这样内容又会update回来
-        theDIV.shouldBeDeleted = true;
-        KFK.deleteNode_request(theDIV);
-        KFK.hoverJqDiv(null);
-      } else if (KFK.hoveredConnectId) {
-        //delete connect
-        //最后看鼠标滑过的connect（节点间连接线）
-        if (KFK.docIsReadOnly()) return;
-        console.log("Delete a Connection...");
-        //Find ids of the two nodes connected by this connect.
-        let tmpNodeIdPair = KFK.getNodeIdsFromConnectId(KFK.hoveredConnectId);
-        let nid = tmpNodeIdPair[0];
-        let tid = tmpNodeIdPair[1];
-        //let jqFrom = $(`#${nid}`);
-        //let jqTo = $(`#${tid}`);
-        //if (KFK.anyLocked(jqFrom)) return;
-        //if (KFK.anyLocked(jqTo)) return;
-        //let oldJq = jqFrom.clone();
-        //Remove this connect from the FROM node
-        //KFK.removeLinkTo(jqFrom, tid);
-        //let connect_id = `connect_${nid}_${tid}`;
-        //Remove ths connect drawing
-        let tmp = KFK.tpl.find(`.link[from="${nid}"][to="${tid}"]`);
-        let jTmp = $(tmp).clone();
-        await KFK.removeConnectById(KFK.hoveredConnectId);
-        KFK.yarkOpHistory(
-          {
-            obj: 'link',
-            from: jTmp,
-            to: null
-          }
-        );
-        //KFK.redrawLinkLines(jqFrom);
-        //删除一个connect, 则jqFrom被修改
-        KFK.onChange("Delete Connect");
-      }
-    }
-    if (KFK.copyCandidateDIVs.length > 0 || KFK.copyCandidateLines.length > 0) {
-      //判断是否是cut， 而不是delete， cut有clipbaordData, delete没有
-      if (evt && evt.clipboardData) {
-        evt.clipboardData.setData("text/plain", "usediv");
-        evt.clipboardData.setData("text/html", "usediv");
-      }
-    }
-    evt.preventDefault();
-    KFK.holdEvent(evt);
-  } catch (error) {
-    console.error(error);
-  } finally {
-    KFK.endTrx();
-  }
-};
-
-/**
- * get Hovered, if null, then focused, if null, then lastcraeted node
- */
-KFK.getHoverFocusLastCreateInner = () => {
-  let div = KFK.getHoverFocusLastCreate();
-  if (NotSet(div)) return undefined;
-  let inner = div.find(".innerobj");
-  if (inner.length > 0) return inner;
-  else return undefined;
-};
-KFK.getHoverFocusLastCreate = () => {
-  let ret = KFK.hoverJqDiv();
-  if (NotSet(ret)) {
-    ret = KFK.lastFocusOnJqNode;
-    if (NotSet(ret)) {
-      ret = KFK.lastCreatedJqNode;
-      if (NotSet(ret)) {
-        ret = undefined;
-      }
-    }
-  }
-  return ret;
-};
-
-KFK.getFocusHoverLastCreate = () => {
-  let ret = KFK.lastFocusOnJqNode;
-  if (NotSet(ret)) {
-    ret = KFK.hoverJqDiv();
-    if (NotSet(ret)) {
-      ret = KFK.lastCreatedJqNode;
-      if (NotSet(ret)) {
-        ret = undefined;
-      }
-    }
-  }
-  return ret;
-};
-
-/**
- * 进入当前hover对象的编辑状态。
- * 锁定状态的对象不可编辑。
- * todolist，如果是 待办， 则打开底部编辑窗，进行中，已完成，无动作
- *
- * @param evt  键盘事件，有document的keydown事件处理传递过来
- * @param enterSelect 之前考虑用来控制开始编辑后是否全选，现在看好像没什么用，缺省全选了
- */
-KFK.editFocusedThenHoveredObject = async function (evt, enterSelect = false) {
-  //如果是todolist, 不允许编辑
-  let jqNodeDIV = KFK.getFocusHoverLastCreate();
-  if (NotSet(jqNodeDIV)) return;
-  if (KFK.anyLocked(jqNodeDIV)) return;
-  //Don't edit todolist directly, show edit dialog instead.
-
-  if (jqNodeDIV.hasClass("noedit")) {
-    if (jqNodeDIV.attr("id") === "coco_todo") {
-      KFK.toggleInputFor("todo");
-      await KFK.showMsgInputDlg();
-    } else if (jqNodeDIV.attr("id") === "coco_chat") {
-      KFK.toggleInputFor("chat");
-      await KFK.showMsgInputDlg();
-    }
-    return;
-  }
-  //回车的evt要组织掉,否则,在textarea.select()时,会导致文字丢失
-  evt.preventDefault();
-  evt.stopImmediatePropagation();
-  evt.stopPropagation();
-  KFK.startNodeEditing(jqNodeDIV, enterSelect);
-};
-
-/**
- * 复制对象
- */
-KFK.duplicateHoverObject = async function (evt, action = undefined) {
-  KFK.debug("entered duplicateHoverObject");
-  if (KFK.docIsReadOnly()) {
-    KFK.debug("docIsReady, no duplicate");
-    return;
-  }
-  let offset = {
-    x: 0,
-    y: 0,
-  };
-  if (action === "copy") {
-    if (KFK.selectedDIVs.length > 1) {
-      //优先多选
-      KFK.debug("multiple nodes were selected");
-      //过滤掉TODOLISTDIV/chatmessage 等nocopy DIV
-      let filteredDIVs = KFK.selectedDIVs.filter((div) => {
-        return div.hasClass("nocopy") === false;
-      });
-      KFK.copyCandidateDIVs = filteredDIVs.map((div) => {
-        let jTemp = div.clone();
-        let jTitle = jTemp.find(".coco_title");
-        if (jTitle.length > 0) {
-          jTitle.text(jTitle.text() + "的复制");
-        }
-        return jTemp;
-      });
-      return true;
-    } else if (KFK.getPropertyApplyToJqNode()) {
-      //然后selected
-      //过滤掉TODOLISTDIV
-      if (KFK.getPropertyApplyToJqNode().hasClass("nocopy")) {
-        KFK.copyCandidateDIVs = [];
-        KFK.copyCandidateLines = [];
-      } else {
-        let jTemp = KFK.getPropertyApplyToJqNode().clone();
-        let jTitle = jTemp.find(".coco_title");
-        if (jTitle.length > 0) {
-          jTitle.text(jTitle.text() + "的复制");
-        }
-        KFK.copyCandidateDIVs = [jTemp];
-        KFK.copyCandidateLines = [];
-      }
-      return true;
-    } else if (
-      KFK.hoverSvgLine() &&
-      (action === undefined || action === "copy")
-    ) {
-      KFK.hoverSvgLine().attr({
-        "stroke-width": KFK.hoverSvgLine().attr("origin-width"),
-      });
-      KFK.copyCandidateLines = [KFK.hoverSvgLine().clone()];
-      KFK.copyCandidateDIVs = [];
-      //下面这句代码在第一次按META-D时就粘贴了一条,有些不用,
-      // await KFK.makeACopyOfLine(KFK.lineToCopy, evt.shiftKey);
-      return true;
-    } else {
-      return false;
-    }
-  } else if (action === "paste") {
-    if (KFK.copyCandidateDIVs && KFK.copyCandidateDIVs.length > 0) {
-      await KFK.makeCopyOfJQs(KFK.copyCandidateDIVs, evt.shiftKey);
-    } else if (KFK.copyCandidateLines && KFK.copyCandidateLines.length > 0) {
-      await KFK.makeCopyOfLines(KFK.copyCandidateLines, evt.shiftKey);
-    } else {
-      KFK.debug("Nothing to paste");
-    }
-    // if (KFK.jqToCopy) {
-    // } else if (KFK.lineToCopy) {
-    //   await KFK.makeACopyOfLine(KFK.lineToCopy, evt.shiftKey);
-    //   //await KFK.makeACopyOfLine(KFK.lineToCopy, evt.shiftKey);
-    // }
-    return true;
-  }
-  return true;
-  evt.stopPropagation();
-};
-
-KFK.makeCopyOfJQs = async function (jqstocopy, shiftKey) {
-  //现在是移动指定位置再次META-D才放置对象,因此offset没用.事实上,offset在复制node时就一直没有用到
-  let offset = {
-    x: 0,
-    y: 0,
-  };
-  let theDIV = el(jqstocopy[0]);
-
-  let startPoint = {
-    x: KFK.divLeft(jqstocopy[0]),
-    y: KFK.divTop(jqstocopy[0]),
-  };
-  KFK.startTrx();
-  try {
-    for (let i = 0; i < jqstocopy.length; i++) {
-      let oldJqPos = {
-        x: KFK.divLeft(jqstocopy[i]),
-        y: KFK.divTop(jqstocopy[i]),
-      };
-      let deltaX = oldJqPos.x - startPoint.x;
-      let deltaY = oldJqPos.y - startPoint.y;
-      let jqNewNode = KFK.makeCloneDIV(jqstocopy[i], KFK.myuid(), {
-        left: KFK.scalePoint(KFK.scrXToJc3X(KFK.currentMousePos.x))
-          - KFK.tplNode_width * 0.5
-          + deltaX,
-
-        top: KFK.scalePoint(KFK.scrYToJc3Y(KFK.currentMousePos.y))
-          - KFK.tplNode_height * 0.5
-          + deltaY,
-      });
-      KFK.justCreatedJqNode = jqNewNode;
-      KFK.lastCreatedJqNode = jqNewNode;
-
-      jqNewNode.appendTo(KFK.C3);
-      await KFK.setNodeEventHandler(jqNewNode, async function () {
-        if (i === 0) KFK.focusOnNode(jqNewNode);
-      });
-    }
-  } finally {
-    KFK.endTrx();
-    KFK.onChange("Copy");
-  }
-  return;
-};
-
-KFK.makeCloneDIV = function (orig, newid, newcss) {
-  let ret = orig.clone(false);
-  ret.attr("id", newid);
-  if (newcss) ret.css(newcss);
-  KFK.removeNodeEventFootprint(ret);
-
-  return ret;
-};
-KFK.makeCopyOfLines = async function (linestocopy) {
-  let startPoint = {
-    x: linestocopy[0].cx(),
-    y: linestocopy[0].cy(),
-  };
-  for (let i = 0; i < linestocopy.length; i++) {
-    let newLine = linestocopy[i].clone();
-    let deltaX = linestocopy[i].cx() - startPoint.x;
-    let deltaY = linestocopy[i].cy() - startPoint.y;
-
-    let newline_id = "shape_" + KFK.myuid();
-    let classes = newLine.classes();
-    classes.forEach((className, index) => {
-      if (className !== "kfkshape") {
-        newLine.removeClass(className);
-      }
-    });
-    newLine.attr("id", newline_id);
-    newLine.addClass(newline_id);
-    //现在是移动指定位置再次META-D才放置对象,因此offset没用.
-    //之前的代码在x,y后面分别加了个20, 以便不覆盖到节点
-    //现在第一次点取不马上复制了,+offset已经没有了必要
-    newLine.center(
-      KFK.scalePoint(KFK.scrXToJc3X(KFK.currentMousePos.x)) + deltaX,
-      KFK.scalePoint(KFK.scrYToJc3Y(KFK.currentMousePos.y)) + deltaY
-    );
-    // newLine.addTo(linestocopy[i].parent());
-    newLine.addTo(KFK.svgDraw);
-    KFK.addShapeEventListner(newLine);
-    await KFK.syncLinePut("C", newLine, "duplicate line", null, false);
-  }
-};
-KFK.makeACopyOfLine = async function (linetocopy) {
-  let newLine = KFK.lineToCopy.clone();
-
-  let newline_id = "shape_" + KFK.myuid();
-  let classes = newLine.classes();
-  classes.forEach((className, index) => {
-    if (className !== "kfkshape") {
-      newLine.removeClass(className);
-    }
-  });
-  newLine.attr("id", newline_id);
-  newLine.addClass(newline_id);
-  //现在是移动指定位置再次META-D才放置对象,因此offset没用.
-  //之前的代码在x,y后面分别加了个20, 以便不覆盖到节点
-  //现在第一次点取不马上复制了,+offset已经没有了必要
-  //TODO: curentMousePos位置有问题, 现在应该是JC3的了
-  newLine.center(
-    KFK.scalePoint(KFK.scrXToJc3X(KFK.currentMousePos.x)),
-    KFK.scalePoint(KFK.scrYToJc3Y(KFK.currentMousePos.y))
-  );
-  newLine.addTo(KFK.lineToCopy.parent());
-  KFK.addShapeEventListner(newLine);
-  await KFK.syncLinePut("C", newLine, "duplicate line", null, false);
-};
-
-KFK.getBoundingRectOfSelectedDIVs = function () {
-  if (KFK.selectedDIVs.length == 0) return;
-  let ret = {
-    left: KFK.divLeft(KFK.selectedDIVs[0]),
-    top: KFK.divTop(KFK.selectedDIVs[0]),
-    right: KFK.divRight(KFK.selectedDIVs[0]),
-    bottom: KFK.divBottom(KFK.selectedDIVs[0]),
-  };
-  for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-    let tmpRect = {
-      left: KFK.divLeft(KFK.selectedDIVs[i]),
-      top: KFK.divTop(KFK.selectedDIVs[i]),
-      right: KFK.divRight(KFK.selectedDIVs[i]),
-      bottom: KFK.divBottom(KFK.selectedDIVs[i]),
-    };
-    if (tmpRect.left < ret.left) {
-      ret.left = tmpRect.left;
-    }
-    if (tmpRect.top < ret.top) {
-      ret.top = tmpRect.top;
-    }
-    if (tmpRect.right > ret.right) {
-      ret.right = tmpRect.right;
-    }
-    if (tmpRect.bottom > ret.bottom) {
-      ret.bottom = tmpRect.bottom;
-    }
-  }
-  ret.width = ret.right - ret.left;
-  ret.height = ret.bottom - ret.top;
-
-  return ret;
-};
-
-KFK.getText = function (jqdiv) {
-  let text_filter = ".innerobj";
-  return jqdiv.find(text_filter).text();
-};
-
-KFK.setText = function (jqdiv, text) {
-  let text_filter = ".innerobj";
-  return jqdiv.find(text_filter).text(text);
-};
-
-KFK.jc3PosToJc1Pos = function (pos) {
-  return {
-    x: pos.x * KFK.scaleRatio + KFK.LeftB,
-    y: pos.y * KFK.scaleRatio + KFK.TopB,
-  };
-};
-
-KFK.jc3XToJc1X = function (x) {
-  return x + KFK.LeftB;
-};
-KFK.jc3YToJc1Y = function (y) {
-  return y + KFK.TopB;
-};
-KFK.jc1XToJc3X = function (x) {
-  return x - KFK.LeftB;
-};
-KFK.jc1YToJc3Y = function (y) {
-  return y - KFK.TopB;
-};
-
-//Screen pos x to JC3 pos x
-KFK.scrXToJc3X = function (x) {
-  return KFK.scrXToJc1X(x) - KFK.LeftB;
-};
-KFK.scrYToJc3Y = function (y) {
-  return KFK.scrYToJc1Y(y) - KFK.TopB;
-};
-
-//Screen pos x to JC1 pos x
-KFK.scrXToJc1X = function (x) {
-  return x + KFK.JS1.scrollLeft();
-};
-KFK.scrYToJc1Y = function (y) {
-  return y + KFK.JS1.scrollTop();
-};
-KFK.jc1XToScrX = function (x) {
-  return x - KFK.JS1.scrollLeft();
-};
-KFK.jc1YToScrY = function (y) {
-  return y - KFK.JS1.scrollTop();
-};
-
-KFK.saveLocalViewConfig = function () {
-  localStorage.setItem("viewConfig", JSON.stringify(KFK.APP.model.viewConfig));
-};
-
-
-KFK.toggleShowGrid = function (checked) {
-  if (checked) {
-    let bgcolor = $("#containerbkg").css("background-color");
-    bgcolor = KFK.secureHexColor(bgcolor);
-    KFK.setGridColor(bgcolor);
-  } else {
-    $("#containerbkg").removeClass("grid1");
-    $("#containerbkg").removeClass("grid2");
-  }
-  KFK.saveLocalViewConfig();
-};
-
-KFK.init = async function () {
-  if (KFK.inited === true) {
-    console.error("KFK.init was called more than once, maybe loadImages error");
-    return;
-  }
-  KFK.debug("Initializing...");
-  //KFK.checkBrowser();
-  $("body").css("overflow", "scroll");
-  $(".showAfterInit").removeClass("showAfterInit");
-  try {
-    //KFK.loadImages();
-    // KFK.loadSvgs();
-    KFK.initLayout();
-    KFK.initC3();
-    KFK.initLineTransformer();
-    KFK.initLeftRightPanelEventHandler();
-  } catch (error) {
-    console.error("Designer initialization error");
-    console.error(error);
-  }
-  KFK.loadModule("AdvOps");
-  KFK.loadModule("DivStyler");
-  //$("body").css("overflow", "hidden");
-  if ($("#S1").length < 1) {
-    console.warn("S1 not found, designer is missing, should not happen");
-    return;
-  }
-  KFK.hide(KFK.JC3);
-
-  KFK.addSvgLayer();
-
-  KFK.opstack.splice(0, KFK.opstacklen);
-  KFK.opz = -1;
-  KFK.setAppData("model", "actionlog", []);
-
-  // KFK.APP.setData("model", "cocodoc", KFK.DocController.getDummyDoc());
-  // localStorage.removeItem("cocodoc");
-
-  console.log("Add document event handler");
-  KFK.addDocumentEventHandler();
-  KFK.focusOnC3();
-  KFK.cancelAlreadySelected();
-
-  //需要在explorer状态下隐藏的，都可以加上noshow, 在进入Designer时，noshow会被去掉
-  //并以动画形式显示出来
-  $(".padlayout").removeClass("noshow");
-  $(".padlayout").fadeIn(1000, function () {
-    // Animation complete
-  });
-
-  if (KFK.docIsReadOnly()) {
-    $('#leftPanel').addClass("noshow");
-  }
-  if (KFK.tplid === "inner") {
-    await KFK.loadWorkflow(KFK.wfid);
-  } else {
-    await KFK.loadDoc(KFK.tplid);
-  }
-};
-
-KFK.loadDoc = async function (tplid) {
-  try {
-    KFK.hide(KFK.JC3);
-    /*
-    Client.setSessionToken();
-    Client.readTemplate(tplid).then(async (tplobj) => {
-      KFK.currentTplId = tplid;
-      KFK.tpl = $(tplobj.doc);
-      let nodes = KFK.tpl.find(".node");
-      nodes.addClass("kfknode");
-      await KFK.JC3.append(nodes);
-      let guiNodes = KFK.JC3.find(".node");
-      for (let i = 0; i < guiNodes.length; i++) {
-        let jqNode = $(guiNodes[i]);
-        await KFK.setNodeEventHandler(jqNode);
-        if (KFK.docIsReadOnly()) {
-          jqNode.draggable("disable");
-        } else {
-          jqNode.draggable("enable");
-        }
-        KFK.redrawLinkLines(jqNode, "loadDoc", false);
-      }
-
-      if (KFK.docIsNotReadOnly()) {
-        $("#linetransformer").draggable("enable");
-      } else {
-        $("#linetransformer").draggable("disable");
-      }
-      KFK.myFadeOut($(".loading"));
-      KFK.myFadeIn(KFK.JC3, 100);
-      $("#overallbackground").removeClass("grid1");
-      //focusOnC3会导致C3居中
-      KFK.focusOnC3();
-      KFK.scrollToLastPosition(KFK.tplid);
-      KFK.C3.dispatchEvent(KFK.refreshC3Event);
-    });;
-    */
-
-  } catch (err) {
-    console.error(err);
-  } finally {
-    KFK.inited = true;
-  }
-};
-
-/**
- * @type {}
- */
-KFK.loadWorkflow = async function (wfid) {
-  try {
-    KFK.hide(KFK.JC3);
-    Client.setSessionToken();
-    Client.readWorkflow(wfid).then(async (wfobj) => {
-      KFK.tpl = $(wfobj.doc).first(".template");
-      let nodes = KFK.tpl.find(".node");
-      nodes.addClass("kfknode");
-      await KFK.JC3.append(nodes);
-      let guiNodes = KFK.JC3.find(".node");
-      for (let i = 0; i < guiNodes.length; i++) {
-        let jqNode = $(guiNodes[i]);
-        await KFK.setNodeEventHandler(jqNode);
-        jqNode.draggable("disable");
-        KFK.redrawLinkLines(jqNode, "loadDoc", false);
-      }
-
-      KFK.workflow = $(wfobj.doc).first(".workflow");
-      let works = KFK.workflow.find(".work");
-      for (let i = 0; i < works.length; i++) {
-        let aWork = $(works[i]);
-        let theNodeid = aWork.attr("nodeid");
-        let theGuiNode = KFK.JC3.find("#" + theNodeid);
-        let classes = aWork.attr("class").split(/\s+/);
-        for (let j = 0; j < classes.length; j++) {
-          if (classes[j].startsWith("ST_")) {
-            theGuiNode.addClass(classes[j]);
-          }
-        }
-        theGuiNode.append(aWork);
-      }
-
-      for (let i = 0; i < guiNodes.length; i++) {
-        //let jqNode = $(guiNodes[i]);
-        //Add node className by it's running status in process
-        //Change link line style by it's status
-      }
-
-      KFK.myFadeOut($(".loading"));
-      KFK.myFadeIn(KFK.JC3, 100);
-      $("#overallbackground").removeClass("grid1");
-
-
-
-
-      //focusOnC3会导致C3居中
-      KFK.focusOnC3();
-      KFK.scrollToLastPosition(KFK.wfid);
-      KFK.C3.dispatchEvent(KFK.refreshC3Event);
-
-
-
-    });;
-
-  } catch (err) {
-    console.error(err);
-  } finally {
-    KFK.inited = true;
-  }
-};
-
-KFK.scrollToLastPosition = function (objid) {
-  let docPos = {};
-  //从localStorage中读取docPos记录
-  let scrollPositionCache = localStorage.getItem("docPos");
-  if (scrollPositionCache) {
-    docPos = JSON.parse(scrollPositionCache);
-  }
-  //如果有当前文档的滚动位置记录，则滚动到起位置去
-  if (docPos[objid]) {
-    KFK.scrollToPos(docPos[objid]);
-  } else {
-    //如果没有，则滚动到第一屏
-    KFK.scrollToPos({
-      x: KFK.LeftB,
-      y: KFK.TopB,
-    });
-  }
-};
-
-KFK.initLeftRightPanelEventHandler = function () {
-  $("#leftPanel").on("click", function (evt) {
-    evt.stopPropagation();
-  });
-  $("#rightPanel").on("click", function (evt) {
-    evt.stopPropagation();
-  });
-  $("#leftPanel").on("mousedown", function (evt) {
-    evt.stopPropagation();
-  });
-  $("#rightPanel").on("mousedown", function (evt) {
-    evt.stopPropagation();
-  });
-};
-
-KFK.onToolboxMouseDown = function (mode, evt) {
-  KFK.toolboxMouseDown = true;
-  KFK.mode = mode;
-  KFK.debug("Set drop toolbox mode to ", KFK.mode);
-};
-KFK.onToolboxMouseUp = function (mode, evt) {
-  KFK.toolboxMouseDown = false;
-  KFK.toolboxMouseDownOn = null;
-};
-
-
-KFK.showSection = async function (options) {
-  let section = $.extend({}, KFK.APP.show.section, options);
-  await KFK.APP.setData("show", "section", section);
-};
-
-KFK.showForm = async function (options) {
-  let form = $.extend({}, KFK.APP.show.form, options);
-  await KFK.APP.setData("show", "form", form);
-};
-
-KFK.showDialog = async function (options) {
-  let dialog = $.extend({}, KFK.APP.show.dialog, options);
-  await KFK.APP.setData("show", "dialog", dialog);
-};
-KFK.mergeAppData = async (data, key, value) => {
-  if (
-    typeof data === "string" &&
-    typeof key === "string" &&
-    typeof value === "object"
-  ) {
-    let tmpData = $.extend({}, KFK.APP[data][key], value);
-    await KFK.APP.setData(data, key, tmpData);
-  } else if (
-    typeof data === "string" &&
-    data.indexOf(".") > 0 &&
-    typeof key === "object"
-  ) {
-    let arr = data.split(".");
-    let tmpData = $.extend({}, KFK.APP[arr[0]][arr[1]], key);
-    await KFK.APP.setData(arr[0], arr[1], tmpData);
-  }
-};
-
-KFK.setAppData = (data, key, value) => {
-  //KFK.APP.setData(data, key, value);
-  console.log("TBI: setAppData");
-};
-
-KFK.sleep = async function (miliseconds) {
-  await new Promise((resolve) => setTimeout(resolve, miliseconds));
-};
-
-
-
-KFK.getProductUrl = function () {
-  // return cocoConfig.product.url;
-  return KFK.urlBase;
-};
-
-
-KFK.checkLoading = async function (num) {};
-
-KFK.cleanupJC3 = async function () {
-  await KFK.JC3.empty();
-  KFK.addSvgLayer();
-};
-
-
-KFK.recreateObject = async function (obj, callback) {
-  if (obj.etype === "document") {
-    KFK.recreateDoc(obj, callback);
-  } else if (obj.etype === "DIV") {
-    await KFK.recreateNode(obj, callback);
-  } else if (obj.etype === "SLINE") {
-    await KFK.recreateShape(obj, callback);
-  } else {
-    KFK.error("Unknown etype, guess it");
-    let tmpHtml = await KFK.gzippedContentToString(obj.content);
-    KFK.detail(tmpHtml);
-    if (
-      tmpHtml.indexOf("nodetype") > 0 &&
-      tmpHtml.indexOf("edittable") > 0 &&
-      tmpHtml.indexOf("kfknode") > 0
-    ) {
-      obj.etype = "DIV";
-      KFK.recreateNode(obj, callback);
-    }
-  }
-};
-
-KFK.recreateDoc = function (obj, callback) {
-  try {
-    let docRet = obj.content;
-    KFK.APP.setData("model", "cocodoc", docRet);
-  } catch (err) {
-    console.error(err);
-  } finally {
-    if (callback) callback(1);
-  }
-};
-KFK.recreateShape = async function (obj, callback) {
-  try {
-    let isALockedNode = obj.lock;
-    let content = await KFK.gzippedContentToString(obj.content);
-    let shape_id = obj.nodeid;
-    let theShape = KFK.restoreShape(shape_id, content);
-    if (isALockedNode) {
-      KFK.NodeController.lockline(KFK, theShape);
-    } else {
-      KFK.NodeController.unlockline(KFK, theShape);
-    }
-  } catch (err) {
-    console.error(err);
-  } finally {
-    if (callback) callback(1);
-  }
-};
-
-KFK.gzippedContentToString = async function (content) {
-  if (content.type !== "Buffer" || content.data === undefined) {
-    console.error(
-      "gzippedContentToString was passed in wrong content",
-      content
-    );
-  }
-  let tmp = await gunzip(new Buffer(content.data));
-  return tmp.toString("utf8");
-};
-
-KFK.recreateNode = async function (obj, callback) {
-  try {
-    let isALockedNode = obj.lock;
-
-    html = await KFK.gzippedContentToString(obj.content);
-
-    let jqDIV = $($.parseHTML(html));
-    let nodeid = jqDIV.attr("id");
-
-    if (jqDIV.hasClass("notify")) {
-      //TODO: notification
-    } else if (jqDIV.hasClass("ad")) {
-      //TODO: Advertisement
-    } else {
-      //需要先清理，否则在替换已有node时，会导致无法resize
-      KFK.cleanNodeEventFootprint(jqDIV);
-      KFK.setNodeShowEditor(jqDIV);
-      let existingNode = KFK.getNodeById(nodeid);
-      if (existingNode.length > 0) {
-        //节点存在，需要刷新
-        let isBrNode = false;
-        if (existingNode.find(".brsnode").length > 0) {
-          isBrNode = true;
-        }
-        existingNode.prop("outerHTML", jqDIV.prop("outerHTML"));
-        if (isBrNode) {
-          KFK.startBrainstorm(existingNode);
-        }
-        jqDIV = existingNode;
-      } else {
-        //新载入
-        KFK.JC3.append(jqDIV);
-      }
-      jqDIV = KFK.getNodeById(nodeid);
-      if (KFK.APP.model.cocodoc.readonly === false) {
-        await KFK.setNodeEventHandler(jqDIV, async function () {
-          if (isALockedNode) {
-            // KFK.debug('is a locked');
-            KFK.NodeController.lock(jqDIV);
-          }
-        });
-      }
-      KFK.redrawLinkLines(jqDIV, "server update");
-    }
-    if (obj.mdnote) {
-      let tmp = await KFK.gzippedContentToString(obj.mdnote);
-      KFK.mdnotes.set(jqDIV.attr("id"), tmp);
-    } else {
-      KFK.mdnotes.set(jqDIV.attr("id"), "# Recreate empty note #");
-    }
-  } catch (error) {
-    KFK.error(error);
-  } finally {
-    if (callback) callback(1);
-    KFK.C3.dispatchEvent(KFK.refreshC3Event);
-  }
-};
-
-KFK.getLineOptions = function (div) {
-  return JSON.parse(KFK.base64ToCode(div.attr("options")));
-};
-KFK.setLineOptions = function (div, options) {
-  div.attr("options", KFK.codeToBase64(JSON.stringify(options)));
-};
-KFK.codeToBase64 = function (code) {
-  return Buffer.from(code).toString("base64");
-};
-KFK.base64ToCode = function (base64) {
-  return Buffer.from(base64, "base64").toString("utf-8");
-};
-
-KFK.getPropertyApplyToJqNode = function () {
-  let ret = null;
-  if (KFK.hoverJqDiv() !== null) {
-    ret = KFK.hoverJqDiv();
-  } else if (KFK.lastFocusOnJqNode != null) {
-    ret = KFK.lastFocusOnJqNode;
-  } else if (KFK.justCreatedJqNode != null) {
-    ret = KFK.justCreatedJqNode;
-  } else {
-    ret = null;
-  }
-  return ret;
-};
-
-KFK.getPropertyApplyToShape = function () {
-  if (KFK.hoverSvgLine() != null) {
-    return KFK.hoverSvgLine();
-  } else if (KFK.pickedShape != null) {
-    return KFK.pickedShape;
-  } else if (KFK.justCreatedShape != null) {
-    return KFK.justCreatedShape;
-  } else {
-    return null;
-  }
-};
-
-
-
-
-KFK.setMode = function (mode, event) {
-  if (KFK.docIsReadOnly()) mode = "pointer";
-
-  let shiftKey = event ? event.shiftKey : false;
-
-  let oldMode = KFK.mode;
-  KFK.mode = mode;
-  for (let key in KFK.APP.toolActiveState) {
-    KFK.APP.toolActiveState[key] = false;
-  }
-  if (KFK.APP.toolActiveState[mode] == undefined)
-    console.warn(`APP.toolActiveState.${mode} does not exist`);
-  else KFK.APP.toolActiveState[mode] = true;
-
-  if (oldMode === "interlink" && mode !== "interlink") {
-    KFK.hide(KFK.interLinkDialog);
-  }
-  if (
-    (oldMode === "line" && mode !== "line") ||
-    (oldMode === "connect" && mode !== "connect")
-  ) {
-    KFK.cancelTempLine();
-  }
-
-  if (shiftKey) {
-    if (KFK.mode === "connect") {
-      KFK.lockTool = true;
-    } else {
-      KFK.lockTool = false;
-    }
-  } else {
-    KFK.lockTool = false;
-  }
-
-  $("#modeIndicator").hide();
-
-  if (KFK.mode === "text") {
-    KFK.APP.setData("show", "shape_property", true);
-    KFK.APP.setData("show", "customshape", false);
-    KFK.APP.setData("show", "custombacksvg", false);
-    KFK.APP.setData("show", "customfont", true);
-    KFK.APP.setData("show", "layercontrol", true);
-    KFK.APP.setData("show", "customline", false);
-  } else if (KFK.mode === "textblock") {
-    KFK.APP.setData("show", "shape_property", true);
-    KFK.APP.setData("show", "customshape", true);
-    KFK.APP.setData("show", "customfont", true);
-    KFK.APP.setData("show", "custombacksvg", true);
-    KFK.APP.setData("show", "layercontrol", true);
-    KFK.APP.setData("show", "customline", false);
-  } else if (KFK.mode === "yellowtip" || KFK.mode === "comment") {
-    KFK.APP.setData("show", "shape_property", true);
-    KFK.APP.setData("show", "customfont", true);
-    KFK.APP.setData("show", "custombacksvg", true);
-    KFK.APP.setData("show", "customshape", false);
-    KFK.APP.setData("show", "layercontrol", true);
-    KFK.APP.setData("show", "customline", false);
-  } else if (KFK.mode === "line") {
-    KFK.APP.setData("show", "shape_property", true);
-    KFK.APP.setData("show", "customshape", false);
-    KFK.APP.setData("show", "custombacksvg", false);
-    KFK.APP.setData("show", "customfont", false);
-    KFK.APP.setData("show", "layercontrol", false);
-    KFK.APP.setData("show", "customline", true);
-  } else if (KFK.mode === "freehand") {
-    KFK.drawMode = KFK.mode;
-  } else if (KFK.mode === "material") {
-    KFK.materialUpdated || KFK.loadMatLibForMyself();
-    if (KFK.pickerMatlib.hasClass("noshow")) {
-      KFK.showPickerMatlib();
-    } else {
-      KFK.hidePickerMatlib();
-      KFK.setMode("pointer");
-    }
-  } else if (KFK.mode === "todo") {
-    KFK.showTodo();
-    KFK.setMode("pointer");
-  } else if (KFK.mode === "chat") {
-    KFK.showChat();
-    KFK.setMode("pointer");
-  } else if (KFK.mode === "draw") {
-    KFK.drawMode = "polyline";
-  } else if (KFK.mode === "interlink") {
-    KFK.showInterLinkDialog();
-  }
-
-  KFK.focusOnC3();
-};
-
-KFK.getNodeById = function (nodeId) {
-  return $("#" + nodeId);
-};
-
-//用在index.js中的boostrapevue
-KFK.isActive = function (mode) {
-  return KFK.mode === mode;
-};
-
-KFK.width = function (w) {
-  if (w) {
-    KFK._width = w;
-    KFK.stage.width(w);
-  }
-  return KFK._width;
-};
-KFK.height = function (h) {
-  if (h) {
-    KFK._height = h;
-    KFK.stage.height(h);
-  }
-  return KFK._height;
-};
-
-KFK.size = function (w, h) {
-  KFK.width(w);
-  KFK.height(h);
-};
-/**
- * 是否是一个kfknode
- * @param a node div
- */
-KFK.isKfkNode = function (jqdiv) {
-  return KFK.isA(jqdiv, "kfknode");
-};
-/**
- * 是否是一个有某个className的对象
- * @param jqdiv  要检查的对象
- * @param className 要检查的className
- * @return true，如果有这个className， false如果没有这个className
- */
-KFK.isA = function (jqdiv, className) {
-  return jqdiv && jqdiv.hasClass(className);
-};
-/**
- * 是否不是一个有某个className的对象
- * 跟 KFK.isA(jqdiv, className)相反
- *
- * @param jqdiv  要检查的对象
- * @param className 要检查的className
- * @return true，如果没有这个className， false如果有这个className
- */
-KFK.isNotA = function (jqdiv, className) {
-  return !KFK.isA(jqdiv, className);
-};
-KFK.holdEvent = function (evt) {
-  evt.stopImmediatePropagation();
-  evt.stopPropagation();
-  evt.preventDefault();
-};
-
-KFK.loadModule = function (moduleName) {
-  switch (moduleName) {
-    case "AdvOps":
-      KFK.AdvOps ?
-        console.log("AdvOps already loaded") :
-        import("./advOps").then((pack) => {
-          KFK.AdvOps = pack.AdvOps;
-          console.log("AdvOps just loaded");
-        });
-      break;
-    case "DivStyler":
-      KFK.DivStyler ?
-        console.log("DivStyler already exists") :
-        import("./divStyler").then((pack) => {
-          KFK.DivStyler = pack.DivStyler;
-          console.log("DivStyler just loaded");
-        });
-      break;
-  }
-};
-KFK.addDocumentEventHandler = function () {
-  if (IsSet(KFK.documentEventHandlerSet)) return;
-  //document keydown
-  $(document).keydown(async function (evt) {
-    if (KFK.isShowingModal === true) return;
-    if (KFK.onC3 === false) return;
-    if (KFK.isEditting) return;
-    if (evt.keyCode === 16) KFK.KEYDOWN.shift = true;
-    else if (evt.keyCode === 17) KFK.KEYDOWN.ctrl = true;
-    else if (evt.keyCode === 18) KFK.KEYDOWN.alt = true;
-    else if (evt.keyCode === 91) KFK.KEYDOWN.meta = true;
-    //如果正处于编辑状态，则不做处理
-    //禁止Ctrl-A  and Ctrl-S
-    if (
-      (evt.keyCode === 65 || evt.keyCode === 83) &&
-      (evt.ctrlKey || evt.metaKey)
-    ) {
-      evt.stopPropagation();
-      evt.preventDefault();
-      return;
-    }
-    //key pool
-    if (
-      (evt.keyCode >= 48 && evt.keyCode <= 57) ||
-      (evt.keyCode >= 65 && evt.keyCode <= 90) ||
-      evt.keyCode === 32 ||
-      evt.keyCode === 186
-    ) {
-      KFK.keypool += evt.key;
-      KFK.keypool = KFK.keypool.toLowerCase();
-      KFK.logKey(KFK.keypool);
-    } else {
-      KFK.keypool = "";
-    }
-
-    switch (evt.keyCode) {
-      case 90: //key z
-        //不要移动META-Z代码，一定要在document的key-down里面，
-        //否则，在其他地方没有用。这个问题花了我三个小时时间，FX
-        console.log("PRessed Z");
-        if ((evt.metaKey || evt.ctrlKey) && evt.shiftKey) {
-          KFK.logKey("META-SHIFT-Z");
-          KFK.redo();
-        }
-        if ((evt.metaKey || evt.ctrlKey) && !evt.shiftKey) {
-          console.log("PRessed meta-Z");
-          KFK.logKey("META-Z");
-          KFK.undo();
-        }
-        break;
-      case 8: //Backspace
-      case 46: //Delete key del  key delete
-        KFK.deleteObjects(evt, false);
-        break;
-      default:
-        console.log("got keycode", evt.keyCode);
-    }
-  });
-  $(document).keyup(function (evt) {
-    switch (evt.keyCode) {
-      case 16:
-        KFK.KEYDOWN.shift = false;
-        break;
-      case 17:
-        KFK.KEYDOWN.ctrl = false;
-        KFK.stopZoomShape();
-        break;
-      case 18:
-        KFK.KEYDOWN.alt = false;
-        break;
-      default:
-        break;
-    }
-  });
-
-  //标记框选开始，是在JC3的mousedown中做记录的
-  //标记框选结束，也是在JC3的mouseup中做记录的
-  //但mousemove需要在document的mousemove事件处理中进行处理。
-  //因为，如果不这样做，滑动鼠标出现选择框后，如果鼠标回到选择框内，则JC3抓不到mousemove事件
-  //导致的现象就是选择框只可以放大，不可以缩小
-  $(document).on("mousemove", function (evt) {
-    KFK.globalMouseX = evt.clientX;
-    KFK.globalMouseY = evt.clientY;
-    if (KFK.inPresentingMode || KFK.inOverviewMode) return;
-    if (KFK.inNoteEditor) return;
-    let tmp = {
-      x: KFK.scrXToJc3X(evt.clientX),
-      y: KFK.scrYToJc3Y(evt.clientY),
-    };
-    if (KFK.isDuringKuangXuan()) {
-      KFK.kuangXuan(KFK.kuangXuanStartPoint, tmp);
-    } else if (KFK.isZoomingShape) {
-      KFK.zoomShape(evt, KFK.shapeToZoom);
-    } else if (
-      KFK.panStartAt &&
-      NotSet(KFK.shapeToDrag) &&
-      KFK.isEditting === false &&
-      KFK.isShowingModal === false &&
-      KFK.lineTransfomerDragging !== true
-    ) {
-      let delta = {
-        x: evt.clientX - KFK.panStartAt.x,
-        y: evt.clientY - KFK.panStartAt.y,
-      };
-      KFK.JS1.scrollLeft(KFK.JS1.scrollLeft() - delta.x * 2);
-      KFK.JS1.scrollTop(KFK.JS1.scrollTop() - delta.y * 2);
-      KFK.panStartAt.x = evt.clientX;
-      KFK.panStartAt.y = evt.clientY;
-      return;
-    }
-  });
-  $(document).on("mousedown", function (evt) {
-    if (KFK.mode === "pointer") {
-      if (KFK.ctrlMouseToPan === true) {
-        if (evt.shiftKey) {
-          KFK.panStartAt = {
-            x: evt.clientX,
-            y: evt.clientY,
-          };
-        } else {
-          KFK.kuangXuanMouseIsDown = true;
-          KFK.kuangXuanStartPoint = {
-            x: KFK.scrXToJc3X(evt.clientX),
-            y: KFK.scrYToJc3Y(evt.clientY),
-          };
-        }
-      } else {
-        if (evt.shiftKey) {
-          KFK.kuangXuanMouseIsDown = true;
-          KFK.kuangXuanStartPoint = {
-            x: KFK.scrXToJc3X(evt.clientX),
-            y: KFK.scrYToJc3Y(evt.clientY),
-          };
-        } else {
-          KFK.panStartAt = {
-            x: evt.clientX,
-            y: evt.clientY,
-          };
-          console.log("panStart at", KFK.panStartAt);
-        }
-      }
-    }
-  });
-  $(document).on("mouseup", async function (evt) {
-    KFK.panStartAt = undefined;
-    if (KFK.mode === "pointer") {
-      KFK.kuangXuanMouseIsDown = false;
-      KFK.kuangXuanEndPoint = {
-        x: KFK.scrXToJc3X(evt.clientX),
-        y: KFK.scrYToJc3Y(evt.clientY),
-      };
-      if (KFK.duringKuangXuan) {
-        KFK.ignoreClick = true;
-        KFK.endKuangXuan(
-          KFK.kuangXuanStartPoint,
-          KFK.kuangXuanEndPoint,
-          evt.shfitKey
-        );
-        KFK.duringKuangXuan = false;
-      }
-    }
-    //线条点下去以后，shapeToDrag就设置好了
-    //移动距离大于5时，才会设置shapeDragging=true
-    //如果在距离小于5内，抬起鼠标，此时，shapeDragging还是false,此时，应该把shapeToDrag置为null
-    if (KFK.shapeDragging === false && KFK.shapeToDrag) {
-      KFK.shapeToDrag = null;
-    }
-    //end shape drag, end drag shape
-    if (
-      KFK.shapeDragging &&
-      KFK.docIsReadOnly() === false &&
-      KFK.lineLocked(KFK.shapeToDrag) === false
-    ) {
-      if (
-        KFK.isShapeSelected(KFK.shapeToDrag) === false &&
-        KFK.selectedShapes.length > 0
-      ) {
-        KFK.cancelAlreadySelected();
-      }
-      let realX = KFK.scalePoint(KFK.scrXToJc3X(evt.clientX));
-      let realY = KFK.scalePoint(KFK.scrYToJc3Y(evt.clientY));
-      let pt = {
-        x: realX,
-        y: realY,
-      };
-      // if (KFK.APP.model.viewConfig.snap) {
-      //     pt = KFK.getNearGridPoint(realX, realY);
-      // }
-      let alreadySelected = false;
-      for (let i = 0; i < KFK.selectedShapes.length; i++) {
-        if (KFK.selectedShapes[i].attr("id") == KFK.shapeToDrag.attr("id")) {
-          alreadySelected = true;
-          break;
-        }
-      }
-      if (alreadySelected === false) {
-        KFK.selectedShapes.push(KFK.shapeToDrag);
-      }
-      let unlockedShapeCount = 0;
-      for (let i = 0; i < KFK.selectedShapes.length; i++) {
-        if (KFK.lineLocked(KFK.selectedShapes[i]) === false) {
-          unlockedShapeCount++;
-        }
-      }
-      let unlockedDivCount = 0;
-      for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-        if (
-          KFK.anyLocked(KFK.selectedDIVs[i]) === false &&
-          KFK.updateable(KFK.selectedDIVs[i])
-        ) {
-          unlockedDivCount++;
-        }
-      }
-      let movedCount = unlockedDivCount + unlockedShapeCount;
-      let movedSer = 0;
-      KFK.startTrx();
-      try {
-        for (let i = 0; i < KFK.selectedShapes.length; i++) {
-          let aShape = KFK.selectedShapes[i];
-          if (KFK.lineLocked(aShape)) continue;
-          KFK.setShapeToRemember(aShape);
-          //在拖动鼠标时， shapeDraggingStartPoint 是跟着变化的,在鼠标移动时，已经对shapeToDrag做了位移
-          if (aShape.attr("id") === KFK.shapeToDrag.attr("id")) {
-            let deltaX = pt.x - KFK.shapeDraggingStartPoint.x;
-            let deltaY = pt.y - KFK.shapeDraggingStartPoint.y;
-            //aShape.dmove(deltaX, deltaY);
-          } else {
-            //其它对象要从原始位置计算位移
-            let deltaX = pt.x - KFK.shapeFirstDraggingStartPoint.x;
-            let deltaY = pt.y - KFK.shapeFirstDraggingStartPoint.y;
-            await aShape.dmove(deltaX, deltaY);
-          }
-          let beforeSaveWidth = aShape.attr("stroke-width");
-          let beforeSaveColor = aShape.attr("stroke");
-          KFK.resetShapeStyleToOrigin(aShape);
-          KFK.resetShapeStyleToOrigin(KFK.shapeToRemember);
-          await KFK.syncLinePut(
-            "U",
-            aShape,
-            "move",
-            KFK.shapeToRemember,
-            false,
-            movedSer,
-            movedCount
-          );
-          movedSer = movedSer + 1;
-          aShape.attr({
-            "stroke-width": beforeSaveWidth,
-            stroke: beforeSaveColor,
-          });
-        }
-
-        let delta = {
-          x: pt.x - KFK.shapeFirstDraggingStartPoint.x,
-          y: pt.y - KFK.shapeFirstDraggingStartPoint.y,
-        };
-        for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-          if (
-            KFK.anyLocked(KFK.selectedDIVs[i]) ||
-            KFK.updateable(KFK.selectedDIVs[i]) === false
-          )
-            continue;
-          let tmpFromJQ = KFK.selectedDIVs[i].clone();
-          //虽然这出跳过了被拖动的节点，但在后面这个节点一样要被移动
-          //因此，所有被移动的节点数量就是所有被选中的节点数量
-          KFK.selectedDIVs[i].css(
-            "left",
-            KFK.divLeft(KFK.selectedDIVs[i]) + delta.x
-          );
-          KFK.selectedDIVs[i].css(
-            "top",
-            KFK.divTop(KFK.selectedDIVs[i]) + delta.y
-          );
-          await KFK.syncNodePut(
-            "U",
-            KFK.selectedDIVs[i].clone(),
-            "move following selected",
-            tmpFromJQ,
-            false,
-            movedSer,
-            movedCount
-          );
-          movedSer = movedSer + 1;
-        }
-        for (let i = 0; i < KFK.selectedDIVs.length; i++) {
-          KFK.redrawLinkLines(KFK.selectedDIVs[i], "codrag", true);
-        }
-      } finally {
-        KFK.endTrx();
-      }
-
-      console.log("moved div number: " + KFK.selectedDIVs.length);
-
-      KFK.setShapeToRemember(KFK.shapeToDrag);
-      KFK.shapeDragging = false;
-      KFK.shapeToDrag = null;
-      $(document.body).css("cursor", "default");
-    }
-  });
-
-  // onscroll onScroll on scroll on Scroll
-  $("#S1").scroll(() => {
-    let sx = $("#S1").scrollLeft();
-    let sy = $("#S1").scrollTop();
-    try {
-      //不是每次滚动都记录，滚动停止一秒后再记录
-      if (KFK.scrollPosTimer) {
-        clearTimeout(KFK.scrollPosTimer);
-        KFK.scrollPosTimer = undefined;
-      }
-      KFK.scrollPosTimer = setTimeout(function () {
-        let docPos = {};
-        let scrollPositionCache = localStorage.getItem("docPos");
-        if (scrollPositionCache) {
-          docPos = JSON.parse(scrollPositionCache);
-        }
-        if (docPos[KFK.tplid]) {
-          docPos[KFK.tplid] = {
-            x: sx,
-            y: sy,
-          };
-        } else {
-          let keyCount = 0;
-          for (let key in docPos) {
-            keyCount++;
-          }
-          if (keyCount > 30) {
-            let tmp = {};
-            let j = 0;
-            for (let key in docPos) {
-              if (j > 10) {
-                tmp[key] = docPos[key];
-              }
-              j++;
-            }
-            docPos = tmp;
-          }
-          docPos[KFK.tplid] = {
-            x: sx,
-            y: sy,
-          };
-        }
-        localStorage.setItem("docPos", JSON.stringify(docPos));
-      }, 1000);
-    } catch (error) {
-      console.log("save docPos error", error);
-    }
-
-  });
-
-  KFK.documentEventHandlerSet = true;
-};
-
-
-KFK.onESC = function () {
-  KFK.cancelAlreadySelected();
-  if (!KFK.isEditting && KFK.mode !== "line") KFK.setMode("pointer");
-  KFK.cancelTempLine();
-  KFK.setMode("pointer");
-  if (KFK.tempShape) KFK.tempShape.hide();
-  if (KFK.noCopyPaste) {
-    KFK.noCopyPaste = false;
-  }
-};
-
-
-KFK.cancelTempLine = function () {
-  if (KFK.lineTemping) {
-    KFK.lineTemping = false;
-    if (KFK.tempSvgLine) KFK.tempSvgLine.hide();
-    KFK.linkPosNode.clear();
-    KFK.drawPoints.clear();
-  }
-};
-
-
-KFK.dataURLtoFile = function (dataurl, filename) {
-  let arr = dataurl.split(","),
-    mime = arr[0].match(/:(.*?);/)[1],
-    bstr = atob(arr[1]),
-    n = bstr.length,
-    u8arr = new Uint8Array(n);
-  while (n--) {
-    u8arr[n] = bstr.charCodeAt(n);
-  }
-  return new File([u8arr], filename, {
-    type: mime,
-  });
-};
-
-KFK.save = async function () {
-  let docPath = `/${cocoConfig.tenant.id}/${KFK.APP.model.cocodoc.doc_id}/`;
-  // let result = await KFK.OSSClient.list({
-  //     prefix: 'lucas/',
-  // });
-  try {
-    // 不带任何参数，默认最多返回1000个文件。
-    let result = await KFK.OSSClient.list({
-      prefix: "lucas/",
-    });
-    // 根据nextMarker继续列出文件。
-    if (result.isTruncated) {
-      let result = await client.list({
-        marker: result.nextMarker,
-      });
-    }
-    // // 列举前缀为'my-'的文件。
-    // let result = await client.list({
-    //    prefix: 'my-'
-    // });
-    // // 列举前缀为'my-'且在'my-object'之后的文件。
-    // let result = await client.list({
-    //    prefix: 'my-',
-    //    marker: 'my-object'
-    // });
-  } catch (err) {
-    KFK.error(err);
-  }
-};
-
-KFK.checkUrl = function (str_url) {
-  let regex = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/;
-  return str.match(regex) !== null;
-};
-
-KFK.replaceHTMLTarget = function (html) {
-  html = `<div>${html}</div>`;
-  try {
-    let jq = $($.parseHTML(html));
-    jq.find("a").prop("target", "_blank");
-    jq.find("[style]").removeAttr("style");
-    ret = jq.prop("innerHTML");
-  } catch (err) {
-    ret = "";
-  }
-  return ret;
-};
-KFK.pasteContent = function () {
-  let paste = KFK.APP.model.paste;
-};
-
-
-KFK.onCut = async function (evt) {
-  if (KFK.isShowingModal || KFK.inNoteEditor) return;
-  KFK.deleteObjects(evt, true);
-};
-
-KFK.onCopy = async function (evt) {
-  if (KFK.isShowingModal) return;
-  if (KFK.noCopyPaste) return;
-  if (KFK.APP.show.dialog.ivtCodeDialog) {
-    return;
-  }
-  if (KFK.inNoteEditor) return;
-  let someDIVcopyed = await KFK.duplicateHoverObject(evt, "copy");
-  if (someDIVcopyed) {
-    evt.clipboardData.setData("text/plain", "usediv");
-    evt.clipboardData.setData("text/html", "usediv");
-  }
-  evt.preventDefault();
-  evt.preventDefault();
-  KFK.holdEvent(evt);
-};
-
-KFK.onPaste = async function (evt) {
-  if (KFK.inNoteEditor) return;
-  if (KFK.isShowingModal) {
-    console.log("paste ignored since isShowingModal");
-    return;
-  }
-  if (KFK.noCopyPaste) {
-    console.log("paste ignored since noCopyPaste is true");
-    return;
-  }
-  if (KFK.docIsReadOnly()) {
-    console.log("paste ignored since docIsReadOnly");
-    return;
-  }
-  KFK.pasteAt = {
-    x: KFK.globalMouseX,
-    y: KFK.globalMouseY,
-  };
-  let content = {
-    html: "",
-    text: "",
-    image: null,
-  };
-  content.html = evt.clipboardData.getData("text/html");
-  content.text = evt.clipboardData.getData("Text");
-  if (content.text === "usediv") {
-    await KFK.duplicateHoverObject(evt, "paste");
-    return;
-  } else {
-    var items = (evt.clipboardData || evt.originalEvent.clipboardData).items;
-    if (items[1] && (content.html !== "" || content.text !== "")) {
-      KFK.showTextPasteDialog(content);
-    } else if (items[0]) {
-      if (
-        items[0].kind === "string" &&
-        (content.html !== "" || content.text !== "")
-      ) {
-        KFK.showTextPasteDialog(content);
-      } else if (items[0].kind === "file") {
-        var blob = items[0].getAsFile();
-        KFK.dropAtPos = {
-          x: KFK.scalePoint(KFK.scrXToJc3X(KFK.globalMouseX)),
-          y: KFK.scalePoint(KFK.scrYToJc3Y(KFK.globalMouseY)),
-        };
-        KFK.procPasteBlob(blob);
-      }
-    }
-  }
-};
-
-
-KFK.changeSVGFill = function () {};
-KFK.scrCenter = function () {
-  return {
-    x: $(window).width() * 0.5,
-    y: $(window).height() * 0.5,
-  };
-};
-
-
-KFK.printCallStack = function (msg = "") {
-  KFK.info(new Error(msg).stack);
-};
-
-
-KFK.onLinkConnect = async function (data) {
-  let selectorFrom = `#${response.from}`;
-  let selectorTo = `#${response.to}`;
-  let nodeFrom = $(selectorFrom);
-  let nodeTo = $(selectorTo);
-  if (nodeFrom.length > 0 && nodeTo.length > 0) {
-    KFK.buildConnectionBetween(nodeFrom, nodeTo);
-    KFK.redrawLinkLines(nodeFrom);
-    KFK.redrawLinkLines(nodeTo);
-  }
-};
-
-KFK.addSvgLayer = function () {
-  KFK.svgDraw && delete KFK.svgDraw;
-  KFK.svgDraw = SVG()
-    .addTo("#C3")
-    .size(KFK._width, KFK._height);
-  KFK.svgDraw.attr("id", "D3");
-  KFK.svgDraw.addClass("svgcanvas");
-
-
-  KFK.debug("svg layer initialized");
-  KFK.pageBounding = {
-    Pages: [],
-  };
-  let boundingLineOption = {
-    color: "#FFFFFFCC",
-    width: 4,
-    linecap: "square",
-  };
-  for (let i = 0; i < KFK.PageNumberVert; i++) {
-    for (let j = 0; j < KFK.PageNumberHori; j++) {
-      KFK.pageBounding.Pages.push({
-        left: j * KFK.PageWidth,
-        top: i * KFK.PageHeight,
-      });
-    }
-  }
-  for (let i = 0; i <= KFK.PageNumberHori; i++) {
-    let tmpLine = KFK.svgDraw.line(
-      i * KFK.PageWidth,
-      0,
-      i * KFK.PageWidth,
-      KFK._height
-    );
-    tmpLine.addClass("pageBoundingLine").stroke(boundingLineOption);
-    if (cocoConfig.viewConfig.showbounding === false) {
-      tmpLine.addClass("noshow");
-    }
-  }
-  for (let j = 0; j <= KFK.PageNumberVert; j++) {
-    let tmpLine = KFK.svgDraw.line(
-      0,
-      j * KFK.PageHeight,
-      KFK._width,
-      j * KFK.PageHeight
-    );
-    tmpLine.addClass("pageBoundingLine").stroke(boundingLineOption);
-    if (cocoConfig.viewConfig.showbounding === false) {
-      tmpLine.addClass("noshow");
-    }
-  }
-
-  KFK.ball = KFK.svgDraw.circle(8)
-  KFK.ball.addClass("noshow");
-};
-
-KFK.restoreShape = function (shape_id, html) {
-  let aLine = null;
-  let selector = `.${shape_id}`;
-  aLine = KFK.svgDraw.findOne(selector);
-  if (aLine === null || aLine === undefined) {
-    aLine = KFK.svgDraw.line();
-  }
-  let parent = aLine.svg(html, true);
-  aLine = parent.findOne(selector);
-  KFK.addShapeEventListner(aLine);
-  return aLine;
-};
-
-KFK.makePath = function (p1, p2) {
-  let rad = 10;
-  let c1 = {
-    x: p2.x - rad,
-    y: p1.y,
-  };
-  let c2 = {
-    x: p2.x,
-    y: p1.y + rad,
-  };
-
-  let pStr = `M${p1.x} ${p1.y} H${c1.x} S${c2.x} ${c1.y} ${c2.x} ${c2.y} V${p2.y}`;
-  return pStr;
-};
-
-/**
- * 画两个节点之间的连接线
- *
- * fid - 起始节点的ID
- * tid - 终点节点的ID
- * lineClass - 事实上是这条线的ID, 用于查找正向线(svgjs用class查找对象)
- * lineCLassReverse - 反向线的class, 用于查找反向线
- * pstr - 连接线的plot string
- * triangle - 三角形的顶点坐标
- */
-KFK._svgDrawNodesConnect = async function (
-  fid,
-  tid,
-  lineClass,
-  lineClassReverse,
-  pstr,
-  lstr,
-  tstr,
-  triangle,
-  caseValue,
-  simpleLineMode = false
-) {
-  try {
-    let drawPstr = !simpleLineMode;
-    let theConnect = null;
-    let theTriangle = null;
-    let fromDIV = $(`#${fid}`);
-    let toDIV = $(`#${tid}`);
-    //在之前的cocopad的代码中，节点上添加了三个属性：cncolor, cnwidth, cnstyle, cn表示connection
-    let cnColor = fromDIV.attr("cncolor");
-    let cnWidth = fromDIV.attr("cnwidth");
-    let cnStyle = fromDIV.attr("cnstyle");
-    let reverseLine = KFK.svgDraw.findOne(`.${lineClassReverse}`);
-    let oldLine = KFK.svgDraw.findOne(`.${lineClass}`);
-    let oldText = KFK.svgDraw.findOne(`.${lineClass + "_text"}`);
-    let reverseTriangle = KFK.svgDraw.findOne(`.${lineClassReverse}_triangle`);
-    let oldTriangle = KFK.svgDraw.findOne(`.${lineClass}_triangle`);
-
-    let theConnect_color = cnColor || KFK.YIQColorAux || KFK.config.connect.styles.style1.normal.color;
-    let theConnect_width = cnWidth || KFK.config.connect.styles.style1.normal.width;
-    let theConnect_fill_color = theConnect_color;
-    //如果存在同一ID的线,则重画这条线及其三角
-    if (oldText) {
-      oldText.remove();
-    }
-    if (oldLine) {
-      oldLine.plot(drawPstr ? pstr : lstr);
-      oldTriangle && oldTriangle.plot(triangle);
-      theConnect = oldLine;
-      theTriangle = oldTriangle;
-    } else {
-      //如果不同在同一ID的线, then
-      if (reverseLine) {
-        //如果存在反向线,则重画这条反向线为正向线
-        reverseLine.removeClass(lineClassReverse);
-        reverseLine.addClass(lineClass);
-        reverseLine.plot(drawPstr ? pstr : lstr);
-        reverseTriangle.removeClass(lineClassReverse + "_triangle");
-        reverseTriangle.addClass(lineClass + "_triangle");
-        reverseTriangle.plot(triangle);
-        theConnect = reverseLine;
-        theTriangle = reverseTriangle;
-      } else {
-        //如果同向线和反向线都不存在,则画新线条及其三角. 反向线是指与从fromNode指向toNode的线反向相反的线,也就是从toNode指向fromNode的线
-        theConnect = await KFK.svgDraw.path(drawPstr ? pstr : lstr);
-        theConnect
-          .addClass(lineClass)
-          .addClass("connect")
-          .attr("styleid", "style1")
-          .fill(drawPstr ? theConnect_fill_color : "none")
-          .stroke({
-            width: theConnect_width,
-            color: theConnect_color,
-          });
-
-        if (drawPstr === false) {
-          //填充时,边线为虚线可能会导致颜色溢出,待验证
-          if (cnStyle === "solid") {
-            theConnect.css("stroke-dasharray", "");
-          } else {
-            theConnect.css("stroke-dasharray", `${cnWidth * 3} ${cnWidth}`);
-          }
-        }
-        theConnect.attr({
-          id: lineClass,
-          "origin-width": cocoConfig.svg.connect.width,
-        });
-        theTriangle = await KFK.svgDraw
-          .polygon(triangle)
-          .addClass(lineClass + "_triangle")
-          .fill(theConnect_fill_color);
-        /*
+	}
+
+	getImageSrc(img: string) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.APP && that.APP.images && that.APP.images[img]) {
+			return that.APP.images[img].src;
+		} else {
+			return undefined;
+		}
+	}
+
+	moveLineMoverTo(point: Point) {
+		$('#linetransformer').css('left', point.x - 10);
+		$('#linetransformer').css('top', point.y - 10);
+	}
+	/**
+	 * 选定一个元素
+	 */
+	selectNode(jqDIV: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		jqDIV.addClass('selected');
+		that.selectedDIVs.push(jqDIV);
+		that.setSelectedNodesBoundingRect();
+	}
+
+	/**
+	 * 根据选定的多个元素，显示其周围的边框
+	 */
+	setSelectedNodesBoundingRect() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		let brect = $('.boundingrect');
+		if (brect.length <= 0) {
+			const rect = document.createElement('div');
+			brect = $(rect);
+			brect.addClass('boundingrect');
+			brect.appendTo(that.JC3);
+			brect.css('z-index', -1);
+		}
+		if (that.selectedDIVs.length > 1) {
+			const rect: Rectangle = that.getBoundingRectOfSelectedDIVs();
+			brect.css('left', rect.left - cocoConfig.ui.boundingrect_padding);
+			brect.css('top', rect.top - cocoConfig.ui.boundingrect_padding);
+			brect.css('width', rect.width + cocoConfig.ui.boundingrect_padding * 2);
+			brect.css('height', rect.height + cocoConfig.ui.boundingrect_padding * 2);
+			brect.show();
+		} else {
+			brect.hide();
+		}
+	}
+	kuangXuan(pt1: Point, pt2: Point) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		const x1 = pt1.x + that.LeftB;
+		const y1 = pt1.y + that.TopB;
+		const x2 = pt2.x + that.LeftB;
+		const y2 = pt2.y + that.TopB;
+		if (Math.abs(x1 - x2) < 10 && Math.abs(y1 - y2) < 10) {
+			//这里，如果滑动大小横向和纵向都小于10， 则不作为框选
+			return;
+		}
+		const jqRect = $('#selectingrect');
+		jqRect.css('left', Math.min(x1, x2));
+		jqRect.css('top', Math.min(y1, y2));
+		jqRect.css('width', Math.abs(x1 - x2));
+		jqRect.css('height', Math.abs(y1 - y2));
+		that.duringKuangXuan = true;
+		jqRect.show();
+	}
+
+	reverseColor(color: string) {
+		return color;
+	}
+
+	selectShape(theShape: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		let alreadySelected = false;
+		for (let i = 0; i < that.selectedShapes.length; i++) {
+			if (that.selectedShapes[i].attr('id') === theShape.attr('id')) {
+				alreadySelected = true;
+				break;
+			}
+		}
+		if (alreadySelected) return;
+		that.selectedShapes.push(theShape);
+		let prevWidth = theShape.attr('stroke-width');
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		prevWidth = KFKclass.unpx(prevWidth);
+		theShape.addClass('selected');
+		const color = theShape.attr('origin-color');
+		that.shapeOriginColor = color;
+		//let color1 = that.reverseColor(color);
+		const originWidth = theShape.attr('origin-width');
+		const newWidth =
+			originWidth * 2 > that.CONST.MAX_SHAPE_WIDTH ? originWidth : that.CONST.MAX_SHAPE_WIDTH;
+		theShape.stroke({
+			width: newWidth,
+			color: '#0000FF'
+		});
+	}
+	isShapeSelected(theShape: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.selectedShapes.length <= 0) {
+			return false;
+		} else {
+			if (that.selectedShapes.indexOf(theShape) >= 0) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+
+	getShapeConfig(shapeType: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return that.APP.model.svg[shapeType];
+	}
+
+	getShapeRectFromJqObj(shape: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return that.getShapeRect(SVG(shape));
+	}
+	getShapeRect(svgShape: any) {
+		const x = svgShape.x();
+		const y = svgShape.y();
+		const width = svgShape.width();
+		const height = svgShape.height();
+		return {
+			left: x,
+			top: y,
+			right: x + width,
+			bottom: y + height,
+			center: x + width * 0.5,
+			middle: y + height * 0.5,
+			width: width,
+			height: height
+		};
+	}
+
+	deselectNode(theDIV: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		$(theDIV).removeClass('selected');
+		const index = that.selectedDIVs.indexOf(theDIV);
+		that.selectedDIVs.splice(index, 1);
+		that.setSelectedNodesBoundingRect();
+	}
+
+	selectNodeOnClick(jqDIV: myJQuery, shiftKey: boolean) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		const exist = that.selectedDIVs.indexOf(jqDIV);
+		if (shiftKey) {
+			if (exist >= 0) {
+				that.deselectNode(that.selectedDIVs[exist]);
+			} else {
+				that.selectNode(jqDIV);
+			}
+		} else {
+			while (that.selectedDIVs.length > 0) {
+				that.deselectNode(that.selectedDIVs[0]);
+			}
+			that.selectNode(jqDIV);
+		}
+	}
+
+	getNearGridPoint(x: Point | number, y?: number) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (typeof x !== 'number') {
+			if (y === undefined && x.x) {
+				return that._getNearGridPoint(x.x, x.y);
+			}
+		} else {
+			return that._getNearGridPoint(x, y);
+		}
+	}
+	_getNearGridPoint(x: number, y: number) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		let newX = x;
+		let newY = y;
+		if (x % that.APP.model.gridWidth < that.APP.model.gridWidth * 0.5) {
+			newX = Math.floor(x / that.APP.model.gridWidth) * that.APP.model.gridWidth;
+		} else {
+			newX = (Math.floor(x / that.APP.model.gridWidth) + 1) * that.APP.model.gridWidth;
+		}
+		if (y % that.APP.model.gridWidth < that.APP.model.gridWidth * 0.5) {
+			newY = Math.floor(y / that.APP.model.gridWidth) * that.APP.model.gridWidth;
+		} else {
+			newY = (Math.floor(y / that.APP.model.gridWidth) + 1) * that.APP.model.gridWidth;
+		}
+		return {
+			x: newX,
+			y: newY
+		};
+	}
+
+	getKFKNodeNumber() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		const nodes = that.JC3.find('.kfknode');
+		return nodes.length;
+	}
+
+	//eslint-disable-next-line
+	async placeNode(
+		_shiftKey: boolean,
+		id: string,
+		nodeType: string,
+		_variant: string,
+		x: number,
+		y: number,
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		_w: number,
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		_h: number,
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		_attach: any,
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		_attach2: any
+	): Promise<myJQuery> {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		//create node, new node, place node
+		const nodeDIV = document.createElement('div');
+		const jqDIV: myJQuery = $(nodeDIV);
+		jqDIV.attr('id', id);
+		let label = 'Activity';
+		switch (nodeType) {
+			case 'ACTION':
+				label = 'Activity';
+				break;
+			case 'INFORM':
+				label = 'Email';
+				break;
+			case 'SCRIPT':
+				label = 'Script';
+				break;
+			case 'TIMER':
+				label = 'Timer';
+				break;
+			case 'SUB':
+				label = 'Sub Process';
+				break;
+			case 'AND':
+				label = 'AND';
+				break;
+			case 'OR':
+				label = 'OR';
+				break;
+			default:
+				label = 'Activity';
+		}
+		jqDIV.append('<p>' + label + '</p>');
+		if (nodeType === 'ACTION') {
+			jqDIV.append('<div class="kvars">e30=</div>');
+			jqDIV.append('<div class="katts">e30=</div>');
+		}
+		console.log('placeNode', nodeType);
+		await that.JC3.append(nodeDIV);
+		const nodeCount = that.getKFKNodeNumber();
+		jqDIV.css('top', KFKclass.px(y - that.tplNode_height * 0.5));
+		jqDIV.css('left', KFKclass.px(x - that.tplNode_width * 0.5));
+		jqDIV.css('z-index', `${nodeCount + 1}`);
+		//default padding for all
+
+		jqDIV.addClass('node');
+		jqDIV.addClass('kfknode');
+		jqDIV.addClass(nodeType);
+
+		await that.setNodeEventHandler(jqDIV);
+
+		that.justCreatedJqNode = jqDIV;
+		that.lastCreatedJqNode = jqDIV; //如果在脑图模式下，则自动建立脑图链接
+		that.C3.dispatchEvent(that.refreshC3Event);
+		return jqDIV;
+	}
+
+	removeLinkto(jqNodeDIV: myJQuery) {
+		jqNodeDIV.attr('linkto', '');
+	}
+
+	startTrx() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.state.TRX_FLAG === 0) {
+			that.opArray = [];
+		}
+		that.state.TRX_FLAG += 1;
+		console.log('STARTTRX:', that.state.TRX_FLAG);
+	}
+	/**
+	 * Close operation transaction
+	 */
+	endTrx() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.state.TRX_FLAG -= 1;
+		if (that.state.TRX_FLAG === 0) {
+			console.log('ENDTRX:', that.state.TRX_FLAG);
+		}
+	}
+	/**
+	 * During operation transaction or not
+	 */
+	inTrx() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.state.TRX_FLAG > 0) return true;
+		else return false;
+	}
+
+	/**
+	 * 在内存中记录操作历史
+	 */
+	yarkOpHistory(changedPair: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		//如果没有操作被记录,则提示warn,并返回. 这是一个不应该发生的异常情况.
+		that.opstack.splice(that.opz + 1, that.opstacklen);
+		if (that.opstack.length >= that.opstacklen) {
+			that.opstack.shift();
+			that.opz = that.opz - 1;
+			if (that.opz < -1) that.opz = -1;
+		}
+		that.opstack.push(changedPair);
+		console.log(that.opstack.length);
+		that.opz = that.opz + 1;
+	}
+
+	//jqNode can be a node or even a svgline
+	anyLocked(jqNode: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (jqNode) return that.docIsReadOnly() || that.nodeLocked(jqNode);
+		else return that.docIsReadOnly();
+	}
+
+	notAnyLocked(jqNode: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return !that.anyLocked(jqNode);
+	}
+
+	/**
+	 * 从新画节点所有的连接线
+	 * @param jqNode 要重画连接线的节点
+	 * @param reason 画线的原因
+	 * @param bothside 如果为false， 则只画从jqNode出去的线； 如为true, 则也画连到jqNode的线
+	 * @param allowConnectPoints 控制画线的上下左右连接点。缺省为全部可自动根据最短路线来选择。 一共四个数组，缺省为[[0,1,2,3],[0,1,2,3],[0,1,2,3],[0,1,2,3]]
+	 * 第一个数组为连接出去的线条的，from的连接点控制
+	 * 第二个数组为连接出去的线条的，to的连接点控制
+	 * 第三个数组为连接进来的线条的，from的连接点控制
+	 * 第四个数组为连接进来的线条的，to的连接点控制
+	 * 每个连接点控制数组中，0表示 左中点； 1表示上中点； 2表示右中点； 3表示下中点
+	 */
+
+	async redrawLinkLines(
+		jqNode: myJQuery,
+		reason = 'unknown',
+		bothside = true,
+		allowConnectPoints = [[2], [0], [2], [0]]
+	) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.debug('Redrawlinks', reason, 'bothside', bothside);
+		if (!(jqNode instanceof jQuery)) {
+			console.error('redrawLinkLines for a non-jquery object, sometime caused by no await');
+			return;
+		}
+		const myId = jqNode.attr('id');
+		const guiLinks = that.tpl.find(`.link[from="${myId}"]`);
+		//得到当前节点连接到的节点id列表
+		//let toIds = that.getNodeLinkIds(jqNode, "linkto");
+		//找出所有svg连接线条
+		const list = that.svgDraw.find('.connect');
+
+		list.each(async (connect: any) => {
+			//如果这根连接线条的fid属性是当前node的id
+			if (connect.attr('fid') === myId) {
+				const connect_id = connect.attr('id');
+				//移除线条
+				await connect.remove();
+				//移除三角
+				const triangle_id = connect_id + '_triangle';
+				await that.svgDraw.find(`.${triangle_id}`).remove();
+			}
+		});
+		//画出从当前node:jqNode到所有"连接到"节点的连接线
+		const anchorPositions = [];
+		for (let i = 0; i < guiLinks.length; i++) {
+			const toId = $(guiLinks[i]).attr('to');
+			const jqTo = $(`#${toId}`);
+			let caseValue = $(guiLinks[i]).attr('case');
+			caseValue = lodash.isEmpty(caseValue) ? '' : caseValue;
+			const anchorPair = await that.drawConnect(
+				jqNode,
+				jqTo,
+				caseValue,
+				allowConnectPoints[0],
+				allowConnectPoints[1],
+				true
+			);
+			//anchorPair返回一个包含两个数字的数组,第一个数字标识父节点的锚点位置,第二个数字标识子节点的锚点位置
+			anchorPositions.push(anchorPair[0]);
+		}
+
+		//如果是双边画线,则需要找出那些父节点
+		if (bothside) {
+			const guiLinks_toMe = that.tpl.find(`.link[to="${myId}"]`);
+
+			const anchorPositions = [];
+			for (let i = 0; i < guiLinks_toMe.length; i++) {
+				const fromId = $(guiLinks_toMe[i]).attr('from');
+				const jqFrom = $(`#${fromId}`);
+				let caseValue = $(guiLinks_toMe[i]).attr('case');
+				caseValue = lodash.isEmpty(caseValue) ? '' : caseValue;
+				const anchorPair = await that.drawConnect(
+					jqFrom,
+					jqNode,
+					caseValue,
+					allowConnectPoints[2],
+					allowConnectPoints[3],
+					true
+				);
+				anchorPositions.push(anchorPair[0]);
+			}
+		}
+	}
+
+	getNodeDefaultSize(nodeType: string, variant: string) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		let ret = { w: 100, h: 40 };
+		if (
+			that.config.defaultSize[nodeType] &&
+			that.config.defaultSize[nodeType][variant] &&
+			that.config.defaultSize[nodeType][variant].width &&
+			that.config.defaultSize[nodeType][variant].height
+		) {
+			ret = {
+				w: that.config.defaultSize[nodeType][variant].width,
+				h: that.config.defaultSize[nodeType][variant].height
+			};
+		} else if (
+			that.config.node[nodeType] &&
+			that.config.node[nodeType].style &&
+			that.config.node[nodeType].style.width &&
+			that.config.node[nodeType].style.height
+		) {
+			ret = {
+				w: that.config.node[nodeType].style.width,
+				h: that.config.node[nodeType].style.height
+			};
+		} else {
+			ret = {
+				w: 100,
+				h: 40
+			};
+		}
+		return ret;
+	}
+
+	//用于对已有的nodeEvent进行修改控制，如enable, disable, destroy
+	//action: one of resizable/droppable/draggable
+	//cmd: one of enable, disable destroy
+	updateNodeEvent(jqNode: myJQuery, action: string, cmd: string) {
+		if (action === 'resizable') {
+			if (cocoConfig.node[jqNode.attr('nodetype')].resizable) {
+				jqNode.resizable(cmd);
+			}
+		} else if (action === 'droppable') {
+			if (cocoConfig.node[jqNode.attr('nodetype')].droppable) {
+				jqNode.droppable(cmd);
+			}
+		} else if (action === 'draggable') {
+			jqNode.draggable(cmd);
+		}
+	}
+	getNodeById(nodeId: string) {
+		return $('#' + nodeId);
+	}
+
+	//用在index.js中的boostrapevue
+	isActive(mode: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return that.mode === mode;
+	}
+
+	width(w?: number) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (w) {
+			that._width = w;
+			//that.stage.width(w);
+		}
+		return that._width;
+	}
+	height(h?: number) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (h) {
+			that._height = h;
+			//that.stage.height(h);
+		}
+		return that._height;
+	}
+
+	size(w: number, h: number) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.width(w);
+		that.height(h);
+	}
+	/**
+	 * 是否是一个kfknode
+	 * @param a node div
+	 */
+	isKfkNode(jqdiv: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return that.isA(jqdiv, 'kfknode');
+	}
+	/**
+	 * 是否是一个有某个className的对象
+	 * @param jqdiv  要检查的对象
+	 * @param className 要检查的className
+	 * @return true，如果有这个className， false如果没有这个className
+	 */
+	isA(jqdiv: myJQuery, className: string) {
+		return jqdiv && jqdiv.hasClass(className);
+	}
+	/**
+	 * 是否不是一个有某个className的对象
+	 * 跟 isA(jqdiv, className)相反
+	 *
+	 * @param jqdiv  要检查的对象
+	 * @param className 要检查的className
+	 * @return true，如果没有这个className， false如果有这个className
+	 */
+	isNotA(jqdiv: myJQuery, className: string) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return !that.isA(jqdiv, className);
+	}
+
+	holdEvent(evt: Event) {
+		evt.stopImmediatePropagation();
+		evt.stopPropagation();
+		evt.preventDefault();
+	}
+
+	/**
+	 * 只是检查是否不包含“noedit" class, 以及是否有innerlink属性
+	 */
+	updateable(jqNode: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.isNotA(jqNode, 'noedit') || jqNode.attr('innerlink')) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	startNodeEditing_withTextArea(jqNodeDIV: myJQuery, _enterSelect: boolean = false) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.getBoolean(jqNodeDIV.attr('edittable')) && that.notAnyLocked(jqNodeDIV)) {
+			that.fromJQ = jqNodeDIV.clone();
+			//const innerText = el(jqNodeDIV.find('.innerobj'));
+			//that.editTextNodeWithTextArea(innerText, el(jqNodeDIV), enterSelect);
+		}
+	}
+	async startNodeEditing(jqNodeDIV: myJQuery, enterSelect: boolean) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.anyLocked(jqNodeDIV)) return;
+		if (jqNodeDIV.attr('nodetype') === 'text') {
+			that.startInlineEditing(jqNodeDIV);
+		} else that.startNodeEditing_withTextArea(jqNodeDIV, enterSelect);
+	}
+	async procNodeDoubleClick(evt: Event, jqNodeDIV: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		evt.stopPropagation();
+		evt.preventDefault();
+		if (that.anyLocked(jqNodeDIV)) return;
+		//下面这句判断其实没用，因为在演示模式和概览模式下，都加了遮罩，点不到nodeDIV上
+		if (that.inPresentingMode === true || that.inOverviewMode) return;
+
+		await that.startNodeEditing(jqNodeDIV, false);
+	}
+
+	driveNodeBalls(jqNodeDIV: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		const tplLinks = that.tpl.find(`.link[from="${jqNodeDIV.attr('id')}"]`);
+		const needToAdd = tplLinks.length - that.tmpBalls.length;
+		console.log('dirveNodeBalls');
+		for (let i = 0; i < needToAdd; i++) {
+			const tmpBall = that.ball.clone();
+			const ballId = 'ball_' + that.myuid();
+			tmpBall.attr('id', ballId);
+			tmpBall.addClass(ballId);
+			tmpBall.addTo(that.ball.parent());
+			that.tmpBalls.push(tmpBall);
+		}
+		for (let i = 0; i < tplLinks.length; i++) {
+			that.tmpBalls[i].removeClass('noshow');
+			that.tmpBalls[i].fill(that.config.connect.styles.style1.normal.color);
+		}
+		tplLinks.each(async (index: number, link: any) => {
+			const jLink = $(link);
+			const connectSelector = `.connect_${jLink.attr('from')}_${jLink.attr('to')}`;
+			const svgConnect = that.svgDraw.findOne(connectSelector);
+			const lengthOfConnectorLine = svgConnect.length();
+			const runner_duration = 1500;
+			const runner = that.tmpBalls[index].animate({ duration: runner_duration, when: 'now' });
+			runner.ease('>');
+			runner
+				.during(function (pos: number) {
+					const p = svgConnect.pointAt(pos * lengthOfConnectorLine);
+					that.tmpBalls[index].center(p.x, p.y);
+				})
+				.loop(3);
+		});
+	}
+
+	async stopNodeBalls() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		for (let i = 0; i < that.tmpBalls.length; i++) {
+			await that.tmpBalls[i].timeline().stop();
+			await that.tmpBalls[i].addClass('noshow');
+		}
+	}
+
+	/**
+	 * 从一个节点，向其attr jump所记录ID的节点跳转
+	 */
+	async tryToJump(jqDIV: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (KFKclass.NotSet(jqDIV)) jqDIV = that.getFocusHoverLastCreate();
+		if (jqDIV && jqDIV.attr('jump')) {
+			let followDIV = $(`#${jqDIV.attr('jump')}`);
+			if (followDIV.length <= 0) {
+				return;
+			}
+			followDIV = followDIV.first();
+			//await that.addFromTo(jqDIV, followDIV);
+			//that.scrollToNode(followDIV);
+		}
+	}
+
+	// getSelection、createRange兼容
+	isSupportRange() {
+		return typeof document.createRange === 'function' || typeof window.getSelection === 'function';
+	}
+
+	getCurrentRange() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		let range = null;
+		let selection = null;
+		if (that.isSupportRange()) {
+			selection = document.getSelection();
+			if (selection.getRangeAt && selection.rangeCount) {
+				range = document.getSelection().getRangeAt(0);
+			}
+		} else {
+			//eslint-disable-next-line
+			range = document.selection.createRange();
+		}
+		return range;
+	}
+	insertHtmlAfterRange(html: string) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		let selection = null;
+		let range = null;
+		if (that.isSupportRange()) {
+			// IE > 9 and 其它浏览器
+			selection = document.getSelection();
+			if (selection.getRangeAt && selection.rangeCount) {
+				let fragment: DocumentFragment, node: ChildNode, lastNode: ChildNode;
+				range = selection.getRangeAt(0);
+				range.deleteContents();
+				const el = document.createElement('span');
+				el.innerHTML = html;
+				// 创建空文档对象,IE > 8支持documentFragment
+				// eslint-disable-next-line prefer-const
+				fragment = document.createDocumentFragment();
+
+				while ((node = el.firstChild)) {
+					lastNode = fragment.appendChild(node);
+				}
+				range.insertNode(fragment);
+
+				if (lastNode) {
+					range = range.cloneRange();
+					range.setStartAfter(lastNode);
+					range.collapse(true);
+					selection.removeAllRanges();
+					selection.addRange(range);
+				}
+			}
+		} else if (document.selection && document.selection.type != 'Control') {
+			// IE < 9
+			document.selection.createRange().pasteHTML(html);
+		}
+	}
+
+	cleanTextInput(jInner: myJQuery, allowBR: boolean = false) {
+		let html = jInner.prop('innerHTML');
+		html = html.replace('<div>', ' ');
+		html = html.replace('</div>', ' ');
+		if (allowBR) {
+			html = html.replace(/<br><br>$/, '<br>');
+			html = html + '<br><br>';
+		} else {
+			html = html.replace('<br>', '');
+		}
+		jInner.prop('innerHTML', html);
+		// that.insertHtmlAfterRange('<br><br>');
+		if (window.getSelection) {
+			//ie11 10 9 ff safari
+			jInner.focus();
+			const range = window.getSelection(); //创建range
+			range.selectAllChildren(jInner[0]); //range 选择obj下所有子内容
+			range.collapseToEnd(); //光标移至最后
+		} else if (document.selection) {
+			//ie10 9 8 7 6 5
+			const range = document.selection.createRange(); //创建选择对象
+			//var range = document.body.createTextRange();
+			range.moveToElementText(jInner[0]); //range定位到obj
+			range.collapse(false); //光标移至最后
+			range.select();
+		}
+	}
+
+	//启动单行文字编辑
+	startInlineEditing(jqNodeDIV: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.isEditting = true;
+		jqNodeDIV.find('.innerobj').focus();
+		that.inlineEditor = jqNodeDIV;
+		const allowBR = jqNodeDIV.attr('nodetype') !== 'text';
+		//div keydown
+		jqNodeDIV.keydown(function (evt: KeyboardEvent) {
+			if (evt.key === 'Enter' && (evt.shiftKey || evt.ctrlKey || evt.metaKey)) {
+				//eslint-disable-line
+				const jInner = jqNodeDIV.find('.innerobj');
+				that.cleanTextInput(jInner, allowBR);
+				evt.stopPropagation();
+				evt.preventDefault();
+			} else if (evt.key === 'Enter') {
+				//ENTER || PageUp
+				const jInner = jqNodeDIV.find('.innerobj');
+				that.cleanTextInput(jInner, allowBR);
+				evt.stopPropagation();
+				evt.preventDefault();
+			} else if (evt.key === 'End' || evt.key === 'PageDown') {
+				//END  || PageDown
+				//阻止浏览器滚动窗口的缺省动作
+				evt.stopPropagation();
+				evt.preventDefault();
+			} else if (evt.key === 'Home' || evt.key === 'PageUp' || evt.key === ' ') {
+				//HOME
+				//阻止浏览器滚动窗口的缺省动作
+				evt.stopPropagation();
+				evt.preventDefault();
+				// let jInner = jqNodeDIV.find('.innerobj');
+				// if (window.getSelection) { //ie11 10 9 ff safari
+				//   jInner.focus();
+				//   var range = window.getSelection(); //创建range
+				//   range.selectAllChildren(jInner[0]); //range 选择obj下所有子内容
+				//   range.collapseToStart(); //光标移至最后
+				// } else if (document.selection) { //ie10 9 8 7 6 5
+				//   var range = document.selection.createRange(); //创建选择对象
+				//   //var range = document.body.createTextRange();
+				//   range.moveToElementText(jInner[0]); //range定位到obj
+				//   range.moveEnd(jInner[0], 0);
+				//   range.moveStart(jInner[0], 0);
+				//   range.collapse(); //光标移至最后
+				// }
+			}
+			// on esc do not set value back to node
+			// if (evt.key=== "Escape") {
+			//   console.log("presessed ESC");
+			// }
+		});
+	}
+	endInlineEditing() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.isEditting = false;
+		that.inlineEditor = null;
+	}
+
+	/**
+	 * 开始节点编辑，根据节点类型，相应使用不同的编辑器
+	 * 单行文字用inline editing，  textblock和yellowtip用textarea
+	 */
+	getNull(value: any) {
+		switch (value) {
+			case undefined:
+			case null:
+			case 'undefined':
+			case 'null':
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	getBoolean(value: string | number | boolean) {
+		return [true, 'true', 1, '1', 'on', 'yes'].indexOf(value) >= 0;
+	}
+
+	divLeft(jqDiv: myJQuery) {
+		return KFKclass.unpx(jqDiv.css('left'));
+	}
+	divCenter(jqDiv: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return that.divLeft(jqDiv) + that.divWidth(jqDiv) * 0.5;
+	}
+	divRight(jqDiv: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return that.divLeft(jqDiv) + that.divWidth(jqDiv);
+	}
+	divTop(jqDiv: myJQuery) {
+		return KFKclass.unpx(jqDiv.css('top'));
+	}
+	divMiddle(jqDiv: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return that.divTop(jqDiv) + that.divHeight(jqDiv) * 0.5;
+	}
+	divBottom(jqDiv: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return that.divTop(jqDiv) + that.divHeight(jqDiv);
+	}
+	divWidth(jqDiv: myJQuery) {
+		return KFKclass.unpx(jqDiv.css('width'));
+	}
+	divHeight(jqDiv: myJQuery) {
+		return KFKclass.unpx(jqDiv.css('height'));
+	}
+	divRect(jqDiv: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return {
+			left: that.divLeft(jqDiv),
+			top: that.divTop(jqDiv),
+			right: that.divRight(jqDiv),
+			bottom: that.divBottom(jqDiv),
+			center: that.divCenter(jqDiv),
+			middle: that.divMiddle(jqDiv),
+			width: that.divWidth(jqDiv),
+			height: that.divHeight(jqDiv)
+		};
+	}
+	divMove(jqDiv: myJQuery, left: number, top: number) {
+		jqDiv.css({
+			left: left,
+			top: top
+		});
+	}
+	divDMove(jqDiv: myJQuery, deltaX: number, deltaY: number) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		const left = that.divLeft(jqDiv);
+		const top = that.divTop(jqDiv);
+		jqDiv.css({
+			left: left + deltaX,
+			top: top + deltaY
+		});
+	}
+
+	/**
+	 * 得到所选DIVS中没有被锁定的div的个数
+	 * @param divs  如为undefined，则自动处理selectedDIVs
+	 */
+	getUnlockedCount(divs: string | any[]) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (divs === undefined) {
+			divs = that.selectedDIVs;
+		}
+		let numberOfNotLocked = 0;
+		for (let i = 0; i < divs.length; i++) {
+			if (that.anyLocked(divs[i]) === false) {
+				numberOfNotLocked = numberOfNotLocked + 1;
+			}
+		}
+		return numberOfNotLocked;
+	}
+
+	async sameSize(direction: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.DivStyler
+			? that.DivStyler.sameSize(direction)
+			: import('./divStyler').then((pack) => {
+					that.DivStyler = pack.DivStyler;
+					that.DivStyler.sameSize(direction);
+			  });
+	}
+	async arrangeNodes(direction: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.DivStyler
+			? that.DivStyler.arrangeNodes(direction)
+			: import('./divStyler').then((pack) => {
+					that.DivStyler = pack.DivStyler;
+					that.DivStyler.arrangeNodes(direction);
+			  });
+	}
+
+	scroll_posX(x: number) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return x + that.scrollContainer.scrollLeft();
+	}
+	scroll_posY(y: number) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return y + that.scrollContainer.scrollTop();
+	}
+
+	offsetLineDataAttr(lineDIV: any, offset: Point) {
+		let x1 = parseInt($(lineDIV).attr('x1'));
+		let y1 = parseInt($(lineDIV).attr('y1'));
+		let x2 = parseInt($(lineDIV).attr('x2'));
+		let y2 = parseInt($(lineDIV).attr('y2'));
+		x1 += offset.x;
+		y1 += offset.y;
+		x2 += offset.x;
+		y2 += offset.y;
+		$(lineDIV).attr('x1', x1);
+		$(lineDIV).attr('y1', y1);
+		$(lineDIV).attr('x2', x2);
+		$(lineDIV).attr('y2', y2);
+	}
+
+	//Delete node  remove node
+	async deleteNode_request(jqDIV: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.stopNodeBalls();
+		const myId = jqDIV.attr('id');
+		const links = that.tpl.find(`.link[from="${myId}"], .link[to="${myId}"]`);
+		console.log(links);
+		that.yarkOpHistory({
+			obj: 'node',
+			from: jqDIV,
+			to: null,
+			links: links
+		});
+		await that.deleteLinks(jqDIV, links);
+		jqDIV.remove();
+		that.onChange('Delete');
+	}
+
+	async deleteLinks(_jqDIV: myJQuery, links: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		links.each(async (_index: any, link: any) => {
+			const jLink = $(link);
+			const connect_id = `connect_${jLink.attr('from')}_${jLink.attr('to')}`;
+			await that.removeConnectById(connect_id);
+		});
+	}
+
+	/**
+	 * 去掉一个div的所有链接
+	 * @param jqDIV 元素
+	 * @param forDelete 这个节点是要被删除吗？
+	 */
+	async cleanUpConnection(jqDIV: myJQuery, forDelete = false) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		//删除linkto线条
+		const myId = jqDIV.attr('id');
+		const toIds = KFKclass.stringToArray(jqDIV.attr('linkto'));
+		toIds.forEach((toId) => {
+			const lineClassSelector = `.connect_${myId}_${toId}`;
+			const triClassSelector = `.connect_${myId}_${toId}_triangle`;
+			try {
+				that.svgDraw.findOne(lineClassSelector).remove();
+				// eslint-disable-next-line no-empty
+			} catch (err) {
+				// eslint-disable-next-line no-empty
+			} finally {
+			}
+			try {
+				that.svgDraw.findOne(triClassSelector).remove();
+				// eslint-disable-next-line no-empty
+			} catch (err) {
+				// eslint-disable-next-line no-empty
+			} finally {
+			}
+		});
+		//如果这个节点不是要删除，那么它的变化要被记录
+		if (forDelete === false) {
+			if (toIds.length > 0) {
+				jqDIV.attr('linkto', '');
+			}
+		}
+
+		//重置全局ZIndex 同时，删除那些链接到当前节点的连接线
+		const myZI = that.getZIndex(jqDIV);
+		const allnodes = that.JC3.find('.kfknode');
+		let tmp1 = '';
+		allnodes.each(async (_index: any, aDIV: any) => {
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const jqDIV = $(aDIV);
+			const fromId = jqDIV.attr('id');
+			const tmpzi = that.getZIndex(jqDIV);
+			if (tmpzi > myZI) {
+				that.setZIndex(jqDIV, tmpzi - 1);
+			}
+			tmp1 = jqDIV.attr('linkto');
+			const arr = KFKclass.stringToArray(tmp1);
+			if (arr.indexOf(myId) >= 0) {
+				arr.splice(arr.indexOf(myId), 1);
+				jqDIV.attr('linkto', arr.join(','));
+
+				const lineClassSelector = `.connect_${fromId}_${myId}`;
+				const triClassSelector = `.connect_${fromId}_${myId}_triangle`;
+				try {
+					that.svgDraw.findOne(lineClassSelector).remove();
+					// eslint-disable-next-line no-empty
+				} catch (err) {
+					// eslint-disable-next-line no-empty
+				} finally {
+				}
+				try {
+					that.svgDraw.findOne(triClassSelector).remove();
+					// eslint-disable-next-line no-empty
+				} catch (err) {
+					// eslint-disable-next-line no-empty
+				} finally {
+				}
+			}
+		});
+		const nodeIndex = that.selectedDIVs.indexOf(jqDIV);
+		if (nodeIndex >= 0) {
+			that.selectedDIVs.splice(nodeIndex, 1);
+			that.setSelectedNodesBoundingRect();
+		}
+	}
+
+	async _deleteShape(svgLine: any) {
+		svgLine.attr({
+			'stroke-width': svgLine.attr('origin-width')
+		});
+	}
+
+	hoverSvgLine(svgline?: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (svgline !== undefined) {
+			that._svghoverline = svgline;
+			if (svgline !== null) that.hoverJqDiv(null);
+		} else {
+			return that._svghoverline;
+		}
+	}
+
+	hoverJqDiv(jqdiv?: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (jqdiv !== undefined) {
+			that._jqhoverdiv = jqdiv;
+			if (jqdiv !== null) that.hoverSvgLine(null);
+		} else {
+			return that._jqhoverdiv;
+		}
+	}
+
+	/**
+	 * 删除hover或者selected 节点
+	 * @param evt oncut事件
+	 * @param cutMode， 是否是cut方式，cut方式下，删除前先复制
+	 */
+	async deleteObjects(
+		evt: Event | JQuery.KeyDownEvent<Document, null, Document, Document>,
+		cutMode = false
+	) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		console.log('Here1');
+		//如果有多个节点被选择，则优先进行多项删除
+		if (that.docIsReadOnly()) return;
+		let affectedParentsArray = [];
+		that.startTrx();
+		try {
+			that.copyCandidateDIVs = [];
+			that.copyCandidateLines = [];
+			if (that.selectedDIVs.length > 1 || that.selectedShapes.length > 1) {
+				if (that.selectedDIVs.length > 1) {
+					that.debug('delete, selected DIVS >1');
+					let notLockedCount = 0;
+					for (let i = 0; i < that.selectedDIVs.length; i++) {
+						if (that.anyLocked(that.selectedDIVs[i]) === false) {
+							notLockedCount += 1;
+						}
+					}
+					that.debug(`没锁定的节点数量是 ${notLockedCount}, 一共是${that.selectedDIVs.length}`);
+					if (notLockedCount > 0) {
+						for (let i = 0; i < that.selectedDIVs.length; ) {
+							if (that.anyLocked(that.selectedDIVs[i]) === false) {
+								if (cutMode === true) {
+									//copy时不过滤nocopy
+									const jTemp = that.selectedDIVs[i].clone();
+									const jTitle = jTemp.find('.coco_title');
+									if (jTitle.length > 0) {
+										jTitle.text(jTitle.text() + '的复制');
+									}
+									that.copyCandidateDIVs.push(jTemp);
+								}
+								affectedParentsArray.push([...that.getParent(that.selectedDIVs[i])]);
+								i++;
+							}
+						}
+
+						affectedParentsArray = that.AdvOps.uniquefyKfkObjectArray(affectedParentsArray);
+						//TODO: for every affected Parent, re-layout it's children if it's a autolayout node
+						//TODO: place autolayout icon on the right or left of parent node
+						console.log(affectedParentsArray.length);
+					}
+				}
+				if (that.selectedShapes.length > 1) {
+					that.debug('delete, selected Shapes >1');
+					let notLockedCount = 0;
+					for (let i = 0; i < that.selectedShapes.length; i++) {
+						if (that.lineLocked(that.selectedShapes[i]) === false) {
+							notLockedCount += 1;
+						}
+					}
+					that.debug(`没锁定的Shape数量是 ${notLockedCount}, 一共是${that.selectedShapes.length}`);
+					if (notLockedCount > 0) {
+						for (let i = 0; i < that.selectedShapes.length; ) {
+							if (that.lineLocked(that.selectedShapes[i]) === false) {
+								that._deleteShape(that.selectedShapes[i]);
+								i++;
+							}
+						}
+					}
+				}
+			} else {
+				//没有多项选择时，则进行单项删除
+				//首先，先处理鼠标滑过的NODE
+				if (that.hoverJqDiv()) {
+					const theDIV = that.hoverJqDiv();
+					if (that.anyLocked(theDIV)) return;
+					if (theDIV.hasClass('START') || theDIV.hasClass('END')) {
+						return;
+					}
+					const jTemp = theDIV.clone();
+					const jTitle = jTemp.find('.coco_title');
+					if (jTitle.length > 0) {
+						jTitle.text(jTitle.text() + '的复制');
+					}
+					that.copyCandidateDIVs = [jTemp];
+					//这个地方加上shouldBeDeleted标志应该没有必要，不过还是加一下
+					//在拖动覆盖其它节点，内容合并后删除被拖动节点时，这个标志是一定要加的，防止draggable end事件中，重新上传U指令，这样内容又会update回来
+					theDIV.shouldBeDeleted = true;
+					that.deleteNode_request(theDIV);
+					that.hoverJqDiv(null);
+				} else if (that.hoveredConnectId) {
+					//delete connect
+					//最后看鼠标滑过的connect（节点间连接线）
+					if (that.docIsReadOnly()) return;
+					console.log('Delete a Connection...');
+					//Find ids of the two nodes connected by this connect.
+					const tmpNodeIdPair = that.getNodeIdsFromConnectId(that.hoveredConnectId);
+					const nid = tmpNodeIdPair[0];
+					const tid = tmpNodeIdPair[1];
+					//let jqFrom = $(`#${nid}`);
+					//let jqTo = $(`#${tid}`);
+					//if (that.anyLocked(jqFrom)) return;
+					//if (that.anyLocked(jqTo)) return;
+					//let oldJq = jqFrom.clone();
+					//Remove this connect from the FROM node
+					//that.removeLinkTo(jqFrom, tid);
+					//let connect_id = `connect_${nid}_${tid}`;
+					//Remove ths connect drawing
+					const tmp = that.tpl.find(`.link[from="${nid}"][to="${tid}"]`);
+					const jTmp = $(tmp).clone();
+					await that.removeConnectById(that.hoveredConnectId);
+					that.yarkOpHistory({
+						obj: 'link',
+						from: jTmp,
+						to: null
+					});
+					//that.redrawLinkLines(jqFrom);
+					//删除一个connect, 则jqFrom被修改
+					that.onChange('Delete Connect');
+				}
+			}
+			if (that.copyCandidateDIVs.length > 0 || that.copyCandidateLines.length > 0) {
+				//判断是否是cut， 而不是delete， cut有clipbaordData, delete没有
+				if (evt instanceof ClipboardEvent && evt.clipboardData) {
+					evt.clipboardData.setData('text/plain', 'usediv');
+					evt.clipboardData.setData('text/html', 'usediv');
+				}
+			}
+			evt.preventDefault();
+			that.holdEvent(evt as Event);
+		} catch (error) {
+			console.error(error);
+		} finally {
+			that.endTrx();
+		}
+	}
+
+	/**
+	 * get Hovered, if null, then focused, if null, then lastcraeted node
+	 */
+	getHoverFocusLastCreateInner() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		const div = that.getHoverFocusLastCreate();
+		if (KFKclass.NotSet(div)) return undefined;
+		const inner = div.find('.innerobj');
+		if (inner.length > 0) return inner;
+		else return undefined;
+	}
+	getHoverFocusLastCreate() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		let ret = that.hoverJqDiv();
+		if (KFKclass.NotSet(ret)) {
+			ret = that.lastFocusOnJqNode;
+			if (KFKclass.NotSet(ret)) {
+				ret = that.lastCreatedJqNode;
+				if (KFKclass.NotSet(ret)) {
+					ret = undefined;
+				}
+			}
+		}
+		return ret;
+	}
+
+	getFocusHoverLastCreate() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		let ret = that.lastFocusOnJqNode;
+		if (KFKclass.NotSet(ret)) {
+			ret = that.hoverJqDiv();
+			if (KFKclass.NotSet(ret)) {
+				ret = that.lastCreatedJqNode;
+				if (KFKclass.NotSet(ret)) {
+					ret = undefined;
+				}
+			}
+		}
+		return ret;
+	}
+
+	getPropertyApplyToJqNode() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		let ret = null;
+		if (that.hoverJqDiv() !== null) {
+			ret = that.hoverJqDiv();
+		} else if (that.lastFocusOnJqNode != null) {
+			ret = that.lastFocusOnJqNode;
+		} else if (that.justCreatedJqNode != null) {
+			ret = that.justCreatedJqNode;
+		} else {
+			ret = null;
+		}
+		return ret;
+	}
+
+	/**
+	 * 复制对象
+	 */
+	async duplicateHoverObject(evt: MouseEvent, action = undefined) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.debug('entered duplicateHoverObject');
+		if (that.docIsReadOnly()) {
+			that.debug('docIsReady, no duplicate');
+			return;
+		}
+		if (action === 'copy') {
+			if (that.selectedDIVs.length > 1) {
+				//优先多选
+				that.debug('multiple nodes were selected');
+				//过滤掉TODOLISTDIV/chatmessage 等nocopy DIV
+				const filteredDIVs = that.selectedDIVs.filter((div) => {
+					return div.hasClass('nocopy') === false;
+				});
+				that.copyCandidateDIVs = filteredDIVs.map((div) => {
+					const jTemp = div.clone();
+					const jTitle = jTemp.find('.coco_title');
+					if (jTitle.length > 0) {
+						jTitle.text(jTitle.text() + '的复制');
+					}
+					return jTemp;
+				});
+				return true;
+			} else if (that.getPropertyApplyToJqNode()) {
+				//然后selected
+				//过滤掉TODOLISTDIV
+				if (that.getPropertyApplyToJqNode().hasClass('nocopy')) {
+					that.copyCandidateDIVs = [];
+					that.copyCandidateLines = [];
+				} else {
+					const jTemp = that.getPropertyApplyToJqNode().clone();
+					const jTitle = jTemp.find('.coco_title');
+					if (jTitle.length > 0) {
+						jTitle.text(jTitle.text() + '的复制');
+					}
+					that.copyCandidateDIVs = [jTemp];
+					that.copyCandidateLines = [];
+				}
+				return true;
+			} else if (that.hoverSvgLine() && (action === undefined || action === 'copy')) {
+				that.hoverSvgLine().attr({
+					'stroke-width': that.hoverSvgLine().attr('origin-width')
+				});
+				that.copyCandidateLines = [that.hoverSvgLine().clone()];
+				that.copyCandidateDIVs = [];
+				//下面这句代码在第一次按META-D时就粘贴了一条,有些不用,
+				// await that.makeACopyOfLine(that.lineToCopy, evt.shiftKey);
+				return true;
+			} else {
+				return false;
+			}
+		} else if (action === 'paste') {
+			if (that.copyCandidateDIVs && that.copyCandidateDIVs.length > 0) {
+				await that.makeCopyOfJQs(that.copyCandidateDIVs, evt.shiftKey);
+			} else if (that.copyCandidateLines && that.copyCandidateLines.length > 0) {
+				await that.makeCopyOfLines(that.copyCandidateLines);
+			} else {
+				that.debug('Nothing to paste');
+			}
+			// if (that.jqToCopy) {
+			// } else if (that.lineToCopy) {
+			//   await that.makeACopyOfLine(that.lineToCopy, evt.shiftKey);
+			//   //await that.makeACopyOfLine(that.lineToCopy, evt.shiftKey);
+			// }
+			return true;
+		}
+		return true;
+	}
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	async makeCopyOfJQs(jqstocopy: string | any[], _shiftKey: boolean) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		//现在是移动指定位置再次META-D才放置对象,因此offset没用.事实上,offset在复制node时就一直没有用到
+
+		const startPoint = {
+			x: that.divLeft(jqstocopy[0]),
+			y: that.divTop(jqstocopy[0])
+		};
+		that.startTrx();
+		try {
+			for (let i = 0; i < jqstocopy.length; i++) {
+				const oldJqPos = {
+					x: that.divLeft(jqstocopy[i]),
+					y: that.divTop(jqstocopy[i])
+				};
+				const deltaX = oldJqPos.x - startPoint.x;
+				const deltaY = oldJqPos.y - startPoint.y;
+				const jqNewNode = that.makeCloneDIV(jqstocopy[i], that.myuid(), {
+					left:
+						that.scalePoint(that.scrXToJc3X(that.currentMousePos.x)) -
+						that.tplNode_width * 0.5 +
+						deltaX,
+
+					top:
+						that.scalePoint(that.scrYToJc3Y(that.currentMousePos.y)) -
+						that.tplNode_height * 0.5 +
+						deltaY
+				});
+				that.justCreatedJqNode = jqNewNode;
+				that.lastCreatedJqNode = jqNewNode;
+
+				jqNewNode.appendTo(that.C3);
+				await that.setNodeEventHandler(jqNewNode, async function () {
+					if (i === 0) that.focusOnNode(jqNewNode);
+				});
+			}
+		} finally {
+			that.endTrx();
+			that.onChange('Copy');
+		}
+		return;
+	}
+
+	makeCloneDIV(orig: myJQuery, newid: string, newcss: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		const ret = orig.clone(false);
+		ret.attr('id', newid);
+		if (newcss) ret.css(newcss);
+		that.removeNodeEventFootprint(ret);
+
+		return ret;
+	}
+	async makeCopyOfLines(linestocopy: string | any[]) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		const startPoint = {
+			x: linestocopy[0].cx(),
+			y: linestocopy[0].cy()
+		};
+		for (let i = 0; i < linestocopy.length; i++) {
+			const newLine = linestocopy[i].clone();
+			const deltaX = linestocopy[i].cx() - startPoint.x;
+			const deltaY = linestocopy[i].cy() - startPoint.y;
+
+			const newline_id = 'shape_' + that.myuid();
+			const classes = newLine.classes();
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			classes.forEach((className: string, _index: number) => {
+				if (className !== 'kfkshape') {
+					newLine.removeClass(className);
+				}
+			});
+			newLine.attr('id', newline_id);
+			newLine.addClass(newline_id);
+			//现在是移动指定位置再次META-D才放置对象,因此offset没用.
+			//之前的代码在x,y后面分别加了个20, 以便不覆盖到节点
+			//现在第一次点取不马上复制了,+offset已经没有了必要
+			newLine.center(
+				that.scalePoint(that.scrXToJc3X(that.currentMousePos.x)) + deltaX,
+				that.scalePoint(that.scrYToJc3Y(that.currentMousePos.y)) + deltaY
+			);
+			// newLine.addTo(linestocopy[i].parent());
+			newLine.addTo(that.svgDraw);
+			that.addShapeEventListner(newLine);
+		}
+	}
+	async makeACopyOfLine(linetocopy: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		linetocopy = linetocopy ? linetocopy : that.lineToCopy;
+		const newLine = linetocopy.clone();
+
+		const newline_id = 'shape_' + that.myuid();
+		const classes = newLine.classes();
+		classes.forEach((className: string) => {
+			if (className !== 'kfkshape') {
+				newLine.removeClass(className);
+			}
+		});
+		newLine.attr('id', newline_id);
+		newLine.addClass(newline_id);
+		//现在是移动指定位置再次META-D才放置对象,因此offset没用.
+		//之前的代码在x,y后面分别加了个20, 以便不覆盖到节点
+		//现在第一次点取不马上复制了,+offset已经没有了必要
+		//TODO: curentMousePos位置有问题, 现在应该是JC3的了
+		newLine.center(
+			that.scalePoint(that.scrXToJc3X(that.currentMousePos.x)),
+			that.scalePoint(that.scrYToJc3Y(that.currentMousePos.y))
+		);
+		newLine.addTo(that.lineToCopy.parent());
+		that.addShapeEventListner(newLine);
+	}
+
+	getBoundingRectOfSelectedDIVs(): Rectangle {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.selectedDIVs.length == 0) return;
+		const ret: Rectangle = {
+			left: that.divLeft(that.selectedDIVs[0]),
+			top: that.divTop(that.selectedDIVs[0]),
+			right: that.divRight(that.selectedDIVs[0]),
+			bottom: that.divBottom(that.selectedDIVs[0]),
+			width: 0,
+			height: 0
+		};
+		for (let i = 0; i < that.selectedDIVs.length; i++) {
+			const tmpRect = {
+				left: that.divLeft(that.selectedDIVs[i]),
+				top: that.divTop(that.selectedDIVs[i]),
+				right: that.divRight(that.selectedDIVs[i]),
+				bottom: that.divBottom(that.selectedDIVs[i])
+			};
+			if (tmpRect.left < ret.left) {
+				ret.left = tmpRect.left;
+			}
+			if (tmpRect.top < ret.top) {
+				ret.top = tmpRect.top;
+			}
+			if (tmpRect.right > ret.right) {
+				ret.right = tmpRect.right;
+			}
+			if (tmpRect.bottom > ret.bottom) {
+				ret.bottom = tmpRect.bottom;
+			}
+		}
+		ret.width = ret.right - ret.left;
+		ret.height = ret.bottom - ret.top;
+
+		return ret;
+	}
+
+	getText(jqdiv: myJQuery) {
+		const text_filter = '.innerobj';
+		return jqdiv.find(text_filter).text();
+	}
+
+	setText(jqdiv: myJQuery, text: string) {
+		const text_filter = '.innerobj';
+		return jqdiv.find(text_filter).text(text);
+	}
+
+	jc3PosToJc1Pos(pos: Point) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return {
+			x: pos.x * that.scaleRatio + that.LeftB,
+			y: pos.y * that.scaleRatio + that.TopB
+		};
+	}
+
+	jc3XToJc1X(x: number) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return x + that.LeftB;
+	}
+	jc3YToJc1Y(y: number) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return y + that.TopB;
+	}
+	jc1XToJc3X(x: number) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return x - that.LeftB;
+	}
+	jc1YToJc3Y(y: number) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return y - that.TopB;
+	}
+
+	//Screen pos x to JC3 pos x
+	scrXToJc3X(x: number) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return that.scrXToJc1X(x) - that.LeftB;
+	}
+	scrYToJc3Y(y: number) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return that.scrYToJc1Y(y) - that.TopB;
+	}
+
+	//Screen pos x to JC1 pos x
+	scrXToJc1X(x: number) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return x + that.JS1.scrollLeft();
+	}
+	scrYToJc1Y(y: number) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return y + that.JS1.scrollTop();
+	}
+	jc1XToScrX(x: number) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return x - that.JS1.scrollLeft();
+	}
+	jc1YToScrY(y: number) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return y - that.JS1.scrollTop();
+	}
+
+	saveLocalViewConfig() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		localStorage.setItem('viewConfig', JSON.stringify(that.APP.model.viewConfig));
+	}
+	rgba2hex(orig: string) {
+		let a: number;
+		const rgb: any = orig.replace(/\s/g, '').match(/^rgba?\((\d+),(\d+),(\d+),?([^,\s)]+)?/i);
+		const alpha: string = ((rgb && rgb[4]) || '').trim();
+		let hex = rgb
+			? (rgb[1] | (1 << 8)).toString(16).slice(1) +
+			  (rgb[2] | (1 << 8)).toString(16).slice(1) +
+			  (rgb[3] | (1 << 8)).toString(16).slice(1)
+			: orig;
+		if (alpha !== '') {
+			a = parseInt(alpha);
+		} else {
+			a = 0o1;
+		}
+
+		a = Math.round(a * 100) / 100;
+		const alpha1 = Math.round(a * 255);
+		const hexAlpha = (alpha1 + 0x10000).toString(16).substr(-2).toUpperCase();
+		hex = `${hex}${hexAlpha}`;
+
+		return '#' + hex;
+	}
+
+	secureHexColor(color: string) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (color.startsWith('rgb')) {
+			return that.rgba2hex(color);
+		} else {
+			return color;
+		}
+	}
+	setGridColor(bgcolor: string) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (!bgcolor) {
+			bgcolor = $('#overallbackground').css('background-color');
+		}
+		if (that.YIQColor === 'black') {
+			$('#containerbkg').removeClass('grid1');
+			$('#containerbkg').addClass('grid2');
+			// console.log("Bgcolor is ", bgcolor, 'YIQColor is', that.YIQColor, 'grid is grid2');
+		} else {
+			$('#containerbkg').removeClass('grid2');
+			$('#containerbkg').addClass('grid1');
+			// console.log("Bgcolor is ", bgcolor, 'YIQColor is', that.YIQColor, 'grid is grid1');
+		}
+	}
+
+	toggleShowGrid(checked: boolean) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (checked) {
+			let bgcolor = $('#containerbkg').css('background-color');
+			bgcolor = that.secureHexColor(bgcolor);
+			that.setGridColor(bgcolor);
+		} else {
+			$('#containerbkg').removeClass('grid1');
+			$('#containerbkg').removeClass('grid2');
+		}
+		that.saveLocalViewConfig();
+	}
+
+	initLineTransformer() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.debug('...initLineTransformer');
+		$('#linetransformer').draggable({
+			// move line resize line transform line
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			start: (evt, _ui) => {
+				//that.closeActionLog();
+				that.lineTransfomerDragging = true;
+				// that.fromJQ = that.tobeTransformJqLine.clone();
+				// that.setMode('line');
+				evt.stopImmediatePropagation();
+				evt.stopPropagation();
+			},
+
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			drag: (evt, _ui) => {
+				if (that.tempSvgLine) that.tempSvgLine.hide();
+				if (that.lineToResize === null) return;
+				const parr = that.lineToResize.array();
+				const stopAtPos = that.C3MousePos(evt);
+				if (that.moveLinePoint === 'from') {
+					that.lineToResize.plot([[stopAtPos.x, stopAtPos.y], parr[1]]);
+				} else {
+					that.lineToResize.plot([parr[0], [stopAtPos.x, stopAtPos.y]]);
+				}
+			},
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			stop: async (evt, _ui) => {
+				//transform line  change line
+				that.lineTransfomerDragging = false;
+				if (that.lineToResize === null) return;
+				that.setShapeToRemember(that.lineToResize);
+				const parr = that.lineToResize.array();
+				let stopAtPos = that.C3MousePos(evt);
+				if (that.APP.model.viewConfig.snap) {
+					stopAtPos = that.getNearGridPoint(stopAtPos);
+					const smp = that.ScreenMousePos(stopAtPos);
+					KFKclass.moveDIVCenterToPos($('#linetransformer'), smp);
+				}
+				if (that.moveLinePoint === 'from') {
+					that.lineToResize.plot([[stopAtPos.x, stopAtPos.y], parr[1]]);
+				} else {
+					that.lineToResize.plot([parr[0], [stopAtPos.x, stopAtPos.y]]);
+				}
+				KFKclass.hide('#linetransformer');
+			}
+		}); //line transformer. draggable()
+	}
+
+	loadModule(moduleName: string) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		switch (moduleName) {
+			case 'AdvOps':
+				that.AdvOps
+					? console.log('AdvOps already loaded')
+					: import('./advOps').then((pack) => {
+							that.AdvOps = pack.AdvOps;
+							console.log('AdvOps just loaded');
+					  });
+				break;
+			case 'DivStyler':
+				that.DivStyler
+					? console.log('DivStyler already exists')
+					: import('./divStyler').then((pack) => {
+							that.DivStyler = pack.DivStyler;
+							console.log('DivStyler just loaded');
+					  });
+				break;
+		}
+	}
+
+	addSvgLayer() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.svgDraw && delete that.svgDraw;
+		that.svgDraw = SVG().addTo('#C3').size(that._width, that._height);
+		that.svgDraw.attr('id', 'D3');
+		that.svgDraw.addClass('svgcanvas');
+
+		that.debug('svg layer initialized');
+		that.pageBounding = {
+			Pages: []
+		};
+		const boundingLineOption = {
+			color: '#FFFFFFCC',
+			width: 4,
+			linecap: 'square'
+		};
+		for (let i = 0; i < that.PageNumberVert; i++) {
+			for (let j = 0; j < that.PageNumberHori; j++) {
+				that.pageBounding.Pages.push({
+					left: j * that.PageWidth,
+					top: i * that.PageHeight
+				});
+			}
+		}
+		for (let i = 0; i <= that.PageNumberHori; i++) {
+			const tmpLine = that.svgDraw.line(i * that.PageWidth, 0, i * that.PageWidth, that._height);
+			tmpLine.addClass('pageBoundingLine').stroke(boundingLineOption);
+			if (cocoConfig.viewConfig.showbounding === false) {
+				tmpLine.addClass('noshow');
+			}
+		}
+		for (let j = 0; j <= that.PageNumberVert; j++) {
+			const tmpLine = that.svgDraw.line(0, j * that.PageHeight, that._width, j * that.PageHeight);
+			tmpLine.addClass('pageBoundingLine').stroke(boundingLineOption);
+			if (cocoConfig.viewConfig.showbounding === false) {
+				tmpLine.addClass('noshow');
+			}
+		}
+
+		//在连接线上跑动，用于显示连接线的标识球
+		//以后多条线上的标识球都是从that.ball clone而来
+		that.ball = that.svgDraw.circle(8);
+		that.ball.addClass('noshow');
+	}
+
+	async init(template: any, user: User) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.template = template;
+		that.user = user;
+		if (that.inited === true) {
+			console.error('that.init was called more than once, maybe loadImages error');
+		}
+		that.debug('Initializing...');
+		//that.checkBrowser();
+		$('body').css('overflow', 'scroll');
+		$('.showAfterInit').removeClass('showAfterInit');
+		try {
+			//that.loadImages();
+			// that.loadSvgs();
+			that.initLayout();
+			that.initC3();
+			that.initLineTransformer();
+			that.initLeftRightPanelEventHandler();
+		} catch (error) {
+			console.error('Designer initialization error');
+			console.error(error);
+		}
+		that.loadModule('AdvOps');
+		that.loadModule('DivStyler');
+		//$("body").css("overflow", "hidden");
+		if ($('#S1').length < 1) {
+			console.warn('S1 not found, designer is missing, should not happen');
+			return;
+		}
+		KFKclass.hide(that.JC3);
+
+		that.addSvgLayer();
+
+		that.opstack.splice(0, that.opstacklen);
+		console.log(that.APP.model.viewConfig.bgcolor);
+		that.opz = -1;
+		that.APP.setData('model', 'actionlog', []);
+
+		// that.APP.setData("model", "cocodoc", that.DocController.getDummyDoc());
+		// localStorage.removeItem("cocodoc");
+
+		console.log('Add document event handler');
+		that.addDocumentEventHandler();
+		that.focusOnC3();
+		that.cancelAlreadySelected();
+
+		//需要在explorer状态下隐藏的，都可以加上noshow, 在进入Designer时，noshow会被去掉
+		//并以动画形式显示出来
+		$('.padlayout').removeClass('noshow');
+		$('.padlayout').fadeIn(1000, function () {
+			// Animation complete
+		});
+
+		if (that.docIsReadOnly()) {
+			$('#leftPanel').addClass('noshow');
+		}
+		if (that.tplid === 'inner') {
+			await that.loadWorkflow(that.wfid);
+		} else {
+			await that.loadDoc();
+		}
+	}
+
+	async loadDoc() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		try {
+			that.currentTplId = that.template.tplid;
+			that.tpl = $(that.template.doc);
+			const nodes = that.tpl.find('.node');
+			nodes.addClass('kfknode');
+			await that.JC3.append(nodes);
+			const guiNodes = that.JC3.find('.node');
+			for (let i = 0; i < guiNodes.length; i++) {
+				const jqNode = $(guiNodes[i]);
+				await that.setNodeEventHandler(jqNode);
+				if (that.docIsReadOnly()) {
+					jqNode.draggable('disable');
+				} else {
+					jqNode.draggable('enable');
+				}
+				that.redrawLinkLines(jqNode, 'loadDoc', false);
+			}
+
+			if (that.docIsNotReadOnly()) {
+				$('#linetransformer').draggable('enable');
+			} else {
+				$('#linetransformer').draggable('disable');
+			}
+			that.myFadeOut($('.loading'));
+			that.myFadeIn(that.JC3, 100);
+			$('#overallbackground').removeClass('grid1');
+			//focusOnC3会导致C3居中
+			that.focusOnC3();
+			that.scrollToLastPosition(that.tplid);
+			that.C3.dispatchEvent(that.refreshC3Event);
+
+			KFKclass.show(that.JC3);
+			console.log(`that.JC3 is shown in loadDoc()`);
+		} catch (err) {
+			console.error(err);
+		} finally {
+			that.inited = true;
+		}
+	}
+
+	/**
+	 * @type {}
+	 */
+	async loadWorkflow(wfid: string) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		try {
+			KFKclass.hide(that.JC3);
+			Client.setSessionToken();
+			Client.readWorkflow(wfid).then(async (wfobj) => {
+				that.tpl = $(wfobj.doc).first('.template');
+				const nodes = that.tpl.find('.node');
+				nodes.addClass('kfknode');
+				await that.JC3.append(nodes);
+				const guiNodes = that.JC3.find('.node');
+				for (let i = 0; i < guiNodes.length; i++) {
+					const jqNode = $(guiNodes[i]);
+					await that.setNodeEventHandler(jqNode);
+					jqNode.draggable('disable');
+					that.redrawLinkLines(jqNode, 'loadDoc', false);
+				}
+
+				//eslint-disable-next-line
+				that.workflow = $(wfobj.doc).first('.workflow');
+				const works = that.workflow.find('.work');
+				for (let i = 0; i < works.length; i++) {
+					const aWork = $(works[i]);
+					const theNodeid = aWork.attr('nodeid');
+					const theGuiNode = that.JC3.find('#' + theNodeid);
+					const classes = aWork.attr('class').split(/\s+/);
+					for (let j = 0; j < classes.length; j++) {
+						if (classes[j].startsWith('ST_')) {
+							theGuiNode.addClass(classes[j]);
+						}
+					}
+					theGuiNode.append(aWork);
+				}
+
+				for (let i = 0; i < guiNodes.length; i++) {
+					//let jqNode = $(guiNodes[i]);
+					//Add node className by it's running status in process
+					//Change link line style by it's status
+				}
+
+				that.myFadeOut($('.loading'));
+				that.myFadeIn(that.JC3, 100);
+				$('#overallbackground').removeClass('grid1');
+
+				//focusOnC3会导致C3居中
+				that.focusOnC3();
+				that.scrollToLastPosition(that.wfid);
+				that.C3.dispatchEvent(that.refreshC3Event);
+			});
+		} catch (err) {
+			console.error(err);
+		} finally {
+			that.inited = true;
+		}
+	}
+
+	scrollToLastPosition(objid: string) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		let docPos = {};
+		//从localStorage中读取docPos记录
+		const scrollPositionCache = localStorage.getItem('docPos');
+		if (scrollPositionCache) {
+			docPos = JSON.parse(scrollPositionCache);
+		}
+		//如果有当前文档的滚动位置记录，则滚动到起位置去
+		if (docPos[objid]) {
+			that.scrollToPos(docPos[objid]);
+		} else {
+			//如果没有，则滚动到第一屏
+			that.scrollToPos({
+				x: that.LeftB,
+				y: that.TopB
+			});
+		}
+	}
+
+	initLeftRightPanelEventHandler() {
+		$('#leftPanel').on('click', function (evt) {
+			evt.stopPropagation();
+		});
+		$('#rightPanel').on('click', function (evt) {
+			evt.stopPropagation();
+		});
+		$('#leftPanel').on('mousedown', function (evt) {
+			evt.stopPropagation();
+		});
+		$('#rightPanel').on('mousedown', function (evt) {
+			evt.stopPropagation();
+		});
+	}
+
+	onToolboxMouseDown(mode: string) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.toolboxMouseDown = true;
+		that.mode = mode;
+		that.debug('Set drop toolbox mode to ', that.mode);
+	}
+	onToolboxMouseUp() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.toolboxMouseDown = false;
+	}
+
+	async showSection(options: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		const section = $.extend({}, that.APP.show.section, options);
+		that.APP.setData('show', 'section', section);
+	}
+
+	async showForm(options: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		const form = $.extend({}, that.APP.show.form, options);
+		that.APP.setData('show', 'form', form);
+	}
+
+	async showDialog(options: { pasteContentDialog: boolean }) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		const dialog = $.extend({}, that.APP.show.dialog, options);
+		that.APP.setData('show', 'dialog', dialog);
+	}
+	mergeAppData(data: any, key: string, value: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (typeof data === 'string' && typeof key === 'string' && typeof value === 'object') {
+			const tmpData = $.extend({}, that.APP[data][key], value);
+			that.APP.setData(data, key, tmpData);
+		} else if (typeof data === 'string' && data.indexOf('.') > 0 && typeof key === 'object') {
+			const arr = data.split('.');
+			const tmpData = $.extend({}, that.APP[arr[0]][arr[1]], key);
+			that.APP.setData(arr[0], arr[1], tmpData);
+		}
+	}
+
+	async sleep(miliseconds: number) {
+		await new Promise((resolve) => setTimeout(resolve, miliseconds));
+	}
+
+	getProductUrl() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		// return cocoConfig.product.url;
+		return that.urlBase;
+	}
+
+	async cleanupJC3() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		await that.JC3.empty();
+		that.addSvgLayer();
+	}
+
+	async recreateObject(obj: any, callback: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (obj.etype === 'document') {
+			that.recreateDoc(obj, callback);
+		} else if (obj.etype === 'DIV') {
+			await that.recreateNode(obj, callback);
+		} else if (obj.etype === 'SLINE') {
+			await that.recreateShape(obj, callback);
+		} else {
+			that.error('Unknown etype, guess it');
+			const tmpHtml = await that.gzippedContentToString(obj.content);
+			that.detail(tmpHtml);
+			if (
+				tmpHtml.indexOf('nodetype') > 0 &&
+				tmpHtml.indexOf('edittable') > 0 &&
+				tmpHtml.indexOf('kfknode') > 0
+			) {
+				obj.etype = 'DIV';
+				that.recreateNode(obj, callback);
+			}
+		}
+	}
+
+	recreateDoc(obj: any, callback: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		try {
+			const docRet = obj.content;
+			that.APP.setData('model', 'cocodoc', docRet);
+		} catch (err) {
+			console.error(err);
+		} finally {
+			if (callback) callback(1);
+		}
+	}
+
+	restoreShape(shape_id: string, html: string) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		let aLine = null;
+		const selector = `.${shape_id}`;
+		aLine = that.svgDraw.findOne(selector);
+		if (aLine === null || aLine === undefined) {
+			aLine = that.svgDraw.line();
+		}
+		const parent = aLine.svg(html, true);
+		aLine = parent.findOne(selector);
+		that.addShapeEventListner(aLine);
+		return aLine;
+	}
+
+	async recreateShape(obj: any, callback: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		try {
+			const isALockedNode = obj.lock;
+			const content = await that.gzippedContentToString(obj.content);
+			const shape_id = obj.nodeid;
+			const theShape = that.restoreShape(shape_id, content);
+			if (isALockedNode) {
+				that.NodeController.lockline(KFK, theShape);
+			} else {
+				that.NodeController.unlockline(KFK, theShape);
+			}
+		} catch (err) {
+			console.error(err);
+		} finally {
+			if (callback) callback(1);
+		}
+	}
+
+	async gzippedContentToString(content: any) {
+		if (content.type !== 'Buffer' || content.data === undefined) {
+			console.error('gzippedContentToString was passed in wrong content', content);
+		}
+		const tmp = await gunzip(Buffer.from(content.data));
+		return tmp.toString();
+	}
+
+	async recreateNode(obj: any, callback: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		try {
+			const isALockedNode = obj.lock;
+
+			const html: string = await that.gzippedContentToString(obj.content);
+
+			console.warn('Warning: 这段代码可能会有问题');
+			const jqDIVArr = $($.parseHTML(html));
+			let jqDIV = $(jqDIVArr[0][0]);
+			const nodeid = jqDIV.attr('id');
+
+			if (jqDIV.hasClass('notify')) {
+				//TODO: notification
+			} else if (jqDIV.hasClass('ad')) {
+				//TODO: Advertisement
+			} else {
+				//需要先清理，否则在替换已有node时，会导致无法resize
+				//that.cleanNodeEventFootprint(jqDIV);
+				//that.setNodeShowEditor(jqDIV);
+				const existingNode = that.getNodeById(nodeid);
+				if (existingNode.length > 0) {
+					//节点存在，需要刷新
+					/*
+					if (existingNode.find('.brsnode').length > 0) {
+					}
+					*/
+					existingNode.prop('outerHTML', jqDIV.prop('outerHTML'));
+					/*
+				if (isBrNode) {
+					that.startBrainstorm(existingNode);
+				}
+				*/
+					//jqDIV = existingNode;
+				} else {
+					//新载入
+					that.JC3.append(jqDIV);
+				}
+				jqDIV = that.getNodeById(nodeid);
+				if (that.APP.model.cocodoc.readonly === false) {
+					await that.setNodeEventHandler(jqDIV, async function () {
+						if (isALockedNode) {
+							// that.debug('is a locked');
+							that.NodeController.lock(jqDIV);
+						}
+					});
+				}
+				that.redrawLinkLines(jqDIV, 'server update');
+			}
+			if (obj.mdnote) {
+				const tmp = await that.gzippedContentToString(obj.mdnote);
+				that.mdnotes.set(jqDIV.attr('id'), tmp);
+			} else {
+				that.mdnotes.set(jqDIV.attr('id'), '# Recreate empty note #');
+			}
+		} catch (error) {
+			that.error(error);
+		} finally {
+			if (callback) callback(1);
+			that.C3.dispatchEvent(that.refreshC3Event);
+		}
+	}
+
+	getLineOptions(div: JQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return JSON.parse(that.base64ToCode(div.attr('options')));
+	}
+	setLineOptions(div: JQuery, options: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		div.attr('options', that.codeToBase64(JSON.stringify(options)));
+	}
+
+	getPropertyApplyToShape() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.hoverSvgLine() != null) {
+			return that.hoverSvgLine();
+		} else if (that.pickedShape != null) {
+			return that.pickedShape;
+		} else if (that.justCreatedShape != null) {
+			return that.justCreatedShape;
+		} else {
+			return null;
+		}
+	}
+
+	resetShapeStyleToOrigin(shape: any) {
+		shape.attr({
+			'stroke-width': shape.attr('origin-width'),
+			stroke: shape.attr('origin-color')
+		});
+	}
+
+	addDocumentEventHandler() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.documentEventHandlerSet) return;
+		//document keydown
+		//eslint-disable-next-line
+		$(document).keydown(async function (evt) {
+			if (that.isShowingModal === true) return;
+			if (that.onC3 === false) return;
+			if (that.isEditting) return;
+			if (evt.key === 'Shift') that.KEYDOWN.shift = true;
+			else if (evt.key === 'Control') that.KEYDOWN.ctrl = true;
+			else if (evt.key === 'Alt') that.KEYDOWN.alt = true;
+			else if (evt.key === 'Meta') that.KEYDOWN.meta = true;
+			//如果正处于编辑状态，则不做处理
+			//禁止Ctrl-A  and Ctrl-S
+			if ((evt.key === 'a' || evt.key === 's') && (evt.ctrlKey || evt.metaKey)) {
+				evt.stopPropagation();
+				evt.preventDefault();
+				return;
+			}
+			//key pool
+			if (
+				'0123456789abcdefghijklmnopqrstuvwxyz'.indexOf(evt.key) >= 0 ||
+				evt.key === ' ' ||
+				evt.key === ';'
+			) {
+				that.keypool += evt.key;
+				that.keypool = that.keypool.toLowerCase();
+				that.logKey(that.keypool);
+			} else {
+				that.keypool = '';
+			}
+
+			switch (evt.key) {
+				case 'z': //key z
+					//不要移动META-Z代码，一定要在document的key-down里面，
+					//否则，在其他地方没有用。这个问题花了我三个小时时间，FX
+					console.log('PRessed Z');
+					if ((evt.metaKey || evt.ctrlKey) && evt.shiftKey) {
+						that.logKey('META-SHIFT-Z');
+						that.redo();
+					}
+					if ((evt.metaKey || evt.ctrlKey) && !evt.shiftKey) {
+						console.log('PRessed meta-Z');
+						that.logKey('META-Z');
+						that.undo();
+					}
+					break;
+				case 'Backspace': //Backspace
+				case 'Delete': //Delete key del  key delete
+					that.deleteObjects(evt, false);
+					break;
+				default:
+					console.log('got key', evt.key);
+			}
+		});
+		//eslint-disable-next-line
+		$(document).keyup(function (evt) {
+			switch (evt.key) {
+				case 'Shift':
+					that.KEYDOWN.shift = false;
+					break;
+				case 'Control':
+					that.KEYDOWN.ctrl = false;
+					//that.stopZoomShape();
+					break;
+				case 'Alt':
+					that.KEYDOWN.alt = false;
+					break;
+				default:
+					break;
+			}
+		});
+
+		//标记框选开始，是在JC3的mousedown中做记录的
+		//标记框选结束，也是在JC3的mouseup中做记录的
+		//但mousemove需要在document的mousemove事件处理中进行处理。
+		//因为，如果不这样做，滑动鼠标出现选择框后，如果鼠标回到选择框内，则JC3抓不到mousemove事件
+		//导致的现象就是选择框只可以放大，不可以缩小
+		$(document).on('mousemove', function (evt) {
+			that.globalMouseX = evt.clientX;
+			that.globalMouseY = evt.clientY;
+			if (that.inPresentingMode || that.inOverviewMode) return;
+			if (that.inNoteEditor) return;
+			const tmp = {
+				x: that.scrXToJc3X(evt.clientX),
+				y: that.scrYToJc3Y(evt.clientY)
+			};
+			if (that.isDuringKuangXuan()) {
+				that.kuangXuan(that.kuangXuanStartPoint, tmp);
+				/*
+		} else if (that.isZoomingShape) {
+			that.zoomShape(evt, that.shapeToZoom);
+			*/
+			} else if (
+				that.panStartAt &&
+				KFKclass.NotSet(that.shapeToDrag) &&
+				that.isEditting === false &&
+				that.isShowingModal === false &&
+				that.lineTransfomerDragging !== true
+			) {
+				const delta = {
+					x: evt.clientX - that.panStartAt.x,
+					y: evt.clientY - that.panStartAt.y
+				};
+				that.JS1.scrollLeft(that.JS1.scrollLeft() - delta.x * 2);
+				that.JS1.scrollTop(that.JS1.scrollTop() - delta.y * 2);
+				that.panStartAt.x = evt.clientX;
+				that.panStartAt.y = evt.clientY;
+				return;
+			}
+		});
+		$(document).on('mousedown', function (evt) {
+			if (that.mode === 'POINTER') {
+				if (that.ctrlMouseToPan === true) {
+					if (evt.shiftKey) {
+						that.panStartAt = {
+							x: evt.clientX,
+							y: evt.clientY
+						};
+					} else {
+						that.kuangXuanMouseIsDown = true;
+						that.kuangXuanStartPoint = {
+							x: that.scrXToJc3X(evt.clientX),
+							y: that.scrYToJc3Y(evt.clientY)
+						};
+					}
+				} else {
+					if (evt.shiftKey) {
+						that.kuangXuanMouseIsDown = true;
+						that.kuangXuanStartPoint = {
+							x: that.scrXToJc3X(evt.clientX),
+							y: that.scrYToJc3Y(evt.clientY)
+						};
+					} else {
+						that.panStartAt = {
+							x: evt.clientX,
+							y: evt.clientY
+						};
+						console.log('panStart at', that.panStartAt);
+					}
+				}
+			}
+		});
+		$(document).on('mouseup', async function (evt) {
+			that.panStartAt = undefined;
+			if (that.mode === 'POINTER') {
+				that.kuangXuanMouseIsDown = false;
+				that.kuangXuanEndPoint = {
+					x: that.scrXToJc3X(evt.clientX),
+					y: that.scrYToJc3Y(evt.clientY)
+				};
+				if (that.duringKuangXuan) {
+					that.ignoreClick = true;
+					//that.endKuangXuan(that.kuangXuanStartPoint, that.kuangXuanEndPoint, evt.shfitKey);
+					that.duringKuangXuan = false;
+				}
+			}
+			//线条点下去以后，shapeToDrag就设置好了
+			//移动距离大于5时，才会设置shapeDragging=true
+			//如果在距离小于5内，抬起鼠标，此时，shapeDragging还是false,此时，应该把shapeToDrag置为null
+			if (that.shapeDragging === false && that.shapeToDrag) {
+				that.shapeToDrag = null;
+			}
+			//end shape drag, end drag shape
+			if (
+				that.shapeDragging &&
+				that.docIsReadOnly() === false &&
+				that.lineLocked(that.shapeToDrag) === false
+			) {
+				if (that.isShapeSelected(that.shapeToDrag) === false && that.selectedShapes.length > 0) {
+					that.cancelAlreadySelected();
+				}
+				const realX = that.scalePoint(that.scrXToJc3X(evt.clientX));
+				const realY = that.scalePoint(that.scrYToJc3Y(evt.clientY));
+				const pt = {
+					x: realX,
+					y: realY
+				};
+				// if (that.APP.model.viewConfig.snap) {
+				//     pt = that.getNearGridPoint(realX, realY);
+				// }
+				let alreadySelected = false;
+				for (let i = 0; i < that.selectedShapes.length; i++) {
+					if (that.selectedShapes[i].attr('id') == that.shapeToDrag.attr('id')) {
+						alreadySelected = true;
+						break;
+					}
+				}
+				if (alreadySelected === false) {
+					that.selectedShapes.push(that.shapeToDrag);
+				}
+				let unlockedShapeCount = 0;
+				for (let i = 0; i < that.selectedShapes.length; i++) {
+					if (that.lineLocked(that.selectedShapes[i]) === false) {
+						unlockedShapeCount++;
+					}
+				}
+				let unlockedDivCount = 0;
+				for (let i = 0; i < that.selectedDIVs.length; i++) {
+					if (
+						that.anyLocked(that.selectedDIVs[i]) === false &&
+						that.updateable(that.selectedDIVs[i])
+					) {
+						unlockedDivCount++;
+					}
+				}
+				//eslint-disable-next-line @typescript-eslint/no-unused-vars
+				const movedCount = unlockedDivCount + unlockedShapeCount;
+				let movedSer = 0;
+				that.startTrx();
+				try {
+					for (let i = 0; i < that.selectedShapes.length; i++) {
+						const aShape = that.selectedShapes[i];
+						if (that.lineLocked(aShape)) continue;
+						that.setShapeToRemember(aShape);
+						//在拖动鼠标时， shapeDraggingStartPoint 是跟着变化的,在鼠标移动时，已经对shapeToDrag做了位移
+						if (aShape.attr('id') === that.shapeToDrag.attr('id')) {
+							const deltaX = pt.x - that.shapeDraggingStartPoint.x;
+							const deltaY = pt.y - that.shapeDraggingStartPoint.y;
+							await aShape.dmove(deltaX, deltaY);
+						} else {
+							//其它对象要从原始位置计算位移
+							const deltaX = pt.x - that.shapeFirstDraggingStartPoint.x;
+							const deltaY = pt.y - that.shapeFirstDraggingStartPoint.y;
+							await aShape.dmove(deltaX, deltaY);
+						}
+						const beforeSaveWidth = aShape.attr('stroke-width');
+						const beforeSaveColor = aShape.attr('stroke');
+						that.resetShapeStyleToOrigin(aShape);
+						that.resetShapeStyleToOrigin(that.shapeToRemember);
+						movedSer = movedSer + 1;
+						aShape.attr({
+							'stroke-width': beforeSaveWidth,
+							stroke: beforeSaveColor
+						});
+					}
+
+					const delta = {
+						x: pt.x - that.shapeFirstDraggingStartPoint.x,
+						y: pt.y - that.shapeFirstDraggingStartPoint.y
+					};
+					for (let i = 0; i < that.selectedDIVs.length; i++) {
+						if (
+							that.anyLocked(that.selectedDIVs[i]) ||
+							that.updateable(that.selectedDIVs[i]) === false
+						)
+							continue;
+						//const tmpFromJQ = that.selectedDIVs[i].clone();
+						//虽然这出跳过了被拖动的节点，但在后面这个节点一样要被移动
+						//因此，所有被移动的节点数量就是所有被选中的节点数量
+						that.selectedDIVs[i].css('left', that.divLeft(that.selectedDIVs[i]) + delta.x);
+						that.selectedDIVs[i].css('top', that.divTop(that.selectedDIVs[i]) + delta.y);
+						movedSer = movedSer + 1;
+					}
+					for (let i = 0; i < that.selectedDIVs.length; i++) {
+						that.redrawLinkLines(that.selectedDIVs[i], 'codrag', true);
+					}
+				} finally {
+					that.endTrx();
+				}
+
+				console.log('moved div number: ' + that.selectedDIVs.length);
+
+				that.setShapeToRemember(that.shapeToDrag);
+				that.shapeDragging = false;
+				that.shapeToDrag = null;
+				$(document.body).css('cursor', 'default');
+			}
+		});
+
+		// onscroll onScroll on scroll on Scroll
+		//eslint-disable-next-line
+		$('#S1').scroll(() => {
+			const sx = $('#S1').scrollLeft();
+			const sy = $('#S1').scrollTop();
+			try {
+				//不是每次滚动都记录，滚动停止一秒后再记录
+				if (that.scrollPosTimer) {
+					clearTimeout(that.scrollPosTimer);
+					that.scrollPosTimer = undefined;
+				}
+				that.scrollPosTimer = setTimeout(function () {
+					let docPos = {};
+					const scrollPositionCache = localStorage.getItem('docPos');
+					if (scrollPositionCache) {
+						docPos = JSON.parse(scrollPositionCache);
+					}
+					if (docPos[that.tplid]) {
+						docPos[that.tplid] = {
+							x: sx,
+							y: sy
+						};
+					} else {
+						let keyCount = 0;
+						// eslint-disable-next-line @typescript-eslint/no-unused-vars
+						for (const _key in docPos) {
+							keyCount++;
+						}
+						if (keyCount > 30) {
+							const tmp = {};
+							let j = 0;
+							// eslint-disable-next-line @typescript-eslint/no-unused-vars
+							for (const _key in docPos) {
+								if (j > 10) {
+									tmp[_key] = docPos[_key];
+								}
+								j++;
+							}
+							docPos = tmp;
+						}
+						docPos[that.tplid] = {
+							x: sx,
+							y: sy
+						};
+					}
+					localStorage.setItem('docPos', JSON.stringify(docPos));
+				}, 1000);
+			} catch (error) {
+				console.log('save docPos error', error);
+			}
+		});
+
+		that.documentEventHandlerSet = true;
+	}
+
+	onESC() {
+		//eslint-disable-next-line @typescript-eslint/no-this-alias, prefer-const
+		let that = this;
+		that.cancelAlreadySelected();
+		if (!that.isEditting && that.mode !== 'line') that.setMode('POINTER');
+		that.cancelTempLine();
+		that.setMode('POINTER');
+		if (that.tempShape) that.tempShape.hide();
+		if (that.noCopyPaste) {
+			that.noCopyPaste = false;
+		}
+	}
+
+	dataURLtoFile(dataurl: string, filename: string) {
+		const arr: string[] = dataurl.split(',');
+		const mime: any = arr[0].match(/:(.*?);/)[1];
+		//eslint-disable-next-line
+		const bstr: string = atob(arr[1]);
+		let n: number = bstr.length;
+		const u8arr: Uint8Array = new Uint8Array(n);
+		while (n--) {
+			u8arr[n] = bstr.charCodeAt(n);
+		}
+		return new File([u8arr], filename, {
+			type: mime
+		});
+	}
+
+	checkUrl(str_url: string) {
+		const regex = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=+$,\w]+@)?[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=+$,\w]+@)[A-Za-z0-9.-]+)((?:\/[+~%/.\w-_]*)?\??(?:[-+=&;%@.\w_]*)#?(?:[\w]*))?)/;
+		return str_url.match(regex) !== null;
+	}
+
+	replaceHTMLTarget(html: string) {
+		let ret: string = html;
+		html = `<div>${html}</div>`;
+		try {
+			const jq = $($.parseHTML(html));
+			jq.find('a').prop('target', '_blank');
+			jq.find('[style]').removeAttr('style');
+			ret = jq.prop('innerHTML');
+		} catch (err) {
+			ret = '';
+		}
+		return ret;
+	}
+
+	async onCut(evt: Event | JQuery.KeyDownEvent<Document, null, Document, Document>) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.isShowingModal || that.inNoteEditor) return;
+		that.deleteObjects(evt, true);
+	}
+
+	async onCopy(evt: Event) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.isShowingModal) return;
+		if (that.noCopyPaste) return;
+		if (that.inNoteEditor) return;
+		const someDIVcopyed = await that.duplicateHoverObject(evt as MouseEvent, 'copy');
+		if (evt instanceof ClipboardEvent && someDIVcopyed) {
+			evt.clipboardData.setData('text/plain', 'usediv');
+			evt.clipboardData.setData('text/html', 'usediv');
+		}
+		evt.preventDefault();
+		evt.preventDefault();
+		that.holdEvent(evt);
+	}
+	showTextPasteDialog(content: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.anyLocked(that.hoverJqDiv())) return;
+		const toDisplay = content.text;
+		let urlInHTML = null;
+		let toAdd = content.text;
+		let showbox = false;
+		if (content.html !== '') {
+			let tmpText = RegHelper.removeMeta(content.html);
+			tmpText = that.replaceHTMLTarget(tmpText);
+			const m = tmpText.match(/^\s*<a\s+href\s*=\s*"([^"]*)".*<\/a>$/i);
+			if (m) {
+				urlInHTML = m[1];
+			}
+			toAdd = '<div>' + tmpText + '</div>';
+			const tmp = $(toAdd);
+			tmp.find('[style]').removeAttr('style');
+			toAdd = "<div class='pastedHtml'>" + tmp.prop('innerHTML') + '</div>';
+			showbox = that.hoverJqDiv() ? false : true;
+			if (showbox) {
+				if (urlInHTML) {
+					that.mergeAppData('model', 'paste', {
+						format: '粘贴内容格式为URL地址链接',
+						showcontent: true,
+						showdisplay: true,
+						showbox: showbox,
+						content: urlInHTML,
+						display: urlInHTML,
+						ctype: 'url'
+					});
+				} else {
+					that.mergeAppData('model', 'paste', {
+						format: '粘贴内容格式为HTML',
+						showcontent: false,
+						showdisplay: false,
+						showbox: showbox,
+						content: toAdd,
+						displayBackup: toDisplay,
+						convertHTMLToText: false,
+						display: toDisplay,
+						ctype: 'html'
+					});
+				}
+				that.showDialog({
+					pasteContentDialog: true
+				});
+			} else {
+				that.APP.model.paste.content = toAdd;
+				//that.placePastedContent();
+			}
+		} else {
+			if (content.text !== '') {
+				toAdd = content.text;
+				if (RegHelper.isUrl(toAdd)) {
+					// Plain text is a URL
+					showbox = that.hoverJqDiv() ? false : true;
+					that.mergeAppData('model', 'paste', {
+						format: '粘贴内容格式为URL地址链接',
+						showcontent: true,
+						showdisplay: true,
+						showbox: showbox,
+						content: toAdd,
+						display: '请点击访问',
+						ctype: 'url'
+					});
+					that.showDialog({
+						pasteContentDialog: true
+					});
+				} else {
+					//Normal plain text
+					showbox = that.hoverJqDiv() ? false : true;
+					if (showbox) {
+						that.mergeAppData('model', 'paste', {
+							format: '粘贴内容格式为纯文本',
+							showcontent: false,
+							showdisplay: false,
+							showbox: showbox,
+							content: toAdd,
+							display: toAdd,
+							ctype: 'text'
+						});
+						that.showDialog({
+							pasteContentDialog: true
+						});
+					} else {
+						that.APP.model.paste.content = toAdd;
+						//that.placePastedContent();
+					}
+				}
+			}
+		}
+	}
+
+	async onPaste(evt: ClipboardEvent) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (that.inNoteEditor) return;
+		if (that.isShowingModal) {
+			console.log('paste ignored since isShowingModal');
+			return;
+		}
+		if (that.noCopyPaste) {
+			console.log('paste ignored since noCopyPaste is true');
+			return;
+		}
+		if (that.docIsReadOnly()) {
+			console.log('paste ignored since docIsReadOnly');
+			return;
+		}
+		that.pasteAt = {
+			x: that.globalMouseX,
+			y: that.globalMouseY
+		};
+		const content = {
+			html: '',
+			text: '',
+			image: null
+		};
+		const oevt = evt;
+		content.html = oevt.clipboardData.getData('text/html');
+		content.text = oevt.clipboardData.getData('Text');
+		const items = oevt.clipboardData.items;
+		if (items[1] && (content.html !== '' || content.text !== '')) {
+			that.showTextPasteDialog(content);
+		} else if (items[0]) {
+			if (items[0].kind === 'string' && (content.html !== '' || content.text !== '')) {
+				that.showTextPasteDialog(content);
+			} else if (items[0].kind === 'file') {
+				const blob = items[0].getAsFile();
+				that.dropAtPos = {
+					x: that.scalePoint(that.scrXToJc3X(that.globalMouseX)),
+					y: that.scalePoint(that.scrYToJc3Y(that.globalMouseY))
+				};
+				that.procPasteBlob(blob);
+			}
+		}
+	}
+
+	scrCenter() {
+		return {
+			x: $(window).width() * 0.5,
+			y: $(window).height() * 0.5
+		};
+	}
+
+	printCallStack(msg = '') {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.info(new Error(msg).stack);
+	}
+
+	makePath(p1: Point, p2: Point) {
+		const rad: number = 10;
+		const c1: Point = {
+			x: p2.x - rad,
+			y: p1.y
+		};
+		const c2: Point = {
+			x: p2.x,
+			y: p1.y + rad
+		};
+
+		const pStr: string = `M${p1.x} ${p1.y} H${c1.x} S${c2.x} ${c1.y} ${c2.x} ${c2.y} V${p2.y}`;
+		return pStr;
+	}
+
+	/**
+	 * 画两个节点之间的连接线
+	 *
+	 * fid - 起始节点的ID
+	 * tid - 终点节点的ID
+	 * lineClass - 事实上是这条线的ID, 用于查找正向线(svgjs用class查找对象)
+	 * lineCLassReverse - 反向线的class, 用于查找反向线
+	 * pstr - 连接线的plot string
+	 * triangle - 三角形的顶点坐标
+	 */
+	async _svgDrawNodesConnect(
+		fid: string,
+		tid: string,
+		lineClass: string,
+		lineClassReverse: string,
+		pstr: string,
+		lstr: string,
+		tstr: string,
+		triangle: number[],
+		caseValue: string,
+		simpleLineMode: boolean = false
+	) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		try {
+			const drawPstr: boolean = !simpleLineMode;
+			let theConnect: any = null;
+			let theTriangle: any = null;
+			const fromDIV: any = $(`#${fid}`);
+			const toDIV: any = $(`#${tid}`);
+			//在之前的cocopad的代码中，节点上添加了三个属性：cncolor, cnwidth, cnstyle, cn表示connection
+			const cnColor = fromDIV.attr('cncolor');
+			const cnWidth = fromDIV.attr('cnwidth');
+			const cnStyle = fromDIV.attr('cnstyle');
+			const reverseLine = that.svgDraw.findOne(`.${lineClassReverse}`);
+			const oldLine = that.svgDraw.findOne(`.${lineClass}`);
+			const oldText = that.svgDraw.findOne(`.${lineClass + '_text'}`);
+			const reverseTriangle = that.svgDraw.findOne(`.${lineClassReverse}_triangle`);
+			const oldTriangle = that.svgDraw.findOne(`.${lineClass}_triangle`);
+
+			const theConnect_color =
+				cnColor || that.YIQColorAux || that.config.connect.styles.style1.normal.color;
+			const theConnect_width = cnWidth || that.config.connect.styles.style1.normal.width;
+			const theConnect_fill_color = theConnect_color;
+			//如果存在同一ID的线,则重画这条线及其三角
+			if (oldText) {
+				oldText.remove();
+			}
+			if (oldLine) {
+				oldLine.plot(drawPstr ? pstr : lstr);
+				oldTriangle && oldTriangle.plot(triangle);
+				theConnect = oldLine;
+				theTriangle = oldTriangle;
+			} else {
+				//如果不同在同一ID的线, then
+				if (reverseLine) {
+					//如果存在反向线,则重画这条反向线为正向线
+					reverseLine.removeClass(lineClassReverse);
+					reverseLine.addClass(lineClass);
+					reverseLine.plot(drawPstr ? pstr : lstr);
+					reverseTriangle.removeClass(lineClassReverse + '_triangle');
+					reverseTriangle.addClass(lineClass + '_triangle');
+					reverseTriangle.plot(triangle);
+					theConnect = reverseLine;
+					theTriangle = reverseTriangle;
+				} else {
+					//如果同向线和反向线都不存在,则画新线条及其三角. 反向线是指与从fromNode指向toNode的线反向相反的线,也就是从toNode指向fromNode的线
+					theConnect = await that.svgDraw.path(drawPstr ? pstr : lstr);
+					theConnect
+						.addClass(lineClass)
+						.addClass('connect')
+						.attr('styleid', 'style1')
+						.fill(drawPstr ? theConnect_fill_color : 'none')
+						.stroke({
+							width: theConnect_width,
+							color: theConnect_color
+						});
+
+					if (drawPstr === false) {
+						//填充时,边线为虚线可能会导致颜色溢出,待验证
+						if (cnStyle === 'solid') {
+							theConnect.css('stroke-dasharray', '');
+						} else {
+							theConnect.css('stroke-dasharray', `${cnWidth * 3} ${cnWidth}`);
+						}
+					}
+					theConnect.attr({
+						id: lineClass,
+						'origin-width': that.APP.model.svg.connect.width
+					});
+					theTriangle = await that.svgDraw
+						.polygon(triangle)
+						.addClass(lineClass + '_triangle')
+						.fill(theConnect_fill_color);
+					/*
                 .stroke({
-                  width: KFK.APP.model.svg.connect.triangle.width,
-                  color: cnColor || KFK.APP.model.svg.connect.triangle.color,
+                  width: that.APP.model.svg.connect.triangle.width,
+                  color: cnColor || that.APP.model.svg.connect.triangle.color,
                 });
                 */
-      }
-    }
-    if (lodash.isEmpty(caseValue) === false) {
-      theConnect.attr("case", caseValue);
-      let text = await KFK.svgDraw.text(function (add) {add.tspan(caseValue).fill(theConnect_color).dy(-2)});
-      text.font({family: 'Helvetica', anchor: 'start'});
-      text.addClass(lineClass + "_text");
-      var textPath = text.path(lstr).attr('startOffset', '60%');
-    }
-    if (toDIV.hasClass("nodisplay")) {
-      theConnect.addClass("nodisplay");
-      theTriangle.addClass("nodisplay");
-    }
-    theConnect.attr({
-      fid: fid,
-      tid: tid,
-    });
-    theConnect.off("mouseover mouseout");
-    theConnect.on("mouseover", () => {
-      let styleid = theConnect.attr("styleid");
-      let connect_color = KFK.YIQColorAux || KFK.config.connect.styles[styleid].hover.color;
-      theConnect.stroke({
-        width: KFK.config.connect.styles[styleid].hover.width,
-        color: connect_color
-      });
-      KFK.ball.removeClass("noshow");
-      KFK.ball.fill(connect_color);
-      let length = theConnect.length();
-      //let runner_duration = 500 * length / 100;
-      let runner_duration = 1500;
-      let runner = KFK.ball.animate({duration: runner_duration, when: "now", times: 3});
-      runner.ease(">");
-      runner.during(function (pos) {
-        var p = theConnect.pointAt(pos * length);
-        KFK.ball.center(p.x, p.y);
-      }).loop(true);
-      KFK.hoveredConnectId = theConnect.attr("id");
-      KFK.onC3 = true;
-    });
-    theConnect.on("mouseout", () => {
-      let styleid = theConnect.attr("styleid");
-      KFK.ball.addClass("noshow");
-      KFK.ball.timeline().stop();
-      theConnect.stroke({
-        width: cnWidth || KFK.config.connect.styles[styleid].normal.width,
-        color: cnColor ||
-          KFK.YIQColorAux ||
-          KFK.config.connect.styles[styleid].normal.color,
-      });
-      KFK.hoveredConnectId = null;
-    });
-  } catch (error) {
-    console.error(error);
-  }
-};
+				}
+			}
+			if (lodash.isEmpty(caseValue) === false) {
+				theConnect.attr('case', caseValue);
+				const text = await that.svgDraw.text(function (add: any) {
+					add.tspan(caseValue).fill(theConnect_color).dy(-2);
+				});
+				text.font({ family: 'Helvetica', anchor: 'start' });
+				text.addClass(lineClass + '_text');
+				//const textPath = text.path(lstr).attr('startOffset', '60%');
+			}
+			if (toDIV.hasClass('nodisplay')) {
+				theConnect.addClass('nodisplay');
+				theTriangle.addClass('nodisplay');
+			}
+			theConnect.attr({
+				fid: fid,
+				tid: tid
+			});
+			theConnect.off('mouseover mouseout');
+			theConnect.on('mouseover', () => {
+				const styleid = theConnect.attr('styleid');
+				const connect_color = that.YIQColorAux || that.config.connect.styles[styleid].hover.color;
+				theConnect.stroke({
+					width: that.config.connect.styles[styleid].hover.width,
+					color: connect_color
+				});
+				that.ball.removeClass('noshow');
+				that.ball.fill(connect_color);
+				const length = theConnect.length();
+				//let runner_duration = 500 * length / 100;
+				const runner_duration = 1500;
+				const runner = that.ball.animate({ duration: runner_duration, when: 'now', times: 3 });
+				runner.ease('>');
+				runner
+					.during(function (pos: any) {
+						const p: Point = theConnect.pointAt(pos * length);
+						that.ball.center(p.x, p.y);
+					})
+					.loop(true);
+				that.hoveredConnectId = theConnect.attr('id');
+				that.onC3 = true;
+			});
+			theConnect.on('mouseout', () => {
+				const styleid = theConnect.attr('styleid');
+				that.ball.addClass('noshow');
+				that.ball.timeline().stop();
+				theConnect.stroke({
+					width: cnWidth || that.config.connect.styles[styleid].normal.width,
+					color: cnColor || that.YIQColorAux || that.config.connect.styles[styleid].normal.color
+				});
+				that.hoveredConnectId = null;
+			});
+		} catch (error) {
+			console.error(error);
+		}
+	}
 
+	svgDrawShape(
+		shapeType: string,
+		id: string,
+		fx: number,
+		fy: number,
+		tx: number,
+		ty: number,
+		option: any
+	) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (cocoConfig.viewConfig.snap) {
+			let p1 = {
+				x: fx,
+				y: fy
+			};
+			let p2 = {
+				x: tx,
+				y: ty
+			};
+			p1 = that.getNearGridPoint(p1.x, p1.y);
+			p2 = that.getNearGridPoint(p2.x, p2.y);
+			fx = p1.x;
+			fy = p1.y;
+			tx = p2.x;
+			ty = p2.y;
+		}
+		const width = Math.abs(fx - tx);
+		const height = Math.abs(fy - ty);
+		const originX = Math.min(fx, tx);
+		const originY = Math.min(fy, ty);
+		const shapeClass = 'kfkshape';
+		const shapeId = 'shape_' + id;
+		let theShape = that.svgDraw.findOne(`#shape_${id}`);
+		if (theShape) theShape.remove();
+		if (shapeType === 'line') {
+			theShape = that.svgDraw.line(fx, fy, tx, ty);
+		} else if (shapeType === 'rectangle') {
+			theShape = that.svgDraw.rect(width, height).fill('none').move(originX, originY);
+		} else if (shapeType === 'ellipse') {
+			theShape = that.svgDraw.ellipse(width, height).fill('none').move(originX, originY);
+		}
+		theShape.attr('id', shapeId);
+		theShape
+			.addClass(shapeClass)
+			.addClass(shapeId)
+			.addClass('kfk' + shapeType)
+			.stroke(option);
+		theShape.attr('shapetype', shapeType);
+		theShape.attr('origin-width', option.width);
+		theShape.attr('origin-color', option.color);
+		that.addShapeEventListner(theShape);
+		return theShape;
+	}
 
-KFK.svgDrawShape = function (shapeType, id, fx, fy, tx, ty, option) {
-  if (cocoConfig.viewConfig.snap) {
-    let p1 = {
-      x: fx,
-      y: fy,
-    };
-    let p2 = {
-      x: tx,
-      y: ty,
-    };
-    p1 = KFK.getNearGridPoint(p1.x, p1.y);
-    p2 = KFK.getNearGridPoint(p2.x, p2.y);
-    fx = p1.x;
-    fy = p1.y;
-    tx = p2.x;
-    ty = p2.y;
-  }
-  let width = Math.abs(fx - tx);
-  let height = Math.abs(fy - ty);
-  let originX = Math.min(fx, tx);
-  let originY = Math.min(fy, ty);
-  let shapeClass = "kfkshape";
-  let shapeId = "shape_" + id;
-  let theShape = KFK.svgDraw.findOne(`#shape_${id}`);
-  if (theShape) theShape.remove();
-  if (shapeType === "line") {
-    theShape = KFK.svgDraw.line(fx, fy, tx, ty);
-  } else if (shapeType === "rectangle") {
-    theShape = KFK.svgDraw
-      .rect(width, height)
-      .fill("none")
-      .move(originX, originY);
-  } else if (shapeType === "ellipse") {
-    theShape = KFK.svgDraw
-      .ellipse(width, height)
-      .fill("none")
-      .move(originX, originY);
-  }
-  theShape.attr("id", shapeId);
-  theShape
-    .addClass(shapeClass)
-    .addClass(shapeId)
-    .addClass("kfk" + shapeType)
-    .stroke(option);
-  theShape.attr("shapetype", shapeType);
-  theShape.attr("origin-width", option.width);
-  theShape.attr("origin-color", option.color);
-  KFK.addShapeEventListner(theShape);
-  return theShape;
-};
+	svgDrawTmpShape(shapeType: string, fx: number, fy: number, tx: number, ty: number, option: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		const tmpLineClass = 'shape_temp';
 
-KFK.svgDrawPoly = function (shapeType, id, option) {
-  let shapeClass = "kfkshape";
-  let shapeId = "shape_" + id;
-  let theShape = KFK.svgDraw.findOne(`.${shapeId}`);
-  try {
-    theShape.remove();
-  } catch (error) {}
+		that.tempShape = that.svgDraw.findOne(`.${tmpLineClass}`);
+		if (that.tempShape) {
+			that.tempShape.remove();
+		}
+		const width = Math.abs(fx - tx);
+		const height = Math.abs(fy - ty);
+		const originX = Math.min(fx, tx);
+		const originY = Math.min(fy, ty);
+		if (shapeType === 'line') {
+			that.tempShape = that.svgDraw.line(fx, fy, tx, ty).addClass(tmpLineClass).stroke(option);
+		} else if (shapeType === 'rectangle') {
+			that.tempShape = that.svgDraw
+				.rect(width, height)
+				.move(originX, originY)
+				.fill('none')
+				.addClass(tmpLineClass)
+				.stroke(option);
+		} else if (shapeType === 'ellipse') {
+			that.tempShape = that.svgDraw
+				.ellipse(width, height)
+				.move(originX, originY)
+				.fill('none')
+				.addClass(tmpLineClass)
+				.stroke(option);
+		}
+	}
 
-  let arr = [];
-  for (let i = 0; i < KFK.drawPoints.length; i++) {
-    arr.push([KFK.drawPoints[i].center.x, KFK.drawPoints[i].center.y]);
-  }
-  if (shapeType === "polyline")
-    theShape = KFK.svgDraw
-      .polyline(arr)
-      .fill("none")
-      .stroke(option);
-  else
-    theShape = KFK.svgDraw
-      .polygon(arr)
-      .fill("none")
-      .stroke(option);
+	svgDrawTmpLine(fx: number, fy: number, tx: number, ty: number, option: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		const tmpLineClass = 'shape_temp';
 
-  theShape.attr("id", shapeId);
-  theShape
-    .addClass(shapeClass)
-    .addClass(shapeId)
-    .addClass("kfk" + shapeType)
-    .stroke(option);
-  theShape.attr("shapetype", shapeType);
-  theShape.attr("origin-width", option.width);
-  theShape.attr("origin-color", option.color);
-  // KFK.addShapeEventListner(theShape);
-  return theShape;
-};
+		//按着alt的话，需要画成垂直或水平线
+		if (that.KEYDOWN.alt) {
+			if (Math.abs(tx - fx) < Math.abs(ty - fy)) tx = fx;
+			else ty = fy;
+		}
+		that.tempSvgLine = that.svgDraw.findOne(`.${tmpLineClass}`);
+		if (that.tempSvgLine) {
+			that.tempSvgLine.show();
+			that.tempSvgLine.plot(fx, fy, tx, ty).stroke(option);
+		} else {
+			that.tempSvgLine = that.svgDraw.line(fx, fy, tx, ty).addClass(tmpLineClass).stroke(option);
+		}
+	}
 
-KFK.svgDrawTmpShape = function (shapeType, fx, fy, tx, ty, option) {
-  let tmpLineClass = "shape_temp";
+	/**
+	 * 画线
+	 *
+	 * @param {string} fid - 起始节点的ID
+	 * @param {string} tid - 终点节点的ID
+	 * @param {number} fbp - 起始节点上的连接点的编号,从0-3
+	 * @param {number} tbp - 终点节点上的连接点的编号,从0-3
+	 * @param {number} fx - 连接点1的x坐标
+	 * @param {number} fy - 连接点1的y坐标
+	 * @param {number} tx - 连接点2的x坐标
+	 * @param {number} ty - 连接点2的y坐标
+	 */
+	async svgConnectNode(
+		fid: string,
+		tid: string,
+		fbp: number,
+		tbp: number,
+		fx: number,
+		fy: number,
+		tx: number,
+		ty: number,
+		caseValue: string
+	) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		if (!(fid && tid)) {
+			return;
+		}
+		const fromDIV = $(`#${fid}`);
+		const lineClass = `connect_${fid}_${tid}`;
+		const lineClassReverse = `connect_${tid}_${fid}`;
+		let pstr = '';
+		let lstr = '';
+		let tstr = '';
+		let x = [0, 0, 0, 0];
+		let y = [0, 0, 0, 0];
+		const ctrls = [0.4, 0.5, 0.5, 0.6];
+		let triangle = [];
+		const rad = 20;
+		const ww = 10;
+		let tri = 10;
+		if (fromDIV.attr('cnwidth')) tri = Math.max(parseInt(fromDIV.attr('cnwidth')) * 2, 10);
+		const tri_half = tri * 0.5;
+		const tri_height = 17.3;
+		let tsx = tx,
+			tsy = ty - tri_height;
+		//算出箭头三角形的三个顶点的坐标
+		switch (tbp) {
+			case 0:
+				tsx = tx - tri_height;
+				tsy = ty;
+				triangle = [tsx, tsy + tri_half, tx, ty, tsx, tsy - tri_half];
+				break;
+			case 1:
+				tsx = tx;
+				tsy = ty - tri_height;
+				triangle = [tsx - tri_half, tsy, tx, ty, tsx + tri_half, tsy];
+				break;
+			case 2:
+				tsx = tx + tri_height;
+				tsy = ty;
+				triangle = [tsx, tsy - tri_half, tx, ty, tsx, tsy + tri_half];
+				break;
+			case 3:
+				tsx = tx;
+				tsy = ty + tri_height;
+				triangle = [tsx - tri_half, tsy, tx, ty, tsx + tri_half, tsy];
+				break;
+		}
+		//画线不用画到重点，只需要画到三角形即可
+		switch (tbp) {
+			case 0:
+				tx = tx - tri_height;
+				break;
+			case 1:
+				ty = ty - tri_height;
+				break;
+			case 2:
+				tx = tx + tri_height;
+				break;
+			case 3:
+				ty = ty + tri_height;
+				break;
+		}
+		let dis = 0;
+		switch (fbp) {
+			case 0:
+				switch (tbp) {
+					case 0:
+						pstr = `M${fx} ${fy} C${fx - rad} ${fy} ${tx - rad} ${ty} ${tx} ${ty}`;
+						break;
+					case 1:
+						pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
+						break;
+					case 2:
+						lstr = `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`;
+						tstr = `M${tx} ${ty} C${fx} ${ty} ${tx} ${fy} ${fx} ${fy}`;
+						dis = Math.abs(tx - fx);
+						if (ty >= fy) {
+							x = [3, 2, 0, 1].map((x) => fx - dis * ctrls[x]);
+						} else {
+							x = [0, 1, 3, 2].map((x) => fx - dis * ctrls[x]);
+						}
+						pstr =
+							`M${fx},${fy + ww} ` +
+							`L${fx},${fy - ww} ` +
+							`C${x[0]},${fy - ww} ` +
+							`${x[1]},${ty} ` +
+							`${tx},${ty} ` +
+							`C${x[2]},${ty} ` +
+							`${x[3]},${fy + ww} ` +
+							`${fx},${fy + ww} z`;
+						break;
+					case 3:
+						pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
+						break;
+				}
+				break;
+			case 1:
+				switch (tbp) {
+					case 0:
+						pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
+						break;
+					case 1:
+						pstr = `M${fx} ${fy} C${fx} ${ty - rad} ${tx} ${ty - rad} ${tx} ${ty}`;
+						break;
+					case 2:
+						pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
+						break;
+					case 3:
+						lstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${fy} ${tx} ${ty}`;
+						tstr = `M${tx} ${ty} C${tx} ${fy} ${fx} ${ty} ${fx} ${fy}`;
+						dis = Math.abs(ty - fy);
+						if (tx >= fx) {
+							y = [3, 2, 0, 1].map((x) => fy - dis * ctrls[x]);
+						} else {
+							y = [0, 1, 3, 2].map((x) => fy - dis * ctrls[x]);
+						}
+						pstr =
+							`M${fx + ww},${fy} ` +
+							`L${fx - ww},${fy} ` +
+							`C${fx - ww}, ${y[0]} ` +
+							`${tx}, ${y[1]} ` +
+							`${tx},${ty} ` +
+							`C${tx}, ${y[2]} ` +
+							`${fx + ww}, ${y[3]} ` +
+							`${fx + ww},${fy} z`;
+						break;
+				}
+				break;
+			case 2:
+				switch (tbp) {
+					case 0:
+						dis = Math.abs(tx - fx);
+						lstr = `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`;
+						tstr = `M${tx} ${ty} C${tx} ${fy} ${fx} ${ty} ${fx} ${fy}`;
+						if (ty >= fy) {
+							x = [3, 2, 0, 1].map((x) => fx + dis * ctrls[x]);
+						} else {
+							x = [0, 1, 3, 2].map((x) => fx + dis * ctrls[x]);
+						}
+						pstr =
+							`M${fx},${fy + ww} ` +
+							`L${fx},${fy - ww} ` +
+							`C${x[0]},${fy - ww} ` +
+							`${x[1]},${ty} ` +
+							`${tx},${ty} ` +
+							`C${x[2]},${ty} ` +
+							`${x[3]},${fy + ww} ` +
+							`${fx},${fy + ww} z`;
+						break;
+					case 1:
+						lstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
+						tstr = `M${tx} ${ty} C${tx} ${ty} ${tx} ${fy} ${fx} ${fy}`;
+						dis = Math.abs(tx - fx);
+						if (ty >= fy) {
+							x = [3, 2, 0, 1].map((x) => fx + dis * ctrls[x]);
+						} else {
+							x = [0, 1, 3, 2].map((x) => fx + dis * ctrls[x]);
+						}
+						pstr =
+							`M${fx},${fy + ww} ` +
+							`L${fx},${fy - ww} ` +
+							`C${x[0]},${fy - ww} ` +
+							`${tx},${ty} ` +
+							`${tx},${ty} ` +
+							`C${tx},${ty} ` +
+							`${x[3]},${fy + ww} ` +
+							`${fx},${fy + ww} z`;
+						break;
+					case 2:
+						dis = Math.abs(tx - fx);
+						lstr = `M${fx} ${fy} C${fx + rad} ${fy} ${tx + rad} ${ty} ${tx} ${ty}`;
+						tstr = `M${tx} ${ty} C${tx + rad} ${ty} ${fx + rad} ${fy} ${fx} ${fy}`;
+						if (ty >= fy) {
+							x = [3, 2, 0, 1].map((x) => fx + dis * ctrls[x]);
+						} else {
+							x = [0, 1, 3, 2].map((x) => fx + dis * ctrls[x]);
+						}
+						pstr =
+							`M${fx},${fy + ww} ` +
+							`L${fx},${fy - ww} ` +
+							`C${tx + rad},${fy - ww} ` +
+							`${tx + rad},${ty} ` +
+							`${tx},${ty} ` +
+							`C${tx + rad},${ty} ` +
+							`${tx + rad},${fy + ww} ` +
+							`${fx},${fy + ww} z`;
+						break;
+					case 3:
+						pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
+						break;
+				}
+				break;
+			case 3:
+				switch (tbp) {
+					case 0:
+						pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
+						break;
+					case 1:
+						lstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${fy} ${tx} ${ty}`;
+						tstr = `M${tx} ${ty} C${tx} ${fy} ${fx} ${ty} ${fx} ${fy}`;
+						dis = Math.abs(ty - fy);
+						if (tx >= fx) {
+							y = [3, 2, 0, 1].map((x) => fy + dis * ctrls[x]);
+						} else {
+							y = [0, 1, 3, 2].map((x) => fy + dis * ctrls[x]);
+						}
+						pstr =
+							`M${fx + ww},${fy} ` +
+							`L${fx - ww},${fy} ` +
+							`C${fx - ww}, ${y[0]} ` +
+							`${tx}, ${y[1]} ` +
+							`${tx},${ty} ` +
+							`C${tx}, ${y[2]} ` +
+							`${fx + ww}, ${y[3]} ` +
+							`${fx + ww},${fy} z`;
+						break;
+					case 2:
+						pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
+						break;
+					case 3:
+						pstr = `M${fx} ${fy} C${fx} ${fy + rad} ${tx} ${ty + rad} ${tx} ${ty}`;
+						break;
+				}
+				break;
+		}
+		await that._svgDrawNodesConnect(
+			fid,
+			tid,
+			lineClass,
+			lineClassReverse,
+			pstr,
+			lstr,
+			tstr,
+			triangle,
+			caseValue,
+			that.APP.model.viewConfig.simpleLineMode
+		);
+	}
 
-  KFK.tempShape = KFK.svgDraw.findOne(`.${tmpLineClass}`);
-  if (KFK.tempShape) {
-    KFK.tempShape.remove();
-  }
-  let width = Math.abs(fx - tx);
-  let height = Math.abs(fy - ty);
-  let originX = Math.min(fx, tx);
-  let originY = Math.min(fy, ty);
-  if (shapeType === "line") {
-    KFK.tempShape = KFK.svgDraw
-      .line(fx, fy, tx, ty)
-      .addClass(tmpLineClass)
-      .stroke(option);
-  } else if (shapeType === "rectangle") {
-    KFK.tempShape = KFK.svgDraw
-      .rect(width, height)
-      .move(originX, originY)
-      .fill("none")
-      .addClass(tmpLineClass)
-      .stroke(option);
-  } else if (shapeType === "ellipse") {
-    KFK.tempShape = KFK.svgDraw
-      .ellipse(width, height)
-      .move(originX, originY)
-      .fill("none")
-      .addClass(tmpLineClass)
-      .stroke(option);
-  }
-};
+	myFadeIn(jq: JQuery, ms = 200) {
+		jq &&
+			jq
+				.css({
+					visibility: 'visible',
+					opacity: 0.0
+				})
+				.animate(
+					{
+						opacity: 1.0
+					},
+					ms
+				);
+	}
+	myFadeOut(jq: JQuery, ms = 200) {
+		jq &&
+			jq.animate(
+				{
+					opacity: 0.0
+				},
+				ms,
+				function () {
+					jq.css('visibility', 'hidden');
+				}
+			);
+	}
+	/**
+	 * Is a div visible, visible means it has not 'noshow' class
+	 */
+	isShowing(jq: JQuery) {
+		if (typeof jq === 'string') jq = $(jq);
+		return jq.hasClass('noshow') === false;
+	}
 
-
-
-
-KFK.mouseNear = function (p1, p2, distance) {
-  return (
-    Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2)) <= distance
-  );
-};
-
-KFK.moveDIVCenterToPos = function (jqDiv, pos) {
-  jqDiv.css("left", pos.x - KFK.unpx(jqDiv.css("width")) * 0.5);
-  jqDiv.css("top", pos.y - KFK.unpx(jqDiv.css("height")) * 0.5);
-};
-KFK.C3MousePos = function (evt) {
-  return {
-    x: KFK.scalePoint(KFK.scrXToJc3X(evt.clientX)),
-    y: KFK.scalePoint(KFK.scrYToJc3Y(evt.clientY)),
-  };
-};
-KFK.ScreenMousePos = function (pos) {
-  return {
-    x: pos.x - KFK.scrollContainer.scrollLeft(),
-    y: pos.y - KFK.scrollContainer.scrollTop(),
-  };
-};
-KFK.hideLineTransformer = function () {
-  KFK.hide($("#linetransformer"));
-};
-KFK.showLineTransformer = function () {
-  KFK.show($("#linetransformer"));
-};
-//
-//shape event
-KFK.addShapeEventListner = function (theShape) {
-  //mouseover shape
-  theShape.on("mouseover", (evt) => {
-    if (KFK.shapeDragging || KFK.isFreeHandDrawing) return;
-    KFK.hoverSvgLine(theShape);
-    let color = theShape.attr("origin-color");
-    KFK.shapeOriginColor = color;
-    let color1 = KFK.reverseColor(color);
-    KFK.onC3 = true;
-    let originWidth = theShape.attr("origin-width");
-    let newWidth =
-      originWidth * 2 > KFK.CONST.MAX_SHAPE_WIDTH ?
-        originWidth :
-        KFK.CONST.MAX_SHAPE_WIDTH;
-    if (theShape.hasClass("selected") === false) {
-      theShape.stroke({
-        width: newWidth,
-        color: color1,
-      });
-    }
-    if (KFK.lineLocked(theShape)) {
-      KFK.hide($("#linetransformer"));
-      return;
-    }
-
-    $(document.body).css("cursor", "pointer");
-    if (theShape.array && theShape.hasClass("kfkline")) {
-      let parr = theShape.array();
-      if (
-        KFK.mouseNear(
-          KFK.C3MousePos(evt), {
-          x: parr[0][0],
-          y: parr[0][1],
-        },
-          20
-        )
-      ) {
-        KFK.show("#linetransformer");
-        KFK.moveLinePoint = "from";
-        KFK.lineToResize = theShape;
-        KFK.setShapeToRemember(theShape);
-        KFK.moveLineMoverTo(
-          KFK.jc3PosToJc1Pos({
-            x: parr[0][0],
-            y: parr[0][1],
-          })
-        );
-      } else if (
-        KFK.mouseNear(
-          KFK.C3MousePos(evt), {
-          x: parr[1][0],
-          y: parr[1][1],
-        },
-          20
-        )
-      ) {
-        KFK.show("#linetransformer");
-        KFK.moveLinePoint = "to";
-        KFK.lineToResize = theShape;
-        KFK.setShapeToRemember(theShape);
-        KFK.moveLineMoverTo(
-          KFK.jc3PosToJc1Pos({
-            x: parr[1][0],
-            y: parr[1][1],
-          })
-        );
-      } else {
-        KFK.hide("#linetransformer");
-      }
-    }
-  });
-  //mouseout shape
-  theShape.on("mouseout", () => {
-    if (KFK.shapeDragging === false) {
-      KFK.hoverSvgLine(null);
-      $(document.body).css("cursor", "default");
-      if (theShape.hasClass("selected") === false) {
-        theShape.stroke({
-          width: theShape.attr("origin-width"),
-          color: theShape.attr("origin-color"),
-        });
-      }
-    }
-  });
-  theShape.on("mousedown", (evt) => {
-    KFK.closeActionLog();
-    if (KFK.mode === "lock") {
-      KFK.tryToLockUnlock(evt.shiftKey);
-      return;
-    }
-
-    KFK.mousePosToRemember = {
-      x: KFK.currentMousePos.x,
-      y: KFK.currentMousePos.y,
-    };
-    //begin shape zoom, begin zoom shape
-    if (evt.ctrlKey || evt.metaKey) {
-      KFK.isZoomingShape = true;
-      //这里必须重新plot一遍，否则，在zoom时会出错
-      if (theShape.array) {
-        let arr = theShape.array();
-        theShape = theShape.plot(arr);
-      }
-      KFK.shapeToZoom = theShape;
-      KFK.setShapeToRemember(theShape);
-      KFK.shapeSizeCenter = {
-        x: KFK.scalePoint(theShape.cx()),
-        y: KFK.scalePoint(theShape.cy()),
-      };
-      KFK.shapeSizeOrigin = {
-        w: theShape.width(),
-        h: theShape.height(),
-      };
-      KFK.shapeZoomStartPoint = {
-        x: KFK.scalePoint(KFK.scrXToJc3X(evt.clientX)),
-        y: KFK.scalePoint(KFK.scrYToJc3Y(evt.clientY)),
-      };
-      let dis = KFK.distance(KFK.shapeSizeCenter, KFK.shapeZoomStartPoint);
-    } else {
-      //begin drag shape, begin shape drag
-      KFK.isZoomingShape = false;
-      KFK.shapeToDrag = theShape;
-      KFK.setShapeToRemember(theShape);
-      KFK.shapeDraggingStartPoint = {
-        x: KFK.scalePoint(KFK.scrXToJc3X(evt.clientX)),
-        y: KFK.scalePoint(KFK.scrYToJc3Y(evt.clientY)),
-      };
-      KFK.shapeFirstDraggingStartPoint = {
-        x: KFK.scalePoint(KFK.scrXToJc3X(evt.clientX)),
-        y: KFK.scalePoint(KFK.scrYToJc3Y(evt.clientY)),
-      };
-    }
-  });
-  //stop zoom shape
-  theShape.on("mouseup", (evt) => {
-    KFK.stopZoomShape();
-  });
-  //click line click shape
-  theShape.on("click", (evt) => {
-    evt.stopImmediatePropagation();
-    evt.stopPropagation();
-    evt.preventDefault();
-    KFK.hoverSvgLine(theShape);
-    if (KFK.anyLocked(theShape)) return;
-    // if (KFK.firstShown['right'] === false && KFK.docIsNotReadOnly()) {
-    // KFK.show('#right');
-    // KFK.firstShown['right'] = true;
-    // }
-    // KFK.shapeToDrag = null;
-    KFK.focusOnNode(null);
-    KFK.divStylerRefDiv = null;
-    KFK.APP.setData("show", "shape_property", true);
-    KFK.APP.setData("show", "customshape", false);
-    KFK.APP.setData("show", "customline", true);
-    KFK.APP.setData("show", "custombacksvg", false);
-    KFK.APP.setData("show", "customfont", false);
-    KFK.APP.setData("show", "layercontrol", false);
-
-    KFK.setShapeToRemember(theShape);
-    KFK.selectShape(theShape);
-
-    KFK.pickedShape = theShape;
-    let color = theShape.attr("origin-color");
-    let width = theShape.attr("origin-width");
-    let linecap = theShape.attr("stroke-linecap");
-    $("#lineColor").spectrum("set", KFK.shapeOriginColor);
-    $("#spinner_line_width").spinner("value", width);
-    let lineSetting = KFK.APP.model.svg.connect.line;
-    lineSetting = {
-      color: color,
-      width: width,
-      linecap: linecap === "round" ? true : false,
-    };
-    KFK.setAppData("model", "line", lineSetting);
-  });
-};
-
-KFK.initLineTransformer = function () {
-  KFK.debug("...initLineTransformer");
-  $("#linetransformer").draggable({
-    // move line resize line transform line
-    start: (evt, ui) => {
-      KFK.closeActionLog();
-      KFK.lineTransfomerDragging = true;
-      // KFK.fromJQ = KFK.tobeTransformJqLine.clone();
-      // KFK.setMode('line');
-      evt.stopImmediatePropagation();
-      evt.stopPropagation();
-    },
-
-    drag: (evt, ui) => {
-      if (KFK.tempSvgLine) KFK.tempSvgLine.hide();
-      if (KFK.lineToResize === null) return;
-      let parr = KFK.lineToResize.array();
-      let stopAtPos = KFK.C3MousePos(evt);
-      if (KFK.moveLinePoint === "from") {
-        KFK.lineToResize.plot([
-          [stopAtPos.x, stopAtPos.y], parr[1]
-        ]);
-      } else {
-        KFK.lineToResize.plot([parr[0],
-        [stopAtPos.x, stopAtPos.y]
-        ]);
-      }
-    },
-    stop: async (evt, ui) => {
-      //transform line  change line
-      KFK.lineTransfomerDragging = false;
-      if (KFK.lineToResize === null) return;
-      KFK.setShapeToRemember(KFK.lineToResize);
-      let parr = KFK.lineToResize.array();
-      let stopAtPos = KFK.C3MousePos(evt);
-      if (KFK.APP.model.viewConfig.snap) {
-        stopAtPos = KFK.getNearGridPoint(stopAtPos);
-        let smp = KFK.ScreenMousePos(stopAtPos);
-        KFK.moveDIVCenterToPos($("#linetransformer"), smp);
-      }
-      if (KFK.moveLinePoint === "from") {
-        KFK.lineToResize.plot([
-          [stopAtPos.x, stopAtPos.y], parr[1]
-        ]);
-      } else {
-        KFK.lineToResize.plot([parr[0],
-        [stopAtPos.x, stopAtPos.y]
-        ]);
-      }
-      await KFK.syncLinePut(
-        "U",
-        KFK.lineToResize,
-        "resize",
-        KFK.shapeToRemember,
-        false
-      );
-      KFK.hide("#linetransformer");
-    },
-  }); //line transformer. draggable()
-};
-
-KFK.svgDrawTmpLine = function (fx, fy, tx, ty, option) {
-  let tmpLineClass = "shape_temp";
-
-  //按着alt的话，需要画成垂直或水平线
-  if (KFK.KEYDOWN.alt) {
-    if (Math.abs(tx - fx) < Math.abs(ty - fy)) tx = fx;
-    else ty = fy;
-  }
-  KFK.tempSvgLine = KFK.svgDraw.findOne(`.${tmpLineClass}`);
-  if (KFK.tempSvgLine) {
-    KFK.tempSvgLine.show();
-    KFK.tempSvgLine.plot(fx, fy, tx, ty).stroke(option);
-  } else {
-    KFK.tempSvgLine = KFK.svgDraw
-      .line(fx, fy, tx, ty)
-      .addClass(tmpLineClass)
-      .stroke(option);
-  }
-};
-
-/**
- * 画线
- *
- * @param {string} fid - 起始节点的ID
- * @param {string} tid - 终点节点的ID
- * @param {number} fbp - 起始节点上的连接点的编号,从0-3
- * @param {number} tbp - 终点节点上的连接点的编号,从0-3
- * @param {number} fx - 连接点1的x坐标
- * @param {number} fy - 连接点1的y坐标
- * @param {number} tx - 连接点2的x坐标
- * @param {number} ty - 连接点2的y坐标
- */
-KFK.svgConnectNode = async function (fid, tid, fbp, tbp, fx, fy, tx, ty, caseValue) {
-  if (!(fid && tid)) {
-    return;
-  }
-  let fromDIV = $(`#${fid}`);
-  let lineClass = `connect_${fid}_${tid}`;
-  let lineClassReverse = `connect_${tid}_${fid}`;
-  let pstr = "";
-  let lstr = "";
-  let tstr = "";
-  let x = [0, 0, 0, 0];
-  let y = [0, 0, 0, 0];
-  let ctrls = [0.4, 0.5, 0.5, 0.6];
-  let triangle = [];
-  let rad = 20;
-  let ww = 10;
-  let tri = 10;
-  if (fromDIV.attr("cnwidth"))
-    tri = Math.max(parseInt(fromDIV.attr("cnwidth")) * 2, 10);
-  let tri_half = tri * 0.5;
-  let tri_height = 17.3;
-  let tsx = tx,
-    tsy = ty - tri_height;
-  //算出箭头三角形的三个顶点的坐标
-  switch (tbp) {
-    case 0:
-      tsx = tx - tri_height;
-      tsy = ty;
-      triangle = [tsx, tsy + tri_half, tx, ty, tsx, tsy - tri_half];
-      break;
-    case 1:
-      tsx = tx;
-      tsy = ty - tri_height;
-      triangle = [tsx - tri_half, tsy, tx, ty, tsx + tri_half, tsy];
-      break;
-    case 2:
-      tsx = tx + tri_height;
-      tsy = ty;
-      triangle = [tsx, tsy - tri_half, tx, ty, tsx, tsy + tri_half];
-      break;
-    case 3:
-      tsx = tx;
-      tsy = ty + tri_height;
-      triangle = [tsx - tri_half, tsy, tx, ty, tsx + tri_half, tsy];
-      break;
-  }
-  //画线不用画到重点，只需要画到三角形即可
-  switch (tbp) {
-    case 0:
-      tx = tx - tri_height;
-      break;
-    case 1:
-      ty = ty - tri_height;
-      break;
-    case 2:
-      tx = tx + tri_height;
-      break;
-    case 3:
-      ty = ty + tri_height;
-      break;
-  }
-  let dis = 0;
-  switch (fbp) {
-    case 0:
-      switch (tbp) {
-        case 0:
-          pstr = `M${fx} ${fy} C${fx - rad} ${fy} ${tx - rad} ${ty} ${tx} ${ty}`;
-          break;
-        case 1:
-          pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
-          break;
-        case 2:
-          lstr = `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`;
-          tstr = `M${tx} ${ty} C${fx} ${ty} ${tx} ${fy} ${fx} ${fy}`;
-          dis = Math.abs(tx - fx);
-          if (ty >= fy) {
-            x = [3, 2, 0, 1].map((x) => fx - dis * ctrls[x]);
-          } else {
-            x = [0, 1, 3, 2].map((x) => fx - dis * ctrls[x]);
-          }
-          pstr =
-            `M${fx},${fy + ww} ` +
-            `L${fx},${fy - ww} ` +
-            `C${x[0]},${fy - ww} ` +
-            `${x[1]},${ty} ` +
-            `${tx},${ty} ` +
-            `C${x[2]},${ty} ` +
-            `${x[3]},${fy + ww} ` +
-            `${fx},${fy + ww} z`;
-          break;
-        case 3:
-          pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
-          break;
-      }
-      break;
-    case 1:
-      switch (tbp) {
-        case 0:
-          pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
-          break;
-        case 1:
-          pstr = `M${fx} ${fy} C${fx} ${ty - rad} ${tx} ${ty -
-            rad} ${tx} ${ty}`;
-          break;
-        case 2:
-          pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
-          break;
-        case 3:
-          lstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${fy} ${tx} ${ty}`;
-          tstr = `M${tx} ${ty} C${tx} ${fy} ${fx} ${ty} ${fx} ${fy}`;
-          dis = Math.abs(ty - fy);
-          if (tx >= fx) {
-            y = [3, 2, 0, 1].map((x) => fy - dis * ctrls[x]);
-          } else {
-            y = [0, 1, 3, 2].map((x) => fy - dis * ctrls[x]);
-          }
-          pstr =
-            `M${fx + ww},${fy} ` +
-            `L${fx - ww},${fy} ` +
-            `C${fx - ww}, ${y[0]} ` +
-            `${tx}, ${y[1]} ` +
-            `${tx},${ty} ` +
-            `C${tx}, ${y[2]} ` +
-            `${fx + ww}, ${y[3]} ` +
-            `${fx + ww},${fy} z`;
-          break;
-      }
-      break;
-    case 2:
-      switch (tbp) {
-        case 0:
-          dis = Math.abs(tx - fx);
-          lstr = `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`;
-          tstr = `M${tx} ${ty} C${tx} ${fy} ${fx} ${ty} ${fx} ${fy}`;
-          if (ty >= fy) {
-            x = [3, 2, 0, 1].map((x) => fx + dis * ctrls[x]);
-          } else {
-            x = [0, 1, 3, 2].map((x) => fx + dis * ctrls[x]);
-          }
-          pstr =
-            `M${fx},${fy + ww} ` +
-            `L${fx},${fy - ww} ` +
-            `C${x[0]},${fy - ww} ` +
-            `${x[1]},${ty} ` +
-            `${tx},${ty} ` +
-            `C${x[2]},${ty} ` +
-            `${x[3]},${fy + ww} ` +
-            `${fx},${fy + ww} z`;
-          break;
-        case 1:
-          lstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
-          tstr = `M${tx} ${ty} C${tx} ${ty} ${tx} ${fy} ${fx} ${fy}`;
-          dis = Math.abs(tx - fx);
-          if (ty >= fy) {
-            x = [3, 2, 0, 1].map((x) => fx + dis * ctrls[x]);
-          } else {
-            x = [0, 1, 3, 2].map((x) => fx + dis * ctrls[x]);
-          }
-          pstr =
-            `M${fx},${fy + ww} ` +
-            `L${fx},${fy - ww} ` +
-            `C${x[0]},${fy - ww} ` +
-            `${tx},${ty} ` +
-            `${tx},${ty} ` +
-            `C${tx},${ty} ` +
-            `${x[3]},${fy + ww} ` +
-            `${fx},${fy + ww} z`;
-          break;
-        case 2:
-          dis = Math.abs(tx - fx);
-          lstr = `M${fx} ${fy} C${fx + rad} ${fy} ${tx + rad} ${ty} ${tx} ${ty}`;
-          tstr = `M${tx} ${yy} C${tx + rad} ${ty} ${fx + rad} ${fy} ${fx} ${fy}`;
-          if (ty >= fy) {
-            x = [3, 2, 0, 1].map((x) => fx + dis * ctrls[x]);
-          } else {
-            x = [0, 1, 3, 2].map((x) => fx + dis * ctrls[x]);
-          }
-          pstr =
-            `M${fx},${fy + ww} ` +
-            `L${fx},${fy - ww} ` +
-            `C${tx + rad},${fy - ww} ` +
-            `${tx + rad},${ty} ` +
-            `${tx},${ty} ` +
-            `C${tx + rad},${ty} ` +
-            `${tx + rad},${fy + ww} ` +
-            `${fx},${fy + ww} z`;
-          break;
-        case 3:
-          pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
-          break;
-      }
-      break;
-    case 3:
-      switch (tbp) {
-        case 0:
-          pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
-          break;
-        case 1:
-          lstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${fy} ${tx} ${ty}`;
-          tstr = `M${tx} ${ty} C${tx} ${fy} ${fx} ${ty} ${fx} ${fy}`;
-          dis = Math.abs(ty - fy);
-          if (tx >= fx) {
-            y = [3, 2, 0, 1].map((x) => fy + dis * ctrls[x]);
-          } else {
-            y = [0, 1, 3, 2].map((x) => fy + dis * ctrls[x]);
-          }
-          pstr =
-            `M${fx + ww},${fy} ` +
-            `L${fx - ww},${fy} ` +
-            `C${fx - ww}, ${y[0]} ` +
-            `${tx}, ${y[1]} ` +
-            `${tx},${ty} ` +
-            `C${tx}, ${y[2]} ` +
-            `${fx + ww}, ${y[3]} ` +
-            `${fx + ww},${fy} z`;
-          break;
-        case 2:
-          pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
-          break;
-        case 3:
-          pstr = `M${fx} ${fy} C${fx} ${fy + rad} ${tx} ${ty +
-            rad} ${tx} ${ty}`;
-          break;
-      }
-      break;
-  }
-  await KFK._svgDrawNodesConnect(
-    fid,
-    tid,
-    lineClass,
-    lineClassReverse,
-    pstr,
-    lstr,
-    tstr,
-    triangle,
-    caseValue,
-    KFK.APP.model.viewConfig.simpleLineMode
-  );
-};
-
-KFK.myFadeIn = function (jq, ms = 200) {
-  jq &&
-    jq
-      .css({
-        visibility: "visible",
-        opacity: 0.0,
-      })
-      .animate({
-        opacity: 1.0,
-      },
-        ms
-      );
-};
-KFK.myFadeOut = function (jq, ms = 200) {
-  jq &&
-    jq.animate({
-      opacity: 0.0,
-    },
-      ms,
-      function () {
-        jq.css("visibility", "hidden");
-      }
-    );
-};
-KFK.hide = function (jq) {
-  if (typeof jq === "string") jq = $(jq);
-  jq.addClass("noshow");
-};
-KFK.show = function (jq) {
-  if (typeof jq === "string") jq = $(jq);
-  jq.removeClass("noshow");
-};
-/**
- * Is a div visible, visible means it has not 'noshow' class
- */
-KFK.isShowing = function (jq) {
-  if (typeof jq === "string") jq = $(jq);
-  return jq.hasClass("noshow") === false;
-};
-
-KFK.checkBrowser = function () {
-  const browser = Bowser.getParser(window.navigator.userAgent);
-  let isValidBrowser = browser.satisfies({
-    // or in general
-    chrome: ">70",
-    edge: ">70",
-  });
-  KFK.setAppData("model", "isValidBrowser", isValidBrowser);
-  KFK.setAppData("model", "isNotValidBrowser", !isValidBrowser);
-  KFK.APP.model.osName = browser.getOSName(true);
-  KFK.debug("isValidBrowser", isValidBrowser);
-  KFK.debug("osName", KFK.APP.model.osName);
-  console.log(browser);
-  if (["ios", "android"].indexOf(KFK.APP.model.osName) >= 0) {
-    KFK.APP.model.isMobile = true;
-    KFK.APP.model.isPC = false;
-  } else {
-    KFK.APP.model.isMobile = false;
-    KFK.APP.model.isPC = true;
-  }
-};
-
-
-KFK.onDropFiles = async function (files) {
-  let aFile = files[0];
-  if (NotSet(aFile)) return;
-  if (aFile.type !== "image/png" && aFile.type !== "image/jpeg") {
-    await KFK.onDropDocFile(aFile);
-  } else {
-    await KFK.onDropImage(aFile);
-  }
-};
-KFK.onDropDocFile = async function (aFile) {
-  KFK.scrLog("当前用户只能上传JPG或PNG格式图片");
-  let fileData = new Blob(aFile);
-  // Pass getBuffer to promise.
-  var promise = new Promise(getBuffer(fileData));
-  // Wait for promise to be resolved, or log error.
-  promise
-    .then(function (data) {
-      // Here you can pass the bytes to another function.
-      console.log(data);
-    })
-    .catch(function (err) {
-      console.log("Error: ", err);
-    });
-};
-KFK.getBuffer = function (fileData) {
-  return function (resolve) {
-    var reader = new FileReader();
-    reader.readAsArrayBuffer(fileData);
-    reader.onload = function () {
-      var arrayBuffer = reader.result;
-      var bytes = new Uint8Array(arrayBuffer);
-      resolve(bytes);
-    };
-  };
-};
-
-KFK.onDropImage = async function (imageFile) {
-  function onProgress(p) {
-    KFK.scrLog(`正在为您准备图片, 请稍候${p}%`, 2000);
-  }
-  const options = {
-    // maxSizeMB: 3,
-    maxWidthOrHeight: Math.round(
-      Math.min(KFK.PageHeight * 0.5, KFK.PageWidth * 0.5)
-    ),
-    useWebWorker: true,
-    onProgress: onProgress,
-  };
-  try {
-    //const compressedImage = await imageCompression(imageFile, options);
-    //KFK.fileToUpload = compressedImage;
-    KFK.fileToUpload = imageFile;
-    await KFK.sendCmd("GETSTS", {
-      stsFor: "drop",
-    });
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-KFK.onGotSTS = function (response) {
-  KFK.sts = response.credential;
-  // KFK.uploadToQcloudCOS();
-  if (response.stsFor === "drop") {
-    KFK.uploadFileToQcloudCOS(KFK.fileToUpload);
-  } else if (response.stsFor === "paste") {
-    KFK.uploadFileToQcloudCOS(KFK.blobToPaste);
-  }
-};
-
-KFK.procPasteBlob = async function (blob) {
-  KFK.blobToPaste = blob;
-  await KFK.sendCmd("GETSTS", {
-    stsFor: "paste",
-  });
-};
-
-
-KFK.uploadFileToQcloudCOS = function (file) {
-  let cos = new COS({
-    getAuthorization: function (options, callback) {
-      callback({
-        TmpSecretId: KFK.sts.credentials.tmpSecretId, // 临时密钥的 tmpSecretId
-        TmpSecretKey: KFK.sts.credentials.tmpSecretKey, // 临时密钥的 tmpSecretKey
-        XCosSecurityToken: KFK.sts.credentials.sessionToken, // 临时密钥的 sessionToken
-        StartTime: KFK.sts.startTime,
-        ExpiredTime: KFK.sts.expiredTime,
-      });
-    },
-  });
-  let fileId = KFK.myuid();
-  let fileName = fileId + "." + file.type.substr(file.type.indexOf("/") + 1);
-  let fileKeyName = KFK.APP.model.cocouser.orgid + "/" + fileName;
-  if (file.size > 1024 * 1024) {
-    cos.sliceUploadFile({
-      Bucket: cocoConfig.cos.bucket,
-      Region: cocoConfig.cos.region,
-      Key: fileKeyName,
-      Body: file,
-      onTaskReady: function (tid) {
-        KFK.TaskId = tid;
-      },
-      onHashProgress: function (progressData) {
-        console.log("onHashProgress", JSON.stringify(progressData));
-      },
-      onProgress: function (progressData) {
-        console.log("onProgress", JSON.stringify(progressData));
-      },
-    },
-      async function (err, data) {
-        if (err) {
-          console.log("putObject got error:", err);
-        } else {
-          console.log("putObject success:", data);
-          try {
-            let imgUrl =
-              "https://" +
-              cocoConfig.cos.reverseproxy +
-              data.Location.substr(data.Location.indexOf("/"));
-            await KFK.makeImageDiv(
-              fileId,
-              KFK.dropAtPos.x,
-              KFK.dropAtPos.y,
-              imgUrl
-            );
-            await KFK.refreshMatLibForAll();
-          } catch (error) {
-            console.error(error);
-          }
-        }
-      }
-    );
-  } else {
-    // console.log( "Bebegin putObject, Bucket", cocoConfig.cos.bucket, "region", cocoConfig.cos.region, "Key", fileKeyName);
-    cos.putObject({
-      Bucket: cocoConfig.cos.bucket, // Bucket 格式：test-1250000000
-      Region: cocoConfig.cos.region,
-      Key: fileKeyName,
-      Body: file,
-      onTaskReady: function (tid) {
-        KFK.TaskId = tid;
-      },
-      onHashProgress: function (progressData) {
-        console.log("onHashProgress", JSON.stringify(progressData));
-      },
-      onProgress: function (progressData) {
-        console.log(JSON.stringify(progressData));
-      },
-    },
-      async function (err, data) {
-        if (err) {
-          console.log("putObject got error:", err);
-        } else {
-          console.log("putObject success:", data);
-          try {
-            let imgUrl =
-              "https://" +
-              cocoConfig.cos.reverseproxy +
-              data.Location.substr(data.Location.indexOf("/"));
-            // console.log(data); console.log(imgUrl);
-            await KFK.makeImageDiv(
-              fileId,
-              KFK.dropAtPos.x,
-              KFK.dropAtPos.y,
-              imgUrl
-            );
-            await KFK.refreshMatLibForAll();
-          } catch (error) {
-            console.error(error);
-          }
-        }
-      }
-    );
-  }
-};
-
-KFK.getFrontEndUrl = (obj) => {
-  return cocoConfig.frontend.url + "/" + obj;
-};
-
-KFK.getBossImageUrl = (img) => {
-  return cocoConfig.frontend.url + "/boss/" + img;
-};
-
-/**
- * 判断一个div是否存在
- * @param div 可以是一个jqdiv对象，也可以是一个jqdiv的id
- */
-KFK.nodeExist = (div) => {
-  //
-  let jqObjById = null;
-  if (typeof div === "string") {
-    jqObjById = $("#" + div);
-  } else {
-    jqObjById = $("#" + div.attr("id"));
-  }
-  if (jqObjById.length > 0) {
-    return true;
-  } else {
-    return false;
-  }
-};
-KFK.nodeNotExist = (jqdiv) => {
-  return !KFK.nodeExist(jqdiv);
-};
-
-
-KFK.clickOnLeftPanel = function (evt) {
-  // console.log("Clcik on Left Panel");
-  // console.log(evt);
-  evt.stopPropagation();
-  evt.preventDefault();
-};
-KFK.clickOnRightPanel = function (evt) {
-  evt.stopPropagation();
-};
-KFK.pmsOk = function () {
-  return KFK.docIsNotReadOnly();
-};
-
-KFK.onChange = function (reason) {
-  console.log("onChange", reason);
-  KFK.templateChangeTimer && clearTimeout(KFK.templateChangeTimer);
-  KFK.templateChangeTimer = setTimeout(() => {
-    console.log("saving...");
-    let tpldoc = KFK.drawingToTemplateDoc();
-    console.log(tpldoc);
-    Client.putTemplate(tpldoc);
-    KFK.templateChangeTimer = undefined;
-  }, 2000);
-};
-
-KFK.drawingToTemplateDoc = function () {
-  let nodes = KFK.JC3.find(".node");
-  let connects = KFK.svgDraw.find(".connect");
-  let tplDocHtml = `<div class="template" id="${KFK.currentTplId}">`;
-
-  nodes.each((index, aNode) => {
-    let origJqNode = $(aNode);
-    let jqNode = origJqNode.clone();
-    KFK.removeNodeEventFootprint(jqNode);
-    jqNode.removeClass("kfknode");
-    let nodeHtml = jqNode.prop("outerHTML");
-    tplDocHtml += nodeHtml;
-  });
-  connects.each((aConnect) => {
-    let linkHtml = `<div class="link" from="${aConnect.attr('fid')}" to="${aConnect.attr('tid')}"></div>`;
-    if (lodash.isEmpty(aConnect.attr("case")) === false) {
-      linkHtml = `<div class="link" from="${aConnect.attr('fid')}" to="${aConnect.attr('tid')}" case="${aConnect.attr('case')}"></div>`;
-    }
-    tplDocHtml += linkHtml;
-  });
-  tplDocHtml += "</div>";
-
-  return tplDocHtml;
-};
-
-//on click node, node prop
-KFK.showPropForm = function (jqDIV) {
-  //如果传递过来的是空或者null，就隐藏掉rightPanel
-  if (NotSet(jqDIV)) {
-    if (KFK.currentJqNode)
-      KFK.appDataToNode("set nodisplay on undefined jqDIV");
-    $('#rightPanel').addClass("nodisplay");
-    return;
-  }
-  //否则，就要把rightPanel显示出来
-  $('#rightPanel').removeClass("nodisplay");
-  //先把针对不同节点类型的属性DIV全部隐藏起来
-  $('#rightPanel').find('div.prop_form').each((index, aDiv) => {
-    $(aDiv).addClass("nodisplay");
-  });
-  //然后针对edit/view的section全部隐藏起来
-  $('#rightPanel').find('div.prop_section').each((index, aDiv) => {
-    $(aDiv).addClass("nodisplay");
-  });
-  if (jqDIV) {
-    if (KFK.currentJqNode && KFK.curentJqNode !== jqDIV) {
-      //如果之前有节点，则先保存它的值
-      KFK.appDataToNode("Save previous");
-    }
-
-    let formToShow = "";
-    KFK.currentJqNode = jqDIV;
-    if (jqDIV.hasClass("START")) {
-      formToShow = "START";
-      KFK.nodeToAppData();
-    } else if (jqDIV.hasClass("ACTION")) {
-      formToShow = "ACTION";
-      KFK.nodeToAppData();
-    } else if (jqDIV.hasClass("SCRIPT")) {
-      formToShow = "SCRIPT";
-      KFK.nodeToAppData();
-    } else if (jqDIV.hasClass("INFORM")) {
-      formToShow = "INFORM";
-      KFK.nodeToAppData();
-    } else if (jqDIV.hasClass("TIMER")) {
-      formToShow = "TIMER";
-      KFK.nodeToAppData();
-    } else if (jqDIV.hasClass("SUB")) {
-      formToShow = "SUB";
-      KFK.nodeToAppData();
-    } else if (jqDIV.hasClass("AND")) {
-      formToShow = "AND";
-      KFK.nodeToAppData();
-    } else if (jqDIV.hasClass("OR")) {
-      formToShow = "OR";
-      KFK.nodeToAppData();
-    } else {
-      console.warn(jqDIV.attr("class"), "property form not implemented");
-    }
-    if (formToShow !== "") {
-      $(`#prop_${formToShow}`).removeClass("nodisplay");
-      $(`#prop_${formToShow} .${KFK.tpl_mode}`).removeClass("nodisplay");
-    }
-  }
-};
-
-KFK.closeProperties = function () {
-  $('#rightPanel').addClass("nodisplay");
-  if (KFK.currentJqNode)
-    KFK.appDataToNode("closeProperties");
-};
-
-/**
- * KFK.nodeToAppData.
- * set App data with Node properties
- *
- * @param {} jqDIV
- */
-KFK.nodeToAppData = function (jqDIV) {
-  if (NotSet(jqDIV)) jqDIV = KFK.currentJqNode;
-  if (jqDIV.hasClass("START")) {
-    console.error("TODO: here");
-  } else if (jqDIV.hasClass("ACTION")) {
-    KFK.APP.node.ACTION.id = jqDIV.attr("id").trim();
-    KFK.APP.node.ACTION.role = BlankToDefault(jqDIV.attr("role"), "DEFAULT");
-    KFK.APP.node.ACTION.label = BlankToDefault(jqDIV.find("p").first().text(), "Activity").trim();
-    let kvarsString = BlankToDefault(jqDIV.find(".kvars").text(), "e30=");
-    kvarsString = KFK.base64ToCode(kvarsString);
-    KFK.APP.node.ACTION.kvars = kvarsString;
-    let kattsString = BlankToDefault(jqDIV.find(".katts").text(), "e30=");
-    kattsString = KFK.base64ToCode(kattsString);
-    KFK.APP.node.ACTION.katts = kattsString;
-  } else if (jqDIV.hasClass("SCRIPT")) {
-    KFK.APP.node.SCRIPT.id = jqDIV.attr("id");
-    KFK.APP.node.SCRIPT.label = BlankToDefault(jqDIV.find("p").first().text(), "").trim();
-    let str = BlankToDefault(jqDIV.find("code").first().text(), "").trim();
-    str = KFK.base64ToCode(str);
-    KFK.APP.node.SCRIPT.code = str;
-  } else if (jqDIV.hasClass("INFORM")) {
-    KFK.APP.node.INFORM.id = jqDIV.attr("id");
-    KFK.APP.node.INFORM.label = BlankToDefault(jqDIV.find("p").first().text(), "Email").trim();
-    KFK.APP.node.INFORM.role = BlankToDefault(jqDIV.attr("role"), "DEFAULT");
-    KFK.APP.node.INFORM.subject = BlankToDefault(jqDIV.find("subject").first().text(), "").trim();
-    KFK.APP.node.INFORM.content = BlankToDefault(jqDIV.find("content").first().text(), "").trim();
-  } else if (jqDIV.hasClass("TIMER")) {
-    KFK.APP.node.TIMER.id = jqDIV.attr("id");
-    KFK.APP.node.TIMER.label = BlankToDefault(jqDIV.find("p").first().text(), "").trim();
-    let str = BlankToDefault(jqDIV.find("code").first().text(), "").trim();
-    KFK.APP.node.TIMER.code = str;
-  } else if (jqDIV.hasClass("SUB")) {
-    KFK.APP.node.SUB.id = jqDIV.attr("id");
-    KFK.APP.node.SUB.label = BlankToDefault(jqDIV.find("p").first().text(), "").trim();
-    let str = BlankToDefault(jqDIV.attr("sub"), "").trim();
-    KFK.APP.node.SUB.sub = str;
-  } else {
-    console.warn(jqDIV.attr("class"), "nodetoAppData not implemented.");
-  }
-};
-
-/**
- * KFK.appDataToNode.
- * Sync the APP data to node properties
- *
- * @param {} jqDIV, if not set, use KFK.currentJqNode, if not set then, do nothing
- */
-KFK.appDataToNode = function (reason) {
-  if (KFK.tpl_mode !== "edit") return;
-  //如果连当前的也不存在，就要返回
-  if (NotSet(KFK.currentJqNode)) return;
-  let jqDIV = KFK.currentJqNode;
-  //是否属性有变化
-  let dirtyCount = 0;
-  if (jqDIV.hasClass("ACTION")) {
-    dirtyCount += KFK.setNodeLabel(jqDIV, KFK.APP.node.ACTION.label);
-    dirtyCount += KFK.setNodeId(jqDIV, KFK.APP.node.ACTION.id);
-    let theRole = jqDIV.attr("role");
-    theRole = theRole ? theRole.trim() : "";
-    if (theRole !== KFK.APP.node.ACTION.role.trim() &&
-      KFK.APP.node.ACTION.role.trim() !== "DEFAULT" &&
-      NotBlank(KFK.APP.node.ACTION.role.trim())) {
-      jqDIV.attr("role", KFK.APP.node.ACTION.role.trim());
-      console.log("Dirty: role changed");
-      dirtyCount += 1;
-    }
-    let appData_kvars = KFK.APP.node.ACTION.kvars.trim();
-    let codeInBase64 = "";
-    if (NotBlank(appData_kvars)) {
-      try {
-        let json = JSON.parse(appData_kvars);
-        codeInBase64 = KFK.codeToBase64(appData_kvars);
-      } catch (error) {
-        codeInBase64 = "ERROR";
-      }
-    }
-    if (codeInBase64 === "ERROR") {
-      console.log("JSON format error:", appData_kvars);
-    } else {
-      if (jqDIV.find(".kvars").length > 0) {
-        if (jqDIV.find(".kvars").first().text().trim() !== codeInBase64) {
-          console.log("Dirty: kvars changed");
-          dirtyCount += 1;
-          jqDIV.find(".kvars").first().prop("innerText", codeInBase64);
-        }
-      } else {
-        jqDIV.append('<div class="kvars">' + codeInBase64 + "</div>");
-        console.log("Dirty: append kvars");
-        dirtyCount += 1;
-      }
-    }
-
-    let appData_katts = KFK.APP.node.ACTION.katts.trim();
-    codeInBase64 = "";
-    if (NotBlank(appData_katts)) {
-      try {
-        let json = JSON.parse(appData_katts);
-        codeInBase64 = KFK.codeToBase64(appData_katts);
-      } catch (error) {
-        codeInBase64 = "ERROR";
-      }
-    }
-    if (codeInBase64 === "ERROR") {
-      console.log("JSON format error:", appData_katts);
-    } else {
-      if (jqDIV.find(".katts").length > 0) {
-        if (jqDIV.find(".katts").first().text().trim() !== codeInBase64) {
-          console.log("Dirty: katts changed");
-          dirtyCount += 1;
-          jqDIV.find(".katts").first().prop("innerText", codeInBase64);
-        }
-      } else {
-        jqDIV.append('<div class="katts">' + codeInBase64 + "</div>");
-        console.log("Dirty: append katts");
-        dirtyCount += 1;
-      }
-    }
-  } else if (jqDIV.hasClass("SCRIPT")) {
-    dirtyCount += KFK.setNodeId(jqDIV, KFK.APP.node.SCRIPT.id);
-    dirtyCount += KFK.setNodeLabel(jqDIV, KFK.APP.node.SCRIPT.label);
-    let appData_code = KFK.APP.node.SCRIPT.code.trim();
-    let codeInBase64 = "";
-    if (NotBlank(appData_code)) {
-      codeInBase64 = KFK.codeToBase64(appData_code);
-    }
-    if (jqDIV.find("code").length > 0) {
-      if (jqDIV.find("code").first().text().trim() !== codeInBase64) {
-        console.log("Dirty: code changed");
-        dirtyCount += 1;
-        jqDIV.find("code").prop("innerText", codeInBase64);
-      }
-    } else {
-      jqDIV.append("<code>" + codeInBase64 + "</code>");
-      console.log("Dirty: append code");
-      dirtyCount += 1;
-    }
-  } else if (jqDIV.hasClass("INFORM")) {
-    dirtyCount += KFK.setNodeLabel(jqDIV, KFK.APP.node.INFORM.label);
-    let subject = KFK.APP.node.INFORM.subject.trim();
-    let content = KFK.APP.node.INFORM.content.trim();
-    let node_subject = "";
-    let node_content = "";
-    let theRole = jqDIV.attr("role");
-    theRole = theRole ? theRole.trim() : "";
-    if (theRole !== KFK.APP.node.INFORM.role.trim() &&
-      KFK.APP.node.INFORM.role.trim() !== "DEFAULT" &&
-      NotBlank(KFK.APP.node.INFORM.role.trim())) {
-      jqDIV.attr("role", KFK.APP.node.INFORM.role.trim());
-      console.log("Dirty: role changed");
-      dirtyCount += 1;
-    }
-    if (jqDIV.find("subject").length > 0) {
-      node_subject = jqDIV.find("subject").first().text().trim();
-      if (node_subject !== subject) {
-        dirtyCount += 1;
-        console.log("Dirty: subject changed");
-        jqDIV.find("subject").prop("innerText", subject);
-      }
-    } else {
-      jqDIV.append("<subject>" + subject + "</subject>");
-      console.log("Dirty: append subject");
-      dirtyCount += 1;
-    }
-    if (jqDIV.find("content").length > 0) {
-      node_content = jqDIV.find("content").first().text().trim();
-      if (node_content !== content) {
-        dirtyCount += 1;
-        console.log("Dirty: content changed");
-        jqDIV.find("content").prop("innerText", content);
-      }
-    } else {
-      jqDIV.append("<content>" + content + "</content>");
-      console.log("Dirty: append content");
-      dirtyCount += 1;
-    }
-  } else if (jqDIV.hasClass("TIMER")) {
-    dirtyCount += KFK.setNodeLabel(jqDIV, KFK.APP.node.TIMER.label);
-    let appData_code = KFK.APP.node.TIMER.code.trim();
-    if (jqDIV.find("code").length > 0) {
-      if (jqDIV.find("code").first().text().trim() !== appData_code) {
-        console.log("Dirty: code changed");
-        dirtyCount += 1;
-        jqDIV.find("code").prop("innerText", appData_code);
-      }
-    } else {
-      jqDIV.append("<code>" + appData_code + "</code>");
-      console.log("Dirty: append code");
-      dirtyCount += 1;
-    }
-  } else if (jqDIV.hasClass("SUB")) {
-    dirtyCount += KFK.setNodeId(jqDIV, KFK.APP.node.SUB.id);
-    dirtyCount += KFK.setNodeLabel(jqDIV, KFK.APP.node.SUB.label);
-    let appData_sub = KFK.APP.node.SUB.sub.trim();
-    if (jqDIV.attr("sub").trim() !== appData_sub) {
-      console.log("Dirty: sub changed");
-      dirtyCount += 1;
-      jqDIV.attr("sub", appData_sub);
-    }
-  } else {
-    console.warn(jqDIV.attr("class"), "appDataToNode not implemented.");
-  }
-  if (dirtyCount > 0) {
-    //属性有变化，则出发保存
-    console.log(reason);
-    KFK.onChange("Property Changed");
-  }
-};
-
-KFK.setNodeId = function (jqDIV, id) {
-  let isDirty = false;
-  if (jqDIV.attr("id").trim() !== id.trim() && NotBlank(id.trim())) {
-    jqDIV.attr("id", id.trim());
-    console.log("Dirty: id changed");
-    isDirty = true;
-  }
-  if (IsBlank(id.trim())) {
-    if (IsBlank(jqDIV.attr("id").trim())) {
-      jqDIV.attr("id", KFK.myuid());
-      console.log("Dirty: id changed");
-      isDirty = true;
-    }
-  }
-  return isDirty ? 1 : 0;
+	/*
+checkBrowser () {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+	const browser = Bowser.getParser(window.navigator.userAgent);
+	let isValidBrowser = browser.satisfies({
+		// or in general
+		chrome: '>70',
+		edge: '>70'
+	});
+	that.APP.setData('model', 'isValidBrowser', isValidBrowser);
+	that.APP.setData('model', 'isNotValidBrowser', !isValidBrowser);
+	that.APP.setData('model', 'osName', browser.getOSName(true));
+	that.debug('isValidBrowser', isValidBrowser);
+	that.debug('osName', that.APP.model.osName);
+	console.log(browser);
+	if (['ios', 'android'].indexOf(that.APP.model.osName) >= 0) {
+		that.APP.model.isMobile = true;
+		that.APP.model.isPC = false;
+	} else {
+		that.APP.model.isMobile = false;
+		that.APP.model.isPC = true;
+	}
 }
-KFK.setNodeLabel = function (jqDIV, label) {
-  let isDirty = false;
-  label = label.trim();
-  let node_label = "";
-  if (jqDIV.find("p").length > 0) {
-    node_label = jqDIV.find("p").first().text().trim();
-    if (node_label !== label) {
-      isDirty = true;
-      console.log("Dirty: label changed");
-      jqDIV.find("p").first().prop("innerText", label);
-    }
-  } else {
-    jqDIV.append("<p>" + label + "</p>");
-    console.log("Dirty: append p-label");
-    isDirty = true;
-  }
-  return isDirty ? 1 : 0;
-};
+*/
 
+	getBuffer(fileData: any) {
+		return function (resolve: any) {
+			const reader = new FileReader();
+			reader.readAsArrayBuffer(fileData);
+			reader.onload = function () {
+				const result = reader.result;
+				if (result instanceof ArrayBuffer) {
+					const arrayBuffer: ArrayBuffer = result;
+					const bytes = new Uint8Array(arrayBuffer);
+					resolve(bytes);
+				} else {
+					console.error('readAsArrayBuffer should not return string');
+				}
+			};
+		};
+	}
 
+	onGotSTS(response: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.sts = response.credential;
+		// that.uploadToQcloudCOS();
+		/*
+	if (response.stsFor === 'drop') {
+		that.uploadFileToQcloudCOS(that.fileToUpload);
+	} else if (response.stsFor === 'paste') {
+		that.uploadFileToQcloudCOS(that.blobToPaste);
+	}
+	 */
+	}
+
+	async procPasteBlob(blob: Blob) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.blobToPaste = blob;
+		/*
+	await that.sendCmd('GETSTS', {
+		stsFor: 'paste'
+	});
+	 */
+	}
+
+	/*
+uploadFileToQcloudCOS (file) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+	let cos = new COS({
+		getAuthorization: function (options, callback) {
+			callback({
+				TmpSecretId: that.sts.credentials.tmpSecretId, // 临时密钥的 tmpSecretId
+				TmpSecretKey: that.sts.credentials.tmpSecretKey, // 临时密钥的 tmpSecretKey
+				XCosSecurityToken: that.sts.credentials.sessionToken, // 临时密钥的 sessionToken
+				StartTime: that.sts.startTime,
+				ExpiredTime: that.sts.expiredTime
+			});
+		}
+	});
+	let fileId = that.myuid();
+	let fileName = fileId + '.' + file.type.substr(file.type.indexOf('/') + 1);
+	let fileKeyName = that.APP.model.cocouser.orgid + '/' + fileName;
+	if (file.size > 1024 * 1024) {
+		cos.sliceUploadFile(
+			{
+				Bucket: cocoConfig.cos.bucket,
+				Region: cocoConfig.cos.region,
+				Key: fileKeyName,
+				Body: file,
+				onTaskReady: function (tid) {
+					that.TaskId = tid;
+				},
+				onHashProgress: function (progressData) {
+					console.log('onHashProgress', JSON.stringify(progressData));
+				},
+				onProgress: function (progressData) {
+					console.log('onProgress', JSON.stringify(progressData));
+				}
+			},
+			async function (err, data) {
+				if (err) {
+					console.log('putObject got error:', err);
+				} else {
+					console.log('putObject success:', data);
+					try {
+						let imgUrl =
+							'https://' +
+							cocoConfig.cos.reverseproxy +
+							data.Location.substr(data.Location.indexOf('/'));
+						await that.makeImageDiv(fileId, that.dropAtPos.x, that.dropAtPos.y, imgUrl);
+						await that.refreshMatLibForAll();
+					} catch (error) {
+						console.error(error);
+					}
+				}
+			}
+		);
+	} else {
+		// console.log( "Bebegin putObject, Bucket", cocoConfig.cos.bucket, "region", cocoConfig.cos.region, "Key", fileKeyName);
+		cos.putObject(
+			{
+				Bucket: cocoConfig.cos.bucket, // Bucket 格式：test-1250000000
+				Region: cocoConfig.cos.region,
+				Key: fileKeyName,
+				Body: file,
+				onTaskReady: function (tid) {
+					that.TaskId = tid;
+				},
+				onHashProgress: function (progressData) {
+					console.log('onHashProgress', JSON.stringify(progressData));
+				},
+				onProgress: function (progressData) {
+					console.log(JSON.stringify(progressData));
+				}
+			},
+			async function (err, data) {
+				if (err) {
+					console.log('putObject got error:', err);
+				} else {
+					console.log('putObject success:', data);
+					try {
+						let imgUrl =
+							'https://' +
+							cocoConfig.cos.reverseproxy +
+							data.Location.substr(data.Location.indexOf('/'));
+						// console.log(data); console.log(imgUrl);
+						await that.makeImageDiv(fileId, that.dropAtPos.x, that.dropAtPos.y, imgUrl);
+						await that.refreshMatLibForAll();
+					} catch (error) {
+						console.error(error);
+					}
+				}
+			}
+		);
+	}
+}
+*/
+
+	getFrontEndUrl(obj: string) {
+		return cocoConfig.frontend.url + '/' + obj;
+	}
+
+	getBossImageUrl(img: string) {
+		return cocoConfig.frontend.url + '/boss/' + img;
+	}
+
+	/**
+	 * 判断一个div是否存在
+	 * @param div 可以是一个jqdiv对象，也可以是一个jqdiv的id
+	 */
+	nodeExist(div: string | JQuery) {
+		//
+		let jqObjById = null;
+		if (typeof div === 'string') {
+			jqObjById = $('#' + div);
+		} else {
+			jqObjById = $('#' + div.attr('id'));
+		}
+		if (jqObjById.length > 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	nodeNotExist(jqdiv: string | JQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return !that.nodeExist(jqdiv);
+	}
+	//eslint-disable-next-line @typescript-eslint/no-unused-vars
+	clickOnLeftPanel(evt: MouseEvent) {
+		return;
+	}
+	//eslint-disable-next-line @typescript-eslint/no-unused-vars
+	clickOnRightPanel(evt: MouseEvent) {
+		return;
+	}
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	pmsOk(_cmd?: string, _obj?: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		return that.docIsNotReadOnly();
+	}
+
+	closeProperties() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		$('#rightPanel').addClass('nodisplay');
+		if (that.currentJqNode) that.appDataToNode('closeProperties');
+	}
+
+	sayHello() {
+		console.log('Hello, I am KFK');
+	}
+}
+
+const urlFull = window.location.href;
+const myURL = new URL(urlFull);
+
+const KFK = new KFKclass();
+KFK.tplid = myURL.searchParams.get('tplid');
+KFK.wfid = myURL.searchParams.get('wfid');
+KFK.tpl_mode = myURL.searchParams.get('mode');
+KFK.tpl_mode = lodash.isEmpty(KFK.tpl_mode) ? 'view' : KFK.tpl_mode;
+console.log(`KFK.tplid=${KFK.tplid}, ${KFK.tpl_mode}`);
 
 document.onpaste = KFK.onPaste;
 document.oncopy = KFK.onCopy;
 document.oncut = KFK.onCut;
 
-let urlFull = window.location.href;
-let myURL = new URL(urlFull);
-KFK.tplid = myURL.searchParams.get("tplid");
-KFK.wfid = myURL.searchParams.get("wfid");
-KFK.tpl_mode = myURL.searchParams.get("mode");
-KFK.tpl_mode = lodash.isEmpty(KFK.tpl_mode) ? "view" : KFK.tpl_mode;
-
-console.log(KFK.tplid, KFK.tpl_mode);
-
+KFK.tpl_mode = 'edit';
 export default KFK;
