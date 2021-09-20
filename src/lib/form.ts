@@ -14,28 +14,35 @@ export function enhance(
 		error?: (res: Response, error: Error, form: HTMLFormElement) => void;
 		result: (res: Response, form: HTMLFormElement) => void;
 	}
-):any { //eslint-disable-line 
+): any {
+	//eslint-disable-line
 
 	async function handle_submit(e: Event) {
-
 		e.preventDefault();
 
-		const data = Object.fromEntries(new FormData(form));
-		const body = JSON.stringify(data);
+		let contentType = 'application/json';
+		const formData = new FormData(form);
+		const tmp:{ [k: string]: any } = Object.fromEntries(formData);
+		let body="";
+		if (form.enctype !== 'multipart/form-data') {
+			body = JSON.stringify(tmp);
+		} else {
+			contentType = 'multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW';
+			console.log("multipart/form-data is not supported at this time.");
+		}
 
-		if (pending) pending(data, form);
+		//if (pending) pending(data, form);
 
 		try {
 			const res = await fetch(form.action, {
 				method: form.method,
 				headers: {
-					'Content-Type': 'application/json',
-					'Accept': 'application/json',
-					'Authorization': token
+					'Content-Type': contentType,
+					Accept: 'application/json',
+					Authorization: token
 				},
-				body
+				body   // this paramater must has name body
 			});
-
 
 			if (res.ok) {
 				result(res, form);

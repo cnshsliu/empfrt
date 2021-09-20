@@ -125,7 +125,6 @@ class KFKclass {
 	mode: string = 'POINTER';
 	tpl: myJQuery = null;
 	tplid: string = '';
-	currentTplId: string = '';
 	wfid: string = '';
 	tpl_mode: string = 'edit';
 	version: string = '1.0';
@@ -318,6 +317,8 @@ class KFKclass {
 	selectedTodo: any = null;
 	user: User = null;
 
+	designerCallback = null;
+
 	constructor() {
 		this.JC1 = $('#C1');
 		this.C1 = el(this.JC1);
@@ -331,6 +332,7 @@ class KFKclass {
 		this._width = this.PageWidth * this.PageNumberHori;
 		this._height = this.PageHeight * this.PageNumberVert;
 		this.scrollContainer = $('#S1');
+		this.designerCallback = null;
 	}
 
 	// eslint-disable-next-line
@@ -475,13 +477,14 @@ class KFKclass {
 			that.APP.setData('show', 'customline', true);
 		}
 		console.log(that.APP.toolActiveState);
+		that.designerCallback('setMode', mode);
 		that.focusOnC3();
 	}
 
 	docIsReadOnly(): boolean {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		return that.APP.model.cocodoc.readonly || that.tpl_mode !== 'edit';
+		return that.tpl_mode !== 'edit';
 		//return that.APP.model.cocodoc.readonly;
 	}
 
@@ -528,6 +531,9 @@ class KFKclass {
 		return [nid, tid];
 	}
 
+	/**
+	 * Remove connection link
+	 */
 	async removeConnectById(connect_id: string): Promise<void> {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -553,6 +559,14 @@ class KFKclass {
 			const aLinkInTemplate = that.tpl.find(`.link[from="${fromNode_id}"][to="${toNode_id}"]`);
 			console.log(aLinkInTemplate);
 			$(aLinkInTemplate).remove();
+
+
+			const ballConnectAttr = `${fromNode_id}_${toNode_id}`;
+			for(let i=0; i<that.tmpBalls.length; i++){
+				if(that.tmpBalls[i].attr("connect") === ballConnectAttr){
+					that.tmpBalls[i].addClass("noshow");
+				}
+			}
 		} catch (err) {
 			console.error(err);
 		}
@@ -690,7 +704,7 @@ class KFKclass {
 		const that = this;
 		const nodes = that.JC3.find('.node');
 		const connects = that.svgDraw.find('.connect');
-		let tplDocHtml = `<div class="template" id="${that.currentTplId}">`;
+		let tplDocHtml = `<div class="template" id="${that.tplid}">`;
 
 		nodes.each((_index: any, aNode: any) => {
 			//eslint-disable-line
@@ -723,14 +737,15 @@ class KFKclass {
 		const that = this;
 		console.log('onChange', reason);
 		that.templateChangeTimer && clearTimeout(that.templateChangeTimer);
+		const tpldoc = that.drawingToTemplateDoc();
+		console.log(tpldoc);
+		that.template.doc = tpldoc;
 		that.templateChangeTimer = setTimeout(async () => {
 			console.log('saving...');
-			const tpldoc = that.drawingToTemplateDoc();
-			console.log(tpldoc);
 			//eslint-disable-next-line
 			//Client.putTemplate(tpldoc);
 			let token = that.user.sessionToken;
-			let ret = await api.post('template/put', { doc: tpldoc }, token);
+			let ret = await api.post('template/put', { doc: that.template.doc }, token);
 			//return ret.data;
 			console.log(ret);
 
@@ -739,12 +754,12 @@ class KFKclass {
 	}
 
 	/**
-	 * appDataToNode.
+	 * syncPropertyToNode.
 	 * Sync the APP data to node properties
 	 *
 	 * @param {} jqDIV, if not set, use currentJqNode, if not set then, do nothing
 	 */
-	appDataToNode(reason: string) {
+	syncPropertyToNode(reason: string) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		if (that.tpl_mode !== 'edit') return;
@@ -896,13 +911,15 @@ class KFKclass {
 			dirtyCount += that.setNodeId(jqDIV, that.APP.node.SUB.id);
 			dirtyCount += that.setNodeLabel(jqDIV, that.APP.node.SUB.label);
 			const appData_sub = that.APP.node.SUB.sub.trim();
+			if(jqDIV.attr('sub')){
 			if (jqDIV.attr('sub').trim() !== appData_sub) {
 				console.log('Dirty: sub changed');
 				dirtyCount += 1;
 				jqDIV.attr('sub', appData_sub);
 			}
+			}
 		} else {
-			console.warn(jqDIV.attr('class'), 'appDataToNode not implemented.');
+			console.warn(jqDIV.attr('class'), 'syncPropertyToNode not implemented. maybe not necessary');
 		}
 		if (dirtyCount > 0) {
 			//属性有变化，则出发保存
@@ -974,7 +991,7 @@ class KFKclass {
 		const that = this;
 		//如果传递过来的是空或者null，就隐藏掉rightPanel
 		if (KFKclass.NotSet(jqDIV)) {
-			if (that.currentJqNode) that.appDataToNode('set nodisplay on undefined jqDIV');
+			if (that.currentJqNode) that.syncPropertyToNode('set nodisplay on undefined jqDIV');
 			$('#rightPanel').addClass('nodisplay');
 			return;
 		}
@@ -995,7 +1012,7 @@ class KFKclass {
 		if (jqDIV) {
 			if (that.currentJqNode && that.currentJqNode !== jqDIV) {
 				//如果之前有节点，则先保存它的值
-				that.appDataToNode('Save previous');
+				that.syncPropertyToNode('Save previous');
 			}
 
 			let formToShow = '';
@@ -1270,14 +1287,20 @@ class KFKclass {
 		return [AIndex, BIndex];
 	}
 
-	yarkLinkNode(jqDIV: myJQuery, shiftKey: boolean) {
+	async yarkLinkNode(jqDIV: myJQuery, shiftKey: boolean) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		if (that.shapeDragging) return;
 		if (that.nodeLocked(jqDIV)) return;
+		if(that.linkPosNode.length===0){
+			if(jqDIV.hasClass("END")) return;
+		}
+		if(that.linkPosNode.length>0){
+			if(jqDIV.hasClass("START")) return;
+		}
 		that.tmpPos = that.calculateNodeConnectPoints(jqDIV);
 		that.linkPosNode.push(jqDIV);
-		that.procLinkNode(shiftKey);
+		await that.procLinkNode(shiftKey);
 	}
 
 	async yarkJumpNode(jqDIV: myJQuery) {
@@ -1292,27 +1315,39 @@ class KFKclass {
 	cancelLinkNode() {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		that.cancelTempLine();
-		that.linkPosNode.splice(0, 2);
-		if (that.lockTool === false) that.setMode('POINTER');
+		if(that.linkPosNode.length>0){
+			that.cancelTempLine();
+			that.linkPosNode.splice(0, 2);
+		}else{
+				that.setMode('POINTER');
+		}
 	}
 
-	procLinkNode(shiftKey: boolean) {
+	async procLinkNode(shiftKey: boolean) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		if (that.linkPosNode.length < 2) {
-			that.showNodeMessage(that.linkPosNode[0], 'A点选定，请继续点选B点');
+			//if A is END, remove it
+			if (that.linkPosNode[0].hasClass('END')) that.linkPosNode.splice(0, 1);
+			else that.showNodeMessage(that.linkPosNode[0], 'A点选定，请继续点选B点');
 			return;
-		} else if (that.linkPosNode[0].attr('id') === that.linkPosNode[1].attr('id')) {
-			that.linkPosNode.splice(1, 1);
-			return;
+		} else {
+			if (that.linkPosNode[0].attr('id') === that.linkPosNode[1].attr('id')) {
+				//If A,B are the same node, remove B
+				that.linkPosNode.splice(1, 1);
+				return;
+			}else if(that.linkPosNode[1].hasClass("START")){
+				//If B is START, remove B
+				that.linkPosNode.splice(1, 1);
+				return;
+			}
 		}
 		if (that.tempSvgLine) that.tempSvgLine.hide();
 		that.lineTemping = false;
 		that.cancelAlreadySelected();
 		that.clearNodeMessage();
 		that.buildConnectionBetween(that.linkPosNode[0], that.linkPosNode[1]);
-		that.redrawLinkLines(that.linkPosNode[0], 'connect', false);
+		await that.redrawLinkLines(that.linkPosNode[0], 'connect', false);
 		//看两个节点的Linkto属性，在添加一个连接线后有没有什么变化，
 		//如果有变化，就上传U， 如果没变化，就不用U
 		//没有变化的情况：之前就有从linkPosNode[0]到 linkPosNode[1]的链接存在
@@ -1947,7 +1982,7 @@ class KFKclass {
 									}
 								}
 								for (let i = 0; i < that.shouldMovedInParalles.length; i++) {
-									that.redrawLinkLines(that.shouldMovedInParalles[i], 'codrag', true);
+									await that.redrawLinkLines(that.shouldMovedInParalles[i], 'codrag', true);
 								}
 							}
 						}
@@ -1956,7 +1991,7 @@ class KFKclass {
 						jqNodeDIV.css('z-index', that.originZIndex);
 						that.originZIndex = 1;
 						//节点移动后，对连接到节点上的连接线重新划线
-						that.redrawLinkLines(jqNodeDIV, 'after moving');
+						await that.redrawLinkLines(jqNodeDIV, 'after moving');
 						that.setSelectedNodesBoundingRect();
 
 						tobeMovedNodes.push({
@@ -2029,7 +2064,7 @@ class KFKclass {
 					console.log('Set node property here ...');
 				} else if (that.mode === 'CONNECT') {
 					if (that.afterDragging === false) {
-						that.yarkLinkNode(jqNodeDIV, evt.shiftKey);
+						await that.yarkLinkNode(jqNodeDIV, evt.shiftKey);
 					} else {
 						that.afterDragging = true;
 					}
@@ -2408,7 +2443,49 @@ toggleOverview (jc3MousePos) {
 			KFKclass.hide($('.clickOuterToHide'));
 		});
 		that.JC3.keydown(function (evt: KeyboardEvent) {
-			// console.log('JC3.keydown', evt.key, that.mode, that.drawMode);
+			evt.preventDefault();
+			evt.stopPropagation();
+			 console.log('JC3.keydown', evt.key, that.mode, that.drawMode);
+			switch(evt.key){
+				case "Escape":
+					if(that.mode === 'CONNECT'){
+						that.cancelLinkNode();
+						console.log("Cancel link..");
+					}else{
+						that.setMode("POINTER");
+					}
+					break;
+				case "1":
+					that.setMode("ACTION");
+					break;
+				case "2":
+					that.setMode("INFORM");
+					break;
+				case "3":
+					that.setMode("SCRIPT");
+					break;
+				case "4":
+					that.setMode("TIMER");
+					break;
+				case "5":
+					that.setMode("SUB");
+					break;
+				case "6":
+					that.setMode("AND");
+					break;
+				case "7":
+					that.setMode("OR");
+					break;
+				case "j":
+					that.setMode("CONNECT");
+					break;
+				case 'Backspace': //Backspace
+				case 'Delete': //Delete key del  key delete
+					that.deleteObjects(evt, false);
+					break;
+				default:
+					break;
+			}
 			if (
 				(evt.key === 'Enter' || evt.key === 'Escape') &&
 				that.mode === 'line' &&
@@ -2467,7 +2544,11 @@ toggleOverview (jc3MousePos) {
 			that.ignoreClick = false;
 		});
 
+		that.JC1.on('mousemove', function (evt: MouseEvent) {
+			that.onC3 = true;
+		});
 		that.JC3.on('mousemove', function (evt: MouseEvent) {
+			that.onC3 = true;
 			that.currentMousePos.x = evt.clientX;
 			that.currentMousePos.y = evt.clientY;
 
@@ -3231,9 +3312,10 @@ toggleOverview (jc3MousePos) {
 	driveNodeBalls(jqNodeDIV: myJQuery) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
+		//The link lines start from jqNodeDIV;
 		const tplLinks = that.tpl.find(`.link[from="${jqNodeDIV.attr('id')}"]`);
 		const needToAdd = tplLinks.length - that.tmpBalls.length;
-		console.log('dirveNodeBalls');
+		//How many extra balls we need to create
 		for (let i = 0; i < needToAdd; i++) {
 			const tmpBall = that.ball.clone();
 			const ballId = 'ball_' + that.myuid();
@@ -3242,12 +3324,17 @@ toggleOverview (jc3MousePos) {
 			tmpBall.addTo(that.ball.parent());
 			that.tmpBalls.push(tmpBall);
 		}
+		/*
 		for (let i = 0; i < tplLinks.length; i++) {
 			that.tmpBalls[i].removeClass('noshow');
 			that.tmpBalls[i].fill(that.config.connect.styles.style1.normal.color);
 		}
+		*/
 		tplLinks.each(async (index: number, link: any) => {
+			that.tmpBalls[index].removeClass('noshow');
+			that.tmpBalls[index].fill(that.config.connect.styles.style1.normal.color);
 			const jLink = $(link);
+			that.tmpBalls[index].attr('connect', `${jLink.attr('from')}_${jLink.attr('to')}`);
 			const connectSelector = `.connect_${jLink.attr('from')}_${jLink.attr('to')}`;
 			const svgConnect = that.svgDraw.findOne(connectSelector);
 			const lengthOfConnectorLine = svgConnect.length();
@@ -3837,7 +3924,7 @@ toggleOverview (jc3MousePos) {
 						from: jTmp,
 						to: null
 					});
-					//that.redrawLinkLines(jqFrom);
+					//await that.redrawLinkLines(jqFrom);
 					//删除一个connect, 则jqFrom被修改
 					that.onChange('Delete Connect');
 				}
@@ -4408,10 +4495,9 @@ toggleOverview (jc3MousePos) {
 		that.ball.addClass('noshow');
 	}
 
-	async init(template: any, user: User) {
+	async init(user: User) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		that.template = template;
 		that.user = user;
 		if (that.inited === true) {
 			console.error('that.init was called more than once, maybe loadImages error');
@@ -4451,7 +4537,6 @@ toggleOverview (jc3MousePos) {
 		// localStorage.removeItem("cocodoc");
 
 		console.log('Add document event handler');
-		that.addDocumentEventHandler();
 		that.focusOnC3();
 		that.cancelAlreadySelected();
 
@@ -4461,22 +4546,17 @@ toggleOverview (jc3MousePos) {
 		$('.padlayout').fadeIn(1000, function () {
 			// Animation complete
 		});
-
-		if (that.docIsReadOnly()) {
-			$('#leftPanel').addClass('noshow');
-		}
-		if (that.tplid === 'inner') {
-			await that.loadWorkflow(that.wfid);
-		} else {
-			await that.loadDoc();
-		}
 	}
 
-	async loadDoc() {
+	async loadDoc(template: any, tplmode: string = 'edit') {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
+		await that.cleanupJC3();
+		that.tmpBalls.clear();
+		that.template = template;
+		that.tpl_mode = tplmode;
 		try {
-			that.currentTplId = that.template.tplid;
+			that.tplid = that.template.tplid;
 			that.tpl = $(that.template.doc);
 			const nodes = that.tpl.find('.node');
 			nodes.addClass('kfknode');
@@ -4490,7 +4570,7 @@ toggleOverview (jc3MousePos) {
 				} else {
 					jqNode.draggable('enable');
 				}
-				that.redrawLinkLines(jqNode, 'loadDoc', false);
+				await that.redrawLinkLines(jqNode, 'loadDoc', false);
 			}
 
 			if (that.docIsNotReadOnly()) {
@@ -4499,7 +4579,7 @@ toggleOverview (jc3MousePos) {
 				$('#linetransformer').draggable('disable');
 			}
 			that.myFadeOut($('.loading'));
-			that.myFadeIn(that.JC3, 100);
+			that.myFadeIn(that.JC3, 1000);
 			$('#overallbackground').removeClass('grid1');
 			//focusOnC3会导致C3居中
 			that.focusOnC3();
@@ -4507,10 +4587,19 @@ toggleOverview (jc3MousePos) {
 			that.C3.dispatchEvent(that.refreshC3Event);
 
 			KFKclass.show(that.JC3);
-			console.log(`that.JC3 is shown in loadDoc()`);
+			if (that.docIsReadOnly()) {
+				$('#leftPanel').addClass('noshow');
+				$('#minimap').addClass('noshow');
+				that.myFadeOut($('#leftPanel'), 500);
+			} else {
+				$('#leftPanel').removeClass('noshow');
+				$('#minimap').removeClass('noshow');
+				that.myFadeIn($('#leftPanel'), 1000);
+			}
 		} catch (err) {
 			console.error(err);
 		} finally {
+			that.addDocumentEventHandler();
 			that.inited = true;
 		}
 	}
@@ -4534,7 +4623,7 @@ toggleOverview (jc3MousePos) {
 					const jqNode = $(guiNodes[i]);
 					await that.setNodeEventHandler(jqNode);
 					jqNode.draggable('disable');
-					that.redrawLinkLines(jqNode, 'loadDoc', false);
+					await that.redrawLinkLines(jqNode, 'loadDoc', false);
 				}
 
 				//eslint-disable-next-line
@@ -4603,10 +4692,17 @@ toggleOverview (jc3MousePos) {
 		$('#rightPanel').on('click', function (evt) {
 			evt.stopPropagation();
 		});
+		//topPropgation will stop click on C1 and C3, or else, C3 will jump after move mouse from topMenu to C1
+		$('#topMenu').on('click', function (evt) {
+			evt.stopPropagation();
+		});
 		$('#leftPanel').on('mousedown', function (evt) {
 			evt.stopPropagation();
 		});
 		$('#rightPanel').on('mousedown', function (evt) {
+			evt.stopPropagation();
+		});
+		$('#topMenu').on('mousedown', function (evt) {
 			evt.stopPropagation();
 		});
 	}
@@ -4803,7 +4899,7 @@ toggleOverview (jc3MousePos) {
 						}
 					});
 				}
-				that.redrawLinkLines(jqDIV, 'server update');
+				await that.redrawLinkLines(jqDIV, 'server update');
 			}
 			if (obj.mdnote) {
 				const tmp = await that.gzippedContentToString(obj.mdnote);
@@ -4900,9 +4996,11 @@ toggleOverview (jc3MousePos) {
 						that.undo();
 					}
 					break;
-				case 'Backspace': //Backspace
-				case 'Delete': //Delete key del  key delete
-					that.deleteObjects(evt, false);
+				case 'Escape':
+					if(that.mode === 'CONNECT'){
+						that.cancelLinkNode();
+						console.log("Cancel link..");
+					}
 					break;
 				default:
 					console.log('got key', evt.key);
@@ -4936,6 +5034,7 @@ toggleOverview (jc3MousePos) {
 			that.globalMouseY = evt.clientY;
 			if (that.inPresentingMode || that.inOverviewMode) return;
 			if (that.inNoteEditor) return;
+			if (!that.onC3) return;
 			const tmp = {
 				x: that.scrXToJc3X(evt.clientX),
 				y: that.scrYToJc3Y(evt.clientY)
@@ -4991,7 +5090,8 @@ toggleOverview (jc3MousePos) {
 							x: evt.clientX,
 							y: evt.clientY
 						};
-						console.log('panStart at', that.panStartAt);
+						if (that.onC3) console.log('panStart at', that.panStartAt);
+						else console.log('mouse at', that.panStartAt);
 					}
 				}
 			}
@@ -5108,7 +5208,7 @@ toggleOverview (jc3MousePos) {
 						movedSer = movedSer + 1;
 					}
 					for (let i = 0; i < that.selectedDIVs.length; i++) {
-						that.redrawLinkLines(that.selectedDIVs[i], 'codrag', true);
+						await that.redrawLinkLines(that.selectedDIVs[i], 'codrag', true);
 					}
 				} finally {
 					that.endTrx();
@@ -6185,7 +6285,7 @@ uploadFileToQcloudCOS (file) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		$('#rightPanel').addClass('nodisplay');
-		if (that.currentJqNode) that.appDataToNode('closeProperties');
+		if (that.currentJqNode) that.syncPropertyToNode('closeProperties');
 	}
 
 	sayHello() {
@@ -6197,15 +6297,9 @@ const urlFull = window.location.href;
 const myURL = new URL(urlFull);
 
 const KFK = new KFKclass();
-KFK.tplid = myURL.searchParams.get('tplid');
-KFK.wfid = myURL.searchParams.get('wfid');
-KFK.tpl_mode = myURL.searchParams.get('mode');
-KFK.tpl_mode = lodash.isEmpty(KFK.tpl_mode) ? 'view' : KFK.tpl_mode;
-console.log(`KFK.tplid=${KFK.tplid}, ${KFK.tpl_mode}`);
 
 document.onpaste = KFK.onPaste;
 document.oncopy = KFK.onCopy;
 document.oncut = KFK.onCut;
 
-KFK.tpl_mode = 'edit';
 export default KFK;

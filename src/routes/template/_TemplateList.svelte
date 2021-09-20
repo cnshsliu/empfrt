@@ -6,6 +6,12 @@
 	import { flip } from 'svelte/animate';
 
 	export let templates: Template[];
+	export let mouseover_objid: string = '';
+	function setMouseOverObjid(objid: string) {
+		mouseover_objid = objid;
+	}
+	function setMouseFocus() {}
+	export let deleteTemplate;
 </script>
 
 {#if templates.length === 0}
@@ -13,8 +19,14 @@
 {:else}
 	<div>
 		{#each templates as template (template._id)}
-			<div class="todo" transition:scale|local={{ start: 0.7 }} animate:flip={{ duration: 200 }}>
-				<TemplatePreview {template} />
+			<div
+				class="container kfk_template_list_item"
+				transition:scale|local={{ start: 0.7 }}
+				animate:flip={{ duration: 200 }}
+				on:focus={() => setMouseFocus()}
+				on:mouseover={() => setMouseOverObjid(template.tplid)}
+			>
+				<TemplatePreview {template} {mouseover_objid} {deleteTemplate} />
 			</div>
 		{/each}
 	</div>

@@ -18,6 +18,7 @@ async function send({ method, path, data, token }) {
 		opts.headers['Authorization'] = token;
 	}
 
+
 	return fetch(`${base}/${path}`, opts)
 		.then((r) => r.text())
 		.then((json) => {
@@ -37,7 +38,8 @@ export function del(path:string, token:string):Promise<string> {
 	return send({ method: 'DELETE', path, data:null, token });
 }
 
-export function post(path:string, data:JSON, token:string):Promise<string> {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function post(path:string, data:any, token:string):Promise<string> {
 	return send({ method: 'POST', path, data, token });
 }
 

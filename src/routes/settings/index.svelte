@@ -22,6 +22,8 @@
 
 	export let user;
 
+	import { title } from '$lib/title';
+	$title = 'HyperFlow';
 	let in_progress;
 	let errors;
 

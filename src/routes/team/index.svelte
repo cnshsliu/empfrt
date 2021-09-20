@@ -1,9 +1,10 @@
 <script context="module" lang="ts">
 	export async function load({ page, fetch, session }) {
-		const res = await fetch('/template.json');
+		const res = await fetch('/team.json');
+
 		return {
 			props: {
-				templates: await res.json(),
+				teams: await res.json(),
 				user: session.user,
 				config: session.config
 			}
@@ -26,9 +27,10 @@
 		Label,
 		Input
 	} from 'sveltestrap';
+
 	import { enhance } from '$lib/form';
-	import TemplateList from './_TemplateList.svelte';
-	export let templates: Template[];
+	import TeamList from './_TeamList.svelte';
+	export let teams: Team[];
 	export let user: User;
 	export let config: Config;
 	export let lastSearchCondition: string = '';
@@ -46,9 +48,9 @@
 	}
 	function sortBy(field: string, order: number) {
 		config.sort = { field, order };
-		templates = templates.sort((a, b): number => {
-			let A: number | string = field === 'name' ? a.tplid : Date.parse(a.updatedAt);
-			let B: number | string = field === 'name' ? b.tplid : Date.parse(b.updatedAt);
+		teams = teams.sort((a, b): number => {
+			let A: number | string = field === 'name' ? a.teamid : Date.parse(a.updatedAt);
+			let B: number | string = field === 'name' ? b.teamid : Date.parse(b.updatedAt);
 			if (A === B) {
 				return 0;
 			} else if (A > B) {
@@ -58,27 +60,27 @@
 		/*
 		setTimeout(async () => {
 			const res = await api.post(
-				'template/search',
+				'team/search',
 				{
-					tplid: lastSearchCondition,
-					sort_field: field==='name'?'tplid':field,
+					teamid: lastSearchCondition,
+					sort_field: field==='name'?'teamid':field,
 					sort_order: order
 				},
 				user.sessionToken
 			);
 			console.log(res);
-			templates = res; //eslint-disable-line
-			for (let i = 0; i < templates.length; i++) {
-				console.log(Date.parse(templates[i].updatedAt));
+			teams = res; //eslint-disable-line
+			for (let i = 0; i < teams.length; i++) {
+				console.log(Date.parse(teams[i].updatedAt));
 			}
 		}, 0);
 		*/
 	}
-	const deleteTemplate = (name: string) => {
+	const deleteTeam = (name: string) => {
 		setTimeout(async () => {
-			let ret = await api.post('template/delete/byname', { tplid: name }, user.sessionToken);
-			templates = templates.filter((t: Template) => {
-				return t.tplid !== name;
+			let ret = await api.post('team/delete', { teamid: name }, user.sessionToken);
+			teams = teams.filter((t: Team) => {
+				return t.teamid !== name;
 			});
 		}, 1);
 	};
@@ -86,14 +88,14 @@
 	let files;
 	let theSearchForm;
 	let dataFile = null;
-	let tplidImport;
+	let teamidImport;
 
 	function upload(e) {
 		e.preventDefault();
 		const formData = new FormData();
-		formData.append('tplid', tplidImport);
+		formData.append('teamid', teamidImport);
 		formData.append('file', files[0]);
-		const upload = fetch('http://localhost:5008/template/import', {
+		const upload = fetch('http://localhost:5008/team/import', {
 			method: 'POST',
 			headers: {
 				Authorization: user.sessionToken
@@ -103,7 +105,7 @@
 			.then((response) => response.json())
 			.then((result) => {
 				console.log('Success:', result);
-				templates = [result, ...templates];
+				teams = [result, ...teams];
 			})
 			.catch((error) => {
 				console.error('Error:', error);
@@ -115,7 +117,7 @@
 	<div class="container page">
 		<div class="row">
 			<div class="col-12">
-				<h1 class="text-xs-center">Workflow Templates</h1>
+				<h1 class="text-xs-center">Teams</h1>
 				<ul class="nav nav-pills outline-active">
 					<li class="nav-item kfk-link">
 						<a href={'#'} on:click|preventDefault={() => show_form('create')} class="nav-link"
@@ -186,7 +188,7 @@
 				{#if form_status.create}
 					<form
 						class="new"
-						action="http://localhost:5008/template/create"
+						action="http://localhost:5008/team/create"
 						method="post"
 						use:enhance={{
 							token: user.sessionToken,
@@ -196,8 +198,8 @@
 								if (created.error) {
 									console.log(created.error);
 								} else {
-									templates = [created, ...templates];
-									lastSearchCondition = created.tplid;
+									teams = [created, ...teams];
+									lastSearchCondition = created.teamid;
 								}
 								form.reset();
 								//form_status['create'] = false;
@@ -205,10 +207,10 @@
 						}}
 					>
 						<input
-							name="tplid"
-							aria-label="Create template"
-							placeholder="New template name"
-							class="kfk_input_template_name"
+							name="teamid"
+							aria-label="Create team"
+							placeholder="New team name"
+							class="kfk_input_team_name"
 						/>
 						<Button type="submit" color="primary">Create</Button>
 						<Button on:click={hide_all_form} color="secondary">Cancel</Button>
@@ -216,7 +218,7 @@
 				{:else if form_status.search}
 					<form
 						class="new"
-						action="http://localhost:5008/template/search"
+						action="http://localhost:5008/team/search"
 						method="post"
 						use:enhance={{
 							token: user.sessionToken,
@@ -225,7 +227,7 @@
 								if (tmp.error) {
 									console.log(tmp.error);
 								} else {
-									templates = tmp;
+									teams = tmp;
 								}
 								//form_status['search'] = false;
 							}
@@ -236,9 +238,9 @@
 						<input
 							name="pattern"
 							bind:value={lastSearchCondition}
-							aria-label="Search template"
+							aria-label="Search team"
 							placeholder="What to search for"
-							class="kfk_input_template_name"
+							class="kfk_input_team_name"
 						/>
 						<Button type="submit" color="primary" bind:this={theSearchForm}>Search</Button>
 						<Button
@@ -252,12 +254,12 @@
 				{:else if form_status.import}
 					<form class="new" enctype="multipart/form-data">
 						<input
-							name="tplid"
-							placeholder="New template name"
-							class="kfk_input_template_name"
-							bind:value={tplidImport}
+							name="teamid"
+							placeholder="New team name"
+							class="kfk_input_team_name"
+							bind:value={teamidImport}
 						/>
-						<input name="file" type="file" class="kfk_input_template_name" bind:files />
+						<input name="file" type="file" class="kfk_input_team_name" bind:files />
 						<Button on:click={upload} color="primary">Import</Button>
 						<Button on:click={hide_all_form} color="secondary">Cancel</Button>
 					</form>
@@ -265,6 +267,6 @@
 				<hr />
 			</div>
 		</div>
-		<TemplateList {templates} {deleteTemplate} />
+		<TeamList {teams} {deleteTeam} />
 	</div>
 </div>

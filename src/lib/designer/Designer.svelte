@@ -1,29 +1,44 @@
 <svelte:options accessors={true} />
 
 <script lang="ts">
+	import jQuery from 'jquery';
 	import { session } from '$app/stores';
 	import KFK from '$lib/designer/KFK';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { ListGroup, ListGroupItem } from 'sveltestrap';
 	export let template: Template;
-	export let theKFK;
+	export let tpl_mode: string;
+	export let theKFK: KFKclass;
+	const jq = jQuery;
 
-	let description: string;
 	let jqueryui: any;
 	let that = this;
-	onMount(async () => {
-		description = 'This is my template';
-		const module = await import('jquery-ui-dist/jquery-ui');
-		jqueryui = module.default;
-		console.log('onMounting....', $session);
-		KFK.init(template, $session.user);
-		theKFK = KFK;
-	});
 	let currentMode = KFK.mode;
-	function setMode(what: string, event: any) {
+	function designerSetMode(what: string, event: any) {
 		KFK.setMode(what, event);
 		currentMode = KFK.mode;
 	}
+
+	export function designerCallback_for_KFK(cmd: string, args: any): void {
+		switch (cmd) {
+			case 'setMode':
+				currentMode = args;
+		}
+	}
+
+	onMount(async () => {
+		const module = await import('jquery-ui-dist/jquery-ui');
+		jqueryui = module.default;
+		console.log('onMounting....', $session);
+		KFK.designerCallback = designerCallback_for_KFK;
+		KFK.init($session.user);
+		await KFK.loadDoc(template, tpl_mode);
+		theKFK = KFK;
+	});
+	onDestroy(async () => {
+		jq(document).off();
+		console.log('document event closed');
+	});
 	export function sayHello() {
 		console.log('Hello, I am Designer');
 	}
@@ -42,11 +57,11 @@
 		<div id="selectingrect" class="selectingrect" />
 	</div>
 </div>
-<div id="leftPanel" class="bg-white padlayout spaceToHide">
+<div id="leftPanel" class="bg-white padlayout spaceToHide noshow">
 	<ListGroup>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox {currentMode === 'POINTER' ? 'active' : ''}"
-			on:click={(event) => setMode('POINTER', event)}
+			on:click={(event) => designerSetMode('POINTER', event)}
 			title="点选"
 		>
 			<img src="/svg/POINTER.svg" alt="" class="cocotool" />
@@ -54,7 +69,7 @@
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox {currentMode === 'ACTION' ? 'active' : ''}"
-			on:click={(event) => setMode('ACTION', event)}
+			on:click={(event) => designerSetMode('ACTION', event)}
 			title="活动"
 		>
 			<img src="/svg/ACTION.svg" alt="" class="cocotool" />
@@ -62,7 +77,7 @@
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox {currentMode === 'INFORM' ? 'active' : ''}"
-			on:click={(event) => setMode('INFORM', event)}
+			on:click={(event) => designerSetMode('INFORM', event)}
 			title="通知"
 		>
 			<img src="/svg/INFORM.svg" alt="" class="cocotool" />
@@ -70,7 +85,7 @@
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox {currentMode === 'SCRIPT' ? 'active' : ''}"
-			on:click={(event) => setMode('SCRIPT', event)}
+			on:click={(event) => designerSetMode('SCRIPT', event)}
 			title="程序"
 		>
 			<img src="/svg/SCRIPT.svg" alt="" class="cocotool" />
@@ -78,39 +93,39 @@
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox {currentMode === 'TIMER' ? 'active' : ''}"
-			on:click={(event) => setMode('TIMER', event)}
+			on:click={(event) => designerSetMode('TIMER', event)}
 			title="定时器"
 		>
 			<img src="/svg/TIMER.svg" alt="" class="cocotool" />
-			<div class="shortcutkey">3</div>
+			<div class="shortcutkey">4</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox {currentMode === 'SUB' ? 'active' : ''}"
-			on:click={(event) => setMode('SUB', event)}
+			on:click={(event) => designerSetMode('SUB', event)}
 			title="子流程"
 		>
 			<img src="/svg/SUB.svg" alt="" class="cocotool" />
-			<div class="shortcutkey">3</div>
+			<div class="shortcutkey">5</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox {currentMode === 'AND' ? 'active' : ''}"
-			on:click={(event) => setMode('AND', event)}
+			on:click={(event) => designerSetMode('AND', event)}
 			title="并"
 		>
 			<img src="/svg/AND.svg" alt="" class="cocotool" />
-			<div class="shortcutkey">3</div>
+			<div class="shortcutkey">6</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox {currentMode === 'OR' ? 'active' : ''}"
-			on:click={(event) => setMode('OR', event)}
+			on:click={(event) => designerSetMode('OR', event)}
 			title="或"
 		>
 			<img src="/svg/OR.svg" alt="" class="cocotool" />
-			<div class="shortcutkey">3</div>
+			<div class="shortcutkey">7</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox {currentMode === 'CONNECT' ? 'active' : ''}"
-			on:click={(event) => setMode('CONNECT', event)}
+			on:click={(event) => designerSetMode('CONNECT', event)}
 			title="连接"
 		>
 			<img src="/svg/connect.svg" alt="" class="cocotool" id="tool_connect" />
@@ -143,4 +158,4 @@
 		on:click={() => KFK.closeProperties()}
 	/>
 </div>
-<div id="minimap" class="padlayout spaceToHide" />
+<!--div id="minimap" class="padlayout spaceToHide" /-->

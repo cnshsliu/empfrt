@@ -1,28 +1,59 @@
 <script lang="ts">
-	import type { Template, User } from '$lib/types';
+	import { Row, Col, Icon, Styles } from 'sveltestrap';
+	import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'sveltestrap';
 	export let template: Template;
+	export let mouseover_objid: string;
+	export let deleteTemplate;
 </script>
 
-<div class="article-preview">
-	<div class="container">
-		<div class="row">
-			<div class="col-md-6 offset-md-3 col-xs-12">
-				<div class="article-meta">
-					<a href="/template/@{template.tplid}" rel="prefetch" class="preview-link">
-						{template.tplid}
-					</a>
-					<div class="info">
-						{template.author}
-						<span class="date"> {new Date(template.createdAt).toDateString()} </span>
-					</div>
-					<div class="pull-xs-right">
-						<a class="btn btn-sm" href="/template/@{template.tplid}">
-							<i class="ion-eye" />
-							查看
-						</a>
-					</div>
-				</div>
+<Styles />
+
+<Row class={mouseover_objid === template.tplid ? 'cocohighlight-2' : ''}>
+	<Col xs="8">
+		<div>
+			<a href="/template/@{template.tplid}&edit" class="preview-link kfk-template-id">
+				{template.tplid}
+			</a>
+			<div class="kfk-template-info">
+				{template.author}
+				<span class="date"> {new Date(template.createdAt).toDateString()} </span>
 			</div>
 		</div>
-	</div>
-</div>
+	</Col>
+	<Col xs="2">
+		{#if mouseover_objid === template.tplid}
+			<a class="btn btn-sm" href="/template/@{template.tplid}&edit">
+				<Icon name="diagram-3" class="kfk-template-action-icon" />
+				<div class="kfk-icon-title">Edit</div>
+			</a>
+			<a class="btn btn-sm" href="/template/@{template.tplid}">
+				<Icon name="play-circle-fill" class="kfk-template-action-icon" />
+				<div class="kfk-icon-title">Run</div>
+			</a>
+		{/if}
+	</Col>
+	<Col xs="2">
+		{#if mouseover_objid === template.tplid}
+			<Dropdown>
+				<DropdownToggle caret color="notexist">More <Icon name="three-dots" /></DropdownToggle>
+				<DropdownMenu>
+					<DropdownItem>
+						<a
+							href={'#'}
+							on:click|preventDefault={() => deleteTemplate(template.tplid)}
+							class="nav-link "
+							><Icon name="x" />
+							Delete this template
+						</a>
+					</DropdownItem>
+					<DropdownItem>
+						<a href="/template/@{template.tplid}&read" class="nav-link"
+							><Icon name="eye-fill" />
+							Read mode
+						</a>
+					</DropdownItem>
+				</DropdownMenu>
+			</Dropdown>
+		{/if}
+	</Col>
+</Row>

@@ -1,29 +1,11 @@
 <script lang="ts">
 	import { page, session } from '$app/stores';
-	import { Container, Col, Row } from 'sveltestrap';
-	import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'sveltestrap';
-	export let form_status = { create: false, search: false, sort: false };
-	export let template: Template;
-	export let user: User;
-	export let lastSearchCondition: string = '';
-	function hide_all_form() {
-		Object.keys(form_status).forEach((key) => {
-			form_status[key] = false;
-		});
-	}
-	function show_create_template_form() {
-		hide_all_form();
-		form_status['create'] = true;
-	}
-	function show_search_template_form() {
-		hide_all_form();
-		form_status['search'] = true;
-	}
+	import { title } from '$lib/title';
 </script>
 
 <nav class="navbar navbar-light kfknavbar">
 	<div class="container">
-		<a rel="prefetch" class="navbar-brand" href="/">conduit</a>
+		<a rel="prefetch" class="navbar-brand" href="/">{$title}</a>
 		<ul class="nav navbar-nav pull-xs-right">
 			<li class="nav-item">
 				<a rel="prefetch" class="nav-link" class:active={$page.path === '/'} href="/">Home</a>
@@ -41,8 +23,8 @@
 					</a>
 				</li>
 				<li class="nav-item">
-					<a rel="prefetch" href="/editor" class="nav-link" class:active={$page.path === '/editor'}>
-						<i class="ion-compose" />&nbsp;New Post
+					<a rel="prefetch" href="/team" class="nav-link" class:active={$page.path === '/team'}>
+						<i class="ion-compose" />&nbsp;Team
 					</a>
 				</li>
 

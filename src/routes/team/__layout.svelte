@@ -20,7 +20,7 @@
 </script>
 
 <svelte:head>
-	<title>{user.username} • Templates</title>
+	<title>{user.username} • Teams</title>
 </svelte:head>
 
 <slot />

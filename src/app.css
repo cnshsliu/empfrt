@@ -61,15 +61,6 @@ p {
 	line-height: 1.5;
 }
 
-a {
-	color: var(--accent-color);
-	text-decoration: none;
-}
-
-a:hover {
-	text-decoration: underline;
-}
-
 h1 {
 	font-size: 2rem;
 	text-align: center;
@@ -659,12 +650,26 @@ input::placeholder {
 #topMenu {
 	position: absolute;
 	top: 60px;
-	left: 60px;
+	left: 70px;
 	width: 850px;
-	height: 50px;
 	border: 0px;
-	border-radius: 15px;
-	z-index: 10000000;
+	border-radius: 10px;
+	padding-bottom: 10px;
+	z-index: 1000;
+}
+#topMenu_read {
+	position: absolute;
+	top: 60px;
+	left: 70px;
+	width: 850px;
+	border: 0px;
+	border-radius: 10px;
+	padding-bottom: 10px;
+	z-index: 1000;
+}
+
+.whiteback {
+	background-color: #ffffffff;
 }
 
 .toolbox {
@@ -1788,8 +1793,8 @@ input {
 
 .cocohighlight-2 {
 	background-color: #e5dbff;
-	padding: 2px 10px 2px 10px;
-	border-radius: 20px;
+	border-radius: 10px;
+	box-shadow: 0 0 0 0.125em rgba(255, 255, 255, 0.9);
 }
 
 .cocohighlight-3 {
@@ -2262,14 +2267,6 @@ table.quick-help-table td:first-of-type {
 	padding: 4px !important;
 }
 
-a {
-	color: #333366;
-}
-
-a:hover {
-	text-decoration: none;
-}
-
 .btn-primary {
 	background-color: #4b92db;
 	border-color: #4b92db;
@@ -2372,7 +2369,7 @@ a:hover {
 	position: absolute;
 	bottom: 0px;
 	right: 0px;
-	font-size: 10px;
+	font-size: 9px;
 }
 
 .clickable {
@@ -2553,7 +2550,7 @@ a:hover {
 }
 
 .kfknavbar {
-	z-index: 10000;
+	z-index: 1000;
 	background-color: #ffffff4c;
 }
 .kfknavbar .navbar-nav {
@@ -2562,13 +2559,39 @@ a:hover {
 .kfknavbar .nav-item {
 	padding-left: 1rem;
 }
-.kfk_input_template_name {
+.kfk_input_template_name,
+.kfk_input_team_name {
 	width: 100%;
 	display: flex;
-	border-top: 1px solid rgba(0, 0, 0, 0.1);
-	border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-	border-left: 0px;
-	border-right: 0px;
+	border: 1px solid rgba(0, 0, 0, 0.1);
 	margin: 1rem 0;
-	background-color: #ffffff4c;
+}
+.kfk_template_list_item,
+.kfk_team_list_item {
+	padding-top: 10px;
+}
+.kfk-icon-title {
+	font-size: 0.5rem;
+}
+.kfk-template-id,
+.kfk-team-id {
+	font-size: 24px;
+	text-decoration: none;
+}
+.kfk-template-info {
+	font-size: 0.2rem;
+}
+.kfk-template-action-icon {
+	font-size: 1.5rem;
+}
+
+.kfk-link:hover {
+	background-color: #e5dbff;
+	border-radius: 10px;
+}
+#tplid_title {
+	font-size: 1.5rem;
+}
+.kfk-dropdown .active a {
+	color: #ffffff;
 }

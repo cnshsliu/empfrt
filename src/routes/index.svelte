@@ -4,6 +4,8 @@
 
 <script lang="ts">
 	import Counter from '$lib/Counter.svelte';
+	import { title } from '$lib/title';
+	$title = 'HyperFlow';
 </script>
 
 <svelte:head>
