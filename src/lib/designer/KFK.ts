@@ -744,8 +744,8 @@ class KFKclass {
 			console.log('saving...');
 			//eslint-disable-next-line
 			//Client.putTemplate(tpldoc);
-			let token = that.user.sessionToken;
-			let ret = await api.post('template/put', { doc: that.template.doc }, token);
+			const token = that.user.sessionToken;
+			const ret = await api.post('template/put', { doc: that.template.doc }, token);
 			//return ret.data;
 			console.log(ret);
 
@@ -1413,7 +1413,7 @@ class KFKclass {
 	}
 
 	//shape event
-	addShapeEventListner(theShape: any) {
+	addShapeEventListner(theShape: any): void {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		//mouseover shape
@@ -2544,7 +2544,7 @@ toggleOverview (jc3MousePos) {
 			that.ignoreClick = false;
 		});
 
-		that.JC1.on('mousemove', function (evt: MouseEvent) {
+		that.JC1.on('mousemove', function (_evt: MouseEvent) {
 			that.onC3 = true;
 		});
 		that.JC3.on('mousemove', function (evt: MouseEvent) {
@@ -5531,7 +5531,7 @@ toggleOverview (jc3MousePos) {
 		lineClassReverse: string,
 		pstr: string,
 		lstr: string,
-		tstr: string,
+		_tstr: string, 
 		triangle: number[],
 		caseValue: string,
 		simpleLineMode: boolean = false
@@ -6267,11 +6267,11 @@ uploadFileToQcloudCOS (file) {
 		return !that.nodeExist(jqdiv);
 	}
 	//eslint-disable-next-line @typescript-eslint/no-unused-vars
-	clickOnLeftPanel(evt: MouseEvent) {
+	clickOnLeftPanel(_evt: MouseEvent) {
 		return;
 	}
 	//eslint-disable-next-line @typescript-eslint/no-unused-vars
-	clickOnRightPanel(evt: MouseEvent) {
+	clickOnRightPanel(_evt: MouseEvent) {
 		return;
 	}
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -6294,7 +6294,6 @@ uploadFileToQcloudCOS (file) {
 }
 
 const urlFull = window.location.href;
-const myURL = new URL(urlFull);
 
 const KFK = new KFKclass();
 

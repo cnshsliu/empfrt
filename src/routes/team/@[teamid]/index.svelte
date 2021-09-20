@@ -19,7 +19,6 @@
 	import { session } from '$app/stores';
 	import { title } from '$lib/title';
 	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
 	import * as api from '$lib/api';
 	import { Container, Row, Col, Nav, NavLink } from 'sveltestrap';
 	import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'sveltestrap';
@@ -32,9 +31,6 @@
 
 	let Designer: any;
 	let theDesigner: any;
-	onMount(async () => {
-		console.log('in onMount', team.teamid);
-	});
 
 	export let form_status = {
 		create: false,
