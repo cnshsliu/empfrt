@@ -5,7 +5,7 @@
 
 	export let teams: Team[];
 	export let mouseover_objid: string = '';
-	function setMouseOverTplid(objid: string) {
+	function setMouseOverObjid(objid: string) {
 		mouseover_objid = objid;
 	}
 	function setMouseFocus() {}
@@ -22,7 +22,7 @@
 				transition:scale|local={{ start: 0.7 }}
 				animate:flip={{ duration: 200 }}
 				on:focus={() => setMouseFocus()}
-				on:mouseover={() => setMouseOverTplid(team.teamid)}
+				on:mouseover={() => setMouseOverObjid(team.teamid)}
 			>
 				<TeamPreview {team} {mouseover_objid} {deleteTeam} />
 			</div>

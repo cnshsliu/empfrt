@@ -1,0 +1,156 @@
+<script lang="ts">
+	import * as api from '$lib/api';
+	import { Container, Row, Col, Icon, Styles } from 'sveltestrap';
+	import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Badge } from 'sveltestrap';
+	import { Table } from 'sveltestrap';
+	import { enhance, enhanceAddOneRoleMember } from '$lib/form';
+	export let team: Team;
+	export let aRole: string;
+	export let mouseover_objid: string;
+	export let deleteRole;
+	export let refreshTeam;
+	export let errmsg = '';
+
+	export let form_id = '';
+	export let user;
+
+	function show_form(theRole, action) {
+		form_id = action + '_' + theRole;
+	}
+	function deleteMember(aTeam, aRole, aMember) {
+		let payload = { teamid: aTeam.teamid, role: aRole, members: [aMember] };
+		const token = user.sessionToken;
+		setTimeout(async () => {
+			team = await api.post('team/deleterolemembers', payload, token);
+		}, 10);
+	}
+</script>
+
+<Styles />
+
+<Container class={mouseover_objid === aRole ? 'cocohighlight-2' : ''}>
+	<Row>
+		<Col xs="6">
+			<div>
+				<span class="preview-link kfk-team-id">
+					{aRole}
+				</span>
+			</div>
+		</Col>
+		<Col xs="4" class="d-flex justify-content-end">
+			{#if mouseover_objid === aRole}
+				<a
+					class="btn btn-sm kfk-role-action-icon"
+					href={'#'}
+					on:click|preventDefault={() => show_form(aRole, 'add')}
+				>
+					<Icon name="diagram-3" /> Add
+				</a>
+				<a
+					class="btn btn-sm kfk-role-action-icon"
+					href={'#'}
+					on:click|preventDefault={() => show_form(aRole, 'copy')}
+				>
+					<Icon name="play-circle-fill" />Copy
+				</a>
+			{/if}
+		</Col>
+		<Col xs="2">
+			{#if mouseover_objid === aRole}
+				<Dropdown class="kfk-role-action-icon">
+					<DropdownToggle caret color="notexist" class="kfk-role-action-icon"
+						>More <Icon name="three-dots" /></DropdownToggle
+					>
+					<DropdownMenu>
+						<DropdownItem class="kfk-role-action-icon">
+							<a href={'#'} on:click|preventDefault={() => deleteRole(aRole)} class="nav-link "
+								><Icon name="x" />
+								Delete this role
+							</a>
+						</DropdownItem>
+					</DropdownMenu>
+				</Dropdown>
+			{/if}
+		</Col>
+	</Row>
+	<Row>
+		<Col xs="12">
+			{#if form_id === `add_${aRole}`}
+				<form
+					action="http://localhost:5008/team/addrolemembers"
+					method="post"
+					use:enhanceAddOneRoleMember={{
+						token: user.sessionToken,
+						result: async (res, form) => {
+							const retObj = await res.json();
+							console.log('--------');
+							console.log(JSON.stringify(retObj, null, 2));
+							console.log('--------');
+							if (retObj.error) {
+								console.log(retObj.error);
+								errmsg = retObj.errMsg;
+							} else {
+								team = retObj;
+								form.reset();
+								errmsg = '';
+							}
+						}
+					}}
+				>
+					Email:
+					<input name="uid" placeholder="Email" autocomplete="off" />
+					Name:
+					<input name="dname" placeholder="Name" autocomplete="off" />
+
+					<input type="hidden" name="teamid" value={team.teamid} />
+					<input type="hidden" name="role" value={aRole} />
+					<Button color="primary" type="submit">Add</Button>
+					{#if errmsg !== ''}{errmsg}{/if}
+				</form>
+			{/if}
+			{#if form_id === `copy_${aRole}`}
+				<form
+					action="http://localhost:5008/team/copyrole"
+					method="post"
+					use:enhance={{
+						token: user.sessionToken,
+						result: async (res, form) => {
+							const retObj = await res.json();
+							if (retObj.error) {
+								console.log(retObj.error);
+								errmsg = retObj.errMsg;
+							} else {
+								team = retObj;
+								refreshTeam(team);
+								form.reset();
+								errmsg = '';
+							}
+						}
+					}}
+				>
+					Copy to role:
+					<input name="newrole" placeholder="Copy to role" autocomplete="off" />
+					<input type="hidden" name="teamid" value={team.teamid} />
+					<input type="hidden" name="role" value={aRole} />
+					<Button color="primary" type="submit">Add</Button>
+					{#if errmsg !== ''}{errmsg}{/if}
+				</form>
+			{/if}
+			<div style="margin-bottom:10px;">
+				{#each team.tmap[aRole] as aMember (aMember.uid)}
+					<Badge style="margin-right:5px;">
+						{aMember.dname} &lt;{aMember.uid}&gt;
+						<a
+							href={'#'}
+							on:click|preventDefault={() => {
+								deleteMember(team, aRole, aMember);
+							}}
+						>
+							<Icon name="x" /></a
+						>
+					</Badge>
+				{/each}
+			</div>
+		</Col>
+	</Row>
+</Container>

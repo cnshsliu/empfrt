@@ -16,7 +16,9 @@
 
 <script lang="ts">
 	import jQuery from 'jquery';
-	import { session } from '$app/stores';
+	import RolePreview from './_RolePreview.svelte';
+	import { scale } from 'svelte/transition';
+	import { flip } from 'svelte/animate';
 	import { title } from '$lib/title';
 	import { goto } from '$app/navigation';
 	import * as api from '$lib/api';
@@ -24,7 +26,9 @@
 	import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'sveltestrap';
 	import { enhance } from '$lib/form';
 	export let team: Team;
+	export let mouseover_objid: string = '';
 
+	export let newrole = '';
 	const jq = jQuery;
 
 	$title = team.teamid;
@@ -32,10 +36,14 @@
 	let Designer: any;
 	let theDesigner: any;
 
+	$: team_json_string = JSON.stringify(team, null, 2);
+	$: roles = typeof team.tmap === 'undefined' ? [] : Object.keys(team.tmap);
+
 	export let form_status = {
 		create: false,
 		search: false,
 		sort: false,
+		import: false,
 		export: false,
 		rename: false,
 		copyto: false,
@@ -62,6 +70,16 @@
 	function show_delete_team_modal() {
 		hide_all_form();
 	}
+	const deleteRole = (name: string) => {
+		setTimeout(async () => {
+			let ret = await api.post('team/deleterolemembers', { teamid: name }, user.sessionToken);
+			/*
+			teams = teams.filter((t: Team) => {
+				return t.teamid !== name;
+			});
+			*/
+		}, 1);
+	};
 	function delete_team() {
 		hide_all_form();
 		setTimeout(async () => {
@@ -85,6 +103,38 @@
 			hide_all_form();
 		});
 	}
+	let files;
+	function upload(e) {
+		e.preventDefault();
+		const formData = new FormData();
+		formData.append('teamid', team.teamid);
+		formData.append('file', files[0]);
+		const upload = fetch('http://localhost:5008/team/import', {
+			method: 'POST',
+			headers: {
+				Authorization: user.sessionToken
+			},
+			body: formData
+		})
+			.then((response) => response.json())
+			.then((result) => {
+				console.log('Success:', result);
+				team = result;
+			})
+			.catch((error) => {
+				console.error('Error:', error);
+			});
+		hide_all_form();
+	}
+
+	export function refreshTeam(ateam) {
+		team = ateam;
+		$title = team.teamid;
+	}
+	function setMouseFocus() {}
+	function setMouseOverObjid(objid: string) {
+		mouseover_objid = objid;
+	}
 </script>
 
 <svelte:head>
@@ -102,6 +152,14 @@
 							show_form('create');
 						}}
 						>New
+					</NavLink>
+					<NavLink
+						class="kfk-link"
+						href="#"
+						on:click={() => {
+							show_form('import');
+						}}
+						>Import
 					</NavLink>
 					<NavLink
 						class="kfk-link"
@@ -175,7 +233,6 @@
 							aria-label="Create team"
 							placeholder="New team name"
 							class="kfk_input_team_name"
-							autofocus
 							autocomplete="off"
 						/>
 						<Button type="submit" color="primary">Create</Button>
@@ -190,6 +247,17 @@
 					</form>
 				</Col>
 			</Row>
+		{:else if form_status.import}
+			<Row>
+				<Col>
+					<form class="new" enctype="multipart/form-data">
+						<input name="teamid" type="hidden" value={team.teamid} />
+						<input name="file" type="file" class="kfk_input_team_name" bind:files />
+						<Button on:click={upload} color="primary">Import</Button>
+						<Button on:click={hide_all_form} color="secondary">Cancel</Button>
+					</form>
+				</Col>
+			</Row>
 		{:else if form_status.export}
 			<Row>
 				<Col>
@@ -199,7 +267,6 @@
 						placeholder="Export to file"
 						class="kfk_input_team_name"
 						bind:value={export_to_filename}
-						autofocus
 						autocomplete="off"
 					/>
 					<Button on:click={() => export_team()} color="primary">Export</Button>
@@ -231,7 +298,7 @@
 										errmsg = '同名模板已存在, 请重新录入';
 									}
 								} else {
-									team = newTeam;
+									refreshTeam(newTeam);
 									goto(`/team/@${team.teamid}`, {
 										replaceState: true,
 										keepfocus: true,
@@ -251,7 +318,6 @@
 							placeholder="Rename: new team name"
 							class="kfk_input_team_name"
 							value={team.teamid}
-							autofocus
 							autocomplete="off"
 						/>
 						<input type="hidden" name="fromid" value={team.teamid} />
@@ -271,22 +337,21 @@
 			<Row>
 				<Col>
 					<form
-						class="new"
 						action="http://localhost:5008/team/copyto"
 						method="post"
 						use:enhance={{
 							token: user.sessionToken,
 							result: async (res, form) => {
-								const created = await res.json();
-								console.log(created);
-								if (created.error) {
-									console.log(created.error);
-									errmsg = created.errMsg;
+								const newTeam = await res.json();
+								console.log(newTeam);
+								if (newTeam.error) {
+									console.log(newTeam.error);
+									errmsg = newTeam.errMsg;
 									if (errmsg.indexOf('MongoError: E11000 duplicate key error') >= 0) {
 										errmsg = '同名模板已存在, 请重新录入';
 									}
 								} else {
-									team = created;
+									refreshTeam(newTeam);
 									goto(`/team/@${team.teamid}`, {
 										replaceState: true,
 										noscroll: true,
@@ -306,7 +371,6 @@
 							placeholder="New team name"
 							class="kfk_input_team_name"
 							value={team.teamid}
-							autofocus
 							autocomplete="off"
 						/>
 						<input type="hidden" name="fromid" value={team.teamid} />
@@ -344,6 +408,68 @@
 		{/if}
 	</Container>
 </div>
-<Container style="margin-top:100px">
-	{JSON.stringify(team)}
+<Container style="margin-top:80px">
+	<Row>
+		<Col>
+			<form
+				action="http://localhost:5008/team/addrolemembers"
+				method="post"
+				use:enhance={{
+					token: user.sessionToken,
+					result: async (res, form) => {
+						const retObj = await res.json();
+						console.log('--------');
+						console.log(JSON.stringify(retObj, null, 2));
+						console.log('--------');
+						if (retObj.error) {
+							console.log(retObj.error);
+							errmsg = retObj.errMsg;
+						} else {
+							team = retObj;
+							form.reset();
+							errmsg = '';
+						}
+					}
+				}}
+			>
+				<h2>Add New Role:</h2>
+				<input name="role" placeholder="New role id" bind:value={newrole} autocomplete="off" />
+				<input type="hidden" name="teamid" value={team.teamid} />
+				<Button type="submit" color="primary">Add</Button>
+				<Button
+					on:click={(e) => {
+						e.preventDefault();
+						newrole = '';
+					}}
+					color="secondary">Reset</Button
+				>
+				{#if errmsg !== ''}{errmsg}{/if}
+			</form>
+		</Col>
+	</Row>
+</Container>
+<Container style="padding-top:20px">
+	<Row>
+		<Col xs="12">
+			<h2>Roles:</h2>
+		</Col>
+	</Row>
+	<Row>
+		<Col xs="12">
+			{#if roles.length === 0}
+				<div class="article-preview">No roles are here... yet.</div>
+			{:else}
+				{#each roles as aRole (aRole)}
+					<div
+						transition:scale|local={{ start: 0.7 }}
+						animate:flip={{ duration: 200 }}
+						on:focus={() => setMouseFocus()}
+						on:mouseover={() => setMouseOverObjid(aRole)}
+					>
+						<RolePreview {team} {user} {aRole} {mouseover_objid} {deleteRole} {refreshTeam} />
+					</div>
+				{/each}
+			{/if}
+		</Col>
+	</Row>
 </Container>
