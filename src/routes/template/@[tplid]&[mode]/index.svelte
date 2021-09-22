@@ -23,7 +23,7 @@
 	import { onMount } from 'svelte';
 	import * as api from '$lib/api';
 	import { Container, Row, Col, Nav, NavLink } from 'sveltestrap';
-	import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'sveltestrap';
+	import { Icon, Button, Modal, ModalBody, ModalFooter, ModalHeader, Styles } from 'sveltestrap';
 	import { enhance } from '$lib/form';
 	export let template: Template;
 	export let tpl_mode: string;
@@ -108,8 +108,10 @@
 	}
 </script>
 
+<Styles />
+
 <svelte:head>
-	<title>{template.tplid} • Conduit</title>
+	<title>{template.tplid} • Template</title>
 </svelte:head>
 <div id="topMenu" class={topmenu_class}>
 	<Container>
@@ -117,48 +119,46 @@
 			<Col>
 				<Nav>
 					<NavLink
-						class="kfk-link"
-						href="#"
 						on:click={() => {
 							show_form('create');
 						}}
-						>New
+					>
+						<Icon name="plus-circle" />
+						New
 					</NavLink>
 					<NavLink
-						class="kfk-link"
-						href="#"
 						on:click={() => {
 							show_form('export');
 						}}
-						>Export
+					>
+						<Icon name="cloud-download" />
+						Export
 					</NavLink>
 					<NavLink
-						class="kfk-link"
-						href="#"
 						on:click={() => {
 							show_form('rename');
 						}}
-						>Rename
+					>
+						<Icon name="input-cursor-text" />
+						Rename
 					</NavLink>
 					<NavLink
-						class="kfk-link"
-						href="#"
 						on:click={() => {
 							show_form('copyto');
 						}}
-						>Copy to
+					>
+						<Icon name="files" />
+						Copy to
 					</NavLink>
 					<NavLink
-						class="kfk-link"
-						href="#"
 						on:click={() => {
 							show_form('delete');
 						}}
-						>Delete
+					>
+						<Icon name="trash" />
+						Delete
 					</NavLink>
 					<NavLink
-						class="kfk-link"
-						href="#"
 						on:click={async () => {
 							hide_all_form();
 							if (readonly) {
@@ -168,6 +168,7 @@
 							}
 						}}
 					>
+						<Icon name={readonly ? 'pen' : 'eye'} />
 						{readonly ? 'Edit it' : 'View it'}
 					</NavLink>
 				</Nav>

@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { page, session } from '$app/stores';
 	import { title } from '$lib/title';
+	import { Icon, Styles } from 'sveltestrap';
 </script>
+
+<Styles />
 
 <nav class="navbar navbar-light kfknavbar">
 	<div class="container">
@@ -25,6 +28,17 @@
 				<li class="nav-item">
 					<a rel="prefetch" href="/team" class="nav-link" class:active={$page.path === '/team'}>
 						<i class="ion-compose" />&nbsp;Team
+					</a>
+				</li>
+
+				<li class="nav-item">
+					<a
+						rel="prefetch"
+						href="/worklist"
+						class="nav-link"
+						class:active={$page.path === '/worklist'}
+					>
+						<Icon name="list-check" />&nbsp;Worklist
 					</a>
 				</li>
 

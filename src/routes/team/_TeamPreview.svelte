@@ -8,7 +8,7 @@
 
 <Styles />
 
-<Row class={mouseover_objid === team.teamid ? 'cocohighlight-2' : ''}>
+<Row class={mouseover_objid === team.teamid ? 'kfk-highlight-2' : ''}>
 	<Col xs="8">
 		<div>
 			<a href="/team/@{team.teamid}" class="preview-link kfk-team-id">
@@ -23,19 +23,19 @@
 	<Col xs="2">
 		{#if mouseover_objid === team.teamid}
 			<a class="btn btn-sm" href="/team/@{team.teamid}">
-				<Icon name="diagram-3" class="kfk-team-action-icon" />
-				<div class="kfk-icon-title">Open</div>
+				<Icon name="diagram-3" />
+				Open
 			</a>
 		{/if}
 	</Col>
 	<Col xs="2">
 		{#if mouseover_objid === team.teamid}
 			<Dropdown>
-				<DropdownToggle caret color="notexist">More <Icon name="three-dots" /></DropdownToggle>
+				<DropdownToggle caret color="notexist" class="btn-sm">More</DropdownToggle>
 				<DropdownMenu>
 					<DropdownItem>
 						<a href={'#'} on:click|preventDefault={() => deleteTeam(team.teamid)} class="nav-link "
-							><Icon name="x" />
+							><Icon name="trash" />
 							Delete this team
 						</a>
 					</DropdownItem>

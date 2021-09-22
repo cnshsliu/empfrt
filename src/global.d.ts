@@ -40,6 +40,21 @@ interface Team {
 	tmap: Tmap;
 };
 
+interface Work{
+	_id: string;
+	tenant: string;
+	doer:string;
+	tplid:string;
+	wfid:string;
+	nodeid:string;
+	workid:string;
+	title:string;
+	status:string;
+	wfstatus:string;
+	createdAt:string;
+	updatedAt:string;
+};
+
 interface Config {
 	sort: {
 		field: string;

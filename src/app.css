@@ -80,12 +80,6 @@ pre {
 	color: var(--text-color);
 }
 
-input,
-button {
-	font-size: inherit;
-	font-family: inherit;
-}
-
 button:focus:not(:focus-visible) {
 	outline: none;
 }
@@ -98,6 +92,11 @@ button:focus:not(:focus-visible) {
 
 .lucas {
 	font-size: 48px;
+}
+
+input {
+	border-radius: 5px;
+	border: 1px solid rgba(200, 200, 255, 0.8);
 }
 .talldiv {
 	height: 2000px;
@@ -504,14 +503,6 @@ input::placeholder {
 	-ms-transform: translate(-50%, 0%);
 	-o-transform: translate(-50%, 0%);
 	transform: translate(-50%, 0%);
-}
-
-.signinform input,
-.registerform input {
-	font-family: monospace;
-	font-size: 20px;
-	border-radius: 20px;
-	background-color: #c2eebfd9;
 }
 
 .signinform input::-webkit-input-placeholder {
@@ -1774,10 +1765,6 @@ select:focus {
 	z-index: 5;
 }
 
-input {
-	outline: none !important;
-}
-
 *:focus {
 	outline: none !important;
 }
@@ -2120,10 +2107,6 @@ table.quick-help-table td:first-of-type {
 	-ms-transform: translate(-50%, 0%);
 	-o-transform: translate(-50%, 0%);
 	transform: translate(-50%, 0%);
-}
-
-.round-input {
-	border-radius: 20px;
 }
 
 .msgInputInner {
@@ -2558,12 +2541,11 @@ table.quick-help-table td:first-of-type {
 .kfknavbar .nav-item {
 	padding-left: 1rem;
 }
-.kfk_input_template_name,
-.kfk_input_team_name {
+.kfk-input-template-name,
+.kfk-input-team-name {
 	width: 100%;
 	display: flex;
 	border: 1px solid rgba(0, 0, 0, 0.1);
-	margin: 1rem 0;
 }
 .kfk_template_list_item,
 .kfk_team_list_item {
@@ -2580,10 +2562,6 @@ table.quick-help-table td:first-of-type {
 .kfk-template-info {
 	font-size: 0.2rem;
 }
-.kfk-template-action-icon,
-.kfk-role-action-icon {
-	font-size: 0.5rem;
-}
 
 .kfk-link:hover {
 	background-color: #e5dbff;
@@ -2595,10 +2573,27 @@ table.quick-help-table td:first-of-type {
 .kfk-dropdown .active a {
 	color: #ffffff;
 }
-.kfk-team-profile {
-	margin-top: 80px;
-	background-color: #e5dbff;
+.kfk-role-member-tag {
+	margin-right: 5px;
+	margin-bottom: 5px;
+}
+.kfk-role-member-tag a {
+	text-decoration: none;
+	color: white;
+}
+.kfk-role-member-tag a:hover {
+	text-decoration: none;
+	color: white;
+}
+.kfk-highlight-2 {
+	background-color: rgba(255, 255, 255, 0.5);
 	border-radius: 10px;
-	padding: 10px;
-	box-shadow: 0 0 0 0.125em rgba(255, 255, 255, 0.9);
+	box-shadow: 0 0 0 0.125em rgba(200, 200, 255, 0.5);
+}
+.kfk-list-header {
+}
+.kfk-bottom-10 {
+	padding-bottom: 10px;
+	border-bottom-style: solid;
+	border-bottom: 1px dotted #6666ff;
 }
