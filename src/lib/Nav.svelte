@@ -32,12 +32,7 @@
 				</li>
 
 				<li class="nav-item">
-					<a
-						rel="prefetch"
-						href="/worklist"
-						class="nav-link"
-						class:active={$page.path === '/worklist'}
-					>
+					<a rel="prefetch" href="/work" class="nav-link" class:active={$page.path === '/work'}>
 						<Icon name="list-check" />&nbsp;Worklist
 					</a>
 				</li>

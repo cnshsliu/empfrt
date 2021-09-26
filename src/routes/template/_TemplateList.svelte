@@ -11,7 +11,7 @@
 		mouseover_objid = objid;
 	}
 	function setMouseFocus() {}
-	export let deleteTemplate;
+	export let deleteTemplate: { (arg: string): void };
 </script>
 
 {#if templates.length === 0}

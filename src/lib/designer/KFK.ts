@@ -560,11 +560,10 @@ class KFKclass {
 			console.log(aLinkInTemplate);
 			$(aLinkInTemplate).remove();
 
-
 			const ballConnectAttr = `${fromNode_id}_${toNode_id}`;
-			for(let i=0; i<that.tmpBalls.length; i++){
-				if(that.tmpBalls[i].attr("connect") === ballConnectAttr){
-					that.tmpBalls[i].addClass("noshow");
+			for (let i = 0; i < that.tmpBalls.length; i++) {
+				if (that.tmpBalls[i].attr('connect') === ballConnectAttr) {
+					that.tmpBalls[i].addClass('noshow');
 				}
 			}
 		} catch (err) {
@@ -911,12 +910,12 @@ class KFKclass {
 			dirtyCount += that.setNodeId(jqDIV, that.APP.node.SUB.id);
 			dirtyCount += that.setNodeLabel(jqDIV, that.APP.node.SUB.label);
 			const appData_sub = that.APP.node.SUB.sub.trim();
-			if(jqDIV.attr('sub')){
-			if (jqDIV.attr('sub').trim() !== appData_sub) {
-				console.log('Dirty: sub changed');
-				dirtyCount += 1;
-				jqDIV.attr('sub', appData_sub);
-			}
+			if (jqDIV.attr('sub')) {
+				if (jqDIV.attr('sub').trim() !== appData_sub) {
+					console.log('Dirty: sub changed');
+					dirtyCount += 1;
+					jqDIV.attr('sub', appData_sub);
+				}
 			}
 		} else {
 			console.warn(jqDIV.attr('class'), 'syncPropertyToNode not implemented. maybe not necessary');
@@ -1292,11 +1291,11 @@ class KFKclass {
 		const that = this;
 		if (that.shapeDragging) return;
 		if (that.nodeLocked(jqDIV)) return;
-		if(that.linkPosNode.length===0){
-			if(jqDIV.hasClass("END")) return;
+		if (that.linkPosNode.length === 0) {
+			if (jqDIV.hasClass('END')) return;
 		}
-		if(that.linkPosNode.length>0){
-			if(jqDIV.hasClass("START")) return;
+		if (that.linkPosNode.length > 0) {
+			if (jqDIV.hasClass('START')) return;
 		}
 		that.tmpPos = that.calculateNodeConnectPoints(jqDIV);
 		that.linkPosNode.push(jqDIV);
@@ -1315,11 +1314,11 @@ class KFKclass {
 	cancelLinkNode() {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		if(that.linkPosNode.length>0){
+		if (that.linkPosNode.length > 0) {
 			that.cancelTempLine();
 			that.linkPosNode.splice(0, 2);
-		}else{
-				that.setMode('POINTER');
+		} else {
+			that.setMode('POINTER');
 		}
 	}
 
@@ -1336,7 +1335,7 @@ class KFKclass {
 				//If A,B are the same node, remove B
 				that.linkPosNode.splice(1, 1);
 				return;
-			}else if(that.linkPosNode[1].hasClass("START")){
+			} else if (that.linkPosNode[1].hasClass('START')) {
 				//If B is START, remove B
 				that.linkPosNode.splice(1, 1);
 				return;
@@ -2445,39 +2444,39 @@ toggleOverview (jc3MousePos) {
 		that.JC3.keydown(function (evt: KeyboardEvent) {
 			evt.preventDefault();
 			evt.stopPropagation();
-			 console.log('JC3.keydown', evt.key, that.mode, that.drawMode);
-			switch(evt.key){
-				case "Escape":
-					if(that.mode === 'CONNECT'){
+			console.log('JC3.keydown', evt.key, that.mode, that.drawMode);
+			switch (evt.key) {
+				case 'Escape':
+					if (that.mode === 'CONNECT') {
 						that.cancelLinkNode();
-						console.log("Cancel link..");
-					}else{
-						that.setMode("POINTER");
+						console.log('Cancel link..');
+					} else {
+						that.setMode('POINTER');
 					}
 					break;
-				case "1":
-					that.setMode("ACTION");
+				case '1':
+					that.setMode('ACTION');
 					break;
-				case "2":
-					that.setMode("INFORM");
+				case '2':
+					that.setMode('INFORM');
 					break;
-				case "3":
-					that.setMode("SCRIPT");
+				case '3':
+					that.setMode('SCRIPT');
 					break;
-				case "4":
-					that.setMode("TIMER");
+				case '4':
+					that.setMode('TIMER');
 					break;
-				case "5":
-					that.setMode("SUB");
+				case '5':
+					that.setMode('SUB');
 					break;
-				case "6":
-					that.setMode("AND");
+				case '6':
+					that.setMode('AND');
 					break;
-				case "7":
-					that.setMode("OR");
+				case '7':
+					that.setMode('OR');
 					break;
-				case "j":
-					that.setMode("CONNECT");
+				case 'j':
+					that.setMode('CONNECT');
 					break;
 				case 'Backspace': //Backspace
 				case 'Delete': //Delete key del  key delete
@@ -4692,8 +4691,8 @@ toggleOverview (jc3MousePos) {
 		$('#rightPanel').on('click', function (evt) {
 			evt.stopPropagation();
 		});
-		//topPropgation will stop click on C1 and C3, or else, C3 will jump after move mouse from topMenu to C1
-		$('#topMenu').on('click', function (evt) {
+		//topPropgation will stop click on C1 and C3, or else, C3 will jump after move mouse from designer_topMenu to C1
+		$('#designer_topMenu').on('click', function (evt) {
 			evt.stopPropagation();
 		});
 		$('#leftPanel').on('mousedown', function (evt) {
@@ -4702,7 +4701,7 @@ toggleOverview (jc3MousePos) {
 		$('#rightPanel').on('mousedown', function (evt) {
 			evt.stopPropagation();
 		});
-		$('#topMenu').on('mousedown', function (evt) {
+		$('#designer_topMenu').on('mousedown', function (evt) {
 			evt.stopPropagation();
 		});
 	}
@@ -4997,9 +4996,9 @@ toggleOverview (jc3MousePos) {
 					}
 					break;
 				case 'Escape':
-					if(that.mode === 'CONNECT'){
+					if (that.mode === 'CONNECT') {
 						that.cancelLinkNode();
-						console.log("Cancel link..");
+						console.log('Cancel link..');
 					}
 					break;
 				default:
@@ -5531,7 +5530,7 @@ toggleOverview (jc3MousePos) {
 		lineClassReverse: string,
 		pstr: string,
 		lstr: string,
-		_tstr: string, 
+		_tstr: string,
 		triangle: number[],
 		caseValue: string,
 		simpleLineMode: boolean = false

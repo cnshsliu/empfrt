@@ -1,6 +1,6 @@
 <script context="module" lang="ts">
 	export async function load({ page, fetch, session }) {
-		const res = await fetch('/worklist.json');
+		const res = await fetch('/work.json');
 
 		return {
 			props: {
@@ -13,18 +13,16 @@
 </script>
 
 <script lang="ts">
-	import * as api from '$lib/api';
+	import type { User, Team } from '$lib/types';
 	import { Container, Row, Col, Button } from 'sveltestrap';
 	import WorkPreview from './_WorkPreview.svelte';
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import { title } from '$lib/title';
 
-	import { enhance } from '$lib/form';
 	export let works: Team[];
 	export let user: User;
-	export let config: Config;
-	export let lastSearchCondition: string = '';
+	export const lastSearchCondition: string = '';
 	$title = 'HyperFlow';
 
 	export let mouseover_objid: string = '';
@@ -74,7 +72,7 @@
 						on:focus={() => setMouseFocus()}
 						on:mouseover={() => setMouseOverObjid(work._id)}
 					>
-						<WorkPreview {work} {mouseover_objid} />
+						<WorkPreview {work} {mouseover_objid} {user} />
 					</div>
 				{/each}
 			{/if}

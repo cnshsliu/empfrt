@@ -1,27 +1,28 @@
 <script lang="ts">
 	import * as api from '$lib/api';
+	import type { User, Team, TmapEntry } from '$lib/types';
 	import { Container, Row, Col, Icon, Styles } from 'sveltestrap';
 	import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Badge } from 'sveltestrap';
-	import { Table } from 'sveltestrap';
 	import { enhance, enhanceAddOneRoleMember } from '$lib/form';
 	export let team: Team;
 	export let aRole: string;
 	export let mouseover_objid: string;
-	export let deleteRole;
-	export let refreshTeam;
+	export let deleteRole: { (arg: string): void };
+	export let refreshTeam: { (arg: Team): void };
 	export let errmsg = '';
 
 	export let form_id = '';
-	export let user;
+	export let user: User;
 
-	function show_form(theRole, action) {
+	function show_form(theRole: string, action: string): void {
 		form_id = action + '_' + theRole;
 	}
-	function deleteMember(aTeam, aRole, aMember) {
+	function deleteMember(aTeam: Team, aRole: string, aMember: TmapEntry) {
 		let payload = { teamid: aTeam.teamid, role: aRole, members: [aMember] };
 		const token = user.sessionToken;
 		setTimeout(async () => {
-			team = await api.post('team/role/member/delete', payload, token);
+			//eslint-disable-next-line
+			team = (await api.post('team/role/member/delete', payload, token)) as Team;
 		}, 10);
 	}
 </script>

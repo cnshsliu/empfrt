@@ -1,12 +1,13 @@
 <script lang="ts">
+	import type { Template } from '$lib/types';
 	import * as api from '$lib/api';
 	import { session } from '$app/stores';
 	import { Row, Col, Icon, Styles } from 'sveltestrap';
-	import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'sveltestrap';
+	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'sveltestrap';
 	export let template: Template;
 	export let mouseover_objid: string;
-	export let deleteTemplate;
-	function startWorkflow(tplid) {
+	export let deleteTemplate: { (arg: string): void };
+	function startWorkflow(tplid: string): void {
 		setTimeout(async () => {
 			await api.post('workflow/start', { tplid: tplid }, $session.user.sessionToken);
 		});
@@ -32,7 +33,11 @@
 			<a class="btn btn-sm" href="/template/@{template.tplid}&edit">
 				<Icon name="pencil-square" class="kfk-template-action-icon" /> Edit
 			</a>
-			<a class="btn btn-sm" href={'#'} on:click|preventDefault={startWorkflow(template.tplid)}>
+			<a
+				class="btn btn-sm"
+				href={'#'}
+				on:click|preventDefault={() => startWorkflow(template.tplid)}
+			>
 				<Icon name="play-circle-fill" class="kfk-template-action-icon" /> Run
 			</a>
 		{/if}

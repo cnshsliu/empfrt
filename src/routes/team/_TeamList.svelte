@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Team } from '$lib/types';
 	import TeamPreview from './_TeamPreview.svelte';
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
@@ -9,7 +10,7 @@
 		mouseover_objid = objid;
 	}
 	function setMouseFocus() {}
-	export let deleteTeam;
+	export let deleteTeam: { (arg: string): void };
 </script>
 
 {#if teams.length === 0}

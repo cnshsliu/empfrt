@@ -1,9 +1,10 @@
 <script lang="ts">
+	import type { Team } from '$lib/types';
 	import { Row, Col, Icon, Styles } from 'sveltestrap';
 	import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'sveltestrap';
 	export let team: Team;
 	export let mouseover_objid: string;
-	export let deleteTeam;
+	export let deleteTeam: { (arg: string): void };
 </script>
 
 <Styles />

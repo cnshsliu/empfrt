@@ -17,6 +17,7 @@
 </script>
 
 <script lang="ts">
+	import type { User, Template, Team } from '$lib/types';
 	import jQuery from 'jquery';
 	import { goto } from '$app/navigation';
 	import { title } from '$lib/title';
@@ -113,12 +114,13 @@
 <svelte:head>
 	<title>{template.tplid} • Template</title>
 </svelte:head>
-<div id="topMenu" class={topmenu_class}>
+<div id="designer_topMenu" class={topmenu_class}>
 	<Container>
-		<Row>
+		<Row class="mt-1">
 			<Col>
 				<Nav>
 					<NavLink
+						class="kfk-link"
 						on:click={() => {
 							show_form('create');
 						}}
@@ -127,6 +129,7 @@
 						New
 					</NavLink>
 					<NavLink
+						class="kfk-link"
 						on:click={() => {
 							show_form('export');
 						}}
@@ -135,6 +138,7 @@
 						Export
 					</NavLink>
 					<NavLink
+						class="kfk-link"
 						on:click={() => {
 							show_form('rename');
 						}}
@@ -143,6 +147,7 @@
 						Rename
 					</NavLink>
 					<NavLink
+						class="kfk-link"
 						on:click={() => {
 							show_form('copyto');
 						}}
@@ -151,6 +156,7 @@
 						Copy to
 					</NavLink>
 					<NavLink
+						class="kfk-link"
 						on:click={() => {
 							show_form('delete');
 						}}
@@ -159,6 +165,7 @@
 						Delete
 					</NavLink>
 					<NavLink
+						class="kfk-link"
 						on:click={async () => {
 							hide_all_form();
 							if (readonly) {
@@ -174,9 +181,9 @@
 				</Nav>
 			</Col>
 		</Row>
-		{#if form_status.create}
-			<Row>
-				<Col>
+		<Row class="mt-2">
+			<Col>
+				{#if form_status.create}
 					<form
 						action="http://localhost:5008/template/create"
 						method="post"
@@ -214,7 +221,6 @@
 							aria-label="Create template"
 							placeholder="New template name"
 							class="kfk_input_template_name"
-							autofocus
 							autocomplete="off"
 						/>
 						<Button type="submit" color="primary">Create</Button>
@@ -227,18 +233,13 @@
 						>
 						{#if errmsg !== ''}{errmsg}{/if}
 					</form>
-				</Col>
-			</Row>
-		{:else if form_status.export}
-			<Row>
-				<Col>
+				{:else if form_status.export}
 					Export current template to:
 					<input
 						name="exorttoname"
 						placeholder="Export to file"
 						class="kfk_input_template_name"
 						bind:value={export_to_filename}
-						autofocus
 						autocomplete="off"
 					/>
 					<Button on:click={() => export_template()} color="primary">Export</Button>
@@ -250,11 +251,7 @@
 						color="secondary">Cancel</Button
 					>
 					{#if errmsg !== ''}{errmsg}{/if}
-				</Col>
-			</Row>
-		{:else if form_status.rename}
-			<Row>
-				<Col>
+				{:else if form_status.rename}
 					<form
 						action="http://localhost:5008/template/rename"
 						method="post"
@@ -293,7 +290,6 @@
 							placeholder="Rename: new template name"
 							class="kfk_input_template_name"
 							value={template.tplid}
-							autofocus
 							autocomplete="off"
 						/>
 						<input type="hidden" name="fromid" value={template.tplid} />
@@ -307,11 +303,7 @@
 						>
 						{#if errmsg !== ''}{errmsg}{/if}
 					</form>
-				</Col>
-			</Row>
-		{:else if form_status.copyto}
-			<Row>
-				<Col>
+				{:else if form_status.copyto}
 					<form
 						class="new"
 						action="http://localhost:5008/template/copyto"
@@ -351,7 +343,6 @@
 							placeholder="New template name"
 							class="kfk_input_template_name"
 							value={template.tplid}
-							autofocus
 							autocomplete="off"
 						/>
 						<input type="hidden" name="fromid" value={template.tplid} />
@@ -365,16 +356,8 @@
 						>
 						{#if errmsg !== ''}{errmsg}{/if}
 					</form>
-				</Col>
-			</Row>
-		{:else if form_status.delete}
-			<Row>
-				<Col>
-					<div>Are you sure to delete template:</div>
-					<div>
-						{template.tplid}?
-					</div>
-					<div>&nbsp;</div>
+				{:else if form_status.delete}
+					Delete: {template.tplid}?&nbsp;
 					<Button on:click={() => delete_template()} color="primary">Delete</Button>
 					<Button
 						on:click={(e) => {
@@ -384,9 +367,9 @@
 						color="secondary">Cancel</Button
 					>
 					{#if errmsg !== ''}{errmsg}{/if}
-				</Col>
-			</Row>
-		{/if}
+				{/if}
+			</Col></Row
+		>
 	</Container>
 </div>
 <svelte:component this={Designer} bind:this={theDesigner} {template} {tpl_mode} />

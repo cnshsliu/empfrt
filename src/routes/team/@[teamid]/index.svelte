@@ -15,6 +15,7 @@
 </script>
 
 <script lang="ts">
+	import type { User, Team } from '$lib/types';
 	import jQuery from 'jquery';
 	import RolePreview from './_RolePreview.svelte';
 	import { scale } from 'svelte/transition';
@@ -40,6 +41,7 @@
 	$: team_json_string = JSON.stringify(team, null, 2);
 	$: roles = typeof team.tmap === 'undefined' ? [] : Object.keys(team.tmap);
 
+	export let menu_has_form = false;
 	export let form_status = {
 		create: false,
 		search: false,
@@ -61,17 +63,19 @@
 			form_status[key] = false;
 		});
 		form_name = '';
+		menu_has_form = false;
 		errmsg = '';
 	}
 	function show_form(what: string) {
 		hide_all_form();
 		form_status[what] = true;
 		form_name = what;
+		menu_has_form = true;
 	}
 	function show_delete_team_modal() {
 		hide_all_form();
 	}
-	const deleteRole = (name: string) => {
+	const deleteRole = (name: string): void => {
 		setTimeout(async () => {
 			let ret = await api.post(
 				'team/role/delete',
@@ -140,12 +144,12 @@
 		hide_all_form();
 	}
 
-	export function refreshTeam(ateam) {
+	export function refreshTeam(ateam: Team): void {
 		team = ateam;
 		$title = team.teamid;
 	}
 	function setMouseFocus() {}
-	function setMouseOverObjid(objid: string) {
+	function setMouseOverObjid(objid: string): void {
 		mouseover_objid = objid;
 	}
 </script>
@@ -153,10 +157,17 @@
 <svelte:head>
 	<title>{team.teamid} • Team</title>
 </svelte:head>
-<div id="topMenu" class={topmenu_class}>
+<Container>
+	<Row>
+		<Col class="d-flex justify-content-center">
+			<h2>Team {team.teamid}</h2>
+		</Col>
+	</Row>
+</Container>
+<div class="kfk-menu" class:menu_has_form>
 	<Container>
 		<Row>
-			<Col>
+			<Col class="mt-1">
 				<Nav>
 					<NavLink
 						class="kfk-link"
@@ -221,9 +232,9 @@
 				</Nav>
 			</Col>
 		</Row>
-		{#if form_status.create}
-			<Row>
-				<Col>
+		<Row class="mt-2">
+			<Col>
+				{#if form_status.create}
 					<form
 						action="http://localhost:5008/team/create"
 						method="post"
@@ -270,22 +281,14 @@
 						>
 						{#if errmsg !== ''}{errmsg}{/if}
 					</form>
-				</Col>
-			</Row>
-		{:else if form_status.import}
-			<Row>
-				<Col>
+				{:else if form_status.import}
 					<form class="new" enctype="multipart/form-data">
 						<input name="teamid" type="hidden" value={team.teamid} />
 						<input name="file" type="file" class="kfk_input_team_name" bind:files />
 						<Button on:click={upload} color="primary">Import</Button>
 						<Button on:click={hide_all_form} color="secondary">Cancel</Button>
 					</form>
-				</Col>
-			</Row>
-		{:else if form_status.export}
-			<Row>
-				<Col>
+				{:else if form_status.export}
 					Export current team to:
 					<input
 						name="exorttoname"
@@ -303,11 +306,7 @@
 						color="secondary">Cancel</Button
 					>
 					{#if errmsg !== ''}{errmsg}{/if}
-				</Col>
-			</Row>
-		{:else if form_status.rename}
-			<Row>
-				<Col>
+				{:else if form_status.rename}
 					<form
 						action="http://localhost:5008/team/rename"
 						method="post"
@@ -356,11 +355,7 @@
 						>
 						{#if errmsg !== ''}{errmsg}{/if}
 					</form>
-				</Col>
-			</Row>
-		{:else if form_status.copyto}
-			<Row>
-				<Col>
+				{:else if form_status.copyto}
 					<form
 						action="http://localhost:5008/team/copyto"
 						method="post"
@@ -409,16 +404,8 @@
 						>
 						{#if errmsg !== ''}{errmsg}{/if}
 					</form>
-				</Col>
-			</Row>
-		{:else if form_status.delete}
-			<Row>
-				<Col>
-					<div>Are you sure to delete team:</div>
-					<div>
-						{team.teamid}?
-					</div>
-					<div>&nbsp;</div>
+				{:else if form_status.delete}
+					Are you sure to delete team: {team.teamid}? &nbsp;
 					<Button on:click={() => delete_team()} color="primary">Delete</Button>
 					<Button
 						on:click={(e) => {
@@ -428,17 +415,12 @@
 						color="secondary">Cancel</Button
 					>
 					{#if errmsg !== ''}{errmsg}{/if}
-				</Col>
-			</Row>
-		{/if}
+				{/if}
+			</Col>
+		</Row>
 	</Container>
 </div>
-<Container style="margin-top:80px">
-	<Row>
-		<Col class="d-flex justify-content-center">
-			<h2>Team {team.teamid}</h2>
-		</Col>
-	</Row>
+<Container>
 	<Row>
 		<Col>
 			<form
