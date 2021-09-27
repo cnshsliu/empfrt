@@ -35,7 +35,6 @@
 	import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'sveltestrap';
 	import { enhance } from '$lib/form';
 	export let work: Work;
-	export let token: string;
 
 	let radioGroup;
 
@@ -82,128 +81,39 @@ src="${API_SERVER}/work/iframe/${work.workid}">
 	<h5>Current state: {currentTab}</h5>
 	<TabContent on:tab={(e) => (currentTab = '' + e.detail)}>
 		<TabPane tabId="work" tab="Work" active>
-			{@html work_html}
-			{JSON.stringify(work.kvarsArr, null, 2)}
 			<Container id={'workitem_' + work.workid}>
 				<Form>
-					<Row cols="2">
+					<Row cols={{ lg: 3, md: 2, sm: 1 }}>
 						{#each work.kvarsArr as kvar (kvar.name)}
+							{#if kvar.break}
+								<div class="w-100" />
+							{/if}
 							<Col>
 								<FormGroup>
 									<Label>{kvar.label}</Label>
-									<Input type={kvar.type} name={kvar.name} value={kvar.value} />
+									{#if kvar.type !== 'select'}
+										<Input
+											type={kvar.type}
+											name={kvar.name}
+											value={kvar.value}
+											id={kvar.id}
+											placeholder={kvar.placeholder}
+										/>
+									{:else}
+										<Input type={kvar.type} name={kvar.name} id={kvar.id} value={kvar.value}>
+											{#each kvar.options as option}
+												<option>{option}</option>
+											{/each}
+										</Input>
+									{/if}
 								</FormGroup>
 							</Col>
 						{/each}
 						<Col>
 							<FormGroup>
-								<Label>PlainText(Static)</Label>
-								<Input plaintext value="Some plain text/static value" />
-							</FormGroup>
-						</Col>
-						<Col>
-							<FormGroup>
-								<Label for="exampleEmail">Email</Label>
-								<Input
-									type="email"
-									name="email"
-									id="exampleEmail"
-									placeholder="with a placeholder"
-								/>
-							</FormGroup>
-						</Col>
-						<Col>
-							<FormGroup>
-								<Label for="examplePassword">Password</Label>
-								<Input
-									type="password"
-									name="password"
-									id="examplePassword"
-									placeholder="password placeholder"
-								/>
-							</FormGroup>
-						</Col>
-						<Col>
-							<FormGroup>
-								<Label for="exampleUrl">Url</Label>
-								<Input type="url" name="url" id="exampleUrl" placeholder="url placeholder" />
-							</FormGroup>
-						</Col>
-						<Col>
-							<FormGroup>
-								<Label for="exampleRange">Range</Label>
-								<Input
-									type="range"
-									name="range"
-									id="exampleRange"
-									min={0}
-									max={100}
-									step={10}
-									placeholder="Range placeholder"
-								/>
-							</FormGroup>
-						</Col>
-						<Col>
-							<FormGroup>
-								<Label for="exampleNumber">Number</Label>
-								<Input
-									type="number"
-									name="number"
-									id="exampleNumber"
-									placeholder="number placeholder"
-								/>
-							</FormGroup>
-						</Col>
-						<Col>
-							<FormGroup>
-								<Label for="exampleDatetime">Datetime</Label>
-								<Input
-									type="datetime-local"
-									name="datetime"
-									id="exampleDatetime"
-									placeholder="datetime placeholder"
-								/>
-							</FormGroup>
-						</Col>
-						<Col>
-							<FormGroup>
-								<Label for="exampleDate">Date</Label>
-								<Input type="date" name="date" id="exampleDate" placeholder="date placeholder" />
-							</FormGroup>
-						</Col>
-						<Col>
-							<FormGroup>
-								<Label for="exampleTime">Time</Label>
-								<Input type="time" name="time" id="exampleTime" placeholder="time placeholder" />
-							</FormGroup>
-						</Col>
-						<Col>
-							<FormGroup>
-								<Label for="exampleColor">Color</Label>
-								<Input
-									type="color"
-									name="color"
-									id="exampleColor"
-									placeholder="color placeholder"
-								/>
-							</FormGroup>
-						</Col>
-						<Col>
-							<FormGroup>
-								<Label for="exampleSearch">Search</Label>
-								<Input
-									type="search"
-									name="search"
-									id="exampleSearch"
-									placeholder="search placeholder"
-								/>
-							</FormGroup>
-						</Col>
-						<Col>
-							<FormGroup>
 								<Label for="exampleSelect">Select</Label>
-								<Input type="select" name="select" id="exampleSelect">
-									<option>1</option>
+								<Input type="select" name="select" id="exampleSelect" value="4">
+									AAA<option value="3" selected>1</option>
 									<option>2</option>
 									<option>3</option>
 									<option>4</option>
@@ -211,50 +121,15 @@ src="${API_SERVER}/work/iframe/${work.workid}">
 								</Input>
 							</FormGroup>
 						</Col>
-						<Col>
-							<!-- <FormGroup>
-    <Label for="exampleSelectMulti">Select Multiple</Label>
-    <Input type="select" name="selectMulti" id="exampleSelectMulti" multiple>
-      <option>1</option>
-      <option>2</option>
-      <option>3</option>
-      <option>4</option>
-      <option>5</option>
-    </Input>
-  </FormGroup> -->
-						</Col>
-						<Col>
-							<FormGroup>
-								<Label for="exampleText">Text Area</Label>
-								<Input type="textarea" name="text" id="exampleText" />
-							</FormGroup>
-						</Col>
-						<Col>
-							<FormGroup>
-								<Label for="exampleFile">File</Label>
-								<Input type="file" name="file" id="exampleFile" />
-								<FormText color="muted">
-									This is some placeholder block-level help text for the above input. It's a bit
-									lighter and easily wraps to a new line.
-								</FormText>
-							</FormGroup>
-						</Col>
-						<Col>
-							<FormGroup>
-								<Input id="r1" type="radio" bind:group={radioGroup} value="eenie" label="Eenie" />
-								<Input id="r2" type="radio" bind:group={radioGroup} value="meanie" label="Meanie" />
-								<Input id="r3" type="radio" bind:group={radioGroup} value="minie" label="Minie" />
-								<Input id="r4" type="radio" bind:group={radioGroup} value="moe" label="Moe" />
-							</FormGroup>
-						</Col>
-						<Col>
-							<FormGroup>
-								<Input id="c1" type="checkbox" label="Check me out" />
-							</FormGroup>
-						</Col>
 					</Row>
+					<input type="hidden" name="workid" value={work.workid} />
+					<Button color="primary">Do it</Button>
+					<Button>Sendback</Button>
+					<Button>Sendback</Button>
 				</Form>
 			</Container>
+			{@html work_html}
+			{JSON.stringify(work.kvarsArr, null, 2)}
 		</TabPane>
 		<TabPane tabId="json" tab="JSON">
 			<Row class="mt-3">

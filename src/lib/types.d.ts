@@ -46,8 +46,13 @@ export interface Team {
 
 export interface kvarDef {
 	name: string;
-	value: unknown;
-	type: string;
+	value: string | number | string[];
+	type: InputType;
+	label: string;
+	placeholder: string;
+	break: boolean;
+	id: string;
+	options: ArrayLike<string | number>;
 }
 export interface Work {
 	_id: string;
@@ -59,7 +64,8 @@ export interface Work {
 	workid: string;
 	title: string;
 	status: string;
-	kvars: kvarDef[];
+	kvars: unknown;
+	kvarsArr: ArrayLike<kvarDef>;
 	wfstatus: string;
 	createdAt: string;
 	updatedAt: string;
