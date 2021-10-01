@@ -368,7 +368,7 @@
 									console.log(newTeam.error);
 									errmsg = newTeam.errMsg;
 									if (errmsg.indexOf('MongoError: E11000 duplicate key error') >= 0) {
-										errmsg = '同名模板已存在, 请重新录入';
+										errmsg = '同名Team已存在, 请重新录入';
 									}
 								} else {
 									refreshTeam(newTeam);

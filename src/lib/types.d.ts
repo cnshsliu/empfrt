@@ -6,6 +6,12 @@ export interface Locals {
 	userid: string;
 }
 
+export interface EmpResponse {
+	error: Record;
+	errMsg: sgring;
+	user: Record;
+}
+
 export interface User {
 	userid: string;
 	username: string;

@@ -12,20 +12,29 @@
 
 <script lang="ts">
 	import { session } from '$app/stores';
+	import type { EmpResponse } from '$lib/types';
 	import { goto } from '$app/navigation';
 	import { post } from '$lib/utils';
+	import { Fade, Card } from 'sveltestrap';
 	import ListErrors from '$lib/ListErrors.svelte';
 
 	let username: string = '';
 	let email: string = '';
 	let password: string = '';
 	let errors = null;
+	let fade_message = '';
 
 	async function submit(event) {
-		const response = await post(`auth/register`, { username, email, password });
+		const response: EmpResponse = await post(`auth/register`, { username, email, password }); //eslint-disable-line
 
-		// TODO handle network errors
-		errors = response.errors;
+		if (response.error) {
+			fade_message = response.errMsg;
+			setTimeout(() => {
+				fade_message = '';
+			}, 3000);
+		} else {
+			fade_message = '';
+		}
 
 		if (response.user) {
 			$session.user = response.user;
@@ -82,5 +91,10 @@
 				</form>
 			</div>
 		</div>
+		<Fade isOpen={fade_message != ''}>
+			<Card body>
+				{fade_message}
+			</Card>
+		</Fade>
 	</div>
 </div>
