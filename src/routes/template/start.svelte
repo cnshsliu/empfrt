@@ -31,8 +31,8 @@
 	//export let template: Template;
 	let isOpen = false;
 	let roles = [];
-	let fade_open = false;
 	let fade_message = '';
+	let timeoutID = null;
 	let pbo = '';
 	let wfid = '';
 	let team_id_for_search = '';
@@ -75,11 +75,8 @@
 	}
 
 	async function _startWorkflow() {
-		const res = await api.post(
-			'workflow/start',
-			{ tplid, teamid: theTeam.teamid, wfid, pbo },
-			user.sessionToken
-		);
+		let teamid = theTeam ? theTeam.teamid : '';
+		const res = await api.post('workflow/start', { tplid, teamid, wfid, pbo }, user.sessionToken);
 		if (res.wfid) {
 			fade_message = `Workflow ${res.wfid} Started.`;
 		} else {
@@ -90,9 +87,8 @@
 				fade_message = JSON.stringify(res);
 			}
 		}
-		fade_open = true;
-		setTimeout(() => {
-			fade_open = false;
+		if (timeoutID) clearTimeout(timeoutID);
+		timeoutID = setTimeout(() => {
 			fade_message = '';
 		}, 3000);
 	}
@@ -167,7 +163,7 @@
 			</Col>
 		</Row>
 	</Form>
-	<Fade isOpen={fade_open}>
+	<Fade isOpen={fade_message != ''}>
 		<Card body>
 			{fade_message}
 		</Card>

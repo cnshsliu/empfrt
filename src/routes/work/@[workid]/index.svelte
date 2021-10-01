@@ -13,8 +13,7 @@
 			props: {
 				work: theWork,
 				work_html: theHtml.html,
-				user: session.user,
-				token: session.user.sessionToken
+				user: session.user
 			}
 		};
 	}
@@ -35,6 +34,7 @@
 	import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'sveltestrap';
 	import { enhance } from '$lib/form';
 	export let work: Work;
+	export let user: User;
 
 	let radioGroup;
 
@@ -73,8 +73,17 @@ let WORKITEM_HTML = await axios.post(
 	let html_example_jquery = `<p>{@html WORKITEM_HTML}</p>`;
 	export let work_html = 'to be implemented';
 	const iframe_html_code = `<iframe title="hyperflow_work_${work.workid}"
-src="${API_SERVER}/work/iframe/${work.workid}">
-</iframe>`;
+src="${API_SERVER}/work/iframe/${work.workid}"></iframe>`;
+
+	function _doneWork() {
+		let payload = {
+			doer: user.email,
+			workid: work.workid
+		};
+		for (let i = 0; i < work.kvarsArr.length; i++) {}
+		api.post('work/do', payload, user.sessionToken);
+		goto('/work');
+	}
 </script>
 
 <Container>
@@ -83,6 +92,7 @@ src="${API_SERVER}/work/iframe/${work.workid}">
 		<TabPane tabId="work" tab="Work" active>
 			<Container id={'workitem_' + work.workid}>
 				<Form>
+					{work.title}
 					<Row cols={{ lg: 3, md: 2, sm: 1 }}>
 						{#each work.kvarsArr as kvar (kvar.name)}
 							{#if kvar.break}
@@ -109,27 +119,44 @@ src="${API_SERVER}/work/iframe/${work.workid}">
 								</FormGroup>
 							</Col>
 						{/each}
-						<Col>
-							<FormGroup>
-								<Label for="exampleSelect">Select</Label>
-								<Input type="select" name="select" id="exampleSelect" value="4">
-									AAA<option value="3" selected>1</option>
-									<option>2</option>
-									<option>3</option>
-									<option>4</option>
-									<option>5</option>
-								</Input>
-							</FormGroup>
-						</Col>
 					</Row>
 					<input type="hidden" name="workid" value={work.workid} />
-					<Button color="primary">Do it</Button>
-					<Button>Sendback</Button>
-					<Button>Sendback</Button>
+					{#if work.status === 'ST_RUN'}
+						<Button
+							color="primary"
+							on:click={(e) => {
+								e.preventDefault();
+								_doneWork();
+							}}
+						>
+							Done
+						</Button>
+					{/if}
+					{#if work.returnable}
+						<Button
+							on:click={(e) => {
+								e.preventDefault();
+								_sendbackWork();
+							}}>Sendback</Button
+						>
+					{/if}
+					{#if work.revocable}
+						<Button
+							on:click={(e) => {
+								e.preventDefault();
+								_revokeWork();
+							}}>Revoke</Button
+						>
+					{/if}
 				</Form>
 			</Container>
 			{@html work_html}
-			{JSON.stringify(work.kvarsArr, null, 2)}
+			<code>
+				<pre>
+			{JSON.stringify(user, null, 2)}
+			{JSON.stringify(work, null, 2)}
+				</pre>
+			</code>
 		</TabPane>
 		<TabPane tabId="json" tab="JSON">
 			<Row class="mt-3">
