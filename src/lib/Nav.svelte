@@ -11,7 +11,10 @@
 		<a rel="prefetch" class="navbar-brand" href="/">{$title}</a>
 		<ul class="nav navbar-nav pull-xs-right">
 			<li class="nav-item">
-				<a rel="prefetch" class="nav-link" class:active={$page.path === '/'} href="/">Home</a>
+				<a rel="prefetch" class="nav-link" class:active={$page.path === '/'} href="/">
+					<Icon name="house" />
+					Home
+				</a>
 			</li>
 
 			{#if $session.user}
@@ -22,12 +25,12 @@
 						class="nav-link"
 						class:active={$page.path === '/template'}
 					>
-						<i class="ion-compose" />&nbsp;Template
+						<Icon name="code-square" />&nbsp;Template
 					</a>
 				</li>
 				<li class="nav-item">
 					<a rel="prefetch" href="/team" class="nav-link" class:active={$page.path === '/team'}>
-						<i class="ion-compose" />&nbsp;Team
+						<Icon name="person-lines-fill" />&nbsp;Team
 					</a>
 				</li>
 
@@ -44,7 +47,7 @@
 						class="nav-link"
 						class:active={$page.path === '/settings'}
 					>
-						<i class="ion-gear-a" />&nbsp;Settings
+						<Icon name="gear" />&nbsp;Settings
 					</a>
 				</li>
 

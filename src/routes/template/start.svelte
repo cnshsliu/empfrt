@@ -33,6 +33,8 @@
 	let roles = [];
 	let fade_open = false;
 	let fade_message = '';
+	let pbo = '';
+	let wfid = '';
 	let team_id_for_search = '';
 	import { title } from '$lib/title';
 	import StartTeamRoles from './_start_teamRoles.svelte';
@@ -75,11 +77,20 @@
 	async function _startWorkflow() {
 		const res = await api.post(
 			'workflow/start',
-			{ tplid, teamid: theTeam.teamid },
+			{ tplid, teamid: theTeam.teamid, wfid, pbo },
 			user.sessionToken
 		);
+		if (res.wfid) {
+			fade_message = `Workflow ${res.wfid} Started.`;
+		} else {
+			if (res.errors && res.errors.MongoError && res.errors.MongoError[0]) {
+				if (res.errors.MongoError[0].indexOf('duplicate') >= 0)
+					fade_message = `${wfid} exists already`;
+			} else {
+				fade_message = JSON.stringify(res);
+			}
+		}
 		fade_open = true;
-		fade_message = `Workflow ${res.wfid} Started.`;
 		setTimeout(() => {
 			fade_open = false;
 			fade_message = '';
@@ -100,7 +111,23 @@
 			<Col>
 				<FormGroup>
 					<Label>PBO</Label>
-					<Input type="url" name="pbo" placeholder="URL of Primary Business Object" />
+					<Input
+						type="url"
+						name="pbo"
+						bind:value={pbo}
+						placeholder="URL of Primary Business Object"
+					/>
+				</FormGroup>
+			</Col>
+			<Col>
+				<FormGroup>
+					<Label>Workflow ID</Label>
+					<Input
+						type="text"
+						name="wfid"
+						bind:value={wfid}
+						placeholder="User defined workflow ID, keep empty to use auto id"
+					/>
 				</FormGroup>
 			</Col>
 		</Row>
@@ -142,9 +169,7 @@
 	</Form>
 	<Fade isOpen={fade_open}>
 		<Card body>
-			Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad
-			squid. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea
-			proident.
+			{fade_message}
 		</Card>
 	</Fade>
 	{#if theTeam}
