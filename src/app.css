@@ -394,17 +394,17 @@ body {
 }
 
 input::-webkit-input-placeholder {
-	color: #c8c3e379 !important;
+	color: #68636379 !important;
 	font-size: 18px !important;
 }
 
 input::-ms-input-placeholder {
-	color: #c8c3e379 !important;
+	color: #68636379 !important;
 	font-size: 18px !important;
 }
 
 input::placeholder {
-	color: #c8c3e379 !important;
+	color: #68636379 !important;
 	font-size: 18px !important;
 }
 

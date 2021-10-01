@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Template } from '$lib/types';
 	import * as api from '$lib/api';
+	import { goto } from '$app/navigation';
 	import { session } from '$app/stores';
 	import { Row, Col, Icon, Styles } from 'sveltestrap';
 	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'sveltestrap';
@@ -11,6 +12,9 @@
 		setTimeout(async () => {
 			await api.post('workflow/start', { tplid: tplid }, $session.user.sessionToken);
 		});
+	}
+	function showStartWorkflowForm(tplid: string): void {
+		goto(`/template/start?tplid=${tplid}`, { replaceState: false });
 	}
 </script>
 
@@ -36,7 +40,7 @@
 			<a
 				class="btn btn-sm"
 				href={'#'}
-				on:click|preventDefault={() => startWorkflow(template.tplid)}
+				on:click|preventDefault={() => showStartWorkflowForm(template.tplid)}
 			>
 				<Icon name="play-circle-fill" class="kfk-template-action-icon" /> Run
 			</a>
