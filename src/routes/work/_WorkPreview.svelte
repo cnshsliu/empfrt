@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Container, Row, Col, Styles } from 'sveltestrap';
+	import moment from 'moment';
 	import type { Work } from '$lib/types';
 	import { goto } from '$app/navigation';
 	export let work: Work;
@@ -10,12 +11,12 @@
 	}
 </script>
 
-work
 <Styles />
 
 <Container class={mouseover_objid === work._id ? 'kfk-highlight-2' : ''}>
 	<Row>
 		<Col>
+			{work.tplid} <br />
 			<a
 				class="preview-link kfk-team-id kfk-link"
 				href={'#'}
@@ -26,8 +27,6 @@ work
 				{work.title}
 			</a>
 		</Col>
-		<Col>{work.tplid}</Col>
-		<Col>{work.status}</Col>
-		<Col>{work.wfstatus}</Col>
+		<Col>{moment(work.createdAt).format('LLLL')} <br /> {work.workid}</Col>
 	</Row>
 </Container>

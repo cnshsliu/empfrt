@@ -7,7 +7,6 @@
 
 		const theWork = await res.json();
 		const theHtml = await res_html.json();
-		console.log(theHtml);
 
 		return {
 			props: {
@@ -21,6 +20,7 @@
 
 <script lang="ts">
 	import jQuery from 'jquery';
+	import moment from 'moment';
 	import { API_SERVER } from '$lib/Env';
 	import { Form, FormGroup, FormText, Input, Label } from 'sveltestrap';
 	import type { User, Work } from '$lib/types';
@@ -75,13 +75,27 @@ let WORKITEM_HTML = await axios.post(
 	const iframe_html_code = `<iframe title="hyperflow_work_${work.workid}"
 src="${API_SERVER}/work/iframe/${work.workid}"></iframe>`;
 
-	function _doneWork() {
+	function _doneWork(user_choice) {
 		let payload = {
 			doer: user.email,
 			workid: work.workid
 		};
-		for (let i = 0; i < work.kvarsArr.length; i++) {}
+		if (user_choice) {
+			payload.route = user_choice;
+		}
+		payload.kvars = {};
+		for (let i = 0; i < work.kvarsArr.length; i++) {
+			payload.kvars[work.kvarsArr[i]['name']] = work.kvarsArr[i];
+		}
 		api.post('work/do', payload, user.sessionToken);
+		goto('/work');
+	}
+	function _sendbackWork() {
+		let payload = {
+			wfid: work.wfid,
+			workid: work.workid
+		};
+		api.post('work/sendback', payload, user.sessionToken);
 		goto('/work');
 	}
 </script>
@@ -90,65 +104,162 @@ src="${API_SERVER}/work/iframe/${work.workid}"></iframe>`;
 	<h5>Current state: {currentTab}</h5>
 	<TabContent on:tab={(e) => (currentTab = '' + e.detail)}>
 		<TabPane tabId="work" tab="Work" active>
-			<Container id={'workitem_' + work.workid}>
+			<h3>{work.title}</h3>
+			<Container id={'workitem_' + work.workid} class="mt-3">
 				<Form>
-					{work.title}
-					<Row cols={{ lg: 3, md: 2, sm: 1 }}>
-						{#each work.kvarsArr as kvar (kvar.name)}
-							{#if kvar.break}
-								<div class="w-100" />
-							{/if}
+					<Container>
+						<Row cols={{ lg: 3, md: 2, sm: 1 }}>
 							<Col>
-								<FormGroup>
-									<Label>{kvar.label}</Label>
-									{#if kvar.type !== 'select'}
-										<Input
-											type={kvar.type}
-											name={kvar.name}
-											value={kvar.value}
-											id={kvar.id}
-											placeholder={kvar.placeholder}
-										/>
-									{:else}
-										<Input type={kvar.type} name={kvar.name} id={kvar.id} value={kvar.value}>
-											{#each kvar.options as option}
-												<option>{option}</option>
-											{/each}
-										</Input>
-									{/if}
-								</FormGroup>
+								Starter:
+								<div class="kfk-kvar-value-display">{work.wf.starter}</div>
 							</Col>
-						{/each}
-					</Row>
-					<input type="hidden" name="workid" value={work.workid} />
-					{#if work.status === 'ST_RUN'}
-						<Button
-							color="primary"
-							on:click={(e) => {
-								e.preventDefault();
-								_doneWork();
-							}}
-						>
-							Done
-						</Button>
-					{/if}
-					{#if work.returnable}
-						<Button
-							on:click={(e) => {
-								e.preventDefault();
-								_sendbackWork();
-							}}>Sendback</Button
-						>
-					{/if}
-					{#if work.revocable}
-						<Button
-							on:click={(e) => {
-								e.preventDefault();
-								_revokeWork();
-							}}>Revoke</Button
-						>
-					{/if}
+							<Col>
+								PBO: <div class="kfk-kvar-value-display">
+									<a href={work.wf.pbo} target="_blank">{work.wf.pbo}</a>
+								</div>
+							</Col>
+						</Row>
+					</Container>
+					<Container class="mt-3 kfk-highlight-2">
+						Workflow Data:
+						<Row cols={{ lg: 3, md: 2, sm: 1 }}>
+							{#each work.wf.kvarsArr as kvar, i}
+								{#if kvar.break}
+									<div class="w-100" />
+								{/if}
+								<Col>
+									<div>{kvar.label}</div>
+									<div class="kfk-kvar-value-display">{kvar.value}</div>
+								</Col>
+							{/each}
+						</Row>
+					</Container>
+					<Container class="mt-3 kfk-highlight-2">
+						Node Input:
+						<Row cols={{ lg: 3, md: 2, sm: 1 }}>
+							{#each work.kvarsArr as kvar, i}
+								{#if kvar.break}
+									<div class="w-100" />
+								{/if}
+								<Col>
+									<FormGroup>
+										<Label>{kvar.label}</Label>
+										{#if kvar.type !== 'select'}
+											<Input
+												type={kvar.type}
+												name={kvar.name}
+												bind:value={work.kvarsArr[i].value}
+												id={kvar.id}
+												placeholder={kvar.placeholder}
+											/>
+										{:else}
+											<Input
+												type={kvar.type}
+												name={kvar.name}
+												id={kvar.id}
+												bind:value={work.kvarsArr[i].value}
+											>
+												{#each kvar.options as option}
+													<option>{option}</option>
+												{/each}
+											</Input>
+										{/if}
+									</FormGroup>
+								</Col>
+							{/each}
+						</Row>
+					</Container>
+					<Container class="mt-3">
+						<input type="hidden" name="workid" value={work.workid} />
+						<Row cols="6">
+							{#if work.status === 'ST_RUN'}
+								{#if work.options.length === 0}
+									<Col>
+										<Button
+											color="primary"
+											on:click={(e) => {
+												e.preventDefault();
+												_doneWork();
+											}}
+										>
+											Done
+										</Button>
+									</Col>
+								{/if}
+								{#each work.options as aChoice}
+									<Col>
+										<Button
+											on:click={(e) => {
+												e.preventDefault();
+												_doneWork(aChoice);
+											}}>{aChoice}</Button
+										>
+									</Col>
+								{/each}
+							{/if}
+							{#if work.returnable}
+								<Col>
+									<Button
+										on:click={(e) => {
+											e.preventDefault();
+											_sendbackWork();
+										}}
+									>
+										Sendback
+									</Button>
+								</Col>
+							{/if}
+							{#if work.revocable}
+								<Col>
+									<Button
+										on:click={(e) => {
+											e.preventDefault();
+											_revokeWork();
+										}}
+									>
+										Revoke
+									</Button>
+								</Col>
+							{/if}
+						</Row>
+					</Container>
 				</Form>
+			</Container>
+			<Container class="mt-3"><h3>History:</h3></Container>
+			<Container class="mt-3">
+				{#each work.history as entry}
+					<Container class="mt-3 kfk-highlight-2 ">
+						<Row cols={{ lg: 1, md: 1, sm: 1 }}>
+							<Col>
+								<div><b>{entry.title}</b></div>
+								By: {entry.doer}
+								at: {moment(entry.doneat).format('LLLL')}
+							</Col>
+							{#if entry.route}
+								<Col>
+									Decision: <b> {entry.route} </b>
+								</Col>
+							{/if}
+						</Row>
+						{#if entry.kvarsArr.length > 0}
+							<Row><Col><b>Variables:</b></Col></Row>
+							<Row>
+								<Col>
+									<Container>
+										<Row cols={{ lg: 2, md: 1, sm: 1 }}>
+											{#each entry.kvarsArr as kvar}
+												<Col>
+													<div>{kvar.label}</div>
+													<div class="kfk-kvar-value-display">{kvar.value}</div>
+												</Col>
+											{/each}
+										</Row>
+									</Container>
+								</Col>
+							</Row>
+						{/if}
+					</Container>
+				{/each}
 			</Container>
 			{@html work_html}
 			<code>

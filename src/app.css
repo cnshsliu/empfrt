@@ -2610,3 +2610,6 @@ table.quick-help-table td:first-of-type {
 	width: 100%;
 	border: 0px solid;
 }
+.kfk-kvar-value-display {
+	font-weight: bold;
+}
