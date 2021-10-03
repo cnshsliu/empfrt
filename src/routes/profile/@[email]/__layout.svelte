@@ -1,6 +1,6 @@
 <script context="module">
 	export async function load({ page, fetch }) {
-		const res = await fetch(`/profile/@${page.params.userid}.json`);
+		const res = await fetch(`/profile/@${page.params.email}.json`);
 
 		return {
 			props: {
@@ -19,7 +19,7 @@
 	// https://github.com/sveltejs/kit/issues/269
 	$: segments = $page.path.split('/');
 	$: is_favorites = segments.length === 4 && segments[3] === 'favorites';
-	$: is_user = $session.user && profile.username === $session.user.username;
+	$: is_user = $session.user && profile.email === $session.user.email;
 
 	let current_token;
 	async function toggle_following() {
@@ -46,7 +46,7 @@
 </script>
 
 <svelte:head>
-	<title>{profile.username} • Conduit</title>
+	<title>{profile.username} • HyperFlow</title>
 </svelte:head>
 
 <div class="profile-page">
@@ -56,7 +56,7 @@
 				<div class="col-xs-12 col-md-10 offset-md-1">
 					<img src={profile.avatar} class="user-img" alt={profile.username} />
 					<h4>{profile.username}</h4>
-					<p>{profile.bio?profile.bio:"Nothing for bio"}</p>
+					<p>{profile.bio ? profile.bio : 'Nothing for bio'}</p>
 
 					{#if is_user}
 						<a href="/settings" class="btn btn-sm btn-outline-secondary action-btn">
@@ -65,7 +65,9 @@
 						</a>
 					{:else if $session.user}
 						<button
-							class="btn btn-sm action-btn {profile.following ? 'btn-secondary' : 'btn-outline-secondary'}"
+							class="btn btn-sm action-btn {profile.following
+								? 'btn-secondary'
+								: 'btn-outline-secondary'}"
 							on:click={toggle_following}
 						>
 							<i class="ion-plus-round" />
@@ -85,11 +87,11 @@
 					<ul class="nav nav-pills outline-active">
 						<li class="nav-item">
 							<a
-								href="/profile/@{profile.username}"
+								href="/profile/@{profile.email}"
 								class="nav-link"
 								rel="prefetch"
-								class:active={!is_favorites}
-							>Articles</a>
+								class:active={!is_favorites}>Works</a
+							>
 						</li>
 
 						<li class="nav-item">
@@ -97,8 +99,8 @@
 								href="/profile/@{profile.email}/favorites"
 								class="nav-link"
 								rel="prefetch"
-								class:active={is_favorites}
-							>Favorites</a>
+								class:active={is_favorites}>Favorites</a
+							>
 						</li>
 					</ul>
 				</div>

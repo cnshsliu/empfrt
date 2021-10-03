@@ -16,7 +16,6 @@
 <Container class={mouseover_objid === work._id ? 'kfk-highlight-2' : ''}>
 	<Row>
 		<Col>
-			{work.tplid} <br />
 			<a
 				class="preview-link kfk-team-id kfk-link"
 				href={'#'}
@@ -25,8 +24,13 @@
 				}}
 			>
 				{work.title}
-			</a>
+			</a> <br />
+			of {work.wftitle} started by
+			{work.wfstarter ? work.wfstarter : ''}
 		</Col>
-		<Col>{moment(work.createdAt).format('LLLL')} <br /> {work.workid}</Col>
+		<Col>
+			set: {moment(work.createdAt).format('LLLL')} <br />
+			done: {work.doneat ? moment(work.doneat).format('LLLL') : ''}
+		</Col>
 	</Row>
 </Container>

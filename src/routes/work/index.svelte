@@ -1,5 +1,6 @@
 <script context="module" lang="ts">
 	export async function load({ page, fetch, session }) {
+		//will use [doer].json.ts
 		const res = await fetch('/work/default.json');
 
 		return {
@@ -13,8 +14,9 @@
 </script>
 
 <script lang="ts">
+	import * as api from '$lib/api';
 	import type { User, Work } from '$lib/types';
-	import { Container, Row, Col, Button } from 'sveltestrap';
+	import { Container, Row, Col, Button, FormGroup, Input } from 'sveltestrap';
 	import { onMount } from 'svelte';
 	import WorkPreview from './_WorkPreview.svelte';
 	import { scale } from 'svelte/transition';
@@ -26,6 +28,7 @@
 	export const lastSearchCondition: string = '';
 	$title = 'HyperFlow';
 	export let filter_doer = user.email;
+	let radioWorkStatus = 'ST_RUN';
 
 	export let mouseover_objid: string = '';
 	function setMouseOverObjid(objid: string) {
@@ -33,9 +36,19 @@
 	}
 	function setMouseFocus() {}
 	async function refreshList() {
-		filter_doer = filter_doer === '' ? user.email : filter_doer;
-		const res = await fetch(`/work/${filter_doer}.json`);
-		works = await res.json();
+		works = await api.post(
+			'work/list',
+			{
+				doer: filter_doer === '' ? user.email : filter_doer,
+				filter:
+					radioWorkStatus === 'All'
+						? {}
+						: radioWorkStatus === 'ST_RUN'
+						? { status: 'ST_RUN', wfstatus: 'ST_RUN' }
+						: { status: 'ST_DONE' }
+			},
+			user.sessionToken
+		);
 	}
 
 	onMount(() => {
@@ -79,6 +92,29 @@
 							>
 						</Col>
 					</Row>
+					<Row>
+						<Col xs="auto">
+							<Input id="r1" type="radio" bind:group={radioWorkStatus} value="All" label="All" />
+						</Col>
+						<Col xs="auto">
+							<Input
+								id="r2"
+								type="radio"
+								bind:group={radioWorkStatus}
+								value="ST_RUN"
+								label="Running"
+							/>
+						</Col>
+						<Col xs="auto">
+							<Input
+								id="r3"
+								type="radio"
+								bind:group={radioWorkStatus}
+								value="ST_DONE"
+								label="Done"
+							/>
+						</Col>
+					</Row>
 				</Container>
 			</form>
 		</Col>
@@ -86,7 +122,7 @@
 	<Row>
 		<Col>
 			{#if works.length === 0}
-				<div class="article-preview">No templates are here... yet.</div>
+				<div class="container">No works are here... yet.</div>
 			{:else}
 				{#each works as work (work._id)}
 					<div

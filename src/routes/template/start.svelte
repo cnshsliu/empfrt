@@ -35,6 +35,7 @@
 	let timeoutID = null;
 	let pbo = '';
 	let wfid = '';
+	let wftitle = '';
 	let team_id_for_search = '';
 	import { title } from '$lib/title';
 	import StartTeamRoles from './_start_teamRoles.svelte';
@@ -76,9 +77,13 @@
 
 	async function _startWorkflow() {
 		let teamid = theTeam ? theTeam.teamid : '';
-		const res = await api.post('workflow/start', { tplid, teamid, wfid, pbo }, user.sessionToken);
+		const res = await api.post(
+			'workflow/start',
+			{ tplid, teamid, wfid, wftitle, pbo },
+			user.sessionToken
+		);
 		if (res.wfid) {
-			fade_message = `Workflow ${res.wfid} Started.`;
+			fade_message = `Workflow ${res.wftitle} Started.`;
 		} else {
 			if (res.errors && res.errors.MongoError && res.errors.MongoError[0]) {
 				if (res.errors.MongoError[0].indexOf('duplicate') >= 0)
@@ -117,12 +122,12 @@
 			</Col>
 			<Col>
 				<FormGroup>
-					<Label>Workflow ID</Label>
+					<Label>Workflow Title</Label>
 					<Input
 						type="text"
-						name="wfid"
-						bind:value={wfid}
-						placeholder="User defined workflow ID, keep empty to use auto id"
+						name="wftitle"
+						bind:value={wftitle}
+						placeholder="Give it a title, or keep empty to use one auto-generated"
 					/>
 				</FormGroup>
 			</Col>

@@ -43,6 +43,7 @@
 	$title = work.title;
 
 	$: work_json_string = JSON.stringify(work, null, 2);
+	$: is_workable = work.doer === user.email && work.status === 'ST_RUN';
 	let currentTab = 'work';
 	let axios_code = `
 let res = await axios.post(
@@ -93,8 +94,13 @@ src="${API_SERVER}/work/iframe/${work.workid}"></iframe>`;
 	function _sendbackWork() {
 		let payload = {
 			wfid: work.wfid,
-			workid: work.workid
+			workid: work.workid,
+			doer: user.email
 		};
+		payload.kvars = {};
+		for (let i = 0; i < work.kvarsArr.length; i++) {
+			payload.kvars[work.kvarsArr[i]['name']] = work.kvarsArr[i];
+		}
 		api.post('work/sendback', payload, user.sessionToken);
 		goto('/work');
 	}
@@ -107,7 +113,7 @@ src="${API_SERVER}/work/iframe/${work.workid}"></iframe>`;
 			<h3>{work.title}</h3>
 			<Container id={'workitem_' + work.workid} class="mt-3">
 				<Form>
-					<Container>
+					<Container class="mt-3 kfk-highlight-2">
 						<Row cols={{ lg: 3, md: 2, sm: 1 }}>
 							<Col>
 								Starter:
@@ -134,95 +140,111 @@ src="${API_SERVER}/work/iframe/${work.workid}"></iframe>`;
 							{/each}
 						</Row>
 					</Container>
-					<Container class="mt-3 kfk-highlight-2">
-						Node Input:
-						<Row cols={{ lg: 3, md: 2, sm: 1 }}>
-							{#each work.kvarsArr as kvar, i}
-								{#if kvar.break}
-									<div class="w-100" />
-								{/if}
-								<Col>
-									<FormGroup>
-										<Label>{kvar.label}</Label>
-										{#if kvar.type !== 'select'}
-											<Input
-												type={kvar.type}
-												name={kvar.name}
-												bind:value={work.kvarsArr[i].value}
-												id={kvar.id}
-												placeholder={kvar.placeholder}
-											/>
-										{:else}
-											<Input
-												type={kvar.type}
-												name={kvar.name}
-												id={kvar.id}
-												bind:value={work.kvarsArr[i].value}
+					{#if is_workable && work.kvarsArr.length > 0}
+						<Container class="mt-3 kfk-highlight-2">
+							Node Input:
+							<Row cols={{ lg: 3, md: 2, sm: 1 }}>
+								{#each work.kvarsArr as kvar, i}
+									{#if kvar.break}
+										<div class="w-100" />
+									{/if}
+									<Col>
+										<FormGroup>
+											<Label>{kvar.label}</Label>
+											{#if kvar.type !== 'select'}
+												<Input
+													type={kvar.type}
+													name={kvar.name}
+													bind:value={work.kvarsArr[i].value}
+													id={kvar.id}
+													placeholder={kvar.placeholder}
+												/>
+											{:else}
+												<Input
+													type={kvar.type}
+													name={kvar.name}
+													id={kvar.id}
+													bind:value={work.kvarsArr[i].value}
+												>
+													{#each kvar.options as option}
+														<option>{option}</option>
+													{/each}
+												</Input>
+											{/if}
+										</FormGroup>
+									</Col>
+								{/each}
+							</Row>
+						</Container>
+					{/if}
+					{#if is_workable}
+						<Container class="mt-3">
+							<input type="hidden" name="workid" value={work.workid} />
+							<Row cols="6">
+								{#if work.status === 'ST_RUN'}
+									{#if work.options.length === 0}
+										<Col>
+											<Button
+												color="primary"
+												on:click={(e) => {
+													e.preventDefault();
+													_doneWork();
+												}}
 											>
-												{#each kvar.options as option}
-													<option>{option}</option>
-												{/each}
-											</Input>
-										{/if}
-									</FormGroup>
-								</Col>
-							{/each}
-						</Row>
-					</Container>
-					<Container class="mt-3">
-						<input type="hidden" name="workid" value={work.workid} />
-						<Row cols="6">
-							{#if work.status === 'ST_RUN'}
-								{#if work.options.length === 0}
+												Done
+											</Button>
+										</Col>
+									{/if}
+									{#each work.options as aChoice}
+										<Col>
+											<Button
+												on:click={(e) => {
+													e.preventDefault();
+													_doneWork(aChoice);
+												}}>{aChoice}</Button
+											>
+										</Col>
+									{/each}
+								{/if}
+								{#if work.returnable}
 									<Col>
 										<Button
-											color="primary"
 											on:click={(e) => {
 												e.preventDefault();
-												_doneWork();
+												_sendbackWork();
 											}}
 										>
-											Done
+											Sendback
 										</Button>
 									</Col>
 								{/if}
-								{#each work.options as aChoice}
+								{#if work.revocable}
 									<Col>
 										<Button
 											on:click={(e) => {
 												e.preventDefault();
-												_doneWork(aChoice);
-											}}>{aChoice}</Button
+												_revokeWork();
+											}}
 										>
+											Revoke
+										</Button>
 									</Col>
-								{/each}
-							{/if}
-							{#if work.returnable}
+								{/if}
+							</Row>
+						</Container>
+					{:else}
+						<Container class="mt-3 kfk-highlight-2">
+							<Row>
 								<Col>
-									<Button
-										on:click={(e) => {
-											e.preventDefault();
-											_sendbackWork();
-										}}
-									>
-										Sendback
-									</Button>
+									Done by: {work.doer}
 								</Col>
-							{/if}
-							{#if work.revocable}
 								<Col>
-									<Button
-										on:click={(e) => {
-											e.preventDefault();
-											_revokeWork();
-										}}
-									>
-										Revoke
-									</Button>
+									at: {work.doneat ? moment(work.doneat).format('LLLL') : ''}
 								</Col>
-							{/if}
-						</Row>
-					</Container>
+								<Col />
+							</Row>
+						</Container>
+					{/if}
 				</Form>
 			</Container>
 			<Container class="mt-3"><h3>History:</h3></Container>

@@ -52,7 +52,7 @@
 				</li>
 
 				<li class="nav-item">
-					<a rel="prefetch" href="/profile/@{$session.user.userid}" class="nav-link">
+					<a rel="prefetch" href="/profile/@{$session.user.email}" class="nav-link">
 						<!-- <img src={$user.image} class="user-pic" alt={$user.username}> -->
 						{$session.user.username}
 					</a>
