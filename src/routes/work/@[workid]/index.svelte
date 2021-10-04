@@ -104,6 +104,14 @@ src="${API_SERVER}/work/iframe/${work.workid}"></iframe>`;
 		api.post('work/sendback', payload, user.sessionToken);
 		goto('/work');
 	}
+	function _revokeWork() {
+		let payload = {
+			wfid: work.wfid,
+			workid: work.workid
+		};
+		api.post('work/revoke', payload, user.sessionToken);
+		goto('/work');
+	}
 </script>
 
 <Container>
@@ -218,7 +226,12 @@ src="${API_SERVER}/work/iframe/${work.workid}"></iframe>`;
 										</Button>
 									</Col>
 								{/if}
-								{#if work.revocable}
+							</Row>
+						</Container>
+					{:else}
+						{#if work.revocable}
+							<Container class="mt-3 kfk-highlight-2">
+								<Row>
 									<Col>
 										<Button
 											on:click={(e) => {
@@ -229,10 +242,9 @@ src="${API_SERVER}/work/iframe/${work.workid}"></iframe>`;
 											Revoke
 										</Button>
 									</Col>
-								{/if}
-							</Row>
-						</Container>
-					{:else}
+								</Row>
+							</Container>
+						{/if}
 						<Container class="mt-3 kfk-highlight-2">
 							<Row>
 								<Col>
@@ -247,10 +259,32 @@ src="${API_SERVER}/work/iframe/${work.workid}"></iframe>`;
 					{/if}
 				</Form>
 			</Container>
-			<Container class="mt-3"><h3>History:</h3></Container>
-			<Container class="mt-3">
+			<Container class="mt-4"><h3>Workflow: {work.wf.wftitle}</h3></Container>
+			<Container class="mt-2">
+				<Container class="mt-2 ml-5 kfk-highlight-2 ">
+					<Row cols={{ lg: 2, md: 2, sm: 1 }}>
+						<Col>Started at: {work.wf.beginat ? moment(work.wf.begingat).format('LLLL') : ''}</Col>
+						<Col>Started by: {work.wf.starter}</Col>
+						<Col
+							>Completed at: {work.wf.doneat
+								? moment(work.wf.doneat).format('LLLL')
+								: 'Still running'}</Col
+						>
+					</Row>
+				</Container>
+			</Container>
+			<Container class="mt-2">
+				<div><h3>Worklogs</h3></div>
+				<!--div class="hstack gap-3">
+					<div><h3>Worklogs</h3></div>
+					<div class="border ms-auto">Second item</div>
+					<div class="vr" />
+					<div class="border">Third item</div>
+				</div-->
+			</Container>
+			<Container class="mt-0 ml-5">
 				{#each work.history as entry}
-					<Container class="mt-3 kfk-highlight-2 ">
+					<Container class="mt-2 ml-5 kfk-highlight-2 ">
 						<Row cols={{ lg: 1, md: 1, sm: 1 }}>
 							<Col>
 								<div><b>{entry.title}</b></div>
