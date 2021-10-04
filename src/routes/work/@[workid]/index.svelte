@@ -297,6 +297,11 @@ src="${API_SERVER}/work/iframe/${work.workid}"></iframe>`;
 								</Col>
 							{/if}
 						</Row>
+						<Row cols={{ lg: 1, md: 1, sm: 1 }}>
+							<Col>
+								Status: {entry.status}
+							</Col>
+						</Row>
 						{#if entry.kvarsArr.length > 0}
 							<Row><Col><b>Variables:</b></Col></Row>
 							<Row>
