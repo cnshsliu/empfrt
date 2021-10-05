@@ -25,7 +25,7 @@
 			>
 				{work.title}
 			</a> <br />
-			of {work.wftitle} started by
+			of <b> {work.wftitle} </b> started by
 			{work.wfstarter ? work.wfstarter : ''}
 		</Col>
 		<Col>

@@ -282,9 +282,9 @@ src="${API_SERVER}/work/iframe/${work.workid}"></iframe>`;
 					<div class="border">Third item</div>
 				</div-->
 			</Container>
-			<Container class="mt-0 ml-5">
+			<Container class="mt-0 mb-5">
 				{#each work.history as entry}
-					<Container class="mt-2 ml-5 kfk-highlight-2 ">
+					<Container class="mt-2 kfk-highlight-2 ">
 						<Row cols={{ lg: 1, md: 1, sm: 1 }}>
 							<Col>
 								<div><b>{entry.title}</b></div>
@@ -322,13 +322,6 @@ src="${API_SERVER}/work/iframe/${work.workid}"></iframe>`;
 					</Container>
 				{/each}
 			</Container>
-			{@html work_html}
-			<code>
-				<pre>
-			{JSON.stringify(user, null, 2)}
-			{JSON.stringify(work, null, 2)}
-				</pre>
-			</code>
 		</TabPane>
 		<TabPane tabId="json" tab="JSON">
 			<Row class="mt-3">

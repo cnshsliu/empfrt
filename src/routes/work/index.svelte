@@ -1,11 +1,12 @@
 <script context="module" lang="ts">
 	export async function load({ page, fetch, session }) {
 		//will use [doer].json.ts
-		const res = await fetch('/work/default.json');
+		//const res = await fetch('/work/default.json');
 
 		return {
 			props: {
-				works: await res.json(),
+				//works: await res.json(),
+				works: [],
 				user: session.user,
 				config: session.config
 			}
@@ -22,20 +23,33 @@
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import { title } from '$lib/title';
+	import { WorkStatusStore } from '$lib/empStores';
 
 	export let works: Work[];
 	export let user: User;
 	export const lastSearchCondition: string = '';
 	$title = 'HyperFlow';
 	export let filter_doer = user.email;
-	let radioWorkStatus = 'ST_RUN';
+
+	//let work_status = get(WorkStatusStore);
+	let work_status = $WorkStatusStore.status;
+	let radioWorkStatus = work_status;
+	console.log(radioWorkStatus);
+	//const jwt = auth && Buffer.from(auth.jwt, 'base64').toString('utf-8');
 
 	export let mouseover_objid: string = '';
 	function setMouseOverObjid(objid: string) {
 		mouseover_objid = objid;
 	}
 	function setMouseFocus() {}
+	function radioChanged(e) {
+		console.log(e.target.value);
+		radioWorkStatus = e.target.value;
+		refreshList();
+		$WorkStatusStore.status = radioWorkStatus;
+	}
 	async function refreshList() {
+		console.log('refreshList ', radioWorkStatus);
 		works = await api.post(
 			'work/list',
 			{
@@ -45,6 +59,8 @@
 						? {}
 						: radioWorkStatus === 'ST_RUN'
 						? { status: 'ST_RUN', wfstatus: 'ST_RUN' }
+						: radioWorkStatus === 'ST_PAUSE'
+						? { status: 'ST_PAUSE' }
 						: { status: 'ST_DONE' }
 			},
 			user.sessionToken
@@ -94,7 +110,14 @@
 					</Row>
 					<Row>
 						<Col xs="auto">
-							<Input id="r1" type="radio" bind:group={radioWorkStatus} value="All" label="All" />
+							<Input
+								id="r1"
+								type="radio"
+								bind:group={radioWorkStatus}
+								value="All"
+								label="All"
+								on:input={(e) => radioChanged(e)}
+							/>
 						</Col>
 						<Col xs="auto">
 							<Input
@@ -103,6 +126,17 @@
 								bind:group={radioWorkStatus}
 								value="ST_RUN"
 								label="Running"
+								on:input={(e) => radioChanged(e)}
+							/>
+						</Col>
+						<Col xs="auto">
+							<Input
+								id="r3"
+								type="radio"
+								bind:group={radioWorkStatus}
+								value="ST_PAUSE"
+								label="Paused"
+								on:input={(e) => radioChanged(e)}
 							/>
 						</Col>
 						<Col xs="auto">
@@ -112,6 +146,7 @@
 								bind:group={radioWorkStatus}
 								value="ST_DONE"
 								label="Done"
+								on:input={(e) => radioChanged(e)}
 							/>
 						</Col>
 					</Row>
@@ -132,7 +167,7 @@
 						on:focus={() => setMouseFocus()}
 						on:mouseover={() => setMouseOverObjid(work._id)}
 					>
-						<WorkPreview {work} {mouseover_objid} {user} />
+						<WorkPreview {work} {mouseover_objid} />
 					</div>
 				{/each}
 			{/if}

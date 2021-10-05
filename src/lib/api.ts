@@ -14,7 +14,6 @@ async function send({ method, path, data, token }) {
 	}
 
 	if (token) {
-		console.log('api send with token', token);
 		opts.headers['Authorization'] = token;
 	}
 
