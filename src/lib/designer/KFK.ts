@@ -123,6 +123,7 @@ const IsFalse = function (val: any) {
 class KFKclass {
 	APP: typeof APP = APP;
 	mode: string = 'POINTER';
+	scenario = 'template';
 	tpl: myJQuery = null;
 	tplid: string = '';
 	wfid: string = '';
@@ -4547,7 +4548,7 @@ toggleOverview (jc3MousePos) {
 		});
 	}
 
-	async loadDoc(template: any, tplmode: string = 'edit') {
+	async loadTemplateDoc(template: any, tplmode: string = 'edit') {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		await that.cleanupJC3();
@@ -4569,7 +4570,7 @@ toggleOverview (jc3MousePos) {
 				} else {
 					jqNode.draggable('enable');
 				}
-				await that.redrawLinkLines(jqNode, 'loadDoc', false);
+				await that.redrawLinkLines(jqNode, 'loadTemplateDoc', false);
 			}
 
 			if (that.docIsNotReadOnly()) {
@@ -4606,56 +4607,53 @@ toggleOverview (jc3MousePos) {
 	/**
 	 * @type {}
 	 */
-	async loadWorkflow(wfid: string) {
+	async loadWorkflowDoc(wfobj: any) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		try {
 			KFKclass.hide(that.JC3);
-			Client.setSessionToken();
-			Client.readWorkflow(wfid).then(async (wfobj) => {
-				that.tpl = $(wfobj.doc).first('.template');
-				const nodes = that.tpl.find('.node');
-				nodes.addClass('kfknode');
-				await that.JC3.append(nodes);
-				const guiNodes = that.JC3.find('.node');
-				for (let i = 0; i < guiNodes.length; i++) {
-					const jqNode = $(guiNodes[i]);
-					await that.setNodeEventHandler(jqNode);
-					jqNode.draggable('disable');
-					await that.redrawLinkLines(jqNode, 'loadDoc', false);
-				}
+			that.tpl = $(wfobj.doc).first('.template');
+			const nodes = that.tpl.find('.node');
+			nodes.addClass('kfknode');
+			await that.JC3.append(nodes);
+			const guiNodes = that.JC3.find('.node');
+			for (let i = 0; i < guiNodes.length; i++) {
+				const jqNode = $(guiNodes[i]);
+				await that.setNodeEventHandler(jqNode);
+				jqNode.draggable('disable');
+				await that.redrawLinkLines(jqNode, 'loadDoc', false);
+			}
 
-				//eslint-disable-next-line
-				that.workflow = $(wfobj.doc).first('.workflow');
-				const works = that.workflow.find('.work');
-				for (let i = 0; i < works.length; i++) {
-					const aWork = $(works[i]);
-					const theNodeid = aWork.attr('nodeid');
-					const theGuiNode = that.JC3.find('#' + theNodeid);
-					const classes = aWork.attr('class').split(/\s+/);
-					for (let j = 0; j < classes.length; j++) {
-						if (classes[j].startsWith('ST_')) {
-							theGuiNode.addClass(classes[j]);
-						}
+			//eslint-disable-next-line
+			that.workflow = $(wfobj.doc).first('.workflow');
+			const works = that.workflow.find('.work');
+			for (let i = 0; i < works.length; i++) {
+				const aWork = $(works[i]);
+				const theNodeid = aWork.attr('nodeid');
+				const theGuiNode = that.JC3.find('#' + theNodeid);
+				const classes = aWork.attr('class').split(/\s+/);
+				for (let j = 0; j < classes.length; j++) {
+					if (classes[j].startsWith('ST_')) {
+						theGuiNode.addClass(classes[j]);
 					}
-					theGuiNode.append(aWork);
 				}
+				theGuiNode.append(aWork);
+			}
 
-				for (let i = 0; i < guiNodes.length; i++) {
-					//let jqNode = $(guiNodes[i]);
-					//Add node className by it's running status in process
-					//Change link line style by it's status
-				}
+			for (let i = 0; i < guiNodes.length; i++) {
+				//let jqNode = $(guiNodes[i]);
+				//Add node className by it's running status in process
+				//Change link line style by it's status
+			}
 
-				that.myFadeOut($('.loading'));
-				that.myFadeIn(that.JC3, 100);
-				$('#overallbackground').removeClass('grid1');
+			that.myFadeOut($('.loading'));
+			that.myFadeIn(that.JC3, 100);
+			$('#overallbackground').removeClass('grid1');
 
-				//focusOnC3会导致C3居中
-				that.focusOnC3();
-				that.scrollToLastPosition(that.wfid);
-				that.C3.dispatchEvent(that.refreshC3Event);
-			});
+			//focusOnC3会导致C3居中
+			that.focusOnC3();
+			that.scrollToLastPosition(that.wfid);
+			that.C3.dispatchEvent(that.refreshC3Event);
 		} catch (err) {
 			console.error(err);
 		} finally {

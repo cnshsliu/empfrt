@@ -43,6 +43,17 @@
 				<li class="nav-item">
 					<a
 						rel="prefetch"
+						href="/workflow"
+						class="nav-link"
+						class:active={$page.path === '/workflow'}
+					>
+						<Icon name="list-check" />&nbsp;Workflow
+					</a>
+				</li>
+
+				<li class="nav-item">
+					<a
+						rel="prefetch"
 						href="/settings"
 						class="nav-link"
 						class:active={$page.path === '/settings'}

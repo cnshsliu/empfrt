@@ -34,7 +34,6 @@
 	let fade_message = '';
 	let timeoutID = null;
 	let pbo = '';
-	let wfid = '';
 	let wftitle = '';
 	let team_id_for_search = '';
 	import { title } from '$lib/title';
@@ -79,7 +78,7 @@
 		let teamid = theTeam ? theTeam.teamid : '';
 		const res = await api.post(
 			'workflow/start',
-			{ tplid, teamid, wfid, wftitle, pbo },
+			{ tplid, teamid, wftitle, pbo },
 			user.sessionToken
 		);
 		if (res.wfid) {

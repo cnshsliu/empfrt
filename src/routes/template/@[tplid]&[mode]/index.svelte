@@ -74,7 +74,7 @@
 			noscroll: true,
 			keepfocus: true
 		});
-		await theDesigner.theKFK.loadDoc(template, tpl_mode);
+		await theDesigner.theKFK.loadTemplateDoc(template, tpl_mode);
 	}
 	$: readonly = tpl_mode === 'read';
 	function show_delete_template_modal() {
@@ -206,7 +206,7 @@
 									});
 									theDesigner.sayHello();
 									theDesigner.theKFK.sayHello();
-									await theDesigner.theKFK.loadDoc(template, tpl_mode);
+									await theDesigner.theKFK.loadTemplateDoc(template, tpl_mode);
 									form_status['create'] = false;
 									form.reset();
 									errmsg = '';
@@ -275,7 +275,7 @@
 									});
 									theDesigner.sayHello();
 									theDesigner.theKFK.sayHello();
-									await theDesigner.theKFK.loadDoc(template, tpl_mode);
+									await theDesigner.theKFK.loadTemplateDoc(template, tpl_mode);
 									form_status['rename'] = false;
 									form.reset();
 									errmsg = '';
@@ -328,7 +328,7 @@
 									});
 									theDesigner.sayHello();
 									theDesigner.theKFK.sayHello();
-									await theDesigner.theKFK.loadDoc(template, tpl_mode);
+									await theDesigner.theKFK.loadTemplateDoc(template, tpl_mode);
 									form_status['copyto'] = false;
 									form.reset();
 									errmsg = '';

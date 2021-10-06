@@ -3,10 +3,12 @@
 <script lang="ts">
 	import jQuery from 'jquery';
 	import { session } from '$app/stores';
+	import type { Template, Workflow } from '$lib/types';
 	import KFK from '$lib/designer/KFK';
 	import { onMount, onDestroy } from 'svelte';
 	import { ListGroup, ListGroupItem } from 'sveltestrap';
 	export let template: Template;
+	export let workflow: Workflow;
 	export let tpl_mode: string;
 	export let theKFK: KFKclass;
 	const jq = jQuery;
@@ -32,7 +34,13 @@
 		console.log('onMounting....', $session);
 		KFK.designerCallback = designerCallback_for_KFK;
 		KFK.init($session.user);
-		await KFK.loadDoc(template, tpl_mode);
+		console.log(workflow);
+		console.log(template);
+		KFK.scenario = workflow ? 'workflow' : 'template';
+		if (KFK.scenario === 'template') await KFK.loadTemplateDoc(template, tpl_mode);
+		else {
+			await KFK.loadWorkflowDoc(workflow);
+		}
 		theKFK = KFK;
 	});
 	onDestroy(async () => {

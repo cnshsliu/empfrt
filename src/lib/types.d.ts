@@ -31,6 +31,20 @@ export interface Template {
 	updatedAt: string;
 }
 
+export interface Workflow {
+	_id: string;
+	wfid: string;
+	tenant: string;
+	wftitle: string;
+	teamid: string;
+	tplid: string;
+	status: string;
+	starter: string;
+	doc: string;
+	createdAt: string;
+	updatedAt: string;
+}
+
 export interface TmapEntry {
 	uid: string;
 	dname: string;

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Template } from '$lib/types';
 	import * as api from '$lib/api';
+	import moment from 'moment';
 	import { goto } from '$app/navigation';
 	import { session } from '$app/stores';
 	import { Row, Col, Icon, Styles } from 'sveltestrap';
@@ -18,33 +19,33 @@
 	}
 </script>
 
-<Styles />
-
 <Row class={mouseover_objid === template.tplid ? 'kfk-highlight-2' : ''}>
-	<Col xs="8">
+	<Col xs="6">
 		<div>
 			<a href="/template/@{template.tplid}&edit" class="preview-link kfk-template-id">
 				{template.tplid}
 			</a>
 			<div class="kfk-template-info">
 				{template.author}
-				<span class="date"> {new Date(template.createdAt).toDateString()} </span>
+				<span class="date"> {moment(template.createdAt).format('LLLL')} </span>
 			</div>
 		</div>
 	</Col>
-	<Col xs="2">
-		{#if mouseover_objid === template.tplid}
-			<a class="btn btn-sm" href="/template/@{template.tplid}&edit">
-				<Icon name="pencil-square" class="kfk-template-action-icon" /> Edit
-			</a>
-			<a
-				class="btn btn-sm"
-				href={'#'}
-				on:click|preventDefault={() => showStartWorkflowForm(template.tplid)}
-			>
-				<Icon name="play-circle-fill" class="kfk-template-action-icon" /> Run
-			</a>
-		{/if}
+	<Col xs="4">
+		<a class="btn btn-sm" href="/template/@{template.tplid}&read">
+			<Icon name="eye-fill" class="kfk-template-action-icon" />
+			Read
+		</a>
+		<a class="btn btn-sm" href="/template/@{template.tplid}&edit">
+			<Icon name="pencil-square" class="kfk-template-action-icon" /> Edit
+		</a>
+		<a
+			class="btn btn-sm"
+			href={'#'}
+			on:click|preventDefault={() => showStartWorkflowForm(template.tplid)}
+		>
+			<Icon name="play-circle-fill" class="kfk-template-action-icon" /> Run
+		</a>
 	</Col>
 	<Col xs="2">
 		{#if mouseover_objid === template.tplid}
@@ -58,12 +59,6 @@
 							class="nav-link "
 							><Icon name="trash" />
 							Delete this template
-						</a>
-					</DropdownItem>
-					<DropdownItem>
-						<a href="/template/@{template.tplid}&read" class="nav-link"
-							><Icon name="eye-fill" />
-							Read mode
 						</a>
 					</DropdownItem>
 				</DropdownMenu>
