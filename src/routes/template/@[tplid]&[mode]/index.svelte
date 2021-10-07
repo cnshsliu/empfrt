@@ -17,6 +17,7 @@
 </script>
 
 <script lang="ts">
+	import { API_SERVER } from '$lib/Env';
 	import type { User, Template, Team } from '$lib/types';
 	import jQuery from 'jquery';
 	import { goto } from '$app/navigation';
@@ -39,6 +40,12 @@
 		const module = await import('$lib/designer/Designer.svelte');
 		Designer = module.default;
 	});
+
+	let urls = {
+		create: `${API_SERVER}/template/create`,
+		rename: `${API_SERVER}/template/rename`,
+		copyto: `${API_SERVER}/template/copyto`
+	};
 
 	export let form_status = {
 		create: false,
@@ -117,7 +124,7 @@
 <div id="designer_topMenu" class={topmenu_class}>
 	<Container>
 		<Row class="mt-1">
-			<Col>
+			<Col class="d-flex justify-content-center">
 				<Nav>
 					<NavLink
 						class="kfk-link"
@@ -185,7 +192,7 @@
 			<Col>
 				{#if form_status.create}
 					<form
-						action="http://localhost:5008/template/create"
+						action={urls.create}
 						method="post"
 						use:enhance={{
 							token: user.sessionToken,
@@ -253,7 +260,7 @@
 					{#if errmsg !== ''}{errmsg}{/if}
 				{:else if form_status.rename}
 					<form
-						action="http://localhost:5008/template/rename"
+						action={urls.rename}
 						method="post"
 						use:enhance={{
 							token: user.sessionToken,
@@ -306,7 +313,7 @@
 				{:else if form_status.copyto}
 					<form
 						class="new"
-						action="http://localhost:5008/template/copyto"
+						action={urls.copyto}
 						method="post"
 						use:enhance={{
 							token: user.sessionToken,

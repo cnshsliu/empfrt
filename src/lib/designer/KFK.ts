@@ -485,7 +485,7 @@ class KFKclass {
 	docIsReadOnly(): boolean {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		return that.tpl_mode !== 'edit';
+		return that.tpl_mode !== 'edit' && that.scenario === 'template';
 		//return that.APP.model.cocodoc.readonly;
 	}
 
@@ -4611,6 +4611,9 @@ toggleOverview (jc3MousePos) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		try {
+			$('#leftPanel').addClass('noshow');
+			$('#minimap').addClass('noshow');
+			that.myFadeOut($('#leftPanel'), 500);
 			KFKclass.hide(that.JC3);
 			that.tpl = $(wfobj.doc).first('.template');
 			const nodes = that.tpl.find('.node');

@@ -12,6 +12,7 @@
 </script>
 
 <script lang="ts">
+	import { API_SERVER } from '$lib/Env';
 	import type { User, Workflow, Config } from '$lib/types';
 	import * as api from '$lib/api';
 	import {
@@ -40,6 +41,9 @@
 	export let form_status = { create: false, search: false, sort: false, import: false };
 	import { title } from '$lib/title';
 	$title = 'HyperFlow';
+	let urls = {
+		search: `${API_SERVER}/workflow/search`
+	};
 	function hide_all_form() {
 		Object.keys(form_status).forEach((key) => {
 			form_status[key] = false;
@@ -172,7 +176,7 @@
 				{#if form_status.search}
 					<form
 						class="new"
-						action="http://localhost:5008/workflow/search"
+						action={urls.search}
 						method="post"
 						use:enhance={{
 							token: user.sessionToken,

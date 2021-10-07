@@ -17,7 +17,7 @@ async function send({ method, path, data, token }) {
 		opts.headers['Authorization'] = token;
 	}
 
-	return fetch(`${API_SERVER}/${path}`, opts)
+	return fetch(`${API_SERVER}/${path}`, opts as RequestInit)
 		.then((r) => r.text())
 		.then((json) => {
 			try {

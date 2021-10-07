@@ -12,6 +12,7 @@
 </script>
 
 <script lang="ts">
+	import { API_SERVER } from '$lib/Env';
 	import type { User, Template, Config } from '$lib/types';
 	import * as api from '$lib/api';
 	import {
@@ -96,12 +97,17 @@
 	let dataFile = null;
 	let tplidImport;
 
+	let urls = {
+		create: `${API_SERVER}/template/create`,
+		search: `${API_SERVER}/template/search`
+	};
+
 	function upload(e) {
 		e.preventDefault();
 		const formData = new FormData();
 		formData.append('tplid', tplidImport);
 		formData.append('file', files[0]);
-		const upload = fetch('http://localhost:5008/template/import', {
+		const upload = fetch(`${API_SERVER}/template/import`, {
 			method: 'POST',
 			headers: {
 				Authorization: user.sessionToken
@@ -206,7 +212,7 @@
 			{#if form_status.create}
 				<form
 					class="new"
-					action="http://localhost:5008/template/create"
+					action={urls.create}
 					method="post"
 					use:enhance={{
 						token: user.sessionToken,
@@ -244,7 +250,7 @@
 			{:else if form_status.search}
 				<form
 					class="new"
-					action="http://localhost:5008/template/search"
+					action={urls.search}
 					method="post"
 					use:enhance={{
 						token: user.sessionToken,

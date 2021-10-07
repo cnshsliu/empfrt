@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Container, Row, Col, Styles } from 'sveltestrap';
+	import { Container, Row, Col, Styles, NavLink } from 'sveltestrap';
 	import moment from 'moment';
 	import type { Work } from '$lib/types';
 	import { goto } from '$app/navigation';
@@ -25,7 +25,16 @@
 			>
 				{work.title}
 			</a> <br />
-			of <b> {work.wftitle} </b> started by
+			of
+			<a
+				class="kfk-link"
+				on:click={() => {
+					goto(`/workflow/@${work.wfid}`);
+				}}
+			>
+				<b> {work.wftitle} </b>
+			</a>
+			started by
 			{work.wfstarter ? work.wfstarter : ''}
 		</Col>
 		<Col>

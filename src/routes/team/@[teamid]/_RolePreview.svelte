@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { API_SERVER } from '$lib/Env';
 	import * as api from '$lib/api';
 	import type { User, Team, TmapEntry } from '$lib/types';
 	import { Container, Row, Col, Icon, Styles } from 'sveltestrap';
@@ -68,7 +69,7 @@
 		<Col xs="12">
 			{#if form_id === `add_${aRole}`}
 				<form
-					action="http://localhost:5008/team/role/member/add"
+					action=`${API_SERVER}/team/role/member/add`
 					method="post"
 					use:enhanceAddOneRoleMember={{
 						token: user.sessionToken,
@@ -101,7 +102,7 @@
 			{/if}
 			{#if form_id === `copy_${aRole}`}
 				<form
-					action="http://localhost:5008/team/role/copy"
+					action=`${API_SERVER}/team/role/copy`
 					method="post"
 					use:enhance={{
 						token: user.sessionToken,

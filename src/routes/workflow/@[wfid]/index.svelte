@@ -40,6 +40,12 @@
 
 	export let errmsg = '';
 	export let user: User;
+	const opWorkflow = (wfid: string, op: string): void => {
+		setTimeout(async () => {
+			let ret = await api.post('workflow/op', { wfid, op }, user.sessionToken);
+			workflow.status = ret.status; //eslint-disable-line
+		}, 1);
+	};
 </script>
 
 <Styles />
@@ -49,9 +55,42 @@
 </svelte:head>
 <div id="designer_topMenu">
 	<Container>
-		<Row class="mt-1">
-			<Col>
-				<Nav />
+		<Row class="mt-1 d-flex justify-content-center">
+			<Col class="d-flex justify-content-center">
+				<Nav>
+					<a
+						class="btn btn-sm"
+						href={'#'}
+						on:click|preventDefault={() => opWorkflow(workflow.wfid, 'pause')}
+					>
+						<NavLink
+							class="kfk-link"
+							on:click={() => {
+								opWorkflow(
+									workflow.wfid,
+									workflow.status === 'ST_RUN'
+										? 'pause'
+										: workflow.status === 'ST_PAUSE'
+										? 'resume'
+										: 'unknown'
+								);
+							}}
+						>
+							<Icon
+								name={workflow.status === 'ST_RUN'
+									? 'pause-btn'
+									: workflow.status === 'ST_PAUSE'
+									? 'play-btn'
+									: ''}
+							/>
+							{workflow.status === 'ST_RUN'
+								? 'PAUSE'
+								: workflow.status === 'ST_PAUSE'
+								? 'RESUME'
+								: ''}
+						</NavLink>
+					</a></Nav
+				>
 			</Col>
 		</Row>
 	</Container>

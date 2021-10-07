@@ -13,6 +13,7 @@
 </script>
 
 <script lang="ts">
+	import { API_SERVER } from '$lib/Env';
 	import * as api from '$lib/api';
 	import {
 		Container,
@@ -43,6 +44,11 @@
 	$title = 'HyperFlow';
 	export let form_name = '';
 	export let menu_has_form = false;
+	let urls = {
+		import: `${API_SERVER}/team/import`,
+		create: `${API_SERVER}/team/create`,
+		search: `${API_SERVER}/team/search`
+	};
 	function hide_all_form() {
 		Object.keys(form_status).forEach((key) => {
 			form_status[key] = false;
@@ -105,7 +111,7 @@
 		const formData = new FormData();
 		formData.append('teamid', teamidImport);
 		formData.append('file', files[0]);
-		const upload = fetch('http://localhost:5008/team/import', {
+		const upload = fetch(urls.import, {
 			method: 'POST',
 			headers: {
 				Authorization: user.sessionToken
@@ -209,7 +215,7 @@
 				{#if form_status.create}
 					<form
 						class="new"
-						action="http://localhost:5008/team/create"
+						action={urls.create}
 						method="post"
 						use:enhance={{
 							token: user.sessionToken,
@@ -247,7 +253,7 @@
 				{:else if form_status.search}
 					<form
 						class="new"
-						action="http://localhost:5008/team/search"
+						action={urls.search}
 						method="post"
 						use:enhance={{
 							token: user.sessionToken,

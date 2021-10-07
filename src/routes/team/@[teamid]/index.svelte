@@ -15,6 +15,7 @@
 </script>
 
 <script lang="ts">
+	import { API_SERVER } from '$lib/Env';
 	import type { User, Team } from '$lib/types';
 	import jQuery from 'jquery';
 	import RolePreview from './_RolePreview.svelte';
@@ -126,7 +127,7 @@
 		const formData = new FormData();
 		formData.append('teamid', team.teamid);
 		formData.append('file', files[0]);
-		const upload = fetch('http://localhost:5008/team/import', {
+		const upload = fetch(`${API_SERRVER}/team/import`, {
 			method: 'POST',
 			headers: {
 				Authorization: user.sessionToken
@@ -236,7 +237,7 @@
 			<Col>
 				{#if form_status.create}
 					<form
-						action="http://localhost:5008/team/create"
+						action=`${API_SERVER}/team/create`
 						method="post"
 						use:enhance={{
 							token: user.sessionToken,
@@ -308,7 +309,7 @@
 					{#if errmsg !== ''}{errmsg}{/if}
 				{:else if form_status.rename}
 					<form
-						action="http://localhost:5008/team/rename"
+						action=`${API_SERVER}/team/rename`
 						method="post"
 						use:enhance={{
 							token: user.sessionToken,
@@ -357,7 +358,7 @@
 					</form>
 				{:else if form_status.copyto}
 					<form
-						action="http://localhost:5008/team/copyto"
+						action=`${API_SERVER}/team/copyto`
 						method="post"
 						use:enhance={{
 							token: user.sessionToken,
@@ -424,7 +425,7 @@
 	<Row>
 		<Col>
 			<form
-				action="http://localhost:5008/team/role/member/add"
+				action=`${API_SERVER}/team/role/member/add`
 				method="post"
 				use:enhance={{
 					token: user.sessionToken,
