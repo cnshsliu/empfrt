@@ -337,6 +337,7 @@
 									theDesigner.theKFK.sayHello();
 									await theDesigner.theKFK.loadTemplateDoc(template, tpl_mode);
 									form_status['copyto'] = false;
+									$title = template.tplid;
 									form.reset();
 									errmsg = '';
 								}

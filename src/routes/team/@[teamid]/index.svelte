@@ -83,13 +83,7 @@
 				{ teamid: team.teamid, role: name },
 				user.sessionToken
 			);
-			refreshTeam(ret);
-
-			/*
-			teams = teams.filter((t: Team) => {
-				return t.teamid !== name;
-			});
-			*/
+			refreshTeam(ret as Team);
 		}, 1);
 	};
 	function delete_team() {
@@ -153,6 +147,13 @@
 	function setMouseOverObjid(objid: string): void {
 		mouseover_objid = objid;
 	}
+
+	let urls = {
+		create: `${API_SERVER}/team/create`,
+		rename: `${API_SERVER}/team/rename`,
+		copyto: `${API_SERVER}/team/copyto`,
+		role_member_add: `${API_SERVER}/team/role/member/add`
+	};
 </script>
 
 <svelte:head>
@@ -237,7 +238,7 @@
 			<Col>
 				{#if form_status.create}
 					<form
-						action=`${API_SERVER}/team/create`
+						action={urls.create}
 						method="post"
 						use:enhance={{
 							token: user.sessionToken,
@@ -309,7 +310,7 @@
 					{#if errmsg !== ''}{errmsg}{/if}
 				{:else if form_status.rename}
 					<form
-						action=`${API_SERVER}/team/rename`
+						action={urls.rename}
 						method="post"
 						use:enhance={{
 							token: user.sessionToken,
@@ -358,7 +359,7 @@
 					</form>
 				{:else if form_status.copyto}
 					<form
-						action=`${API_SERVER}/team/copyto`
+						action={urls.copyto}
 						method="post"
 						use:enhance={{
 							token: user.sessionToken,
@@ -425,7 +426,7 @@
 	<Row>
 		<Col>
 			<form
-				action=`${API_SERVER}/team/role/member/add`
+				action={urls.role_member_add}
 				method="post"
 				use:enhance={{
 					token: user.sessionToken,

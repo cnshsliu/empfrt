@@ -26,6 +26,11 @@
 			team = (await api.post('team/role/member/delete', payload, token)) as Team;
 		}, 10);
 	}
+
+	let urls = {
+		role_member_add: `${API_SERVER}/team/role/member/add`,
+		role_copy: `${API_SERVER}/team/role/copy`
+	};
 </script>
 
 <Styles />
@@ -69,7 +74,7 @@
 		<Col xs="12">
 			{#if form_id === `add_${aRole}`}
 				<form
-					action=`${API_SERVER}/team/role/member/add`
+					action={urls.role_member_add}
 					method="post"
 					use:enhanceAddOneRoleMember={{
 						token: user.sessionToken,
@@ -102,7 +107,7 @@
 			{/if}
 			{#if form_id === `copy_${aRole}`}
 				<form
-					action=`${API_SERVER}/team/role/copy`
+					action={urls.role_copy}
 					method="post"
 					use:enhance={{
 						token: user.sessionToken,

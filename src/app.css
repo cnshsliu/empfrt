@@ -641,7 +641,7 @@ input::placeholder {
 	position: absolute;
 	top: 60px;
 	left: 70px;
-	max-width: 850px;
+	width: 100%;
 	border: 0px;
 	border-radius: 10px;
 	padding-bottom: 10px;
@@ -651,7 +651,7 @@ input::placeholder {
 	position: absolute;
 	top: 60px;
 	left: 70px;
-	width: 850px;
+	width: 100%;
 	border: 0px;
 	border-radius: 10px;
 	padding-bottom: 10px;
