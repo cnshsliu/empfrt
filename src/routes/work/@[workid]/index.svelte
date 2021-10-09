@@ -112,6 +112,9 @@ src="${API_SERVER}/work/iframe/${work.workid}"></iframe>`;
 		api.post('work/revoke', payload, user.sessionToken);
 		goto('/work');
 	}
+	function showWorkitem(workid: string) {
+		goto(`/work/@${workid}`, { replaceState: true });
+	}
 </script>
 
 <Container>
@@ -132,6 +135,20 @@ src="${API_SERVER}/work/iframe/${work.workid}"></iframe>`;
 									<a href={work.wf.pbo} target="_blank">{work.wf.pbo}</a>
 								</div>
 							</Col>
+						</Row>
+					</Container>
+					<Container class="mt-3 kfk-highlight-2">
+						<Row>
+							<Col>
+								Status: {work.status}
+							</Col>
+							<Col>
+								Done by: {work.doer}
+							</Col>
+							<Col>
+								at: {work.doneat ? moment(work.doneat).format('LLLL') : ''}
+							</Col>
+							<Col />
 						</Row>
 					</Container>
 					<Container class="mt-3 kfk-highlight-2">
@@ -228,32 +245,19 @@ src="${API_SERVER}/work/iframe/${work.workid}"></iframe>`;
 								{/if}
 							</Row>
 						</Container>
-					{:else}
-						{#if work.revocable}
-							<Container class="mt-3 kfk-highlight-2">
-								<Row>
-									<Col>
-										<Button
-											on:click={(e) => {
-												e.preventDefault();
-												_revokeWork();
-											}}
-										>
-											Revoke
-										</Button>
-									</Col>
-								</Row>
-							</Container>
-						{/if}
+					{:else if work.revocable}
 						<Container class="mt-3 kfk-highlight-2">
 							<Row>
 								<Col>
-									Done by: {work.doer}
+									<Button
+										on:click={(e) => {
+											e.preventDefault();
+											_revokeWork();
+										}}
+									>
+										Revoke
+									</Button>
 								</Col>
-								<Col>
-									at: {work.doneat ? moment(work.doneat).format('LLLL') : ''}
-								</Col>
-								<Col />
 							</Row>
 						</Container>
 					{/if}
@@ -287,7 +291,17 @@ src="${API_SERVER}/work/iframe/${work.workid}"></iframe>`;
 					<Container class="mt-2 kfk-highlight-2 ">
 						<Row cols={{ lg: 1, md: 1, sm: 1 }}>
 							<Col>
-								<div><b>{entry.title}</b></div>
+								<div>
+									<a
+										class="preview-link kfk-team-id kfk-link"
+										href={'#'}
+										on:click|preventDefault={() => {
+											showWorkitem(entry.workid);
+										}}
+									>
+										<b>{entry.title}</b>
+									</a>
+								</div>
 								By: {entry.doer}
 								at: {moment(entry.doneat).format('LLLL')}
 							</Col>
