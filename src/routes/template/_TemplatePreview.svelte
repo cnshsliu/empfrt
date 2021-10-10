@@ -55,6 +55,17 @@
 					<DropdownItem>
 						<a
 							href={'#'}
+							on:click|preventDefault={() => {
+								goto(`workflow?tplid=${template.tplid}`);
+							}}
+							class="nav-link "
+							><Icon name="trash" />
+							See workflows
+						</a>
+					</DropdownItem>
+					<DropdownItem>
+						<a
+							href={'#'}
 							on:click|preventDefault={() => deleteTemplate(template.tplid)}
 							class="nav-link "
 							><Icon name="trash" />

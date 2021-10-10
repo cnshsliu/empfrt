@@ -136,7 +136,7 @@
 		</Col>
 	</Row>
 </Container>
-<div class="kfk-menu" class:menu_has_form>
+<div class="kfk-menu container" class:menu_has_form>
 	<Container>
 		<Row>
 			<Col class="mt-1">

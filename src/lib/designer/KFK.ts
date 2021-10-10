@@ -122,6 +122,7 @@ const IsFalse = function (val: any) {
 
 class KFKclass {
 	APP: typeof APP = APP;
+	showingProp: boolean = false;
 	mode: string = 'POINTER';
 	scenario = 'template';
 	tpl: myJQuery = null;
@@ -617,8 +618,11 @@ class KFKclass {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		if (that.isEditting || that.resizing || that.dragging) return;
+		return;
 		if (that.JC3) {
+			console.log(new Error().stack);
 			const pos = that.getScrollPos();
+			console.log('scrollToPos', pos);
 			that.JC3.attr('tabIndex', '0');
 			that.JC3.focus();
 			that.scrollToPos(pos);
@@ -989,12 +993,19 @@ class KFKclass {
 	showPropForm(jqDIV: myJQuery) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		//如果传递过来的是空或者null，就隐藏掉rightPanel
 		if (KFKclass.NotSet(jqDIV)) {
-			if (that.currentJqNode) that.syncPropertyToNode('set nodisplay on undefined jqDIV');
 			$('#rightPanel').addClass('nodisplay');
 			return;
 		}
+		that.showingProp = true;
+		if (jqDIV.hasClass('AND')) {
+			that.designerCallback('showProp', { AND: true });
+		} else if (jqDIV.hasClass('ACTION')) {
+			that.designerCallback('showProp', { ACTION: true });
+		}
+
+		return;
+		//如果传递过来的是空或者null，就隐藏掉rightPanel
 		//否则，就要把rightPanel显示出来
 		$('#rightPanel').removeClass('nodisplay');
 		//先把针对不同节点类型的属性DIV全部隐藏起来
@@ -4947,10 +4958,15 @@ toggleOverview (jc3MousePos) {
 		});
 	}
 
-	addDocumentEventHandler() {
+	addDocumentEventHandler(force = false) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		if (that.documentEventHandlerSet) return;
+		if (that.documentEventHandlerSet && force === false) {
+			console.log('documentEventHandlerSet already, bypass');
+			return;
+		} else {
+			console.log('document events on');
+		}
 		//document keydown
 		//eslint-disable-next-line
 		$(document).keydown(async function (evt) {
@@ -4997,10 +5013,40 @@ toggleOverview (jc3MousePos) {
 					}
 					break;
 				case 'Escape':
+					console.log('got Escape');
 					if (that.mode === 'CONNECT') {
 						that.cancelLinkNode();
 						console.log('Cancel link..');
 					}
+					that.setMode('POINTER', evt);
+					break;
+				case '1':
+					that.setMode('ACTION', evt);
+					break;
+				case '2':
+					that.setMode('INFORM', evt);
+					break;
+				case '3':
+					that.setMode('SCRIPT', evt);
+					break;
+				case '4':
+					that.setMode('TIMER', evt);
+					break;
+				case '5':
+					that.setMode('SUB', evt);
+					break;
+				case '6':
+					that.setMode('AND', evt);
+					break;
+				case '7':
+					that.setMode('OR', evt);
+					break;
+				case '8':
+					that.setMode('CONNECT', evt);
+					break;
+				case 'Backspace':
+				case 'Delete':
+					that.deleteObjects(evt, false);
 					break;
 				default:
 					console.log('got key', evt.key);
@@ -5056,6 +5102,7 @@ toggleOverview (jc3MousePos) {
 					x: evt.clientX - that.panStartAt.x,
 					y: evt.clientY - that.panStartAt.y
 				};
+				console.log('panning...');
 				that.JS1.scrollLeft(that.JS1.scrollLeft() - delta.x * 2);
 				that.JS1.scrollTop(that.JS1.scrollTop() - delta.y * 2);
 				that.panStartAt.x = evt.clientX;

@@ -32,7 +32,7 @@
 			<a
 				class="btn btn-sm"
 				href={'#'}
-				on:click|preventDefault={() => opWorkflow(workflow.wfid, 'pause')}
+				on:click|preventDefault={() => opWorkflow(workflow, 'pause')}
 			>
 				<Icon name="play-circle-fill" class="kfk-workflow-action-icon" /> Pause
 			</a>
@@ -40,7 +40,7 @@
 			<a
 				class="btn btn-sm"
 				href={'#'}
-				on:click|preventDefault={() => opWorkflow(workflow.wfid, 'resume')}
+				on:click|preventDefault={() => opWorkflow(workflow, 'resume')}
 			>
 				<Icon name="play-circle-fill" class="kfk-workflow-action-icon" /> Resume
 			</a>
@@ -54,7 +54,25 @@
 					<DropdownItem>
 						<a
 							href={'#'}
-							on:click|preventDefault={() => opWorkflow(workflow.wfid, 'destroy')}
+							on:click|preventDefault={() => opWorkflow(workflow, 'startAnother')}
+							class="nav-link "
+							><Icon name="trash" />
+							Start Another
+						</a>
+					</DropdownItem>
+					<DropdownItem>
+						<a
+							href={'#'}
+							on:click|preventDefault={() => opWorkflow(workflow, 'viewTemplate')}
+							class="nav-link "
+							><Icon name="trash" />
+							View Template
+						</a>
+					</DropdownItem>
+					<DropdownItem>
+						<a
+							href={'#'}
+							on:click|preventDefault={() => opWorkflow(workflow, 'destroy')}
 							class="nav-link "
 							><Icon name="trash" />
 							Delete this workflow

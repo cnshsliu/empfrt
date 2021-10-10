@@ -1,8 +1,11 @@
 <script context="module" lang="ts">
 	export async function load({ page, fetch, session }) {
-		const res = await fetch('/workflow.json');
+		let res;
+		let tplid = page.query.get('tplid');
+		res = await fetch(`/workflow/index-${tplid}.json`);
 		return {
 			props: {
+				theTplid: tplid,
 				workflows: await res.json(),
 				user: session.user,
 				config: session.config
@@ -14,6 +17,7 @@
 <script lang="ts">
 	import { API_SERVER } from '$lib/Env';
 	import type { User, Workflow, Config } from '$lib/types';
+	import { goto } from '$app/navigation';
 	import * as api from '$lib/api';
 	import {
 		Container,
@@ -34,6 +38,7 @@
 	import { enhance } from '$lib/form';
 	import WorkflowList from './_WorkflowList.svelte';
 	export let menu_has_form = false;
+	export let theTplid;
 	export let workflows: Workflow[];
 	export let user: User;
 	export let config: Config;
@@ -66,27 +71,17 @@
 				return order;
 			} else return 0 - order;
 		});
-		/*
-		setTimeout(async () => {
-			const res = await api.post(
-				'template/search',
-				{
-					tplid: lastSearchCondition,
-					sort_field: field==='name'?'tplid':field,
-					sort_order: order
-				},
-				user.sessionToken
-			);
-			console.log(res);
-			workflows = res; //eslint-disable-line
-			for (let i = 0; i < workflows.length; i++) {
-				console.log(Date.parse(workflows[i].updatedAt));
-			}
-		}, 0);
-		*/
 	}
-	const opWorkflow = (wfid: string, op: string): void => {
+	const opWorkflow = (workflow: Workflow, op: string): void => {
+		if (op === 'startAnother') {
+			goto(`/template/start?tplid=${workflow.tplid}`);
+			return;
+		} else if (op === 'viewTemplate') {
+			goto(`/template/@${workflow.tplid}&read`);
+			return;
+		}
 		setTimeout(async () => {
+			let wfid = workflow.wfid;
 			let ret = await api.post('workflow/op', { wfid, op }, user.sessionToken);
 			if (op === 'destroy') {
 				workflows = workflows.filter((t: Workflow) => {
@@ -226,5 +221,5 @@
 	</Container>
 </div>
 <Container>
-	<WorkflowList {workflows} {opWorkflow} />
+	<WorkflowList {theTplid} {workflows} {opWorkflow} />
 </Container>

@@ -5,6 +5,7 @@
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 
+	export let theTplid: string;
 	export let workflows: Workflow[];
 	export let mouseover_objid: string = '';
 	function setMouseOverObjid(objid: string) {
@@ -15,7 +16,11 @@
 </script>
 
 {#if workflows.length === 0}
-	<div class="article-preview">No workflows are here... yet.</div>
+	{#if theTplid && theTplid !== 'null'}
+		<div class="article-preview">No workflows for template {theTplid} yet.</div>
+	{:else}
+		<div class="article-preview">No workflows are here... yet. {theTplid}</div>
+	{/if}
 {:else}
 	<div>
 		{#each workflows as workflow (workflow._id)}

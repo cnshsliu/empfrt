@@ -4,9 +4,19 @@
 	import jQuery from 'jquery';
 	import { session } from '$app/stores';
 	import type { Template, Workflow } from '$lib/types';
+	import And from '$lib/designer/prop/And.svelte';
+	import Action from '$lib/designer/prop/Action.svelte';
 	import KFK from '$lib/designer/KFK';
 	import { onMount, onDestroy } from 'svelte';
-	import { ListGroup, ListGroupItem } from 'sveltestrap';
+	import {
+		Button,
+		Modal,
+		ModalBody,
+		ModalFooter,
+		ModalHeader,
+		ListGroup,
+		ListGroupItem
+	} from 'sveltestrap';
 	export let template: Template;
 	export let workflow: Workflow;
 	export let tpl_mode: string;
@@ -16,15 +26,33 @@
 	let jqueryui: any;
 	let that = this;
 	let currentMode = KFK.mode;
+	let opens = {
+		AND: false
+	};
 	function designerSetMode(what: string, event: any) {
 		KFK.setMode(what, event);
 		currentMode = KFK.mode;
 	}
 
+	export let open;
+	const toggle = (e) => {
+		KFK.panStartAt = undefined;
+		e.preventDefault();
+		e.stopPropagation();
+		open = !open;
+		if (open === false) {
+			KFK.showingProp = false;
+		}
+	};
 	export function designerCallback_for_KFK(cmd: string, args: any): void {
 		switch (cmd) {
 			case 'setMode':
 				currentMode = args;
+				break;
+			case 'showProp':
+				opens = args;
+				open = true;
+				break;
 		}
 	}
 
@@ -34,14 +62,15 @@
 		console.log('onMounting....', $session);
 		KFK.designerCallback = designerCallback_for_KFK;
 		KFK.init($session.user);
-		console.log(workflow);
-		console.log(template);
+		//console.log(workflow);
+		//console.log(template);
 		KFK.scenario = workflow ? 'workflow' : 'template';
 		if (KFK.scenario === 'template') await KFK.loadTemplateDoc(template, tpl_mode);
 		else {
 			await KFK.loadWorkflowDoc(workflow);
 		}
 		theKFK = KFK;
+		theKFK.addDocumentEventHandler(true);
 	});
 	onDestroy(async () => {
 		jq(document).off();
@@ -56,12 +85,7 @@
 	<div id="C1">
 		<div id="C9" />
 		<div id="containerbkg" class="grid1" />
-		<div
-			id="C3"
-			on:focus={() => KFK.C3GotFocus()}
-			on:blur={() => KFK.C3Blur()}
-			on:mouseover={() => KFK.focusOnC3()}
-		/>
+		<div id="C3" on:focus={() => KFK.C3GotFocus()} on:blur={() => KFK.C3Blur()} />
 		<div id="selectingrect" class="selectingrect" />
 	</div>
 </div>
@@ -137,7 +161,7 @@
 			title="连接"
 		>
 			<img src="/svg/connect.svg" alt="" class="cocotool" id="tool_connect" />
-			<div class="shortcutkey">J</div>
+			<div class="shortcutkey">8</div>
 		</ListGroupItem>
 	</ListGroup>
 </div>
@@ -166,4 +190,20 @@
 		on:click={() => KFK.closeProperties()}
 	/>
 </div>
-<!--div id="minimap" class="padlayout spaceToHide" /-->
+<!-- div id="minimap" class="padlayout spaceToHide" / -->
+<Modal isOpen={open} {toggle}>
+	<ModalHeader {toggle}>Modal title</ModalHeader>
+	<ModalBody>
+		Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut
+		labore et dolore magna aliqua.
+		{#if opens.AND}
+			<And />
+		{:else if opens.ACTION}
+			<Action />
+		{/if}
+	</ModalBody>
+	<ModalFooter>
+		<Button color="primary" on:click={toggle}>Do Something</Button>
+		<Button color="secondary" on:click={toggle}>Cancel</Button>
+	</ModalFooter>
+</Modal>
