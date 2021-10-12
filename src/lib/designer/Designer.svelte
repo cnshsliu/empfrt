@@ -26,8 +26,11 @@
 	let jqueryui: any;
 	let that = this;
 	let currentMode = KFK.mode;
-	let opens = {
-		AND: false
+	let props;
+	let showProps = {
+		nodeType: '',
+		jqDiv: null,
+		props: {}
 	};
 	function designerSetMode(what: string, event: any) {
 		KFK.setMode(what, event);
@@ -35,10 +38,8 @@
 	}
 
 	export let open;
-	const toggle = (e) => {
+	const toggle = () => {
 		KFK.panStartAt = undefined;
-		e.preventDefault();
-		e.stopPropagation();
 		open = !open;
 		if (open === false) {
 			KFK.showingProp = false;
@@ -50,8 +51,9 @@
 				currentMode = args;
 				break;
 			case 'showProp':
-				opens = args;
 				open = true;
+				showProps = args;
+				props = showProps.props;
 				break;
 		}
 	}
@@ -196,10 +198,10 @@
 	<ModalBody>
 		Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut
 		labore et dolore magna aliqua.
-		{#if opens.AND}
-			<And />
-		{:else if opens.ACTION}
-			<Action />
+		{#if showProps.nodeType === 'AND'}
+			<And {props} />
+		{:else if showProps.nodeType === 'ACTION'}
+			<Action {props} />
 		{/if}
 	</ModalBody>
 	<ModalFooter>

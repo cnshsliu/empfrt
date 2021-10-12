@@ -938,56 +938,59 @@ class KFKclass {
 	 *
 	 * @param {} jqDIV
 	 */
-	nodeToAppData(jqDIV?: myJQuery) {
+	getNodeProperties(jqDIV?: myJQuery) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
+		const ret = {
+			ACTION: { id: '', role: '', label: '', kvars: '', katts: '' },
+			SCRIPT: { id: '', label: '', code: '' },
+			INFORM: { id: '', label: '', role: '', subject: '', content: '' },
+			TIMER: { id: '', label: '', code: '' },
+			SUB: { id: '', label: '', sub: '' },
+			AND: { id: '', label: '' }
+		};
 		if (KFKclass.NotSet(jqDIV)) jqDIV = that.currentJqNode;
 		if (jqDIV.hasClass('START')) {
 			console.error('TODO: here');
 		} else if (jqDIV.hasClass('ACTION')) {
-			that.APP.node.ACTION.id = jqDIV.attr('id').trim();
-			that.APP.node.ACTION.role = BlankToDefault(jqDIV.attr('role'), 'DEFAULT');
-			that.APP.node.ACTION.label = BlankToDefault(
-				jqDIV.find('p').first().text(),
-				'Activity'
-			).trim();
+			ret.ACTION.id = jqDIV.attr('id').trim();
+			ret.ACTION.role = BlankToDefault(jqDIV.attr('role'), 'DEFAULT');
+			ret.ACTION.label = BlankToDefault(jqDIV.find('p').first().text(), 'Activity').trim();
 			let kvarsString = BlankToDefault(jqDIV.find('.kvars').text(), 'e30=');
 			kvarsString = that.base64ToCode(kvarsString);
-			that.APP.node.ACTION.kvars = kvarsString;
+			ret.ACTION.kvars = kvarsString;
 			let kattsString = BlankToDefault(jqDIV.find('.katts').text(), 'e30=');
 			kattsString = that.base64ToCode(kattsString);
-			that.APP.node.ACTION.katts = kattsString;
+			ret.ACTION.katts = kattsString;
 		} else if (jqDIV.hasClass('SCRIPT')) {
-			that.APP.node.SCRIPT.id = jqDIV.attr('id');
-			that.APP.node.SCRIPT.label = BlankToDefault(jqDIV.find('p').first().text(), '').trim();
+			ret.SCRIPT.id = jqDIV.attr('id');
+			ret.SCRIPT.label = BlankToDefault(jqDIV.find('p').first().text(), '').trim();
 			let str = BlankToDefault(jqDIV.find('code').first().text(), '').trim();
 			str = that.base64ToCode(str);
-			that.APP.node.SCRIPT.code = str;
+			ret.SCRIPT.code = str;
 		} else if (jqDIV.hasClass('INFORM')) {
-			that.APP.node.INFORM.id = jqDIV.attr('id');
-			that.APP.node.INFORM.label = BlankToDefault(jqDIV.find('p').first().text(), 'Email').trim();
-			that.APP.node.INFORM.role = BlankToDefault(jqDIV.attr('role'), 'DEFAULT');
-			that.APP.node.INFORM.subject = BlankToDefault(
-				jqDIV.find('subject').first().text(),
-				''
-			).trim();
-			that.APP.node.INFORM.content = BlankToDefault(
-				jqDIV.find('content').first().text(),
-				''
-			).trim();
+			ret.INFORM.id = jqDIV.attr('id');
+			ret.INFORM.label = BlankToDefault(jqDIV.find('p').first().text(), 'Email').trim();
+			ret.INFORM.role = BlankToDefault(jqDIV.attr('role'), 'DEFAULT');
+			ret.INFORM.subject = BlankToDefault(jqDIV.find('subject').first().text(), '').trim();
+			ret.INFORM.content = BlankToDefault(jqDIV.find('content').first().text(), '').trim();
 		} else if (jqDIV.hasClass('TIMER')) {
-			that.APP.node.TIMER.id = jqDIV.attr('id');
-			that.APP.node.TIMER.label = BlankToDefault(jqDIV.find('p').first().text(), '').trim();
+			ret.TIMER.id = jqDIV.attr('id');
+			ret.TIMER.label = BlankToDefault(jqDIV.find('p').first().text(), '').trim();
 			const str = BlankToDefault(jqDIV.find('code').first().text(), '').trim();
-			that.APP.node.TIMER.code = str;
+			ret.TIMER.code = str;
 		} else if (jqDIV.hasClass('SUB')) {
-			that.APP.node.SUB.id = jqDIV.attr('id');
-			that.APP.node.SUB.label = BlankToDefault(jqDIV.find('p').first().text(), '').trim();
+			ret.SUB.id = jqDIV.attr('id');
+			ret.SUB.label = BlankToDefault(jqDIV.find('p').first().text(), '').trim();
 			const str = BlankToDefault(jqDIV.attr('sub'), '').trim();
-			that.APP.node.SUB.sub = str;
+			ret.SUB.sub = str;
+		} else if (jqDIV.hasClass('AND')) {
+			ret.AND.id = jqDIV.attr('id');
+			ret.AND.label = 'AND';
 		} else {
 			console.warn(jqDIV.attr('class'), 'nodetoAppData not implemented.');
 		}
+		return ret;
 	}
 	//on click node, node prop
 	showPropForm(jqDIV: myJQuery) {
@@ -998,10 +1001,19 @@ class KFKclass {
 			return;
 		}
 		that.showingProp = true;
+		console.log('here0');
 		if (jqDIV.hasClass('AND')) {
-			that.designerCallback('showProp', { AND: true });
+			that.designerCallback('showProp', {
+				nodeType: 'AND',
+				jqDiv: jqDIV,
+				props: that.getNodeProperties(jqDIV)
+			});
 		} else if (jqDIV.hasClass('ACTION')) {
-			that.designerCallback('showProp', { ACTION: true });
+			that.designerCallback('showProp', {
+				nodeType: 'ACTION',
+				jqDiv: jqDIV,
+				props: that.getNodeProperties(jqDIV)
+			});
 		}
 
 		return;
@@ -6339,8 +6351,6 @@ uploadFileToQcloudCOS (file) {
 		console.log('Hello, I am KFK');
 	}
 }
-
-const urlFull = window.location.href;
 
 const KFK = new KFKclass();
 
