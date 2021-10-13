@@ -2,6 +2,7 @@
 
 <script lang="ts">
 	import jQuery from 'jquery';
+	import KVars from '$lib/kvars';
 	import { session } from '$app/stores';
 	import type { Template, Workflow } from '$lib/types';
 	import And from '$lib/designer/prop/And.svelte';
@@ -27,6 +28,7 @@
 	let that = this;
 	let currentMode = KFK.mode;
 	let props;
+	let kvarsArr;
 	let showProps = {
 		nodeType: '',
 		jqDiv: null,
@@ -37,12 +39,26 @@
 		currentMode = KFK.mode;
 	}
 
-	export let open;
+	export let open = false;
 	const toggle = () => {
 		KFK.panStartAt = undefined;
 		open = !open;
 		if (open === false) {
 			KFK.showingProp = false;
+			console.log('closing...');
+			documentEventOn();
+		}
+	};
+	const setProp = () => {
+		toggle();
+		console.log('setto ', props);
+		if (showProps.nodeType === 'ACTION') {
+			theKFK.setNodeLabel(showProps.jqDiv, props.ACTION.label);
+			showProps.jqDiv.attr('role', props.ACTION.role.trim());
+			let kvars_json = KVars.arrayToKvars(kvarsArr);
+			let kvars_string = JSON.stringify(kvars_json);
+			let codeInBase64 = KVars.codeToBase64(kvars_string);
+			showProps.jqDiv.find('.kvars').first().prop('innerText', codeInBase64);
 		}
 	};
 	export function designerCallback_for_KFK(cmd: string, args: any): void {
@@ -54,6 +70,11 @@
 				open = true;
 				showProps = args;
 				props = showProps.props;
+				if (props.ACTION.kvars) {
+					kvarsArr = KVars.kvarsToArray(JSON.parse(props.ACTION.kvars));
+				}
+				console.log('opening...');
+				documentEventOff();
 				break;
 		}
 	}
@@ -74,6 +95,13 @@
 		theKFK = KFK;
 		theKFK.addDocumentEventHandler(true);
 	});
+
+	function documentEventOff() {
+		jq(document).off();
+	}
+	function documentEventOn() {
+		theKFK.addDocumentEventHandler(true);
+	}
 	onDestroy(async () => {
 		jq(document).off();
 		console.log('document event closed');
@@ -196,16 +224,14 @@
 <Modal isOpen={open} {toggle}>
 	<ModalHeader {toggle}>Modal title</ModalHeader>
 	<ModalBody>
-		Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut
-		labore et dolore magna aliqua.
 		{#if showProps.nodeType === 'AND'}
 			<And {props} />
 		{:else if showProps.nodeType === 'ACTION'}
-			<Action {props} />
+			<Action {props} {kvarsArr} />
 		{/if}
 	</ModalBody>
 	<ModalFooter>
-		<Button color="primary" on:click={toggle}>Do Something</Button>
+		<Button color="primary" on:click={setProp}>Set</Button>
 		<Button color="secondary" on:click={toggle}>Cancel</Button>
 	</ModalFooter>
 </Modal>
