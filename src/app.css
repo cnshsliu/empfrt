@@ -2613,3 +2613,6 @@ table.quick-help-table td:first-of-type {
 .kfk-kvar-value-display {
 	font-weight: bold;
 }
+.kfk-code-input {
+	min-height: calc(20em + 0.75rem + 2px) !important;
+}

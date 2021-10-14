@@ -2,11 +2,13 @@
 
 <script lang="ts">
 	import jQuery from 'jquery';
-	import KVars from '$lib/kvars';
+	import Parser from '$lib/parser';
 	import { session } from '$app/stores';
 	import type { Template, Workflow } from '$lib/types';
 	import And from '$lib/designer/prop/And.svelte';
 	import Action from '$lib/designer/prop/Action.svelte';
+	import Script from '$lib/designer/prop/Script.svelte';
+	import Inform from '$lib/designer/prop/Inform.svelte';
 	import KFK from '$lib/designer/KFK';
 	import { onMount, onDestroy } from 'svelte';
 	import {
@@ -27,9 +29,9 @@
 	let jqueryui: any;
 	let that = this;
 	let currentMode = KFK.mode;
-	let props;
 	let kvarsArr;
-	let showProps = {
+	let roleOptions = [];
+	let nodeInfo = {
 		nodeType: '',
 		jqDiv: null,
 		props: {}
@@ -51,14 +53,18 @@
 	};
 	const setProp = () => {
 		toggle();
-		console.log('setto ', props);
-		if (showProps.nodeType === 'ACTION') {
-			theKFK.setNodeLabel(showProps.jqDiv, props.ACTION.label);
-			showProps.jqDiv.attr('role', props.ACTION.role.trim());
-			let kvars_json = KVars.arrayToKvars(kvarsArr);
+		console.log('setto ', nodeInfo.props);
+		if (nodeInfo.nodeType === 'ACTION') {
+			theKFK.setNodeLabel(nodeInfo.jqDiv, nodeInfo.props.ACTION.label);
+			nodeInfo.jqDiv.attr('role', nodeInfo.props.ACTION.role.trim());
+			let kvars_json = Parser.arrayToKvars(kvarsArr);
 			let kvars_string = JSON.stringify(kvars_json);
-			let codeInBase64 = KVars.codeToBase64(kvars_string);
-			showProps.jqDiv.find('.kvars').first().prop('innerText', codeInBase64);
+			let codeInBase64 = Parser.codeToBase64(kvars_string);
+			nodeInfo.jqDiv.find('.kvars').first().prop('innerText', codeInBase64);
+		} else if (nodeInfo.nodeType === 'SCRIPT') {
+			theKFK.setNodeScriptCode(nodeInfo.jqDiv, nodeInfo.props.SCRIPT.code);
+		} else if (nodeInfo.nodeType === 'INFORM') {
+			theKFK.setNodeInform(nodeInfo.jqDiv, nodeInfo.props.INFORM.code);
 		}
 	};
 	export function designerCallback_for_KFK(cmd: string, args: any): void {
@@ -68,12 +74,18 @@
 				break;
 			case 'showProp':
 				open = true;
-				showProps = args;
-				props = showProps.props;
-				if (props.ACTION.kvars) {
-					kvarsArr = KVars.kvarsToArray(JSON.parse(props.ACTION.kvars));
+				nodeInfo = args;
+				let nodeType = args.nodeType;
+				if (nodeType === 'ACTION') {
+					//ACTION 是需要有role和kvars的
+					roleOptions = Parser.collectRoles(args.nodes);
+					if (nodeInfo.props.ACTION.kvars) {
+						kvarsArr = Parser.kvarsToArray(JSON.parse(nodeInfo.props.ACTION.kvars));
+					}
+				} else if (nodeType === 'INFORM') {
+					roleOptions = Parser.collectRoles(args.nodes);
 				}
-				console.log('opening...');
+				console.log('opening...', args);
 				documentEventOff();
 				break;
 		}
@@ -88,8 +100,9 @@
 		//console.log(workflow);
 		//console.log(template);
 		KFK.scenario = workflow ? 'workflow' : 'template';
-		if (KFK.scenario === 'template') await KFK.loadTemplateDoc(template, tpl_mode);
-		else {
+		if (KFK.scenario === 'template') {
+			await KFK.loadTemplateDoc(template, tpl_mode);
+		} else {
 			await KFK.loadWorkflowDoc(workflow);
 		}
 		theKFK = KFK;
@@ -222,12 +235,16 @@
 </div>
 <!-- div id="minimap" class="padlayout spaceToHide" / -->
 <Modal isOpen={open} {toggle}>
-	<ModalHeader {toggle}>Modal title</ModalHeader>
+	<ModalHeader {toggle}>{nodeInfo.props.label}</ModalHeader>
 	<ModalBody>
-		{#if showProps.nodeType === 'AND'}
-			<And {props} />
-		{:else if showProps.nodeType === 'ACTION'}
-			<Action {props} {kvarsArr} />
+		{#if nodeInfo.nodeType === 'AND'}
+			<And {nodeInfo} />
+		{:else if nodeInfo.nodeType === 'ACTION'}
+			<Action {nodeInfo} {kvarsArr} {roleOptions} />
+		{:else if nodeInfo.nodeType === 'SCRIPT'}
+			<Script {nodeInfo} />
+		{:else if nodeInfo.nodeType === 'INFORM'}
+			<Inform {nodeInfo} />
 		{/if}
 	</ModalBody>
 	<ModalFooter>

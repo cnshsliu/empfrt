@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer';
-const KVars = {
+const Parser = {
 	kvarsToArray: function (kvars, workid): any[] {
 		const kvarsArr = [];
 		for (const [name, valueDef] of Object.entries(kvars)) {
@@ -55,7 +55,24 @@ const KVars = {
 	},
 	base64ToCode: function (base64: string) {
 		return Buffer.from(base64, 'base64').toString('utf-8');
+	},
+
+	collectRoles: function (nodes) {
+		const ret = [];
+		nodes.each((_index: any, aNode: any) => {
+			//eslint-disable-line
+			const aRole = $(aNode).attr('role');
+			if (aRole && ret.indexOf(aRole) === -1) {
+				ret.push(aRole);
+			}
+		});
+		if (ret.indexOf('DEFAULT') === -1) {
+			ret.push('DEFAULT');
+		}
+		if (ret.indexOf('STARTER') === -1) {
+			ret.unshift('STARTER');
+		}
+		return ret;
 	}
 };
-
-export default KVars;
+export default Parser;

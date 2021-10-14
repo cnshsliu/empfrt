@@ -675,6 +675,22 @@ class KFKclass {
 		return isDirty ? 1 : 0;
 	}
 
+	setNodeScriptCode(jqDIV: myJQuery, code: string) {
+		let that = this;
+		const appData_code = code.trim();
+		let codeInBase64 = '';
+		if (NotBlank(appData_code)) {
+			codeInBase64 = that.codeToBase64(appData_code);
+		}
+		if (jqDIV.find('code').length > 0) {
+			if (jqDIV.find('code').first().text().trim() !== codeInBase64) {
+				jqDIV.find('code').prop('innerText', codeInBase64);
+			}
+		} else {
+			jqDIV.append('<code>' + codeInBase64 + '</code>');
+		}
+	}
+
 	setNodeId(jqDIV: myJQuery, id: string) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -703,6 +719,8 @@ class KFKclass {
 		);
 	}
 
+	//onSave onsave on Save  on save
+	//on upload
 	drawingToTemplateDoc() {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -947,15 +965,17 @@ class KFKclass {
 			INFORM: { id: '', label: '', role: '', subject: '', content: '' },
 			TIMER: { id: '', label: '', code: '' },
 			SUB: { id: '', label: '', sub: '' },
-			AND: { id: '', label: '' }
+			AND: { id: '', label: '' },
+			label: ''
 		};
 		if (KFKclass.NotSet(jqDIV)) jqDIV = that.currentJqNode;
 		if (jqDIV.hasClass('START')) {
-			console.error('TODO: here');
+			ret.label = 'START';
 		} else if (jqDIV.hasClass('ACTION')) {
 			ret.ACTION.id = jqDIV.attr('id').trim();
 			ret.ACTION.role = BlankToDefault(jqDIV.attr('role'), 'DEFAULT');
 			ret.ACTION.label = BlankToDefault(jqDIV.find('p').first().text(), 'Activity').trim();
+			ret.label = ret.ACTION.label;
 			let kvarsString = BlankToDefault(jqDIV.find('.kvars').text(), 'e30=');
 			kvarsString = that.base64ToCode(kvarsString);
 			ret.ACTION.kvars = kvarsString;
@@ -964,29 +984,34 @@ class KFKclass {
 			ret.ACTION.katts = kattsString;
 		} else if (jqDIV.hasClass('SCRIPT')) {
 			ret.SCRIPT.id = jqDIV.attr('id');
-			ret.SCRIPT.label = BlankToDefault(jqDIV.find('p').first().text(), '').trim();
+			ret.SCRIPT.label = 'SCRIPT';
+			ret.label = ret.SCRIPT.label;
 			let str = BlankToDefault(jqDIV.find('code').first().text(), '').trim();
 			str = that.base64ToCode(str);
 			ret.SCRIPT.code = str;
 		} else if (jqDIV.hasClass('INFORM')) {
 			ret.INFORM.id = jqDIV.attr('id');
 			ret.INFORM.label = BlankToDefault(jqDIV.find('p').first().text(), 'Email').trim();
+			ret.label = ret.INFORM.label;
 			ret.INFORM.role = BlankToDefault(jqDIV.attr('role'), 'DEFAULT');
 			ret.INFORM.subject = BlankToDefault(jqDIV.find('subject').first().text(), '').trim();
 			ret.INFORM.content = BlankToDefault(jqDIV.find('content').first().text(), '').trim();
 		} else if (jqDIV.hasClass('TIMER')) {
 			ret.TIMER.id = jqDIV.attr('id');
 			ret.TIMER.label = BlankToDefault(jqDIV.find('p').first().text(), '').trim();
+			ret.label = ret.TIMER.label;
 			const str = BlankToDefault(jqDIV.find('code').first().text(), '').trim();
 			ret.TIMER.code = str;
 		} else if (jqDIV.hasClass('SUB')) {
 			ret.SUB.id = jqDIV.attr('id');
 			ret.SUB.label = BlankToDefault(jqDIV.find('p').first().text(), '').trim();
+			ret.label = ret.SUB.label;
 			const str = BlankToDefault(jqDIV.attr('sub'), '').trim();
 			ret.SUB.sub = str;
 		} else if (jqDIV.hasClass('AND')) {
 			ret.AND.id = jqDIV.attr('id');
 			ret.AND.label = 'AND';
+			ret.label = ret.AND.label;
 		} else {
 			console.warn(jqDIV.attr('class'), 'nodetoAppData not implemented.');
 		}
@@ -1002,17 +1027,27 @@ class KFKclass {
 		}
 		that.showingProp = true;
 		console.log('here0');
-		if (jqDIV.hasClass('AND')) {
+		let nodeProps = that.getNodeProperties(jqDIV);
+		console.log(nodeProps);
+		if (jqDIV.hasClass('SCRIPT')) {
 			that.designerCallback('showProp', {
-				nodeType: 'AND',
+				nodeType: 'SCRIPT',
 				jqDiv: jqDIV,
-				props: that.getNodeProperties(jqDIV)
+				props: nodeProps
 			});
 		} else if (jqDIV.hasClass('ACTION')) {
 			that.designerCallback('showProp', {
 				nodeType: 'ACTION',
 				jqDiv: jqDIV,
-				props: that.getNodeProperties(jqDIV)
+				props: nodeProps,
+				nodes: that.JC3.find('.node')
+			});
+		} else if (jqDIV.hasClass('INFORM')) {
+			that.designerCallback('showProp', {
+				nodeType: 'INFORM',
+				jqDiv: jqDIV,
+				props: nodeProps,
+				nodes: that.JC3.find('.node')
 			});
 		}
 
@@ -1084,6 +1119,7 @@ class KFKclass {
 
 		//TODO: focusOnNode show property form
 		console.log('FocusOnNode', jqNodeDIV);
+		console.log('Set node property here ...');
 		if (jqNodeDIV !== null) {
 			that.showPropForm(jqNodeDIV);
 		} else {
@@ -2084,7 +2120,6 @@ class KFKclass {
 				that.focusOnNode(jqNodeDIV);
 				if (that.mode === 'POINTER') {
 					that.selectNodeOnClick(jqNodeDIV, evt.shiftKey);
-					console.log('Set node property here ...');
 				} else if (that.mode === 'CONNECT') {
 					if (that.afterDragging === false) {
 						await that.yarkLinkNode(jqNodeDIV, evt.shiftKey);

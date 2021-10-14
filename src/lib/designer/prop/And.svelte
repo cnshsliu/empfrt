@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Container, Row, Col } from 'sveltestrap';
-	export let props;
+	export let nodeInfo;
 </script>
 
 <Container>
