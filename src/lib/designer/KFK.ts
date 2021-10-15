@@ -675,8 +675,9 @@ class KFKclass {
 		return isDirty ? 1 : 0;
 	}
 
-	setNodeScriptCode(jqDIV: myJQuery, code: string) {
+	setNodeScript(jqDIV: myJQuery, propJSON: any) {
 		let that = this;
+		let code = propJSON.code;
 		const appData_code = code.trim();
 		let codeInBase64 = '';
 		if (NotBlank(appData_code)) {
@@ -688,6 +689,35 @@ class KFKclass {
 			}
 		} else {
 			jqDIV.append('<code>' + codeInBase64 + '</code>');
+		}
+	}
+
+	setNodeInform(jqDIV: myJQuery, propJSON: any) {
+		const subject = propJSON.subject;
+		const content = propJSON.content;
+		const role = propJSON.role;
+		let node_subject = '';
+		let node_content = '';
+		let theRole = jqDIV.attr('role');
+		theRole = theRole ? theRole.trim() : '';
+		if (theRole !== role.trim() && role.trim() !== 'DEFAULT' && NotBlank(role.trim())) {
+			jqDIV.attr('role', role.trim());
+		}
+		if (jqDIV.find('subject').length > 0) {
+			node_subject = jqDIV.find('subject').first().text().trim();
+			if (node_subject !== subject) {
+				jqDIV.find('subject').prop('innerText', subject);
+			}
+		} else {
+			jqDIV.append('<subject>' + subject + '</subject>');
+		}
+		if (jqDIV.find('content').length > 0) {
+			node_content = jqDIV.find('content').first().text().trim();
+			if (node_content !== content) {
+				jqDIV.find('content').prop('innerText', content);
+			}
+		} else {
+			jqDIV.append('<content>' + content + '</content>');
 		}
 	}
 

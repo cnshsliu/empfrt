@@ -62,9 +62,9 @@
 			let codeInBase64 = Parser.codeToBase64(kvars_string);
 			nodeInfo.jqDiv.find('.kvars').first().prop('innerText', codeInBase64);
 		} else if (nodeInfo.nodeType === 'SCRIPT') {
-			theKFK.setNodeScriptCode(nodeInfo.jqDiv, nodeInfo.props.SCRIPT.code);
+			theKFK.setNodeScript(nodeInfo.jqDiv, nodeInfo.props.SCRIPT);
 		} else if (nodeInfo.nodeType === 'INFORM') {
-			theKFK.setNodeInform(nodeInfo.jqDiv, nodeInfo.props.INFORM.code);
+			theKFK.setNodeInform(nodeInfo.jqDiv, nodeInfo.props.INFORM);
 		}
 	};
 	export function designerCallback_for_KFK(cmd: string, args: any): void {
@@ -244,7 +244,7 @@
 		{:else if nodeInfo.nodeType === 'SCRIPT'}
 			<Script {nodeInfo} />
 		{:else if nodeInfo.nodeType === 'INFORM'}
-			<Inform {nodeInfo} />
+			<Inform {nodeInfo} {roleOptions} />
 		{/if}
 	</ModalBody>
 	<ModalFooter>
