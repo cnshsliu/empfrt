@@ -2511,6 +2511,12 @@ table.quick-help-table td:first-of-type {
 	background-image: url('/svg/OR.svg');
 }
 
+.node.GROUND {
+	left: 400px;
+	top: 300px;
+	background-image: url('/svg/GROUND.svg');
+}
+
 .node.END {
 	left: 800px;
 	top: 300px;
@@ -2615,4 +2621,14 @@ table.quick-help-table td:first-of-type {
 }
 .kfk-code-input {
 	min-height: calc(20em + 0.75rem + 2px) !important;
+}
+.kfk-timer-code {
+	font-size: 1.5em;
+}
+.kfk-timer-input input {
+	max-width: 8em;
+}
+.kfk-property-id {
+	font-size: 0.5em;
+	font-color: #666666;
 }

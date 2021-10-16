@@ -1,13 +1,22 @@
 import { Buffer } from 'buffer';
+interface KVars {
+	name: string;
+	def: unknown;
+}
 const Parser = {
-	kvarsToArray: function (kvars, workid): any[] {
+	isEmpty: function (str: string | number): boolean {
+		if (str === undefined || str === null) return true;
+		if (str === '') return true;
+		return false;
+	},
+	kvarsToArray: function (kvars: KVars, workid: string): Record<string, unknown>[] {
 		const kvarsArr = [];
 		for (const [name, valueDef] of Object.entries(kvars)) {
 			//eslint-disable-next-line
 			if (name === 'reason2') {
 				console.log(valueDef);
 			}
-			let tmp = {};
+			let tmp: Record<string, unknown> = {};
 			if (typeof valueDef === 'string') tmp = { name: name, value: valueDef, type: 'plaintext' };
 			else {
 				tmp = { ...{ name: name }, ...valueDef };
@@ -42,24 +51,25 @@ const Parser = {
 		}
 		return kvarsArr;
 	},
-	arrayToKvars: function (kvarsArray): any {
-		let ret = {};
+	arrayToKvars: function (kvarsArray: KVars[]): KVars {
+		const ret: KVars = {}; //eslint-disable-line
 		for (let i = 0; i < kvarsArray.length; i++) {
 			ret[kvarsArray[i].name] = kvarsArray[i];
 			delete ret[kvarsArray[i].name]['name'];
 		}
 		return ret;
 	},
-	codeToBase64: function (code: string) {
+	codeToBase64: function (code: string): string {
 		return Buffer.from(code).toString('base64');
 	},
-	base64ToCode: function (base64: string) {
+	base64ToCode: function (base64: string): string {
 		return Buffer.from(base64, 'base64').toString('utf-8');
 	},
 
-	collectRoles: function (nodes) {
-		const ret = [];
-		nodes.each((_index: any, aNode: any) => {
+	//eslint-disable-next-line
+	collectRoles: function (nodes): string[] {
+		const ret: string[] = [];
+		nodes.each((_index: number, aNode: unknown) => {
 			//eslint-disable-line
 			const aRole = $(aNode).attr('role');
 			if (aRole && ret.indexOf(aRole) === -1) {

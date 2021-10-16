@@ -9,6 +9,8 @@
 	import Action from '$lib/designer/prop/Action.svelte';
 	import Script from '$lib/designer/prop/Script.svelte';
 	import Inform from '$lib/designer/prop/Inform.svelte';
+	import Timer from '$lib/designer/prop/Timer.svelte';
+	import Sub from '$lib/designer/prop/Sub.svelte';
 	import KFK from '$lib/designer/KFK';
 	import { onMount, onDestroy } from 'svelte';
 	import {
@@ -34,59 +36,51 @@
 	let nodeInfo = {
 		nodeType: '',
 		jqDiv: null,
-		props: {}
+		nodeProps: { kvarsArr: [], label: '' }
 	};
 	function designerSetMode(what: string, event: any) {
 		KFK.setMode(what, event);
 		currentMode = KFK.mode;
 	}
 
-	export let open = false;
+	export let openModal = false;
 	const toggle = () => {
 		KFK.panStartAt = undefined;
-		open = !open;
-		if (open === false) {
+		openModal = !openModal;
+		if (openModal === false) {
 			KFK.showingProp = false;
 			console.log('closing...');
 			documentEventOn();
 		}
 	};
-	const setProp = () => {
+	const setNodeProperties = () => {
 		toggle();
-		console.log('setto ', nodeInfo.props);
+		console.log('setto ', nodeInfo.nodeProps);
 		if (nodeInfo.nodeType === 'ACTION') {
-			theKFK.setNodeLabel(nodeInfo.jqDiv, nodeInfo.props.ACTION.label);
-			nodeInfo.jqDiv.attr('role', nodeInfo.props.ACTION.role.trim());
-			let kvars_json = Parser.arrayToKvars(kvarsArr);
-			let kvars_string = JSON.stringify(kvars_json);
-			let codeInBase64 = Parser.codeToBase64(kvars_string);
-			nodeInfo.jqDiv.find('.kvars').first().prop('innerText', codeInBase64);
-		} else if (nodeInfo.nodeType === 'SCRIPT') {
-			theKFK.setNodeScript(nodeInfo.jqDiv, nodeInfo.props.SCRIPT);
-		} else if (nodeInfo.nodeType === 'INFORM') {
-			theKFK.setNodeInform(nodeInfo.jqDiv, nodeInfo.props.INFORM);
+			nodeInfo.nodeProps.kvarsArr = kvarsArr;
 		}
+		theKFK.setNodeProperties(nodeInfo.jqDiv, nodeInfo.nodeProps);
 	};
-	export function designerCallback_for_KFK(cmd: string, args: any): void {
+	export function designerCallback(cmd: string, args: any): void {
 		switch (cmd) {
 			case 'setMode':
 				currentMode = args;
 				break;
 			case 'showProp':
-				open = true;
 				nodeInfo = args;
 				let nodeType = args.nodeType;
 				if (nodeType === 'ACTION') {
 					//ACTION 是需要有role和kvars的
 					roleOptions = Parser.collectRoles(args.nodes);
-					if (nodeInfo.props.ACTION.kvars) {
-						kvarsArr = Parser.kvarsToArray(JSON.parse(nodeInfo.props.ACTION.kvars));
+					if (nodeInfo.nodeProps.ACTION.kvars) {
+						kvarsArr = Parser.kvarsToArray(JSON.parse(nodeInfo.nodeProps.ACTION.kvars));
 					}
 				} else if (nodeType === 'INFORM') {
 					roleOptions = Parser.collectRoles(args.nodes);
 				}
 				console.log('opening...', args);
 				documentEventOff();
+				openModal = true;
 				break;
 		}
 	}
@@ -95,7 +89,7 @@
 		const module = await import('jquery-ui-dist/jquery-ui');
 		jqueryui = module.default;
 		console.log('onMounting....', $session);
-		KFK.designerCallback = designerCallback_for_KFK;
+		KFK.designerCallback = designerCallback;
 		KFK.init($session.user);
 		//console.log(workflow);
 		//console.log(template);
@@ -199,43 +193,26 @@
 			<div class="shortcutkey">7</div>
 		</ListGroupItem>
 		<ListGroupItem
+			class="d-flex align-items-center toolbox {currentMode === 'GROUND' ? 'active' : ''}"
+			on:click={(event) => designerSetMode('GROUND', event)}
+			title="接地"
+		>
+			<img src="/svg/GROUND.svg" alt="" class="cocotool" />
+			<div class="shortcutkey">8</div>
+		</ListGroupItem>
+		<ListGroupItem
 			class="d-flex align-items-center toolbox {currentMode === 'CONNECT' ? 'active' : ''}"
 			on:click={(event) => designerSetMode('CONNECT', event)}
 			title="连接"
 		>
 			<img src="/svg/connect.svg" alt="" class="cocotool" id="tool_connect" />
-			<div class="shortcutkey">8</div>
+			<div class="shortcutkey">9</div>
 		</ListGroupItem>
 	</ListGroup>
 </div>
-<div
-	id="rightPanel"
-	class="bg-white padlayout spaceToHide"
-	on:click|preventDefault|stopPropagation={() => KFK.clickOnRightPanel()}
->
-	<div id="prop_START" class="prop_form nodisplay">
-		<div class="view prop_section">
-			<container class="text-center">
-				<row class="m5 node_title"> Template </row>
-			</container>
-		</div>
-		<div class="edit prop_section flex">
-			<container class="text-center">
-				<row class="m5 node_title text-center"> Template </row>
-			</container>
-		</div>
-	</div>
-	<icon
-		icon="plus"
-		rotate="45"
-		id="close_button"
-		font-scale="1.5"
-		on:click={() => KFK.closeProperties()}
-	/>
-</div>
 <!-- div id="minimap" class="padlayout spaceToHide" / -->
-<Modal isOpen={open} {toggle}>
-	<ModalHeader {toggle}>{nodeInfo.props.label}</ModalHeader>
+<Modal isOpen={openModal} {toggle}>
+	<ModalHeader {toggle}>{nodeInfo.nodeProps.label}</ModalHeader>
 	<ModalBody>
 		{#if nodeInfo.nodeType === 'AND'}
 			<And {nodeInfo} />
@@ -245,10 +222,14 @@
 			<Script {nodeInfo} />
 		{:else if nodeInfo.nodeType === 'INFORM'}
 			<Inform {nodeInfo} {roleOptions} />
+		{:else if nodeInfo.nodeType === 'TIMER'}
+			<Timer {nodeInfo} />
+		{:else if nodeInfo.nodeType === 'SUB'}
+			<Sub {nodeInfo} />
 		{/if}
 	</ModalBody>
 	<ModalFooter>
-		<Button color="primary" on:click={setProp}>Set</Button>
+		<Button color="primary" on:click={setNodeProperties}>Set</Button>
 		<Button color="secondary" on:click={toggle}>Cancel</Button>
 	</ModalFooter>
 </Modal>

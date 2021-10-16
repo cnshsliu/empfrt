@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 import { SVG } from '@svgdotjs/svg.js';
 import suuid from 'short-uuid';
+import Parser from '$lib/parser';
 import jQuery from 'jquery';
 import lodash from 'lodash';
 import { gunzip } from '$lib/gzip';
@@ -97,6 +98,7 @@ interface myJQuery {
 	resizable: any;
 	droppable: any;
 	remove: any;
+	html: any;
 }
 
 function el(jq: any) {
@@ -419,7 +421,6 @@ class KFKclass {
 	setMode(mode: string, event?: any): void {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		console.log(mode, event);
 		if (that.docIsReadOnly()) mode = 'POINTER';
 
 		const shiftKey = event ? event.shiftKey : false;
@@ -673,52 +674,6 @@ class KFKclass {
 			isDirty = true;
 		}
 		return isDirty ? 1 : 0;
-	}
-
-	setNodeScript(jqDIV: myJQuery, propJSON: any) {
-		let that = this;
-		let code = propJSON.code;
-		const appData_code = code.trim();
-		let codeInBase64 = '';
-		if (NotBlank(appData_code)) {
-			codeInBase64 = that.codeToBase64(appData_code);
-		}
-		if (jqDIV.find('code').length > 0) {
-			if (jqDIV.find('code').first().text().trim() !== codeInBase64) {
-				jqDIV.find('code').prop('innerText', codeInBase64);
-			}
-		} else {
-			jqDIV.append('<code>' + codeInBase64 + '</code>');
-		}
-	}
-
-	setNodeInform(jqDIV: myJQuery, propJSON: any) {
-		const subject = propJSON.subject;
-		const content = propJSON.content;
-		const role = propJSON.role;
-		let node_subject = '';
-		let node_content = '';
-		let theRole = jqDIV.attr('role');
-		theRole = theRole ? theRole.trim() : '';
-		if (theRole !== role.trim() && role.trim() !== 'DEFAULT' && NotBlank(role.trim())) {
-			jqDIV.attr('role', role.trim());
-		}
-		if (jqDIV.find('subject').length > 0) {
-			node_subject = jqDIV.find('subject').first().text().trim();
-			if (node_subject !== subject) {
-				jqDIV.find('subject').prop('innerText', subject);
-			}
-		} else {
-			jqDIV.append('<subject>' + subject + '</subject>');
-		}
-		if (jqDIV.find('content').length > 0) {
-			node_content = jqDIV.find('content').first().text().trim();
-			if (node_content !== content) {
-				jqDIV.find('content').prop('innerText', content);
-			}
-		} else {
-			jqDIV.append('<content>' + content + '</content>');
-		}
 	}
 
 	setNodeId(jqDIV: myJQuery, id: string) {
@@ -1014,7 +969,7 @@ class KFKclass {
 			ret.ACTION.katts = kattsString;
 		} else if (jqDIV.hasClass('SCRIPT')) {
 			ret.SCRIPT.id = jqDIV.attr('id');
-			ret.SCRIPT.label = 'SCRIPT';
+			ret.SCRIPT.label = BlankToDefault(jqDIV.find('p').first().text(), 'Script').trim();
 			ret.label = ret.SCRIPT.label;
 			let str = BlankToDefault(jqDIV.find('code').first().text(), '').trim();
 			str = that.base64ToCode(str);
@@ -1028,115 +983,139 @@ class KFKclass {
 			ret.INFORM.content = BlankToDefault(jqDIV.find('content').first().text(), '').trim();
 		} else if (jqDIV.hasClass('TIMER')) {
 			ret.TIMER.id = jqDIV.attr('id');
-			ret.TIMER.label = BlankToDefault(jqDIV.find('p').first().text(), '').trim();
+			ret.TIMER.label = BlankToDefault(jqDIV.find('p').first().text(), 'Timer').trim();
 			ret.label = ret.TIMER.label;
 			const str = BlankToDefault(jqDIV.find('code').first().text(), '').trim();
+			console.log('Get node properties', str);
 			ret.TIMER.code = str;
 		} else if (jqDIV.hasClass('SUB')) {
 			ret.SUB.id = jqDIV.attr('id');
-			ret.SUB.label = BlankToDefault(jqDIV.find('p').first().text(), '').trim();
+			ret.SUB.label = BlankToDefault(jqDIV.find('p').first().text(), 'Sub').trim();
 			ret.label = ret.SUB.label;
-			const str = BlankToDefault(jqDIV.attr('sub'), '').trim();
-			ret.SUB.sub = str;
+			ret.SUB.sub = BlankToDefault(jqDIV.attr('sub'), '').trim();
 		} else if (jqDIV.hasClass('AND')) {
 			ret.AND.id = jqDIV.attr('id');
 			ret.AND.label = 'AND';
 			ret.label = ret.AND.label;
-		} else {
-			console.warn(jqDIV.attr('class'), 'nodetoAppData not implemented.');
 		}
 		return ret;
+	}
+
+	setNodeProperties(jqDIV: myJQuery, props: any) {
+		let propJSON = { subject: '', content: '', role: '', code: '', label: '', sub: '' };
+		if (jqDIV.hasClass('ACTION')) {
+			propJSON = props.ACTION;
+			this.setNodeLabel(jqDIV, propJSON.label);
+			jqDIV.attr('role', propJSON.role.trim());
+			const kvars_json = Parser.arrayToKvars(props.kvarsArr);
+			const kvars_string = JSON.stringify(kvars_json);
+			const codeInBase64 = Parser.codeToBase64(kvars_string);
+			jqDIV.find('.kvars').first().prop('innerText', codeInBase64);
+		} else if (jqDIV.hasClass('SCRIPT')) {
+			propJSON = props.SCRIPT;
+			this.setNodeLabel(jqDIV, props.label);
+			const code = propJSON.code;
+			const appData_code = code.trim();
+			let codeInBase64 = '';
+			if (NotBlank(appData_code)) {
+				codeInBase64 = this.codeToBase64(appData_code);
+			}
+			if (jqDIV.find('code').length > 0) {
+				if (jqDIV.find('code').first().text().trim() !== codeInBase64) {
+					jqDIV.find('code').prop('innerText', codeInBase64);
+				}
+			} else {
+				jqDIV.append('<code>' + codeInBase64 + '</code>');
+			}
+		} else if (jqDIV.hasClass('INFORM')) {
+			propJSON = props.INFORM;
+			this.setNodeLabel(jqDIV, props.label);
+			const subject = propJSON.subject;
+			const content = propJSON.content;
+			const role = propJSON.role;
+			let node_subject = '';
+			let node_content = '';
+			let theRole = jqDIV.attr('role');
+			theRole = theRole ? theRole.trim() : '';
+			if (theRole !== role.trim() && role.trim() !== 'DEFAULT' && NotBlank(role.trim())) {
+				jqDIV.attr('role', role.trim());
+			}
+			if (jqDIV.find('subject').length > 0) {
+				node_subject = jqDIV.find('subject').first().text().trim();
+				if (node_subject !== subject) {
+					jqDIV.find('subject').prop('innerText', subject);
+				}
+			} else {
+				jqDIV.append('<subject>' + subject + '</subject>');
+			}
+			if (jqDIV.find('content').length > 0) {
+				node_content = jqDIV.find('content').first().text().trim();
+				if (node_content !== content) {
+					jqDIV.find('content').prop('innerText', content);
+				}
+			} else {
+				jqDIV.append('<content>' + content + '</content>');
+			}
+		} else if (jqDIV.hasClass('TIMER')) {
+			propJSON = props.TIMER;
+			this.setNodeLabel(jqDIV, props.label);
+			const appData_code = propJSON.code.trim();
+			if (jqDIV.find('code').length > 0) {
+				if (jqDIV.find('code').first().text().trim() !== appData_code) {
+					jqDIV.find('code').prop('innerText', appData_code);
+				}
+			} else {
+				jqDIV.append('<code>' + appData_code + '</code>');
+			}
+		} else if (jqDIV.hasClass('SUB')) {
+			propJSON = props.SUB;
+			const appData_code = propJSON.sub.trim();
+			this.setNodeLabel(jqDIV, props.label);
+			jqDIV.attr('sub', appData_code);
+		}
+		this.onChange('Property Changed');
 	}
 	//on click node, node prop
 	showPropForm(jqDIV: myJQuery) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		if (KFKclass.NotSet(jqDIV)) {
-			$('#rightPanel').addClass('nodisplay');
-			return;
-		}
 		that.showingProp = true;
-		console.log('here0');
-		let nodeProps = that.getNodeProperties(jqDIV);
-		console.log(nodeProps);
+		const nodeProps = that.getNodeProperties(jqDIV);
 		if (jqDIV.hasClass('SCRIPT')) {
 			that.designerCallback('showProp', {
 				nodeType: 'SCRIPT',
 				jqDiv: jqDIV,
-				props: nodeProps
+				nodeProps: nodeProps
 			});
 		} else if (jqDIV.hasClass('ACTION')) {
 			that.designerCallback('showProp', {
 				nodeType: 'ACTION',
 				jqDiv: jqDIV,
-				props: nodeProps,
+				nodeProps: nodeProps,
 				nodes: that.JC3.find('.node')
 			});
 		} else if (jqDIV.hasClass('INFORM')) {
 			that.designerCallback('showProp', {
 				nodeType: 'INFORM',
 				jqDiv: jqDIV,
-				props: nodeProps,
+				nodeProps: nodeProps,
 				nodes: that.JC3.find('.node')
+			});
+		} else if (jqDIV.hasClass('TIMER')) {
+			that.designerCallback('showProp', {
+				nodeType: 'TIMER',
+				jqDiv: jqDIV,
+				nodeProps: nodeProps
+			});
+		} else if (jqDIV.hasClass('SUB')) {
+			that.designerCallback('showProp', {
+				nodeType: 'SUB',
+				jqDiv: jqDIV,
+				nodeProps: nodeProps
 			});
 		}
 
 		return;
-		//如果传递过来的是空或者null，就隐藏掉rightPanel
-		//否则，就要把rightPanel显示出来
-		$('#rightPanel').removeClass('nodisplay');
-		//先把针对不同节点类型的属性DIV全部隐藏起来
-		$('#rightPanel')
-			.find('div.prop_form')
-			.each((_index, aDiv) => {
-				$(aDiv).addClass('nodisplay');
-			});
-		//然后针对edit/view的section全部隐藏起来
-		$('#rightPanel')
-			.find('div.prop_section')
-			.each((_index, aDiv) => {
-				$(aDiv).addClass('nodisplay');
-			});
-		if (jqDIV) {
-			if (that.currentJqNode && that.currentJqNode !== jqDIV) {
-				//如果之前有节点，则先保存它的值
-				that.syncPropertyToNode('Save previous');
-			}
-
-			let formToShow = '';
-			that.currentJqNode = jqDIV;
-			if (jqDIV.hasClass('START')) {
-				formToShow = 'START';
-				that.nodeToAppData(jqDIV);
-			} else if (jqDIV.hasClass('ACTION')) {
-				formToShow = 'ACTION';
-				that.nodeToAppData(jqDIV);
-			} else if (jqDIV.hasClass('SCRIPT')) {
-				formToShow = 'SCRIPT';
-				that.nodeToAppData(jqDIV);
-			} else if (jqDIV.hasClass('INFORM')) {
-				formToShow = 'INFORM';
-				that.nodeToAppData(jqDIV);
-			} else if (jqDIV.hasClass('TIMER')) {
-				formToShow = 'TIMER';
-				that.nodeToAppData(jqDIV);
-			} else if (jqDIV.hasClass('SUB')) {
-				formToShow = 'SUB';
-				that.nodeToAppData(jqDIV);
-			} else if (jqDIV.hasClass('AND')) {
-				formToShow = 'AND';
-				that.nodeToAppData(jqDIV);
-			} else if (jqDIV.hasClass('OR')) {
-				formToShow = 'OR';
-				that.nodeToAppData(jqDIV);
-			} else {
-				console.warn(jqDIV.attr('class'), 'property form not implemented');
-			}
-			if (formToShow !== '') {
-				$(`#prop_${formToShow}`).removeClass('nodisplay');
-				$(`#prop_${formToShow} .${that.tpl_mode}`).removeClass('nodisplay');
-			}
-		}
 	}
 
 	focusOnNode(jqNodeDIV: myJQuery) {
@@ -1146,15 +1125,6 @@ class KFKclass {
 		that.lastSetNoteJq = jqNodeDIV;
 		that.justCreatedJqNode = null;
 		that.justCreatedShape = null;
-
-		//TODO: focusOnNode show property form
-		console.log('FocusOnNode', jqNodeDIV);
-		console.log('Set node property here ...');
-		if (jqNodeDIV !== null) {
-			that.showPropForm(jqNodeDIV);
-		} else {
-			that.showPropForm(null);
-		}
 	}
 
 	/**
@@ -1382,7 +1352,7 @@ class KFKclass {
 		if (that.shapeDragging) return;
 		if (that.nodeLocked(jqDIV)) return;
 		if (that.linkPosNode.length === 0) {
-			if (jqDIV.hasClass('END')) return;
+			if (jqDIV.hasClass('END') || jqDIV.hasClass('GROUND')) return;
 		}
 		if (that.linkPosNode.length > 0) {
 			if (jqDIV.hasClass('START')) return;
@@ -1444,10 +1414,20 @@ class KFKclass {
 		//以上两种情况中，1会只导致只U第一个； 2会导致U；两端两个节点
 
 		if (!shiftKey) {
+			//如果没有按住Shift，则结束连接操作
 			that.linkPosNode.splice(0, 2);
 		} else {
-			that.linkPosNode[0] = that.linkPosNode[1];
-			that.linkPosNode.splice(1, 1);
+			//如果按住Shift，
+			//如果连接到的对象是END或GROUND
+			if (that.linkPosNode[1].hasClass('END') || that.linkPosNode[1].hasClass('GROUND')) {
+				//则从出发点继续连接其他节点
+				that.tmpPos = that.calculateNodeConnectPoints(that.linkPosNode[0]);
+				that.linkPosNode.splice(1, 1);
+			} else {
+				//如果结束点不是END或GROUND，则把结束点作为出发点，继续连接
+				that.linkPosNode[0] = that.linkPosNode[1];
+				that.linkPosNode.splice(1, 1);
+			}
 		}
 	}
 
@@ -2150,6 +2130,7 @@ class KFKclass {
 				that.focusOnNode(jqNodeDIV);
 				if (that.mode === 'POINTER') {
 					that.selectNodeOnClick(jqNodeDIV, evt.shiftKey);
+					that.showPropForm(jqNodeDIV);
 				} else if (that.mode === 'CONNECT') {
 					if (that.afterDragging === false) {
 						await that.yarkLinkNode(jqNodeDIV, evt.shiftKey);
@@ -2375,6 +2356,8 @@ class KFKclass {
 					to: jqDIV.clone()
 				});
 				that.onChange('New Node');
+			} else if (that.mode !== 'POINTER') {
+				console.warn(that.mode, 'does not have config in cocoConfig');
 			}
 		}
 
@@ -2534,46 +2517,6 @@ toggleOverview (jc3MousePos) {
 			evt.preventDefault();
 			evt.stopPropagation();
 			console.log('JC3.keydown', evt.key, that.mode, that.drawMode);
-			switch (evt.key) {
-				case 'Escape':
-					if (that.mode === 'CONNECT') {
-						that.cancelLinkNode();
-						console.log('Cancel link..');
-					} else {
-						that.setMode('POINTER');
-					}
-					break;
-				case '1':
-					that.setMode('ACTION');
-					break;
-				case '2':
-					that.setMode('INFORM');
-					break;
-				case '3':
-					that.setMode('SCRIPT');
-					break;
-				case '4':
-					that.setMode('TIMER');
-					break;
-				case '5':
-					that.setMode('SUB');
-					break;
-				case '6':
-					that.setMode('AND');
-					break;
-				case '7':
-					that.setMode('OR');
-					break;
-				case 'j':
-					that.setMode('CONNECT');
-					break;
-				case 'Backspace': //Backspace
-				case 'Delete': //Delete key del  key delete
-					that.deleteObjects(evt, false);
-					break;
-				default:
-					break;
-			}
 			if (
 				(evt.key === 'Enter' || evt.key === 'Escape') &&
 				that.mode === 'line' &&
@@ -2632,6 +2575,7 @@ toggleOverview (jc3MousePos) {
 			that.ignoreClick = false;
 		});
 
+		//eslint-disable-next-line
 		that.JC1.on('mousemove', function (_evt: MouseEvent) {
 			that.onC3 = true;
 		});
@@ -3050,6 +2994,9 @@ toggleOverview (jc3MousePos) {
 				break;
 			case 'OR':
 				label = 'OR';
+				break;
+			case 'GROUND':
+				label = 'GROUND';
 				break;
 			default:
 				label = 'Activity';
@@ -4703,6 +4650,7 @@ toggleOverview (jc3MousePos) {
 			$('#minimap').addClass('noshow');
 			that.myFadeOut($('#leftPanel'), 500);
 			KFKclass.hide(that.JC3);
+			//eslint-disable-next-line
 			that.tpl = $(wfobj.doc).first('.template');
 			const nodes = that.tpl.find('.node');
 			nodes.addClass('kfknode');
@@ -4777,17 +4725,11 @@ toggleOverview (jc3MousePos) {
 		$('#leftPanel').on('click', function (evt) {
 			evt.stopPropagation();
 		});
-		$('#rightPanel').on('click', function (evt) {
-			evt.stopPropagation();
-		});
 		//topPropgation will stop click on C1 and C3, or else, C3 will jump after move mouse from designer_topMenu to C1
 		$('#designer_topMenu').on('click', function (evt) {
 			evt.stopPropagation();
 		});
 		$('#leftPanel').on('mousedown', function (evt) {
-			evt.stopPropagation();
-		});
-		$('#rightPanel').on('mousedown', function (evt) {
 			evt.stopPropagation();
 		});
 		$('#designer_topMenu').on('mousedown', function (evt) {
@@ -5119,6 +5061,9 @@ toggleOverview (jc3MousePos) {
 					that.setMode('OR', evt);
 					break;
 				case '8':
+					that.setMode('GROUND', evt);
+					break;
+				case '9':
 					that.setMode('CONNECT', evt);
 					break;
 				case 'Backspace':
@@ -6403,13 +6348,6 @@ uploadFileToQcloudCOS (file) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		return that.docIsNotReadOnly();
-	}
-
-	closeProperties() {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		$('#rightPanel').addClass('nodisplay');
-		if (that.currentJqNode) that.syncPropertyToNode('closeProperties');
 	}
 
 	sayHello() {

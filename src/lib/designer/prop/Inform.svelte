@@ -7,22 +7,28 @@
 </script>
 
 <Container>
-	<Row>
-		<Col>{nodeInfo.props.label}</Col>
+	<Row cols="1">
+		<Col>ID: {nodeInfo.nodeProps.INFORM.id}</Col>
+		<Col>
+			<InputGroup size="sm">
+				<InputGroupText>Label</InputGroupText>
+				<Input bind:value={nodeInfo.nodeProps.label} />
+			</InputGroup>
+		</Col>
 	</Row>
 	<Row cols="1">
 		<Col>
 			<InputGroup size="sm">
-				<InputGroupText>To Role:</InputGroupText>
-				<Input bind:value={nodeInfo.props.INFORM.role} />
+				<InputGroupText>To Role</InputGroupText>
+				<Input bind:value={nodeInfo.nodeProps.INFORM.role} />
 			</InputGroup>
 		</Col>
 		<Col>
 			<InputGroup size="sm">
-				<InputGroupText>Pick an existing role:</InputGroupText>
+				<InputGroupText>Pick an existing role</InputGroupText>
 				<Input
 					type="select"
-					bind:value={nodeInfo.props.INFORM.role}
+					bind:value={nodeInfo.nodeProps.INFORM.role}
 					name="select"
 					id="exampleSelect"
 				>
@@ -34,15 +40,22 @@
 		</Col>
 		<Col>
 			<InputGroup size="sm">
-				<InputGroupText>Subject:</InputGroupText>
-				<Input bind:value={nodeInfo.props.INFORM.subject} />
+				<InputGroupText>Subject</InputGroupText>
+				<Input bind:value={nodeInfo.nodeProps.INFORM.subject} />
 			</InputGroup>
 		</Col>
 		<Col>
 			<InputGroup size="sm">
-				<InputGroupText>Content:</InputGroupText>
-				<Input bind:value={nodeInfo.props.INFORM.content} type="textarea" class="kfk-code-input" />
+				<InputGroupText>Content</InputGroupText>
+				<Input
+					bind:value={nodeInfo.nodeProps.INFORM.content}
+					type="textarea"
+					class="kfk-code-input"
+				/>
 			</InputGroup>
 		</Col>
+	</Row>
+	<Row cols="1" class="mt-3">
+		<Col class="kfk-property-id">ID: {nodeInfo.nodeProps.INFORM.id}</Col>
 	</Row>
 </Container>

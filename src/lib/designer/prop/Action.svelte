@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Parser from '$lib/parser';
-	import { Container, Row, Col, InputGroup, InputGroupText, Input } from 'sveltestrap';
+	import { Container, Button, Row, Col, InputGroup, InputGroupText, Input } from 'sveltestrap';
 
 	export let nodeInfo;
 	export let kvarsArr = [];
@@ -8,28 +8,25 @@
 </script>
 
 <Container>
-	<Row>
-		<Col>{nodeInfo.props.ACTION.label}</Col>
-	</Row>
 	<Row cols="1">
 		<Col>
 			<InputGroup size="sm">
-				<InputGroupText>Label:</InputGroupText>
-				<Input bind:value={nodeInfo.props.ACTION.label} />
+				<InputGroupText>Label</InputGroupText>
+				<Input bind:value={nodeInfo.nodeProps.ACTION.label} />
 			</InputGroup>
 		</Col>
 		<Col>
 			<InputGroup size="sm">
-				<InputGroupText>Role:</InputGroupText>
-				<Input bind:value={nodeInfo.props.ACTION.role} />
+				<InputGroupText>Role</InputGroupText>
+				<Input bind:value={nodeInfo.nodeProps.ACTION.role} />
 			</InputGroup>
 		</Col>
 		<Col>
 			<InputGroup size="sm">
-				<InputGroupText>Pick an existing role:</InputGroupText>
+				<InputGroupText>Pick an existing role</InputGroupText>
 				<Input
 					type="select"
-					bind:value={nodeInfo.props.ACTION.role}
+					bind:value={nodeInfo.nodeProps.ACTION.role}
 					name="select"
 					id="exampleSelect"
 				>
@@ -39,22 +36,47 @@
 				</Input>
 			</InputGroup>
 		</Col>
-		<Col>Vars:</Col>
+		<Col class="mt-3 mt-1">
+			<InputGroup size="sm"
+				>Vars <Button
+					color="primary"
+					size="sm"
+					on:click={(e) => {
+						console.log('add new variable');
+						e.preventDefault();
+						kvarsArr.push({
+							name: '',
+							label: '',
+							value: ''
+						});
+						kvarsArr = kvarsArr;
+					}}>+ Add new variable</Button
+				>
+			</InputGroup>
+		</Col>
 		<Col>
 			<Container>
 				<Row cols="1">
-					{#each kvarsArr as kvar}
-						<Col>
+					{#each kvarsArr as kvar, index}
+						<Col class="mt-2">
 							<InputGroup size="sm">
-								<InputGroupText>Name:</InputGroupText>
+								<InputGroupText>Name</InputGroupText>
 								<Input bind:value={kvar.name} />
+								<Button
+									color="primary"
+									on:click={(e) => {
+										e.preventDefault();
+										kvarsArr.splice(index, 1);
+										kvarsArr = kvarsArr;
+									}}>-</Button
+								>
 							</InputGroup>
 							<InputGroup size="sm">
-								<InputGroupText>Value:</InputGroupText>
+								<InputGroupText>Value</InputGroupText>
 								<Input bind:value={kvar.value} />
 							</InputGroup>
 							<InputGroup size="sm">
-								<InputGroupText>Label:</InputGroupText>
+								<InputGroupText>Label</InputGroupText>
 								<Input bind:value={kvar.label} />
 							</InputGroup>
 						</Col>
@@ -62,5 +84,8 @@
 				</Row>
 			</Container>
 		</Col>
+	</Row>
+	<Row cols="1" class="mt-3">
+		<Col class="kfk-property-id">ID: {nodeInfo.nodeProps.ACTION.id}</Col>
 	</Row>
 </Container>
