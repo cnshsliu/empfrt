@@ -3,9 +3,9 @@
 <script lang="ts">
 	import jQuery from 'jquery';
 	import Parser from '$lib/parser';
+	import * as api from '$lib/api';
 	import { session } from '$app/stores';
-	import type { Template, Workflow } from '$lib/types';
-	import And from '$lib/designer/prop/And.svelte';
+	import type { Template, Workflow, KFKclass } from '$lib/types';
 	import Action from '$lib/designer/prop/Action.svelte';
 	import Script from '$lib/designer/prop/Script.svelte';
 	import Inform from '$lib/designer/prop/Inform.svelte';
@@ -32,6 +32,7 @@
 	let that = this;
 	let currentMode = KFK.mode;
 	let kvarsArr;
+	let errMsg = '';
 	let roleOptions = [];
 	let nodeInfo = {
 		nodeType: '',
@@ -53,12 +54,25 @@
 			documentEventOn();
 		}
 	};
-	const setNodeProperties = () => {
-		toggle();
-		console.log('setto ', nodeInfo.nodeProps);
+	const setNodeProperties = async () => {
+		console.log('set', nodeInfo.nodeType, ' to ', nodeInfo.nodeProps);
 		if (nodeInfo.nodeType === 'ACTION') {
 			nodeInfo.nodeProps.kvarsArr = kvarsArr;
 		}
+		if (nodeInfo.nodeType === 'SUB') {
+			let templates = await api.post(
+				'template/search',
+				{ tplid: nodeInfo.nodeProps.SUB.sub, fields: { _id: 0, doc: 0 } },
+				$session.user.sessionToken
+			);
+			if (templates.length === 0) {
+				errMsg = `${nodeInfo.nodeProps.SUB.sub} does not exist`;
+				return;
+			} else {
+				errMsg = '';
+			}
+		}
+		toggle();
 		theKFK.setNodeProperties(nodeInfo.jqDiv, nodeInfo.nodeProps);
 	};
 	export function designerCallback(cmd: string, args: any): void {
@@ -214,9 +228,7 @@
 <Modal isOpen={openModal} {toggle}>
 	<ModalHeader {toggle}>{nodeInfo.nodeProps.label}</ModalHeader>
 	<ModalBody>
-		{#if nodeInfo.nodeType === 'AND'}
-			<And {nodeInfo} />
-		{:else if nodeInfo.nodeType === 'ACTION'}
+		{#if nodeInfo.nodeType === 'ACTION'}
 			<Action {nodeInfo} {kvarsArr} {roleOptions} />
 		{:else if nodeInfo.nodeType === 'SCRIPT'}
 			<Script {nodeInfo} />
@@ -225,7 +237,7 @@
 		{:else if nodeInfo.nodeType === 'TIMER'}
 			<Timer {nodeInfo} />
 		{:else if nodeInfo.nodeType === 'SUB'}
-			<Sub {nodeInfo} />
+			<Sub {nodeInfo} {errMsg} />
 		{/if}
 	</ModalBody>
 	<ModalFooter>

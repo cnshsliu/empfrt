@@ -3,6 +3,7 @@
 	import { Container, Row, Col, InputGroup, InputGroupText, Input } from 'sveltestrap';
 
 	export let nodeInfo;
+	export let errMsg;
 	let timerCodePrefix = '+';
 	if (Parser.isEmpty(nodeInfo.nodeProps.SUB.sub)) {
 		nodeInfo.nodeProps.SUB.sub = '';
@@ -22,6 +23,9 @@
 				<InputGroupText>SUB</InputGroupText>
 				<Input bind:value={nodeInfo.nodeProps.SUB.sub} />
 			</InputGroup>
+		</Col>
+		<Col>
+			{errMsg}
 		</Col>
 	</Row>
 	<Row class="mt-3">

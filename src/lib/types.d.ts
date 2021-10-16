@@ -100,4 +100,5 @@ export interface Config {
 
 export interface KFKclass {
 	designerCallback: any;
+	addDocumentEventHandler: any;
 }
