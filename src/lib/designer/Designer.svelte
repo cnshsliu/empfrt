@@ -15,6 +15,9 @@
 	import KFK from '$lib/designer/KFK';
 	import { onMount, onDestroy } from 'svelte';
 	import {
+		Container,
+		Row,
+		Col,
 		Button,
 		Modal,
 		ModalBody,
@@ -46,6 +49,8 @@
 	}
 
 	export let openModal = false;
+	export let modalSize = undefined;
+	let helpId = undefined;
 	const toggle = () => {
 		KFK.panStartAt = undefined;
 		openModal = !openModal;
@@ -63,6 +68,7 @@
 		toggle();
 		await theKFK.setConnectProperties(nodeInfo.theConnect, nodeInfo.caseValue);
 	};
+
 	const setNodeProperties = async () => {
 		console.log('set', nodeInfo.nodeType, ' to ', nodeInfo.nodeProps);
 		if (nodeInfo.nodeType === 'ACTION') {
@@ -90,6 +96,8 @@
 				currentMode = args;
 				break;
 			case 'showNodeProp':
+				modalSize = undefined;
+				helpId = undefined;
 				nodeInfo = args;
 				if (nodeInfo.nodeType === 'ACTION') {
 					//ACTION 是需要有role和kvars的
@@ -105,6 +113,8 @@
 				openModal = true;
 				break;
 			case 'showConnectProp':
+				modalSize = undefined;
+				helpId = undefined;
 				nodeInfo = args;
 				console.log('opening...', args);
 				documentEventOff();
@@ -116,7 +126,6 @@
 	onMount(async () => {
 		const module = await import('jquery-ui-dist/jquery-ui');
 		jqueryui = module.default;
-		console.log('onMounting....', $session);
 		KFK.designerCallback = designerCallback;
 		KFK.init($session.user);
 		//console.log(workflow);
@@ -144,6 +153,15 @@
 	export function sayHello() {
 		console.log('Hello, I am Designer');
 	}
+	const showHelp = function (hid) {
+		if (hid) {
+			helpId = hid.toUpperCase();
+		} else {
+			helpId = 'NONE';
+		}
+
+		modalSize = hid ? 'xl' : undefined;
+	};
 </script>
 
 <div id="S1">
@@ -239,22 +257,43 @@
 	</ListGroup>
 </div>
 <!-- div id="minimap" class="padlayout spaceToHide" / -->
-<Modal isOpen={openModal} {toggle}>
+<Modal isOpen={openModal} {toggle} size={modalSize}>
 	<ModalHeader {toggle}>{nodeInfo.nodeProps.label}</ModalHeader>
 	<ModalBody>
-		{#if nodeInfo.nodeType === 'ACTION'}
-			<Action {nodeInfo} {kvarsArr} {roleOptions} />
-		{:else if nodeInfo.nodeType === 'SCRIPT'}
-			<Script {nodeInfo} />
-		{:else if nodeInfo.nodeType === 'INFORM'}
-			<Inform {nodeInfo} {roleOptions} />
-		{:else if nodeInfo.nodeType === 'TIMER'}
-			<Timer {nodeInfo} />
-		{:else if nodeInfo.nodeType === 'SUB'}
-			<Sub {nodeInfo} {errMsg} />
-		{:else if nodeInfo.nodeType === 'CONNECT'}
-			<Connect {nodeInfo} />
-		{/if}
+		<Container>
+			<Row>
+				<Col>
+					{#if nodeInfo.nodeType === 'ACTION'}
+						<Action {nodeInfo} {kvarsArr} {roleOptions} {showHelp} />
+					{:else if nodeInfo.nodeType === 'SCRIPT'}
+						<Script {nodeInfo} {showHelp} />
+					{:else if nodeInfo.nodeType === 'INFORM'}
+						<Inform {nodeInfo} {roleOptions} {showHelp} />
+					{:else if nodeInfo.nodeType === 'TIMER'}
+						<Timer {nodeInfo} {showHelp} />
+					{:else if nodeInfo.nodeType === 'SUB'}
+						<Sub {nodeInfo} {errMsg} {showHelp} />
+					{:else if nodeInfo.nodeType === 'CONNECT'}
+						<Connect {nodeInfo} {showHelp} />
+					{/if}
+				</Col>
+				{#if helpId === 'ACTION'}
+					<Col>ACTION HELP HERE</Col>
+				{:else if helpId === 'SCRIPT'}
+					<Col>SCRIPT HELP HERE</Col>
+				{:else if helpId === 'CONNECT'}
+					<Col>CONNECT HELP HERE</Col>
+				{:else if helpId === 'INFORM'}
+					<Col>INFORM HELP HERE</Col>
+				{:else if helpId === 'SCRIPT'}
+					<Col>SCRIPT HELP HERE</Col>
+				{:else if helpId === 'SUB'}
+					<Col>SUB HELP HERE</Col>
+				{:else if helpId === 'TIMER'}
+					<Col>TIMER HELP HERE</Col>
+				{/if}
+			</Row>
+		</Container>
 	</ModalBody>
 	<ModalFooter>
 		<Button color="primary" on:click={setNodeOrConnectProperties}>Set</Button>

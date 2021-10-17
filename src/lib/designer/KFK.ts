@@ -946,7 +946,7 @@ class KFKclass {
 		const that = this;
 		const ret = {
 			ACTION: { id: '', role: '', label: '', kvars: '', katts: '' },
-			SCRIPT: { id: '', label: '', code: '' },
+			SCRIPT: { id: '', label: '', code: '', runmode: 'ASYNC' },
 			INFORM: { id: '', label: '', role: '', subject: '', content: '' },
 			TIMER: { id: '', label: '', code: '' },
 			SUB: { id: '', label: '', sub: '' },
@@ -969,6 +969,7 @@ class KFKclass {
 			ret.ACTION.katts = kattsString;
 		} else if (jqDIV.hasClass('SCRIPT')) {
 			ret.SCRIPT.id = jqDIV.attr('id');
+			ret.SCRIPT.runmode = jqDIV.attr('runmode') ? jqDIV.attr('runmode') : 'SYNC';
 			ret.SCRIPT.label = BlankToDefault(jqDIV.find('p').first().text(), 'Script').trim();
 			ret.label = ret.SCRIPT.label;
 			let str = BlankToDefault(jqDIV.find('code').first().text(), '').trim();
@@ -1002,7 +1003,15 @@ class KFKclass {
 	}
 
 	setNodeProperties(jqDIV: myJQuery, props: any) {
-		let propJSON = { subject: '', content: '', role: '', code: '', label: '', sub: '' };
+		let propJSON = {
+			subject: '',
+			content: '',
+			role: '',
+			code: '',
+			runmode: '',
+			label: '',
+			sub: ''
+		};
 		if (jqDIV.hasClass('ACTION')) {
 			propJSON = props.ACTION;
 			this.setNodeLabel(jqDIV, propJSON.label);
@@ -1014,6 +1023,7 @@ class KFKclass {
 		} else if (jqDIV.hasClass('SCRIPT')) {
 			propJSON = props.SCRIPT;
 			this.setNodeLabel(jqDIV, props.label);
+			jqDIV.attr('runmode', propJSON.runmode.trim());
 			const code = propJSON.code;
 			const appData_code = code.trim();
 			let codeInBase64 = '';
@@ -1255,7 +1265,7 @@ class KFKclass {
 		const divTop = KFKclass.unpx(jqDIV.css('top'));
 		const divWidth = KFKclass.unpx(jqDIV.css('width'));
 		const divHeight = KFKclass.unpx(jqDIV.css('height'));
-		console.log(`${jqDIV.attr('id')}: ${divLeft}  ${divTop} ${divWidth} ${divHeight}`);
+		/* console.log(`${jqDIV.attr('id')}: ${divLeft}  ${divTop} ${divWidth} ${divHeight}`); */
 
 		const pos = {
 			center: {
@@ -2569,7 +2579,7 @@ toggleOverview (jc3MousePos) {
 			}
 		});
 		that.JC3.on('click', async function (evt: MouseEvent) {
-			console.log('JC3 onClick');
+			/* console.log('JC3 onClick'); */
 			if (evt.ctrlKey) {
 				evt.stopPropagation();
 				evt.preventDefault();
@@ -3144,7 +3154,7 @@ toggleOverview (jc3MousePos) {
 	) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		that.debug('Redrawlinks', reason, 'bothside', bothside);
+		/* that.debug('Redrawlinks', reason, 'bothside', bothside); */
 		if (!(jqNode instanceof jQuery)) {
 			console.error('redrawLinkLines for a non-jquery object, sometime caused by no await');
 			return;
@@ -4498,18 +4508,18 @@ toggleOverview (jc3MousePos) {
 		switch (moduleName) {
 			case 'AdvOps':
 				that.AdvOps
-					? console.log('AdvOps already loaded')
+					? that.debug('AdvOps already loaded')
 					: import('./advOps').then((pack) => {
 							that.AdvOps = pack.AdvOps;
-							console.log('AdvOps just loaded');
+							that.debug('AdvOps just loaded');
 					  });
 				break;
 			case 'DivStyler':
 				that.DivStyler
-					? console.log('DivStyler already exists')
+					? that.debug('DivStyler already exists')
 					: import('./divStyler').then((pack) => {
 							that.DivStyler = pack.DivStyler;
-							console.log('DivStyler just loaded');
+							that.debug('DivStyler just loaded');
 					  });
 				break;
 		}
@@ -4595,14 +4605,12 @@ toggleOverview (jc3MousePos) {
 		that.addSvgLayer();
 
 		that.opstack.splice(0, that.opstacklen);
-		console.log(that.APP.model.viewConfig.bgcolor);
 		that.opz = -1;
 		that.APP.setData('model', 'actionlog', []);
 
 		// that.APP.setData("model", "cocodoc", that.DocController.getDummyDoc());
 		// localStorage.removeItem("cocodoc");
 
-		console.log('Add document event handler');
 		that.focusOnC3();
 		that.cancelAlreadySelected();
 
@@ -5012,10 +5020,10 @@ toggleOverview (jc3MousePos) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		if (that.documentEventHandlerSet && force === false) {
-			console.log('documentEventHandlerSet already, bypass');
+			that.debug('documentEventHandlerSet already, bypass');
 			return;
 		} else {
-			console.log('document events on');
+			that.debug('document events on');
 		}
 		//document keydown
 		//eslint-disable-next-line
@@ -5102,7 +5110,8 @@ toggleOverview (jc3MousePos) {
 					that.deleteObjects(evt, false);
 					break;
 				default:
-					console.log('got key', evt.key);
+					/* console.log('got key', evt.key); */
+					break;
 			}
 		});
 		//eslint-disable-next-line
@@ -5155,7 +5164,7 @@ toggleOverview (jc3MousePos) {
 					x: evt.clientX - that.panStartAt.x,
 					y: evt.clientY - that.panStartAt.y
 				};
-				console.log('panning...');
+				/* console.log('panning...'); */
 				that.JS1.scrollLeft(that.JS1.scrollLeft() - delta.x * 2);
 				that.JS1.scrollTop(that.JS1.scrollTop() - delta.y * 2);
 				that.panStartAt.x = evt.clientX;
@@ -5190,8 +5199,8 @@ toggleOverview (jc3MousePos) {
 							x: evt.clientX,
 							y: evt.clientY
 						};
-						if (that.onC3) console.log('panStart at', that.panStartAt);
-						else console.log('mouse at', that.panStartAt);
+						/* if (that.onC3) console.log('panStart at', that.panStartAt);
+						else console.log('mouse at', that.panStartAt); */
 					}
 				}
 			}
@@ -5717,7 +5726,7 @@ toggleOverview (jc3MousePos) {
 				}
 			}
 			theConnect.attr('case', caseValue);
-			console.log('draw text for ', lineClass, 'case is', caseValue);
+			/* console.log('draw text for ', lineClass, 'case is', caseValue); */
 			const connectText = await that.svgDraw.text(function (add: any) {
 				add.tspan(caseValue).fill(theConnect_color).dy(-2);
 			});

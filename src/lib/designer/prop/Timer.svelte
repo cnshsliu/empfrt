@@ -1,8 +1,19 @@
 <script lang="ts">
 	import Parser from '$lib/parser';
-	import { Container, Row, Col, InputGroup, InputGroupText, Input } from 'sveltestrap';
+	import {
+		NavLink,
+		Icon,
+		Container,
+		Row,
+		Col,
+		InputGroup,
+		InputGroupText,
+		Input
+	} from 'sveltestrap';
 
 	export let nodeInfo;
+	export let showHelp;
+	let helpShowing = false;
 	let timerCodePrefix = '+';
 	if (Parser.isEmpty(nodeInfo.nodeProps.TIMER.code)) {
 		nodeInfo.nodeProps.TIMER.code = '+0:0:0:0:15:0';
@@ -162,8 +173,23 @@
 				</Row>
 			</Container>
 		</Col>
-	</Row>
-	<Row cols="1" class="mt-3">
-		<Col class="kfk-property-id">ID: {nodeInfo.nodeProps.TIMER.id}</Col>
+		<Col class="d-flex mt-3">
+			<span class="kfk-property-id"> ID: {nodeInfo.nodeProps.TIMER.id} </span>
+			<NavLink
+				on:click={() => {
+					helpShowing ? showHelp() : showHelp('TIMER');
+					helpShowing = !helpShowing;
+				}}
+				class="ms-auto p-0 m-0"
+			>
+				{#if helpShowing}
+					<Icon name="chevron-left" />
+					<Icon name="question-circle" />
+				{:else}
+					<Icon name="question-circle" />
+					<Icon name="chevron-right" />
+				{/if}
+			</NavLink>
+		</Col>
 	</Row>
 </Container>

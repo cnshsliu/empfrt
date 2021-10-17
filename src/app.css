@@ -2632,3 +2632,7 @@ table.quick-help-table td:first-of-type {
 	font-size: 0.5em;
 	font-color: #666666;
 }
+.kfk-menu-border {
+	border-bottom-style: solid;
+	border-bottom: 1px dotted #6666ff;
+}

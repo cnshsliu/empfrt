@@ -82,7 +82,7 @@
 			<h1 class="text-xs-center">Work List</h1>
 		</Col>
 	</Row>
-	<Row>
+	<Row class="kfk-menu-border">
 		<Col>
 			<form>
 				<Container>

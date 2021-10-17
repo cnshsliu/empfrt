@@ -136,81 +136,81 @@
 		</Col>
 	</Row>
 </Container>
-<div class="kfk-menu container" class:menu_has_form>
-	<Container>
-		<Row>
-			<Col class="mt-1">
-				<Nav>
-					<NavLink
-						class="kfk-link"
-						on:click={() => {
-							show_form('create');
-						}}
+<Container>
+	<Row class="kfk-menu-border">
+		<Col class="mt-1">
+			<Nav>
+				<NavLink
+					class="kfk-link"
+					on:click={() => {
+						show_form('create');
+					}}
+				>
+					<Icon name="plus-circle" />
+					New
+				</NavLink>
+				<NavLink
+					class="kfk-link"
+					on:click={() => {
+						show_form('search');
+					}}
+				>
+					<Icon name="search" />
+					Search
+				</NavLink>
+				<NavLink
+					class="kfk-link"
+					on:click={() => {
+						show_form('import');
+					}}
+				>
+					<Icon name="cloud-upload" />
+					Import
+				</NavLink>
+			</Nav>
+		</Col>
+		<Col class="d-flex justify-content-end">
+			<Dropdown>
+				<DropdownToggle caret color="notexist">Sort by</DropdownToggle>
+				<DropdownMenu class="kfk-dropdown">
+					<DropdownItem
+						class={config.sort.field === 'name' && config.sort.order === 1 ? 'active' : ''}
 					>
-						<Icon name="plus-circle" />
-						New
-					</NavLink>
-					<NavLink
-						class="kfk-link"
-						on:click={() => {
-							show_form('search');
-						}}
+						<a href={'#'} on:click|preventDefault={() => sortBy('name', 1)} class="nav-link "
+							><Icon name="sort-alpha-down" />
+							Name: A-Z
+						</a>
+					</DropdownItem>
+					<DropdownItem
+						class={config.sort.field === 'name' && config.sort.order === -1 ? 'active' : ''}
 					>
-						<Icon name="search" />
-						Search
-					</NavLink>
-					<NavLink
-						class="kfk-link"
-						on:click={() => {
-							show_form('import');
-						}}
+						<a href={'#'} on:click|preventDefault={() => sortBy('name', -1)} class="nav-link "
+							><Icon name="sort-alpha-down-alt" />
+							Name: Z-A
+						</a>
+					</DropdownItem>
+					<DropdownItem
+						class={config.sort.field === 'updatedAt' && config.sort.order === 1 ? 'active' : ''}
 					>
-						<Icon name="cloud-upload" />
-						Import
-					</NavLink>
-				</Nav>
-			</Col>
-			<Col class="d-flex justify-content-end">
-				<Dropdown>
-					<DropdownToggle caret color="notexist">Sort by</DropdownToggle>
-					<DropdownMenu class="kfk-dropdown">
-						<DropdownItem
-							class={config.sort.field === 'name' && config.sort.order === 1 ? 'active' : ''}
-						>
-							<a href={'#'} on:click|preventDefault={() => sortBy('name', 1)} class="nav-link "
-								><Icon name="sort-alpha-down" />
-								Name: A-Z
-							</a>
-						</DropdownItem>
-						<DropdownItem
-							class={config.sort.field === 'name' && config.sort.order === -1 ? 'active' : ''}
-						>
-							<a href={'#'} on:click|preventDefault={() => sortBy('name', -1)} class="nav-link "
-								><Icon name="sort-alpha-down-alt" />
-								Name: Z-A
-							</a>
-						</DropdownItem>
-						<DropdownItem
-							class={config.sort.field === 'updatedAt' && config.sort.order === 1 ? 'active' : ''}
-						>
-							<a href={'#'} on:click|preventDefault={() => sortBy('updatedAt', 1)} class="nav-link"
-								><Icon name="sort-numeric-down" />
-								Date: old first
-							</a>
-						</DropdownItem>
-						<DropdownItem
-							class={config.sort.field === 'updatedAt' && config.sort.order === -1 ? 'active' : ''}
-						>
-							<a href={'#'} on:click|preventDefault={() => sortBy('updatedAt', -1)} class="nav-link"
-								><Icon name="sort-numeric-down-alt" />
-								Date: newly first
-							</a>
-						</DropdownItem>
-					</DropdownMenu>
-				</Dropdown>
-			</Col>
-		</Row>
-		<Row class="mt-2">
+						<a href={'#'} on:click|preventDefault={() => sortBy('updatedAt', 1)} class="nav-link"
+							><Icon name="sort-numeric-down" />
+							Date: old first
+						</a>
+					</DropdownItem>
+					<DropdownItem
+						class={config.sort.field === 'updatedAt' && config.sort.order === -1 ? 'active' : ''}
+					>
+						<a href={'#'} on:click|preventDefault={() => sortBy('updatedAt', -1)} class="nav-link"
+							><Icon name="sort-numeric-down-alt" />
+							Date: newly first
+						</a>
+					</DropdownItem>
+				</DropdownMenu>
+			</Dropdown>
+		</Col>
+	</Row>
+	{#if menu_has_form}
+		<Row class="mt-2 pb-2 kfk-menu-border">
 			<Col>
 				{#if form_status.create}
 					<form
@@ -324,8 +324,8 @@
 				{/if}
 			</Col>
 		</Row>
-	</Container>
-</div>
+	{/if}
+</Container>
 <Container>
 	<TeamList {teams} {deleteTeam} />
 </Container>

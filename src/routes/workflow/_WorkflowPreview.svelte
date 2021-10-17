@@ -11,8 +11,8 @@
 	export let opWorkflow: { (wfid: string, op: string): void };
 </script>
 
-<Row class={mouseover_objid === workflow.wfid ? 'kfk-highlight-2' : ''}>
-	<Col xs="8">
+<Row class={mouseover_objid === workflow.wfid ? 'kfk-highlight-2 mt-3' : 'mt-3'}>
+	<Col class="col-6">
 		<div>
 			<a href="/workflow/@{workflow.wfid}" class="preview-link kfk-workflow-id">
 				{workflow.wftitle}
@@ -24,7 +24,7 @@
 			</div>
 		</div>
 	</Col>
-	<Col xs="2">
+	<Col class="col-3">
 		<a class="btn btn-sm" href="/workflow/@{workflow.wfid}">
 			<Icon name="pencil-square" class="kfk-workflow-action-icon" /> Monitor
 		</a>
@@ -46,7 +46,7 @@
 			</a>
 		{/if}
 	</Col>
-	<Col xs="2">
+	<Col class="col-1">
 		{#if mouseover_objid === workflow.wfid}
 			<Dropdown>
 				<DropdownToggle caret color="notexist" class="btn-sm">More</DropdownToggle>

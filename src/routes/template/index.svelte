@@ -135,7 +135,7 @@
 	</Row>
 </Container>
 <Container class="kfk-menu">
-	<Row>
+	<Row class="kfk-menu-border">
 		<Col class="mt-1">
 			<Nav>
 				<NavLink
@@ -207,118 +207,120 @@
 			</Dropdown>
 		</Col>
 	</Row>
-	<Row class="mt-2">
-		<Col>
-			{#if form_status.create}
-				<form
-					class="new"
-					action={urls.create}
-					method="post"
-					use:enhance={{
-						token: user.sessionToken,
-						result: async (res, form) => {
-							const created = await res.json();
-							console.log(created);
-							if (created.error) {
-								console.log(created.error);
-							} else {
-								templates = [created, ...templates];
-								lastSearchCondition = created.tplid;
+	{#if menu_has_form}
+		<Row class="mt-2 pb-2 kfk-menu-border">
+			<Col>
+				{#if form_status.create}
+					<form
+						class="new"
+						action={urls.create}
+						method="post"
+						use:enhance={{
+							token: user.sessionToken,
+							result: async (res, form) => {
+								const created = await res.json();
+								console.log(created);
+								if (created.error) {
+									console.log(created.error);
+								} else {
+									templates = [created, ...templates];
+									lastSearchCondition = created.tplid;
+								}
+								form.reset();
+								//form_status['create'] = false;
 							}
-							form.reset();
-							//form_status['create'] = false;
-						}
-					}}
-				>
-					<Container>
-						<Row
-							><Col>
-								<input
-									name="tplid"
-									aria-label="Create template"
-									placeholder="New template name"
-									class="kfk-input-template-name"
-								/>
-							</Col>
-							<Col>
-								<Button size="sm" type="submit" color="primary">Create</Button>
-								<Button size="sm" on:click={hide_all_form} color="secondary">Cancel</Button>
-							</Col>
-						</Row>
-					</Container>
-				</form>
-			{:else if form_status.search}
-				<form
-					class="new"
-					action={urls.search}
-					method="post"
-					use:enhance={{
-						token: user.sessionToken,
-						result: async (res, form) => {
-							const tmp = await res.json();
-							if (tmp.error) {
-								console.log(tmp.error);
-							} else {
-								templates = tmp;
+						}}
+					>
+						<Container>
+							<Row
+								><Col>
+									<input
+										name="tplid"
+										aria-label="Create template"
+										placeholder="New template name"
+										class="kfk-input-template-name"
+									/>
+								</Col>
+								<Col>
+									<Button size="sm" type="submit" color="primary">Create</Button>
+									<Button size="sm" on:click={hide_all_form} color="secondary">Cancel</Button>
+								</Col>
+							</Row>
+						</Container>
+					</form>
+				{:else if form_status.search}
+					<form
+						class="new"
+						action={urls.search}
+						method="post"
+						use:enhance={{
+							token: user.sessionToken,
+							result: async (res, form) => {
+								const tmp = await res.json();
+								if (tmp.error) {
+									console.log(tmp.error);
+								} else {
+									templates = tmp;
+								}
+								//form_status['search'] = false;
 							}
-							//form_status['search'] = false;
-						}
-					}}
-				>
-					<Container>
-						<Row>
-							<Col>
-								<input name="sort_field" type="hidden" bind:value={config.sort.field} />
-								<input name="sort_order" type="hidden" bind:value={config.sort.order} />
-								<input
-									name="pattern"
-									bind:value={lastSearchCondition}
-									aria-label="Search template"
-									placeholder="What to search for"
-									class="kfk-input-template-name"
-								/>
-							</Col>
-							<Col>
-								<Button size="sm" type="submit" color="primary" bind:this={theSearchForm}>
-									Search
-								</Button>
-								<Button
-									size="sm"
-									on:click={() => {
-										lastSearchCondition = '';
-									}}
-									color="secondary">Show All</Button
-								>
-								<Button size="sm" on:click={hide_all_form} color="secondary">Cancel</Button>
-							</Col>
-						</Row>
-					</Container>
-				</form>
-			{:else if form_status.import}
-				<form class="new" enctype="multipart/form-data">
-					<Container>
-						<Row>
-							<Col>
-								<input
-									name="tplid"
-									placeholder="New template name"
-									class="kfk-input-template-name"
-									bind:value={tplidImport}
-								/>
-							</Col>
-							<Col>
-								<input name="file" type="file" class="kfk_input_template_name" bind:files />
-							</Col>
-							<Col>
-								<Button size="sm" on:click={upload} color="primary">Import</Button>
-								<Button size="sm" on:click={hide_all_form} color="secondary">Cancel</Button>
-							</Col>
-						</Row>
-					</Container>
-				</form>
-			{/if}
-		</Col>
-	</Row>
+						}}
+					>
+						<Container>
+							<Row>
+								<Col>
+									<input name="sort_field" type="hidden" bind:value={config.sort.field} />
+									<input name="sort_order" type="hidden" bind:value={config.sort.order} />
+									<input
+										name="pattern"
+										bind:value={lastSearchCondition}
+										aria-label="Search template"
+										placeholder="What to search for"
+										class="kfk-input-template-name"
+									/>
+								</Col>
+								<Col>
+									<Button size="sm" type="submit" color="primary" bind:this={theSearchForm}>
+										Search
+									</Button>
+									<Button
+										size="sm"
+										on:click={() => {
+											lastSearchCondition = '';
+										}}
+										color="secondary">Show All</Button
+									>
+									<Button size="sm" on:click={hide_all_form} color="secondary">Cancel</Button>
+								</Col>
+							</Row>
+						</Container>
+					</form>
+				{:else if form_status.import}
+					<form class="new" enctype="multipart/form-data">
+						<Container>
+							<Row>
+								<Col>
+									<input
+										name="tplid"
+										placeholder="New template name"
+										class="kfk-input-template-name"
+										bind:value={tplidImport}
+									/>
+								</Col>
+								<Col>
+									<input name="file" type="file" class="kfk_input_template_name" bind:files />
+								</Col>
+								<Col>
+									<Button size="sm" on:click={upload} color="primary">Import</Button>
+									<Button size="sm" on:click={hide_all_form} color="secondary">Cancel</Button>
+								</Col>
+							</Row>
+						</Container>
+					</form>
+				{/if}
+			</Col>
+		</Row>
+	{/if}
 </Container>
 <Container>
 	<TemplateList {templates} {deleteTemplate} />

@@ -1,9 +1,20 @@
 <script lang="ts">
 	import Parser from '$lib/parser';
-	import { Container, Row, Col, InputGroup, InputGroupText, Input } from 'sveltestrap';
+	import {
+		NavLink,
+		Icon,
+		Container,
+		Row,
+		Col,
+		InputGroup,
+		InputGroupText,
+		Input
+	} from 'sveltestrap';
 
 	export let nodeInfo;
 	export let roleOptions = [];
+	export let showHelp;
+	let helpShowing = false;
 </script>
 
 <Container>
@@ -53,8 +64,23 @@
 				/>
 			</InputGroup>
 		</Col>
-	</Row>
-	<Row cols="1" class="mt-3">
-		<Col class="kfk-property-id">ID: {nodeInfo.nodeProps.INFORM.id}</Col>
+		<Col class="d-flex mt-3">
+			<span class="kfk-property-id"> ID: {nodeInfo.nodeProps.INFORM.id} </span>
+			<NavLink
+				on:click={() => {
+					helpShowing ? showHelp() : showHelp('INFORM');
+					helpShowing = !helpShowing;
+				}}
+				class="ms-auto p-0 m-0"
+			>
+				{#if helpShowing}
+					<Icon name="chevron-left" />
+					<Icon name="question-circle" />
+				{:else}
+					<Icon name="question-circle" />
+					<Icon name="chevron-right" />
+				{/if}
+			</NavLink>
+		</Col>
 	</Row>
 </Container>

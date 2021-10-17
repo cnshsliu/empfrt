@@ -1,8 +1,19 @@
 <script lang="ts">
 	import Parser from '$lib/parser';
-	import { Container, Row, Col, InputGroup, InputGroupText, Input } from 'sveltestrap';
+	import {
+		NavLink,
+		Icon,
+		Container,
+		Row,
+		Col,
+		InputGroup,
+		InputGroupText,
+		Input
+	} from 'sveltestrap';
 
 	export let nodeInfo;
+	export let showHelp;
+	let helpShowing = false;
 	if (Parser.isEmpty(nodeInfo.caseValue)) {
 		nodeInfo.caseValue = '';
 	}
@@ -15,6 +26,24 @@
 				<InputGroupText>Case Value</InputGroupText>
 				<Input bind:value={nodeInfo.caseValue} />
 			</InputGroup>
+		</Col>
+		<Col class="d-flex mt-3">
+			<span class="kfk-property-id" />
+			<NavLink
+				on:click={() => {
+					helpShowing ? showHelp() : showHelp('CONNECT');
+					helpShowing = !helpShowing;
+				}}
+				class="ms-auto p-0 m-0"
+			>
+				{#if helpShowing}
+					<Icon name="chevron-left" />
+					<Icon name="question-circle" />
+				{:else}
+					<Icon name="question-circle" />
+					<Icon name="chevron-right" />
+				{/if}
+			</NavLink>
 		</Col>
 	</Row>
 </Container>
