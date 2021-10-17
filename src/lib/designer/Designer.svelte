@@ -11,6 +11,7 @@
 	import Inform from '$lib/designer/prop/Inform.svelte';
 	import Timer from '$lib/designer/prop/Timer.svelte';
 	import Sub from '$lib/designer/prop/Sub.svelte';
+	import Connect from '$lib/designer/prop/Connect.svelte';
 	import KFK from '$lib/designer/KFK';
 	import { onMount, onDestroy } from 'svelte';
 	import {
@@ -54,6 +55,14 @@
 			documentEventOn();
 		}
 	};
+	const setNodeOrConnectProperties = async () => {
+		if (nodeInfo.nodeType === 'CONNECT') await setConnectProperties();
+		else await setNodeProperties();
+	};
+	const setConnectProperties = async () => {
+		toggle();
+		await theKFK.setConnectProperties(nodeInfo.theConnect, nodeInfo.caseValue);
+	};
 	const setNodeProperties = async () => {
 		console.log('set', nodeInfo.nodeType, ' to ', nodeInfo.nodeProps);
 		if (nodeInfo.nodeType === 'ACTION') {
@@ -80,18 +89,23 @@
 			case 'setMode':
 				currentMode = args;
 				break;
-			case 'showProp':
+			case 'showNodeProp':
 				nodeInfo = args;
-				let nodeType = args.nodeType;
-				if (nodeType === 'ACTION') {
+				if (nodeInfo.nodeType === 'ACTION') {
 					//ACTION 是需要有role和kvars的
 					roleOptions = Parser.collectRoles(args.nodes);
 					if (nodeInfo.nodeProps.ACTION.kvars) {
 						kvarsArr = Parser.kvarsToArray(JSON.parse(nodeInfo.nodeProps.ACTION.kvars));
 					}
-				} else if (nodeType === 'INFORM') {
+				} else if (nodeInfo.nodeType === 'INFORM') {
 					roleOptions = Parser.collectRoles(args.nodes);
 				}
+				console.log('opening...', args);
+				documentEventOff();
+				openModal = true;
+				break;
+			case 'showConnectProp':
+				nodeInfo = args;
 				console.log('opening...', args);
 				documentEventOff();
 				openModal = true;
@@ -238,10 +252,12 @@
 			<Timer {nodeInfo} />
 		{:else if nodeInfo.nodeType === 'SUB'}
 			<Sub {nodeInfo} {errMsg} />
+		{:else if nodeInfo.nodeType === 'CONNECT'}
+			<Connect {nodeInfo} />
 		{/if}
 	</ModalBody>
 	<ModalFooter>
-		<Button color="primary" on:click={setNodeProperties}>Set</Button>
+		<Button color="primary" on:click={setNodeOrConnectProperties}>Set</Button>
 		<Button color="secondary" on:click={toggle}>Cancel</Button>
 	</ModalFooter>
 </Modal>

@@ -8,7 +8,6 @@
 
 <Container>
 	<Row cols="1">
-		<Col>ID: {nodeInfo.nodeProps.INFORM.id}</Col>
 		<Col>
 			<InputGroup size="sm">
 				<InputGroupText>Label</InputGroupText>

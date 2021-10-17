@@ -1076,39 +1076,39 @@ class KFKclass {
 		this.onChange('Property Changed');
 	}
 	//on click node, node prop
-	showPropForm(jqDIV: myJQuery) {
+	showNodeProperties(jqDIV: myJQuery) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		that.showingProp = true;
 		const nodeProps = that.getNodeProperties(jqDIV);
 		if (jqDIV.hasClass('SCRIPT')) {
-			that.designerCallback('showProp', {
+			that.designerCallback('showNodeProp', {
 				nodeType: 'SCRIPT',
 				jqDiv: jqDIV,
 				nodeProps: nodeProps
 			});
 		} else if (jqDIV.hasClass('ACTION')) {
-			that.designerCallback('showProp', {
+			that.designerCallback('showNodeProp', {
 				nodeType: 'ACTION',
 				jqDiv: jqDIV,
 				nodeProps: nodeProps,
 				nodes: that.JC3.find('.node')
 			});
 		} else if (jqDIV.hasClass('INFORM')) {
-			that.designerCallback('showProp', {
+			that.designerCallback('showNodeProp', {
 				nodeType: 'INFORM',
 				jqDiv: jqDIV,
 				nodeProps: nodeProps,
 				nodes: that.JC3.find('.node')
 			});
 		} else if (jqDIV.hasClass('TIMER')) {
-			that.designerCallback('showProp', {
+			that.designerCallback('showNodeProp', {
 				nodeType: 'TIMER',
 				jqDiv: jqDIV,
 				nodeProps: nodeProps
 			});
 		} else if (jqDIV.hasClass('SUB')) {
-			that.designerCallback('showProp', {
+			that.designerCallback('showNodeProp', {
 				nodeType: 'SUB',
 				jqDiv: jqDIV,
 				nodeProps: nodeProps
@@ -1116,6 +1116,38 @@ class KFKclass {
 		}
 
 		return;
+	}
+
+	showConnectionProperties(theConnect) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		this.designerCallback('showConnectProp', {
+			nodeType: 'CONNECT',
+			theConnect: theConnect,
+			caseValue: theConnect.attr('case'),
+			nodeProps: { label: 'Connect' }
+		});
+	}
+
+	async setConnectText(theConnect: any, caseValue: string) {
+		const that = this;
+		console.log('set connect ', theConnect.attr('id'), 'text to', caseValue);
+		theConnect.attr('case', caseValue);
+		const tplLinks = that.tpl.find(
+			`.link[from="${theConnect.attr('fid')}"][to="${theConnect.attr('tid')}"]`
+		);
+		for (let i = 0; i < tplLinks.length; i++) {
+			$(tplLinks[i]).attr('case', caseValue);
+		}
+
+		await that.redrawLinkLines(that.JC3.find(`#${theConnect.attr('fid')}`), 'after moving', false);
+
+		this.onChange('Connect case Changed');
+	}
+
+	async setConnectProperties(theConnect, caseValue) {
+		let tmp = caseValue.trim();
+		caseValue = lodash.isEmpty(tmp) ? '' : tmp;
+		await this.setConnectText(theConnect, caseValue);
 	}
 
 	focusOnNode(jqNodeDIV: myJQuery) {
@@ -1330,7 +1362,6 @@ class KFKclass {
 
 		if (drawLine && BIndex >= 0) {
 			//只有当BIndex>=0时画线
-			console.log(`svgConnectNode from ${A.attr('id')}:${AIndex} to ${B.attr('id')}:${BIndex}`);
 			await that.svgConnectNode(
 				A.attr('id'),
 				B.attr('id'),
@@ -2130,7 +2161,7 @@ class KFKclass {
 				that.focusOnNode(jqNodeDIV);
 				if (that.mode === 'POINTER') {
 					that.selectNodeOnClick(jqNodeDIV, evt.shiftKey);
-					that.showPropForm(jqNodeDIV);
+					that.showNodeProperties(jqNodeDIV);
 				} else if (that.mode === 'CONNECT') {
 					if (that.afterDragging === false) {
 						await that.yarkLinkNode(jqNodeDIV, evt.shiftKey);
@@ -2149,14 +2180,14 @@ class KFKclass {
 			console.error(error);
 		}
 
-		try {
+		/* try {
 			//dblclick to edit
 			jqNodeDIV.dblclick(async function (evt: MouseEvent) {
 				await that.procNodeDoubleClick(evt, jqNodeDIV);
 			});
 		} catch (error) {
 			console.error(error);
-		}
+		} */
 
 		if (callback) await callback();
 	}
@@ -5685,15 +5716,14 @@ toggleOverview (jc3MousePos) {
                 */
 				}
 			}
-			if (lodash.isEmpty(caseValue) === false) {
-				theConnect.attr('case', caseValue);
-				const text = await that.svgDraw.text(function (add: any) {
-					add.tspan(caseValue).fill(theConnect_color).dy(-2);
-				});
-				text.font({ family: 'Helvetica', anchor: 'start' });
-				text.addClass(lineClass + '_text');
-				//const textPath = text.path(lstr).attr('startOffset', '60%');
-			}
+			theConnect.attr('case', caseValue);
+			console.log('draw text for ', lineClass, 'case is', caseValue);
+			const connectText = await that.svgDraw.text(function (add: any) {
+				add.tspan(caseValue).fill(theConnect_color).dy(-2);
+			});
+			connectText.font({ family: 'Helvetica', anchor: 'start' });
+			connectText.addClass(lineClass + '_text');
+			connectText.path(lstr).attr('startOffset', '60%');
 			if (toDIV.hasClass('nodisplay')) {
 				theConnect.addClass('nodisplay');
 				theTriangle.addClass('nodisplay');
@@ -5735,6 +5765,18 @@ toggleOverview (jc3MousePos) {
 					color: cnColor || that.YIQColorAux || that.config.connect.styles[styleid].normal.color
 				});
 				that.hoveredConnectId = null;
+			});
+			theConnect.on('click', (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				console.log('Click on connnection', theConnect.attr('id'));
+				that.showConnectionProperties(theConnect);
+			});
+			connectText.on('click', (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				console.log('Click on connnection', theConnect.attr('id'));
+				that.showConnectionProperties(theConnect);
 			});
 		} catch (error) {
 			console.error(error);
