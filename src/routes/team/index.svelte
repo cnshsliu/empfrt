@@ -14,6 +14,7 @@
 
 <script lang="ts">
 	import { API_SERVER } from '$lib/Env';
+	import RemoteTable from './RemoteTable.svelte';
 	import * as api from '$lib/api';
 	import {
 		Container,
@@ -42,6 +43,8 @@
 	export let form_status = { create: false, search: false, sort: false, import: false };
 	import { title } from '$lib/title';
 	$title = 'HyperFlow';
+	$: token = user.sessionToken;
+	let remoteTable;
 	export let form_name = '';
 	export let menu_has_form = false;
 	let urls = {
@@ -73,34 +76,7 @@
 				return order;
 			} else return 0 - order;
 		});
-		/*
-		setTimeout(async () => {
-			const res = await api.post(
-				'team/search',
-				{
-					teamid: lastSearchCondition,
-					sort_field: field==='name'?'teamid':field,
-					sort_order: order
-				},
-				user.sessionToken
-			);
-			console.log(res);
-			teams = res; //eslint-disable-line
-			for (let i = 0; i < teams.length; i++) {
-				console.log(Date.parse(teams[i].updatedAt));
-			}
-		}, 0);
-		*/
 	}
-	const deleteTeam = (name: string): void => {
-		setTimeout(async () => {
-			let ret = await api.post('team/delete', { teamid: name }, user.sessionToken);
-			teams = teams.filter((t: Team) => {
-				return t.teamid !== name;
-			});
-		}, 1);
-	};
-
 	let files;
 	let theSearchForm;
 	let dataFile = null;
@@ -121,7 +97,7 @@
 			.then((response) => response.json())
 			.then((result) => {
 				console.log('Success:', result);
-				teams = [result, ...teams];
+				remoteTable.rows = [result, ...remoteTable.rows];
 			})
 			.catch((error) => {
 				console.error('Error:', error);
@@ -152,15 +128,6 @@
 				<NavLink
 					class="kfk-link"
 					on:click={() => {
-						show_form('search');
-					}}
-				>
-					<Icon name="search" />
-					Search
-				</NavLink>
-				<NavLink
-					class="kfk-link"
-					on:click={() => {
 						show_form('import');
 					}}
 				>
@@ -168,45 +135,6 @@
 					Import
 				</NavLink>
 			</Nav>
-		</Col>
-		<Col class="d-flex justify-content-end">
-			<Dropdown>
-				<DropdownToggle caret color="notexist">Sort by</DropdownToggle>
-				<DropdownMenu class="kfk-dropdown">
-					<DropdownItem
-						class={config.sort.field === 'name' && config.sort.order === 1 ? 'active' : ''}
-					>
-						<a href={'#'} on:click|preventDefault={() => sortBy('name', 1)} class="nav-link "
-							><Icon name="sort-alpha-down" />
-							Name: A-Z
-						</a>
-					</DropdownItem>
-					<DropdownItem
-						class={config.sort.field === 'name' && config.sort.order === -1 ? 'active' : ''}
-					>
-						<a href={'#'} on:click|preventDefault={() => sortBy('name', -1)} class="nav-link "
-							><Icon name="sort-alpha-down-alt" />
-							Name: Z-A
-						</a>
-					</DropdownItem>
-					<DropdownItem
-						class={config.sort.field === 'updatedAt' && config.sort.order === 1 ? 'active' : ''}
-					>
-						<a href={'#'} on:click|preventDefault={() => sortBy('updatedAt', 1)} class="nav-link"
-							><Icon name="sort-numeric-down" />
-							Date: old first
-						</a>
-					</DropdownItem>
-					<DropdownItem
-						class={config.sort.field === 'updatedAt' && config.sort.order === -1 ? 'active' : ''}
-					>
-						<a href={'#'} on:click|preventDefault={() => sortBy('updatedAt', -1)} class="nav-link"
-							><Icon name="sort-numeric-down-alt" />
-							Date: newly first
-						</a>
-					</DropdownItem>
-				</DropdownMenu>
-			</Dropdown>
 		</Col>
 	</Row>
 	{#if menu_has_form}
@@ -223,10 +151,13 @@
 								const created = await res.json();
 								console.log(created);
 								if (created.error) {
-									console.log(created.error);
+									if (created.errMsg.indexOf('duplicate key error') > 0) {
+										console.log('Dupliated key', '//TODO');
+									} else console.log(created.error);
 								} else {
-									teams = [created, ...teams];
 									lastSearchCondition = created.teamid;
+									remoteTable.rows = [created, ...remoteTable.rows];
+									remoteTable.rowsCount = remoteTable.rowsCount + 1;
 								}
 								form.reset();
 								//form_status['create'] = false;
@@ -325,7 +256,9 @@
 			</Col>
 		</Row>
 	{/if}
-</Container>
-<Container>
-	<TeamList {teams} {deleteTeam} />
+	<Row class="mt-3">
+		<Col>
+			<RemoteTable endpoint="team/search" {token} bind:this={remoteTable} />
+		</Col>
+	</Row>
 </Container>

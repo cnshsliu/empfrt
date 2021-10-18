@@ -1,9 +1,7 @@
 <script context="module" lang="ts">
 	export async function load({ page, fetch, session }) {
-		const res = await fetch('/template.json');
 		return {
 			props: {
-				templates: await res.json(),
 				user: session.user,
 				config: session.config
 			}
@@ -11,37 +9,20 @@
 	}
 </script>
 
-<script lang="ts">
+<script lang="typescript">
 	import { API_SERVER } from '$lib/Env';
-	import type { User, Template, Config } from '$lib/types';
-	import * as api from '$lib/api';
-	import {
-		Container,
-		Row,
-		Col,
-		Styles,
-		Icon,
-		Button,
-		Dropdown,
-		DropdownItem,
-		DropdownMenu,
-		DropdownToggle,
-		FormGroup,
-		Label,
-		Input,
-		Nav,
-		NavLink
-	} from 'sveltestrap';
+	import RemoteTable from './RemoteTable.svelte';
+	import type { User } from '$lib/types';
+	import { Container, Row, Col, Styles, Icon, Button, Nav, NavLink } from 'sveltestrap';
 	import { enhance } from '$lib/form';
-	import TemplateList from './_TemplateList.svelte';
 	export let menu_has_form = false;
-	export let templates: Template[];
 	export let user: User;
-	export let config: Config;
 	export let lastSearchCondition: string = '';
 	export let form_status = { create: false, search: false, sort: false, import: false };
 	import { title } from '$lib/title';
 	$title = 'HyperFlow';
+	$: token = user.sessionToken;
+	let remoteTable;
 	function hide_all_form() {
 		Object.keys(form_status).forEach((key) => {
 			form_status[key] = false;
@@ -53,48 +34,8 @@
 		form_status[form_name] = true;
 		menu_has_form = true;
 	}
-	function sortBy(field: string, order: number) {
-		config.sort = { field, order };
-		templates = templates.sort((a, b): number => {
-			let A: number | string = field === 'name' ? a.tplid : Date.parse(a.updatedAt);
-			let B: number | string = field === 'name' ? b.tplid : Date.parse(b.updatedAt);
-			if (A === B) {
-				return 0;
-			} else if (A > B) {
-				return order;
-			} else return 0 - order;
-		});
-		/*
-		setTimeout(async () => {
-			const res = await api.post(
-				'template/search',
-				{
-					tplid: lastSearchCondition,
-					sort_field: field==='name'?'tplid':field,
-					sort_order: order
-				},
-				user.sessionToken
-			);
-			console.log(res);
-			templates = res; //eslint-disable-line
-			for (let i = 0; i < templates.length; i++) {
-				console.log(Date.parse(templates[i].updatedAt));
-			}
-		}, 0);
-		*/
-	}
-	const deleteTemplate = (name: string): void => {
-		setTimeout(async () => {
-			let ret = await api.post('template/delete/byname', { tplid: name }, user.sessionToken);
-			templates = templates.filter((t: Template) => {
-				return t.tplid !== name;
-			});
-		}, 1);
-	};
 
 	let files;
-	let theSearchForm;
-	let dataFile = null;
 	let tplidImport;
 
 	let urls = {
@@ -115,9 +56,10 @@
 			body: formData
 		})
 			.then((response) => response.json())
-			.then((result) => {
+			.then(async (result) => {
 				console.log('Success:', result);
-				templates = [result, ...templates];
+				//templates = [result, ...templates];
+				remoteTable.rows = [result, ...remoteTable.rows];
 			})
 			.catch((error) => {
 				console.error('Error:', error);
@@ -150,15 +92,6 @@
 				<NavLink
 					class="kfk-link"
 					on:click={() => {
-						show_form('search');
-					}}
-				>
-					<Icon name="search" />
-					Search
-				</NavLink>
-				<NavLink
-					class="kfk-link"
-					on:click={() => {
 						show_form('import');
 					}}
 				>
@@ -167,50 +100,12 @@
 				</NavLink>
 			</Nav>
 		</Col>
-		<Col class="">
-			<Dropdown>
-				<DropdownToggle caret color="notexist">Sort by</DropdownToggle>
-				<DropdownMenu class="kfk-dropdown">
-					<DropdownItem
-						class={config.sort.field === 'name' && config.sort.order === 1 ? 'active' : ''}
-					>
-						<a href={'#'} on:click|preventDefault={() => sortBy('name', 1)} class="nav-link "
-							><Icon name="sort-alpha-down" />
-							Name: A-Z
-						</a>
-					</DropdownItem>
-					<DropdownItem
-						class={config.sort.field === 'name' && config.sort.order === -1 ? 'active' : ''}
-					>
-						<a href={'#'} on:click|preventDefault={() => sortBy('name', -1)} class="nav-link "
-							><Icon name="sort-alpha-down-alt" />
-							Name: Z-A
-						</a>
-					</DropdownItem>
-					<DropdownItem
-						class={config.sort.field === 'updatedAt' && config.sort.order === 1 ? 'active' : ''}
-					>
-						<a href={'#'} on:click|preventDefault={() => sortBy('updatedAt', 1)} class="nav-link"
-							><Icon name="sort-numeric-down" />
-							Date: old first
-						</a>
-					</DropdownItem>
-					<DropdownItem
-						class={config.sort.field === 'updatedAt' && config.sort.order === -1 ? 'active' : ''}
-					>
-						<a href={'#'} on:click|preventDefault={() => sortBy('updatedAt', -1)} class="nav-link"
-							><Icon name="sort-numeric-down-alt" />
-							Date: newly first
-						</a>
-					</DropdownItem>
-				</DropdownMenu>
-			</Dropdown>
-		</Col>
 	</Row>
 	{#if menu_has_form}
 		<Row class="mt-2 pb-2 kfk-menu-border">
 			<Col>
 				{#if form_status.create}
+					<!-- svelte-ignore missing-declaration -->
 					<form
 						class="new"
 						action={urls.create}
@@ -221,10 +116,14 @@
 								const created = await res.json();
 								console.log(created);
 								if (created.error) {
-									console.log(created.error);
+									if (created.errMsg.indexOf('duplicate key error') > 0) {
+										console.log('Dupliated key', '//TODO');
+									} else console.log(created.error);
 								} else {
-									templates = [created, ...templates];
+									/* templates = [created, ...templates]; */
 									lastSearchCondition = created.tplid;
+									remoteTable.rows = [created, ...remoteTable.rows];
+									remoteTable.rowsCount = remoteTable.rowsCount + 1;
 								}
 								form.reset();
 								//form_status['create'] = false;
@@ -243,53 +142,6 @@
 								</Col>
 								<Col>
 									<Button size="sm" type="submit" color="primary">Create</Button>
-									<Button size="sm" on:click={hide_all_form} color="secondary">Cancel</Button>
-								</Col>
-							</Row>
-						</Container>
-					</form>
-				{:else if form_status.search}
-					<form
-						class="new"
-						action={urls.search}
-						method="post"
-						use:enhance={{
-							token: user.sessionToken,
-							result: async (res, form) => {
-								const tmp = await res.json();
-								if (tmp.error) {
-									console.log(tmp.error);
-								} else {
-									templates = tmp;
-								}
-								//form_status['search'] = false;
-							}
-						}}
-					>
-						<Container>
-							<Row>
-								<Col>
-									<input name="sort_field" type="hidden" bind:value={config.sort.field} />
-									<input name="sort_order" type="hidden" bind:value={config.sort.order} />
-									<input
-										name="pattern"
-										bind:value={lastSearchCondition}
-										aria-label="Search template"
-										placeholder="What to search for"
-										class="kfk-input-template-name"
-									/>
-								</Col>
-								<Col>
-									<Button size="sm" type="submit" color="primary" bind:this={theSearchForm}>
-										Search
-									</Button>
-									<Button
-										size="sm"
-										on:click={() => {
-											lastSearchCondition = '';
-										}}
-										color="secondary">Show All</Button
-									>
 									<Button size="sm" on:click={hide_all_form} color="secondary">Cancel</Button>
 								</Col>
 							</Row>
@@ -321,7 +173,10 @@
 			</Col>
 		</Row>
 	{/if}
+	<Row class="mt-3">
+		<Col>
+			<RemoteTable endpoint="template/search" {token} bind:this={remoteTable} />
+		</Col>
+	</Row>
 </Container>
-<Container>
-	<TemplateList {templates} {deleteTemplate} />
-</Container>
+<Container />

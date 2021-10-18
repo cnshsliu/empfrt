@@ -166,75 +166,75 @@
 		</Col>
 	</Row>
 </Container>
-<div class="kfk-menu" class:menu_has_form>
-	<Container>
-		<Row>
-			<Col class="mt-1">
-				<Nav>
-					<NavLink
-						class="kfk-link"
-						href="#"
-						on:click={() => {
-							show_form('create');
-						}}
-					>
-						<Icon name="plus-circle" />
-						New
-					</NavLink>
-					<NavLink
-						class="kfk-link"
-						href="#"
-						on:click={() => {
-							show_form('import');
-						}}
-					>
-						<Icon name="cloud-upload" />
-						Import
-					</NavLink>
-					<NavLink
-						class="kfk-link"
-						href="#"
-						on:click={() => {
-							show_form('export');
-						}}
-					>
-						<Icon name="cloud-download" />
-						Export
-					</NavLink>
-					<NavLink
-						class="kfk-link"
-						href="#"
-						on:click={() => {
-							show_form('rename');
-						}}
-					>
-						<Icon name="input-cursor-text" />
-						Rename
-					</NavLink>
-					<NavLink
-						class="kfk-link"
-						href="#"
-						on:click={() => {
-							show_form('copyto');
-						}}
-					>
-						<Icon name="files" />
-						Copy to
-					</NavLink>
-					<NavLink
-						class="kfk-link"
-						href="#"
-						on:click={() => {
-							show_form('delete');
-						}}
-					>
-						<Icon name="trash" />
-						Delete
-					</NavLink>
-				</Nav>
-			</Col>
-		</Row>
-		<Row class="mt-2">
+<Container>
+	<Row class="kfk-menu-border">
+		<Col class="mt-1">
+			<Nav>
+				<NavLink
+					class="kfk-link"
+					href="#"
+					on:click={() => {
+						show_form('create');
+					}}
+				>
+					<Icon name="plus-circle" />
+					New
+				</NavLink>
+				<NavLink
+					class="kfk-link"
+					href="#"
+					on:click={() => {
+						show_form('import');
+					}}
+				>
+					<Icon name="cloud-upload" />
+					Import
+				</NavLink>
+				<NavLink
+					class="kfk-link"
+					href="#"
+					on:click={() => {
+						show_form('export');
+					}}
+				>
+					<Icon name="cloud-download" />
+					Export
+				</NavLink>
+				<NavLink
+					class="kfk-link"
+					href="#"
+					on:click={() => {
+						show_form('rename');
+					}}
+				>
+					<Icon name="input-cursor-text" />
+					Rename
+				</NavLink>
+				<NavLink
+					class="kfk-link"
+					href="#"
+					on:click={() => {
+						show_form('copyto');
+					}}
+				>
+					<Icon name="files" />
+					Copy to
+				</NavLink>
+				<NavLink
+					class="kfk-link"
+					href="#"
+					on:click={() => {
+						show_form('delete');
+					}}
+				>
+					<Icon name="trash" />
+					Delete
+				</NavLink>
+			</Nav>
+		</Col>
+	</Row>
+	{#if menu_has_form}
+		<Row class="kfk-menu-border mt-2 pb-2 mb-2">
 			<Col>
 				{#if form_status.create}
 					<form
@@ -420,9 +420,9 @@
 				{/if}
 			</Col>
 		</Row>
-	</Container>
-</div>
-<Container>
+	{/if}
+</Container>
+<Container class="mt-3">
 	<Row>
 		<Col>
 			<form
@@ -462,9 +462,7 @@
 			</form>
 		</Col>
 	</Row>
-</Container>
-<Container style="padding-top:20px">
-	<Row>
+	<Row class="mt-5">
 		<Col xs="12">
 			<h4>Roles:</h4>
 		</Col>
@@ -476,6 +474,7 @@
 			{:else}
 				{#each roles as aRole (aRole)}
 					<div
+						class="mt-3"
 						transition:scale|local={{ start: 0.7 }}
 						animate:flip={{ duration: 200 }}
 						on:focus={() => setMouseFocus()}

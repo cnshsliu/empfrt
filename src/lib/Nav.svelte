@@ -47,7 +47,7 @@
 						class="nav-link"
 						class:active={$page.path === '/workflow'}
 					>
-						<Icon name="list-check" />&nbsp;Workflow
+						<Icon name="bar-chart-steps" />&nbsp;Workflow
 					</a>
 				</li>
 

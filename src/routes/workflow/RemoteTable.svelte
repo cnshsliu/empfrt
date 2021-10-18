@@ -1,0 +1,231 @@
+<script type="ts">
+	import * as api from '$lib/api';
+	import { scale } from 'svelte/transition';
+	import { flip } from 'svelte/animate';
+	import { onMount } from 'svelte';
+	import type { Workflow } from '$lib/types';
+	import moment from 'moment';
+	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
+	import { goto } from '$app/navigation';
+	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Icon } from 'sveltestrap';
+	import { getData } from '$lib/pagination/Server.js';
+
+	export let token;
+	export let endpoint;
+	let rows = [];
+	let page = 0; //first page
+	let pageIndex = 0; //first row
+	let pageSize = 10; //optional, 10 by default
+
+	let loading = true;
+	let rowsCount = 0;
+	let text;
+	let sorting = { dir: 'desc', key: 'updatedAt' };
+
+	onMount(async () => {
+		await load(page);
+	});
+
+	async function load(_page) {
+		loading = true;
+		const data = await getData(endpoint, token, _page, pageSize, text, sorting);
+		rows = data.rows;
+		rowsCount = data.rowsCount;
+		loading = false;
+	}
+
+	export const unshiftRows = function (obj) {
+		rows = [obj, ...rows];
+		rowsCount = rowsCount + 1;
+	};
+
+	function onPageChange(event) {
+		load(event.detail.page);
+		page = event.detail.page;
+	}
+
+	async function onSearch(event) {
+		text = event.detail.text;
+		await load(page);
+		page = 0;
+	}
+
+	export async function refresh(detail) {
+		if (detail && detail.text) text = detail.text;
+		if (detail && detail.page) page = detail.page;
+		if (detail && detail.sorting) sorting = detail.sorting;
+		await load(page);
+	}
+
+	async function onSort(event) {
+		sorting = { dir: event.detail.dir, key: event.detail.key };
+		await load(page);
+	}
+
+	const opWorkflow = async function (workflow: Workflow, op: string): Promise<void> {
+		console.log(op);
+		if (op === 'startAnother') {
+			goto(`/template/start?tplid=${workflow.tplid}`);
+			return;
+		} else if (op === 'viewTemplate') {
+			goto(`/template/@${workflow.tplid}&read`);
+			return;
+		}
+		let payload = { wfid: workflow.wfid, op: op };
+		console.log(payload);
+		let ret = await api.post('workflow/op', payload, token);
+		if (op === 'pause' || op === 'resume' || op === 'stop') {
+			for (let i = 0; i < rows.length; i++) {
+				if (rows[i].wfid === workflow.wfid) {
+					rows[i].status = ret.status;
+				}
+			}
+			rows = rows;
+			console.log(workflow.status);
+		} else if (op === 'destroy') {
+			let deletedIndex = -1;
+			for (let i = 0; i < rows.length; i++) {
+				if (rows[i].wfid === workflow.wfid) {
+					deletedIndex = i;
+					break;
+				}
+			}
+			if (deletedIndex >= 0) {
+				rows.splice(deletedIndex, 1);
+				rows = rows;
+				rowsCount = rowsCount - 1;
+			}
+		} else {
+			await refresh({});
+		}
+	};
+	/*
+<code>
+	<pre>
+		How to use RemoteTable Pagination 
+		1. Copy RemoteTable.svelet to object folder
+			(team/template/workflow/work etc.) 
+		2. Do following modification to RemoteTable.svelte 
+			2.1. modify deleteRow to match API endpoint and payload 
+			2.2. modify link href of object in remote table row
+			2.3. modify link hrefs in DropDown
+			3. in index.svelete, change "RemoteTable endpoint" to the correct one. 
+			4. modify object search method in handlers.js on server side to return objs and total number of objs. Reference to TemplateSearch
+	</pre>
+</code>
+*/
+</script>
+
+<Table {loading} {rows} {pageIndex} {pageSize} let:rows={rows2}>
+	<div slot="top">
+		<Search on:search={onSearch} />
+	</div>
+	<thead slot="head">
+		<tr>
+			<th>
+				Title
+				<Sort key="wftitle" on:sort={onSort} />
+			</th>
+			<th>
+				Status
+				<Sort key="status" on:sort={onSort} />
+			</th>
+			<th>
+				Starter
+				<Sort key="starter" on:sort={onSort} />
+			</th>
+			<th>
+				Updated at
+				<Sort key="updatedAt" dir="desc" on:sort={onSort} />
+			</th>
+			<th> &nbsp; </th>
+		</tr>
+	</thead>
+	<tbody>
+		{#each rows2 as row, index (row)}
+			<tr
+				transition:scale|local={{ start: 0.7 }}
+				animate:flip={{ duration: 200 }}
+				class:odd={index % 2 !== 0}
+				class:even={index % 2 === 0}
+			>
+				<td data-label="Title">
+					<a class="preview-link kfk-template-id" href="/workflow/@{row.wfid}">
+						{row.wftitle}
+					</a>
+				</td>
+				<td data-label="Status">{row.status}</td>
+				<td data-label="Starter">{row.starter}</td>
+				<td data-label="Updated at">{moment(row.updatedAt).format('LLLL')}</td>
+				<td>
+					<Dropdown>
+						<DropdownToggle caret color="notexist" class="btn-sm">Actions</DropdownToggle>
+						<DropdownMenu>
+							<DropdownItem>
+								{#if row.status === 'ST_RUN'}
+									<a
+										class="nav-link"
+										href={'#'}
+										on:click|preventDefault={() => opWorkflow(row, 'pause')}
+									>
+										<Icon name="play-circle-fill" /> Pause
+									</a>
+								{:else if row.status === 'ST_PAUSE'}
+									<a
+										class="nav-link"
+										href={'#'}
+										on:click|preventDefault={() => opWorkflow(row, 'resume')}
+									>
+										<Icon name="play-circle-fill" /> Resume
+									</a>
+								{/if}
+							</DropdownItem>
+							<DropdownItem>
+								<a
+									href={'#'}
+									on:click|preventDefault={() => opWorkflow(row, 'startAnother')}
+									class="nav-link "
+									><Icon name="trash" />
+									Start Another
+								</a>
+							</DropdownItem>
+							<DropdownItem>
+								<a
+									href={'#'}
+									on:click|preventDefault={() => opWorkflow(row, 'viewTemplate')}
+									class="nav-link "
+									><Icon name="trash" />
+									View Template
+								</a>
+							</DropdownItem>
+							<DropdownItem>
+								<a
+									href={'#'}
+									on:click|preventDefault={() => opWorkflow(row, 'destroy')}
+									class="nav-link "
+									><Icon name="trash" />
+									Delete this workflow
+								</a>
+							</DropdownItem>
+						</DropdownMenu>
+					</Dropdown>
+				</td>
+			</tr>
+		{/each}
+	</tbody>
+	<div slot="bottom">
+		<Pagination
+			{page}
+			{pageSize}
+			count={rowsCount}
+			serverSide={true}
+			on:pageChange={onPageChange}
+		/>
+	</div>
+</Table>
+
+<style>
+	.odd {
+		background-color: #f7f7f7;
+	}
+</style>

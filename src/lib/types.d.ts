@@ -91,13 +91,6 @@ export interface Work {
 	updatedAt: string;
 }
 
-export interface Config {
-	sort: {
-		field: string;
-		order: number;
-	};
-}
-
 export interface KFKclass {
 	designerCallback: any;
 	addDocumentEventHandler: any;
