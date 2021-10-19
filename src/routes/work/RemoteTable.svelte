@@ -12,6 +12,7 @@
 
 	export let token;
 	export let endpoint;
+	export let payload_extra;
 	let rows = [];
 	let page = 0; //first page
 	let pageIndex = 0; //first row
@@ -20,7 +21,7 @@
 	let loading = true;
 	let rowsCount = 0;
 	let text;
-	let sorting = { dir: 'desc', key: 'updatedAt' };
+	let sorting = { dir: 'desc', key: 'lastdays' };
 
 	onMount(async () => {
 		await load(page);
@@ -28,7 +29,7 @@
 
 	async function load(_page) {
 		loading = true;
-		const data = await getData(endpoint, token, _page, pageSize, text, sorting);
+		const data = await getData(endpoint, token, _page, pageSize, text, sorting, payload_extra);
 		rows = data.rows;
 		rowsCount = data.rowsCount;
 		loading = false;
@@ -54,6 +55,7 @@
 		if (detail && detail.text) text = detail.text;
 		if (detail && detail.page) page = detail.page;
 		if (detail && detail.sorting) sorting = detail.sorting;
+		if (detail && detail.payload_extra) payload_extra = detail.payload_extra;
 		await load(page);
 	}
 
@@ -80,6 +82,10 @@
 				Updated at
 				<Sort key="updatedAt" dir="desc" on:sort={onSort} />
 			</th>
+			<th>
+				Lasting days
+				<Sort key="lastdays" dir="desc" on:sort={onSort} />
+			</th>
 			<th> &nbsp; </th>
 		</tr>
 	</thead>
@@ -93,7 +99,7 @@
 			>
 				<td data-label="Title">
 					<a
-						class="preview-link kfk-team-id kfk-link"
+						class="preview-link  kfk-link"
 						href={'#'}
 						on:click|preventDefault={() => {
 							gotoWorkitem(row);
@@ -101,22 +107,28 @@
 					>
 						{row.title}
 					</a> <br />
-					of
-					<a
-						class="kfk-link"
-						href={'#'}
-						on:click={() => {
-							goto(`/workflow/@${row.wfid}`);
-						}}
-					>
-						<b> {row.wftitle} </b>
-					</a>
-					started by
-					{row.wfstarter ? row.wfstarter : ''}
+					<span style="font-size:0.5rem; margin-left:2em; ">
+						<Icon name="bar-chart-steps" style="font-size:0.5rem" />
+						<a
+							class="kfk-link"
+							href={'#'}
+							on:click={() => {
+								goto(`/workflow/@${row.wfid}`);
+							}}
+						>
+							{row.wftitle}
+						</a>
+						({row.wfstarter ? row.wfstarter : ''})
+					</span>
 				</td>
-				<td data-label="Status">
-					set: {moment(row.createdAt).format('LLLL')} <br />
-					done: {row.doneat ? moment(row.doneat).format('LLLL') : ''}
+				<td data-label="Status" style="font-size:0.25rem" valign="bottom">
+					<div>
+						Begin at {moment(row.createdAt).format('LLLL')} <br />
+						{row.doneat ? 'Done at ' + moment(row.doneat).format('LLLL') : row.status}
+					</div>
+				</td>
+				<td class="kfk-lastdays" valign="bottom">
+					{row.lastdays}
 				</td>
 			</tr>
 		{/each}

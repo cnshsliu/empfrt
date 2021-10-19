@@ -2636,3 +2636,7 @@ table.quick-help-table td:first-of-type {
 	border-bottom-style: solid;
 	border-bottom: 1px dotted #6666ff;
 }
+.kfk-lastdays {
+	font-size: 24px;
+	color: #666666;
+}

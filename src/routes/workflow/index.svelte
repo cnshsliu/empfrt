@@ -37,7 +37,6 @@
 		NavLink
 	} from 'sveltestrap';
 	import { enhance } from '$lib/form';
-	import WorkflowList from './_WorkflowList.svelte';
 	export let menu_has_form = false;
 	export let theTplid;
 	export let workflows: Workflow[];
