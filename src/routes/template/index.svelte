@@ -72,7 +72,7 @@
 <Container>
 	<Row>
 		<Col class="d-flex justify-content-center">
-			<h1 class="text-xs-center">Workflow Templates</h1>
+			<h1 class="text-center">Workflow Templates</h1>
 		</Col>
 	</Row>
 </Container>
@@ -179,4 +179,3 @@
 		</Col>
 	</Row>
 </Container>
-<Container />

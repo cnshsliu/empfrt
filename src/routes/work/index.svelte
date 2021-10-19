@@ -1,11 +1,7 @@
 <script context="module" lang="ts">
 	export async function load({ page, fetch, session }) {
-		//will use [doer].json.ts
-		//const res = await fetch('/work/default.json');
-
 		return {
 			props: {
-				//works: await res.json(),
 				works: [],
 				user: session.user,
 				config: session.config
@@ -16,6 +12,7 @@
 
 <script lang="ts">
 	import * as api from '$lib/api';
+	import RemoteTable from './RemoteTable.svelte';
 	import type { User, Work } from '$lib/types';
 	import { Container, Row, Col, Button, FormGroup, Input } from 'sveltestrap';
 	import { onMount } from 'svelte';
@@ -29,6 +26,8 @@
 	export let user: User;
 	export const lastSearchCondition: string = '';
 	$title = 'HyperFlow';
+	$: token = user.sessionToken;
+	let remoteTable;
 	export let filter_doer = user.email;
 
 	//let work_status = get(WorkStatusStore);
@@ -69,10 +68,12 @@
 
 	onMount(() => {
 		refreshList();
+		/*
 		const interval = setInterval(() => {
 			refreshList();
 		}, 2000);
 		return () => clearInterval(interval);
+		*/
 	});
 </script>
 
@@ -171,6 +172,11 @@
 					</div>
 				{/each}
 			{/if}
+		</Col>
+	</Row>
+	<Row class="mt-3">
+		<Col>
+			<RemoteTable endpoint="work/search" {token} bind:this={remoteTable} />
 		</Col>
 	</Row>
 </Container>

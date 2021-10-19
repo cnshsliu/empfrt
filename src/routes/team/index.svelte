@@ -108,7 +108,7 @@
 <Container>
 	<Row>
 		<Col class="d-flex justify-content-center">
-			<h1 class="text-xs-center">Team Configuration</h1>
+			<h1 class="text-center">Team Configuration</h1>
 		</Col>
 	</Row>
 </Container>
