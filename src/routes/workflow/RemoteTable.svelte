@@ -1,10 +1,13 @@
 <script type="ts">
 	import * as api from '$lib/api';
 	import { scale } from 'svelte/transition';
+	import async from 'async';
 	import { flip } from 'svelte/animate';
 	import { onMount } from 'svelte';
+	import { session } from '$app/stores';
 	import type { Workflow } from '$lib/types';
 	import moment from 'moment';
+	import { StatusLabel } from '$lib/lang';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
 	import { goto } from '$app/navigation';
 	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Icon } from 'sveltestrap';
@@ -12,7 +15,7 @@
 
 	export let token;
 	export let endpoint;
-	let rows = [];
+	let rows: Workflow[] = [] as Workflow[];
 	let page = 0; //first page
 	let pageIndex = 0; //first row
 	let pageSize = 10; //optional, 10 by default
@@ -26,18 +29,16 @@
 		await load(page);
 	});
 
-	async function load(_page) {
+	async function load(_page: number) {
 		loading = true;
 		const data = await getData(endpoint, token, _page, pageSize, text, sorting);
 		rows = data.rows;
+		for (let i = 0; i < rows.length; i++) {
+			rows[i].status = StatusLabel(rows[i].status);
+		}
 		rowsCount = data.rowsCount;
 		loading = false;
 	}
-
-	export const unshiftRows = function (obj) {
-		rows = [obj, ...rows];
-		rowsCount = rowsCount + 1;
-	};
 
 	function onPageChange(event) {
 		load(event.detail.page);
@@ -68,12 +69,21 @@
 			goto(`/template/start?tplid=${workflow.tplid}`);
 			return;
 		} else if (op === 'viewTemplate') {
+			$session.wfid = workflow.wfid;
 			goto(`/template/@${workflow.tplid}&read`);
 			return;
 		}
+
+		if (op === 'viewInstanceTemplate') {
+			let payload = { wfid: workflow.wfid };
+			let ret = await api.post('workflow/dump/instemplate', payload, token);
+			goto(`template/@${workflow.wfid}_instemplate&read`);
+			return;
+		}
+
 		let payload = { wfid: workflow.wfid, op: op };
 		console.log(payload);
-		let ret = await api.post('workflow/op', payload, token);
+		let ret: Workflow = (await api.post('workflow/op', payload, token)) as Workflow;
 		if (op === 'pause' || op === 'resume' || op === 'stop') {
 			for (let i = 0; i < rows.length; i++) {
 				if (rows[i].wfid === workflow.wfid) {
@@ -99,21 +109,6 @@
 			await refresh({});
 		}
 	};
-	/*
-<code>
-	<pre>
-		How to use RemoteTable Pagination 
-		1. Copy RemoteTable.svelet to object folder
-			(team/template/workflow/work etc.) 
-		2. Do following modification to RemoteTable.svelte 
-			2.1. modify deleteRow to match API endpoint and payload 
-			2.2. modify link href of object in remote table row
-			2.3. modify link hrefs in DropDown
-			3. in index.svelete, change "RemoteTable endpoint" to the correct one. 
-			4. modify object search method in handlers.js on server side to return objs and total number of objs. Reference to TemplateSearch
-	</pre>
-</code>
-*/
 </script>
 
 <Table {loading} {rows} {pageIndex} {pageSize} let:rows={rows2}>
@@ -196,6 +191,15 @@
 									class="nav-link "
 									><Icon name="trash" />
 									View Template
+								</a>
+							</DropdownItem>
+							<DropdownItem>
+								<a
+									href={'#'}
+									on:click|preventDefault={() => opWorkflow(row, 'viewInstanceTemplate')}
+									class="nav-link "
+									><Icon name="trash" />
+									View Instance Template
 								</a>
 							</DropdownItem>
 							<DropdownItem>
