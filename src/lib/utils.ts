@@ -1,4 +1,6 @@
 export async function post(endpoint, data): Promise<Response> {
+	console.log(endpoint);
+	console.log(data);
 	return fetch(endpoint, {
 		method: 'POST',
 		credentials: 'include',

@@ -15,12 +15,14 @@
 	}
 </script>
 
-<script>
+<script lang="ts">
 	import { session } from '$app/stores';
+	import * as api from '$lib/api';
 	import ListErrors from '$lib/ListErrors.svelte';
 	import { post } from '$lib/utils';
 
 	export let user;
+	let error = '';
 
 	import { title } from '$lib/title';
 	$title = 'HyperFlow';
@@ -38,10 +40,33 @@
 	async function save() {
 		in_progress = true;
 
-		const response = await post(`auth/save`, user);
-
-		errors = response.errors;
-		if (response.user) $session.user = response.user;
+		try {
+			let ret = await api.post(
+				'account/profile/update',
+				{ email: user.email, username: user.username, password: user.password },
+				user.sessionToken
+			);
+			if (ret.statusCode === 400) {
+				if (ret.message.match(/"password".*fails to match/)) {
+					console.log('Password format error');
+					error = '密码长度必须在6-12之间，包含大小写字母数字及特殊字符';
+				} else if (ret.message.match(/"username".*fails to match/)) {
+					console.log('Username format error');
+					error = '用户名长度必须在4-12之间，且只包含大小写字母和数字';
+				}
+			} else {
+				//eslint-disable-next-line
+				if (ret.user) {
+					$session.user = ret.user;
+					error = '修改用户信息成功';
+				} else {
+					error = '错误';
+				}
+			}
+			console.log(ret);
+		} catch (err) {
+			console.log('error found');
+		}
 
 		in_progress = false;
 	}
@@ -116,6 +141,7 @@
 					</fieldset>
 				</form>
 
+				{error}
 				<hr />
 
 				<button class="btn btn-outline-danger" on:click={logout}> Or click here to logout. </button>
