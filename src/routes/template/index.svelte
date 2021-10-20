@@ -9,10 +9,12 @@
 	}
 </script>
 
-<script lang="typescript">
+<script lang="ts">
 	import { API_SERVER } from '$lib/Env';
 	import RemoteTable from './RemoteTable.svelte';
+	import ErrorProcessor from '$lib/errorProcessor';
 	import type { User } from '$lib/types';
+	import { session } from '$app/stores';
 	import { Container, Row, Col, Styles, Icon, Button, Nav, NavLink } from 'sveltestrap';
 	import { enhance } from '$lib/form';
 	export let menu_has_form = false;
@@ -114,19 +116,21 @@
 							token: user.sessionToken,
 							result: async (res, form) => {
 								const created = await res.json();
-								console.log(created);
-								if (created.error) {
-									if (created.errMsg.indexOf('duplicate key error') > 0) {
-										console.log('Dupliated key', '//TODO');
-									} else console.log(created.error);
-								} else {
-									/* templates = [created, ...templates]; */
-									lastSearchCondition = created.tplid;
-									remoteTable.rows = [created, ...remoteTable.rows];
-									remoteTable.rowsCount = remoteTable.rowsCount + 1;
-								}
+								/* templates = [created, ...templates]; */
+								lastSearchCondition = created.tplid;
+								remoteTable.rows = [created, ...remoteTable.rows];
+								remoteTable.rowsCount = remoteTable.rowsCount + 1;
 								form.reset();
 								//form_status['create'] = false;
+							},
+							error: async (res, error, form) => {
+								console.log('Here0');
+								let retError = await res.json();
+								let tmp = ErrorProcessor.setError(retError.errors, '<br />');
+								$session.errors = tmp;
+								setTimeout(() => {
+									$session.errors = '';
+								}, 2000);
 							}
 						}}
 					>

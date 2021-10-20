@@ -17,7 +17,7 @@ export const get: RequestHandler<Locals> = async (request) => {
 };
 // POST /todos.json
 export const post: RequestHandler<Locals, FormData> = async (request) => {
-	console.log("Enter index.json.ts.post");
+	console.log('Enter index.json.ts.post');
 	const response = await api(request, `todos/${request.locals.userid}`, {
 		// because index.svelte posts a FormData object,
 		// request.body is _also_ a (readonly) FormData

@@ -1,5 +1,3 @@
-const assetIcons = [
-  "ACTION.svg",
-];
+const assetIcons = ['ACTION.svg'];
 
 export default assetIcons;

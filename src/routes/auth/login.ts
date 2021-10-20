@@ -3,8 +3,8 @@ import { respond } from './_respond';
 
 export async function post(request) {
 	const body = await api.post('account/login', {
-			email: request.body.email,
-			password: request.body.password
+		email: request.body.email,
+		password: request.body.password
 	});
 
 	return respond(body);

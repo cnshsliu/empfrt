@@ -48,6 +48,16 @@
 				</Input>
 			</InputGroup>
 		</Col>
+		<Col>
+			<InputGroup size="sm">
+				<Input
+					id="c1"
+					type="checkbox"
+					label="Only finish on ALL-Done?"
+					bind:checked={nodeInfo.nodeProps.ACTION.byall}
+				/>
+			</InputGroup>
+		</Col>
 		<Col class="mt-3 mt-1">
 			<InputGroup size="sm"
 				>Vars <Button

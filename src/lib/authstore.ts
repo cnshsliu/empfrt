@@ -1,7 +1,7 @@
-import storage from '$lib/store'
+import storage from '$lib/store';
 
 interface Auth {
-    jwt: string
+	jwt: string;
 }
 
-export const authStore = storage<Auth>("auth", { jwt: "" })
+export const authStore = storage<Auth>('auth', { jwt: '' });

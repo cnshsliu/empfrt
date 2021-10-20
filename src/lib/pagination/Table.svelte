@@ -100,7 +100,8 @@
 
 <slot name="bottom">
 	<div class="slot-bottom">
-		<Pagination
+		<svelte:component
+			this={Pagination}
 			{page}
 			{pageSize}
 			{serverSide}

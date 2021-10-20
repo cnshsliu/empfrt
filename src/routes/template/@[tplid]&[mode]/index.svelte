@@ -150,14 +150,17 @@
 			<Col>
 				Template {tplid} not found <br />
 				{#if $session.wfid}
-					Seems like you are trying to view template of a workflow {$session.wfid}, <br />however,
-					the template of this workflow is absent, <br />you may
+					Seems like you are trying to view the ORIGINAL TEMPLATE of a workflow {$session.wfid},
+					<br />however, the ORIGINAL TEMPLATE of this workflow might have been deleted. <br />
+					you may
 					<a
 						href={'#'}
 						on:click={() => {
 							viewInstanceTemplate($session.wfid);
-						}}>view workflow's instance template instead</a
-					>.
+						}}
+					>
+						view the INSTANCE TEMPLATE
+					</a> of this workflow instead
 				{/if}
 			</Col>
 		</Row>

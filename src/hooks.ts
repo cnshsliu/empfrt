@@ -1,8 +1,8 @@
 import cookie from 'cookie';
 import { v4 as uuid } from '@lukeed/uuid';
 import type { Handle } from '@sveltejs/kit';
-import {authStore} from '$lib/authstore';
-import { writable, get } from 'svelte/store'
+import { authStore } from '$lib/authstore';
+import { writable, get } from 'svelte/store';
 
 export const handle: Handle = async ({ request, resolve }) => {
 	const cookies = cookie.parse(request.headers.cookie || '');
@@ -31,10 +31,10 @@ export function getSession({ locals }) {
 			email: locals.user.email,
 			avatar: locals.user.avatar,
 			bio: locals.user.bio,
-			sessionToken: locals.user.sessionToken,
+			sessionToken: locals.user.sessionToken
 		},
 		config: {
-			sort:{field:'createdAt', order:-1}
+			sort: { field: 'createdAt', order: -1 }
 		}
 	};
 }

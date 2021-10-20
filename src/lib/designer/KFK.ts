@@ -945,7 +945,7 @@ class KFKclass {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		const ret = {
-			ACTION: { id: '', role: '', label: '', kvars: '', katts: '' },
+			ACTION: { id: '', role: '', label: '', kvars: '', katts: '', byall: true },
 			SCRIPT: { id: '', label: '', code: '', runmode: 'ASYNC' },
 			INFORM: { id: '', label: '', role: '', subject: '', content: '' },
 			TIMER: { id: '', label: '', code: '' },
@@ -967,6 +967,7 @@ class KFKclass {
 			let kattsString = BlankToDefault(jqDIV.find('.katts').text(), 'e30=');
 			kattsString = that.base64ToCode(kattsString);
 			ret.ACTION.katts = kattsString;
+			ret.ACTION.byall = jqDIV.hasClass('BYALL');
 		} else if (jqDIV.hasClass('SCRIPT')) {
 			ret.SCRIPT.id = jqDIV.attr('id');
 			ret.SCRIPT.runmode = jqDIV.attr('runmode') ? jqDIV.attr('runmode') : 'SYNC';
@@ -1020,6 +1021,11 @@ class KFKclass {
 			const kvars_string = JSON.stringify(kvars_json);
 			const codeInBase64 = Parser.codeToBase64(kvars_string);
 			jqDIV.find('.kvars').first().prop('innerText', codeInBase64);
+			if (propJSON.byall) {
+				jqDIV.addClass('BYALL');
+			} else {
+				jqDIV.removeClass('BYALL');
+			}
 		} else if (jqDIV.hasClass('SCRIPT')) {
 			propJSON = props.SCRIPT;
 			this.setNodeLabel(jqDIV, props.label);
@@ -5416,13 +5422,14 @@ toggleOverview (jc3MousePos) {
 	}
 
 	checkUrl(str_url: string) {
-		const regex = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=+$,\w]+@)?[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=+$,\w]+@)[A-Za-z0-9.-]+)((?:\/[+~%/.\w-_]*)?\??(?:[-+=&;%@.\w_]*)#?(?:[\w]*))?)/;
+		const regex =
+			/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=+$,\w]+@)?[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=+$,\w]+@)[A-Za-z0-9.-]+)((?:\/[+~%/.\w-_]*)?\??(?:[-+=&;%@.\w_]*)#?(?:[\w]*))?)/;
 		return str_url.match(regex) !== null;
 	}
 
 	replaceHTMLTarget(html: string) {
 		let ret: string = html;
-		html = `<div>${html}</div>`;
+		html = '<div>' + html + '</div>';
 		try {
 			const jq = $($.parseHTML(html));
 			jq.find('a').prop('target', '_blank');

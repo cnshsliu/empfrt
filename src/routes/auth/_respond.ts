@@ -1,9 +1,9 @@
 import storage from '$lib/store';
-import {authStore} from '$lib/authstore';
-import { writable, get } from 'svelte/store'
+import { authStore } from '$lib/authstore';
+import { writable, get } from 'svelte/store';
 
-interface Auth{
-	jwt: string
+interface Auth {
+	jwt: string;
 }
 
 export function respond(body) {
@@ -14,7 +14,7 @@ export function respond(body) {
 	const json = JSON.stringify(body.user);
 	const value = Buffer.from(json).toString('base64');
 
-	authStore.set({jwt:value});
+	authStore.set({ jwt: value });
 
 	return {
 		headcrs: {

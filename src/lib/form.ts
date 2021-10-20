@@ -22,7 +22,7 @@ export function enhance(
 
 		const contentType = 'application/json';
 		const formData = new FormData(form);
-		const tmp:{ [k: string]: any } = Object.fromEntries(formData);
+		const tmp: { [k: string]: any } = Object.fromEntries(formData);
 		const body = JSON.stringify(tmp);
 
 		//if (pending) pending(data, form);
@@ -35,7 +35,7 @@ export function enhance(
 					Accept: 'application/json',
 					Authorization: token
 				},
-				body   // this paramater must has name body
+				body // this paramater must has name body
 			});
 
 			if (res.ok) {
@@ -46,6 +46,7 @@ export function enhance(
 				console.error(await res.text());
 			}
 		} catch (e) {
+			console.log('Hereeee');
 			if (error) {
 				error(null, e, form);
 			} else {
@@ -84,14 +85,13 @@ export function enhanceAddOneRoleMember(
 
 		const contentType = 'application/json';
 		const formData = new FormData(form);
-		const members = [{uid: formData.get('uid'), dname: formData.get('dname')}];
+		const members = [{ uid: formData.get('uid'), dname: formData.get('dname') }];
 		formData.delete('uid');
 		formData.delete('dname');
-		
-		const tmp:{ [k: string]: unknown } = Object.fromEntries(formData);
+
+		const tmp: { [k: string]: unknown } = Object.fromEntries(formData);
 		tmp.members = members;
 		const body = JSON.stringify(tmp);
-
 
 		//if (pending) pending(data, form);
 
@@ -103,7 +103,7 @@ export function enhanceAddOneRoleMember(
 					Accept: 'application/json',
 					Authorization: token
 				},
-				body   // this paramater must has name body
+				body // this paramater must has name body
 			});
 
 			if (res.ok) {
