@@ -18,11 +18,13 @@
 <script lang="ts">
 	import { session } from '$app/stores';
 	import * as api from '$lib/api';
-	import ListErrors from '$lib/ListErrors.svelte';
+	import ErrorProcessor from '$lib/errorProcessor';
 	import { post } from '$lib/utils';
+	import { Fade, Card } from 'sveltestrap';
 
 	export let user;
-	let error = '';
+	let fade_message = '';
+	let fade_timer;
 
 	import { title } from '$lib/title';
 	$title = 'HyperFlow';
@@ -37,35 +39,32 @@
 		$session.user = null;
 	}
 
+	function setFadeMessage(message) {
+		fade_message = message;
+		if (fade_timer) clearTimeout(fade_timer);
+		fade_timer = setTimeout(() => {
+			fade_message = '';
+		}, 2000);
+	}
+
 	async function save() {
 		in_progress = true;
 
-		try {
-			let ret = await api.post(
-				'account/profile/update',
-				{ email: user.email, username: user.username, password: user.password },
-				user.sessionToken
-			);
-			if (ret.statusCode === 400) {
-				if (ret.message.match(/"password".*fails to match/)) {
-					console.log('Password format error');
-					error = '密码长度必须在6-12之间，包含大小写字母数字及特殊字符';
-				} else if (ret.message.match(/"username".*fails to match/)) {
-					console.log('Username format error');
-					error = '用户名长度必须在4-12之间，且只包含大小写字母和数字';
-				}
+		let ret = await api.post(
+			'account/profile/update',
+			{ email: user.email, username: user.username, password: user.password },
+			user.sessionToken
+		);
+		if (ret.error) {
+			setFadeMessage(ret.message);
+		} else {
+			//eslint-disable-next-line
+			if (ret.user) {
+				$session.user = ret.user;
+				setFadeMessage('修改用户信息成功');
 			} else {
-				//eslint-disable-next-line
-				if (ret.user) {
-					$session.user = ret.user;
-					error = '修改用户信息成功';
-				} else {
-					error = '错误';
-				}
+				setFadeMessage('错误');
 			}
-			console.log(ret);
-		} catch (err) {
-			console.log('error found');
 		}
 
 		in_progress = false;
@@ -73,7 +72,7 @@
 </script>
 
 <svelte:head>
-	<title>Settings • Conduit</title>
+	<title>Settings • HyperFlow</title>
 </svelte:head>
 
 <div class="settings-page">
@@ -81,8 +80,6 @@
 		<div class="row">
 			<div class="col-md-6 offset-md-3 col-xs-12">
 				<h1 class="text-xs-center">Your Settings</h1>
-
-				<ListErrors {errors} />
 
 				<form on:submit|preventDefault={save}>
 					<fieldset>
@@ -141,7 +138,11 @@
 					</fieldset>
 				</form>
 
-				{error}
+				<Fade isOpen={fade_message != ''}>
+					<Card body>
+						{fade_message}
+					</Card>
+				</Fade>
 				<hr />
 
 				<button class="btn btn-outline-danger" on:click={logout}> Or click here to logout. </button>

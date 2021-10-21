@@ -15,21 +15,33 @@
 	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { post } from '$lib/utils';
+	import { Fade, Card } from 'sveltestrap';
 	import ListErrors from '$lib/ListErrors.svelte';
 
 	let email = '';
 	let password = '';
 	let errors = null;
+	let fade_message = '';
+	let fade_timer;
 
+	function setFadeMessage(message) {
+		fade_message = message;
+		if (fade_timer) clearTimeout(fade_timer);
+		fade_timer = setTimeout(() => {
+			fade_message = '';
+		}, 2000);
+	}
 	async function submit(event) {
 		const response = await post(`auth/login`, { email, password });
 
-		// TODO handle network errors
-		errors = response.errors;
+		if (response.error) {
+			setFadeMessage(response.message);
+		} else {
+			setFadeMessage('');
+		}
 
 		if (response.user) {
 			$session.user = response.user;
-			console.log('set session.user to', $session.user);
 			goto('/');
 		}
 	}
@@ -71,6 +83,11 @@
 					</fieldset>
 					<button class="btn btn-lg btn-primary pull-xs-right" type="submit"> Sign in </button>
 				</form>
+				<Fade isOpen={fade_message != ''}>
+					<Card body>
+						{fade_message}
+					</Card>
+				</Fade>
 			</div>
 		</div>
 	</div>

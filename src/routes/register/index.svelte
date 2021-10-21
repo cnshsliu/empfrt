@@ -23,17 +23,22 @@
 	let password: string = '';
 	let errors = null;
 	let fade_message = '';
+	let fade_timer;
 
+	function setFadeMessage(message) {
+		fade_message = message;
+		if (fade_timer) clearTimeout(fade_timer);
+		fade_timer = setTimeout(() => {
+			fade_message = '';
+		}, 2000);
+	}
 	async function submit(event) {
 		const response: EmpResponse = await post(`auth/register`, { username, email, password }); //eslint-disable-line
 
 		if (response.error) {
-			fade_message = response.errMsg;
-			setTimeout(() => {
-				fade_message = '';
-			}, 3000);
+			setFadeMessage(response.message);
 		} else {
-			fade_message = '';
+			setFadeMessage('');
 		}
 
 		if (response.user) {
@@ -45,7 +50,7 @@
 </script>
 
 <svelte:head>
-	<title>Sign up • Conduit</title>
+	<title>Sign up • HyperFlow</title>
 </svelte:head>
 
 <div class="auth-page">
@@ -56,8 +61,6 @@
 				<p class="text-xs-center">
 					<a href="/login">Have an account?</a>
 				</p>
-
-				<ListErrors {errors} />
 
 				<form on:submit|preventDefault={submit}>
 					<fieldset class="form-group">
@@ -89,12 +92,12 @@
 					</fieldset>
 					<button class="btn btn-lg btn-primary pull-xs-right"> Sign up </button>
 				</form>
+				<Fade isOpen={fade_message != ''}>
+					<Card body>
+						{fade_message}
+					</Card>
+				</Fade>
 			</div>
 		</div>
-		<Fade isOpen={fade_message != ''}>
-			<Card body>
-				{fade_message}
-			</Card>
-		</Fade>
 	</div>
 </div>

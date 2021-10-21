@@ -1,4 +1,5 @@
 import { API_SERVER } from '$lib/Env';
+import ErrorProcessor from '$lib/errorProcessor';
 
 type OPTS = {
 	method: string;
@@ -21,9 +22,14 @@ async function send({ method, path, data, token }) {
 		.then((r) => r.text())
 		.then((json) => {
 			try {
-				return JSON.parse(json);
+				let ret = JSON.parse(json);
+				if (ret.error) {
+					ret = ErrorProcessor.normalizeError(ret);
+				}
+				return ret;
 			} catch (err) {
-				return json;
+				let ret = json;
+				return ret;
 			}
 		});
 }
