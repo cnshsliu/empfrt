@@ -1028,7 +1028,7 @@ class KFKclass {
 			}
 		} else if (jqDIV.hasClass('SCRIPT')) {
 			propJSON = props.SCRIPT;
-			this.setNodeLabel(jqDIV, props.label);
+			this.setNodeLabel(jqDIV, propJSON.label);
 			jqDIV.attr('runmode', propJSON.runmode.trim());
 			const code = propJSON.code;
 			const appData_code = code.trim();
@@ -1045,7 +1045,7 @@ class KFKclass {
 			}
 		} else if (jqDIV.hasClass('INFORM')) {
 			propJSON = props.INFORM;
-			this.setNodeLabel(jqDIV, props.label);
+			this.setNodeLabel(jqDIV, propJSON.label);
 			const subject = propJSON.subject;
 			const content = propJSON.content;
 			const role = propJSON.role;
@@ -1074,7 +1074,7 @@ class KFKclass {
 			}
 		} else if (jqDIV.hasClass('TIMER')) {
 			propJSON = props.TIMER;
-			this.setNodeLabel(jqDIV, props.label);
+			this.setNodeLabel(jqDIV, propJSON.label);
 			const appData_code = propJSON.code.trim();
 			if (jqDIV.find('code').length > 0) {
 				if (jqDIV.find('code').first().text().trim() !== appData_code) {
@@ -1086,7 +1086,7 @@ class KFKclass {
 		} else if (jqDIV.hasClass('SUB')) {
 			propJSON = props.SUB;
 			const appData_code = propJSON.sub.trim();
-			this.setNodeLabel(jqDIV, props.label);
+			this.setNodeLabel(jqDIV, propJSON.label);
 			jqDIV.attr('sub', appData_code);
 		}
 		this.onChange('Property Changed');

@@ -7,7 +7,7 @@
 	import { session } from '$app/stores';
 	import type { Template, Workflow, KFKclass } from '$lib/types';
 	import Action from '$lib/designer/prop/Action.svelte';
-	import Script from '$lib/designer/prop/Script.svelte';
+	import ScriptProp from '$lib/designer/prop/ScriptProp.svelte';
 	import Inform from '$lib/designer/prop/Inform.svelte';
 	import Timer from '$lib/designer/prop/Timer.svelte';
 	import Sub from '$lib/designer/prop/Sub.svelte';
@@ -265,10 +265,10 @@
 				<Col>
 					{#if nodeInfo.nodeType === 'ACTION'}
 						<Action {nodeInfo} {kvarsArr} {roleOptions} {showHelp} />
-					{:else if nodeInfo.nodeType === 'SCRIPT'}
-						<Script {nodeInfo} {showHelp} />
 					{:else if nodeInfo.nodeType === 'INFORM'}
 						<Inform {nodeInfo} {roleOptions} {showHelp} />
+					{:else if nodeInfo.nodeType === 'SCRIPT'}
+						<ScriptProp {nodeInfo} {showHelp} />
 					{:else if nodeInfo.nodeType === 'TIMER'}
 						<Timer {nodeInfo} {showHelp} />
 					{:else if nodeInfo.nodeType === 'SUB'}
