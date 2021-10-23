@@ -16,6 +16,7 @@
 	export let kvarsArr = [];
 	export let roleOptions = [];
 	export let showHelp;
+	export let readonly;
 	let helpShowing = false;
 </script>
 
@@ -24,30 +25,33 @@
 		<Col>
 			<InputGroup size="sm">
 				<InputGroupText>Label</InputGroupText>
-				<Input bind:value={nodeInfo.nodeProps.ACTION.label} />
+				<Input bind:value={nodeInfo.nodeProps.ACTION.label} disabled={readonly} />
 			</InputGroup>
 		</Col>
 		<Col>
 			<InputGroup size="sm">
 				<InputGroupText>Role</InputGroupText>
-				<Input bind:value={nodeInfo.nodeProps.ACTION.role} />
+				<Input bind:value={nodeInfo.nodeProps.ACTION.role} disabled={readonly} />
 			</InputGroup>
 		</Col>
-		<Col>
-			<InputGroup size="sm">
-				<InputGroupText>Pick an existing role</InputGroupText>
-				<Input
-					type="select"
-					bind:value={nodeInfo.nodeProps.ACTION.role}
-					name="select"
-					id="exampleSelect"
-				>
-					{#each roleOptions as aRoleOption}
-						<option>{aRoleOption}</option>
-					{/each}
-				</Input>
-			</InputGroup>
-		</Col>
+		{#if !readonly}
+			<Col>
+				<InputGroup size="sm">
+					<InputGroupText>Pick an existing role</InputGroupText>
+					<Input
+						type="select"
+						bind:value={nodeInfo.nodeProps.ACTION.role}
+						name="select"
+						id="exampleSelect"
+						disabled={readonly}
+					>
+						{#each roleOptions as aRoleOption}
+							<option>{aRoleOption}</option>
+						{/each}
+					</Input>
+				</InputGroup>
+			</Col>
+		{/if}
 		<Col>
 			<InputGroup size="sm">
 				<Input
@@ -55,25 +59,32 @@
 					type="checkbox"
 					label="Only finish on ALL-Done?"
 					bind:checked={nodeInfo.nodeProps.ACTION.byall}
+					disabled={readonly}
 				/>
 			</InputGroup>
 		</Col>
 		<Col class="mt-3 mt-1">
-			<InputGroup size="sm"
-				>Vars <Button
-					color="primary"
-					size="sm"
-					on:click={(e) => {
-						console.log('add new variable');
-						e.preventDefault();
-						kvarsArr.push({
-							name: '',
-							label: '',
-							value: ''
-						});
-						kvarsArr = kvarsArr;
-					}}>+ Add new variable</Button
-				>
+			<InputGroup size="sm">
+				Vars
+				{#if !readonly}
+					<Button
+						color="primary"
+						size="sm"
+						disabled={readonly}
+						on:click={(e) => {
+							console.log('add new variable');
+							e.preventDefault();
+							kvarsArr.push({
+								name: '',
+								label: '',
+								value: ''
+							});
+							kvarsArr = kvarsArr;
+						}}
+					>
+						+ Add new variable
+					</Button>
+				{/if}
 			</InputGroup>
 		</Col>
 		<Col>
@@ -83,23 +94,27 @@
 						<Col class="mt-2">
 							<InputGroup size="sm">
 								<InputGroupText>Name</InputGroupText>
-								<Input bind:value={kvar.name} />
-								<Button
-									color="primary"
-									on:click={(e) => {
-										e.preventDefault();
-										kvarsArr.splice(index, 1);
-										kvarsArr = kvarsArr;
-									}}>-</Button
-								>
+								<Input bind:value={kvar.name} disabled={readonly} />
+								{#if !readonly}
+									<Button
+										color="primary"
+										on:click={(e) => {
+											e.preventDefault();
+											kvarsArr.splice(index, 1);
+											kvarsArr = kvarsArr;
+										}}
+									>
+										-
+									</Button>
+								{/if}
 							</InputGroup>
 							<InputGroup size="sm">
 								<InputGroupText>Value</InputGroupText>
-								<Input bind:value={kvar.value} />
+								<Input bind:value={kvar.value} disabled={readonly} />
 							</InputGroup>
 							<InputGroup size="sm">
 								<InputGroupText>Label</InputGroupText>
-								<Input bind:value={kvar.label} />
+								<Input bind:value={kvar.label} disabled={readonly} />
 							</InputGroup>
 						</Col>
 					{/each}

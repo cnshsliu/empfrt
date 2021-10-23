@@ -13,6 +13,7 @@
 
 	export let nodeInfo;
 	export let showHelp;
+	export let readonly;
 	let helpShowing = false;
 	let timerCodePrefix = '+';
 	if (Parser.isEmpty(nodeInfo.nodeProps.TIMER.code)) {
@@ -103,7 +104,7 @@
 		<Col>
 			<InputGroup size="sm">
 				<InputGroupText>Label</InputGroupText>
-				<Input bind:value={nodeInfo.nodeProps.label} />
+				<Input bind:value={nodeInfo.nodeProps.label} disabled={readonly} />
 			</InputGroup>
 		</Col>
 	</Row>
@@ -124,7 +125,7 @@
 			</Container>
 		</Col>
 		<Col class="mt-2">
-			<InputGroup size="sm">
+			<InputGroup size="sm" disabled={readonly}>
 				<InputGroupText>Type</InputGroupText>
 				<Input
 					class="ms-1"
@@ -132,9 +133,24 @@
 					bind:group={timerCodePrefix}
 					value="start+"
 					label="From Start"
+					disabled={readonly}
 				/>
-				<Input class="ms-1" type="radio" bind:group={timerCodePrefix} value="+" label="From Now" />
-				<Input class="ms-1" type="radio" bind:group={timerCodePrefix} value="" label="Fix" />
+				<Input
+					class="ms-1"
+					type="radio"
+					bind:group={timerCodePrefix}
+					value="+"
+					label="From Now"
+					disabled={readonly}
+				/>
+				<Input
+					class="ms-1"
+					type="radio"
+					bind:group={timerCodePrefix}
+					value=""
+					label="Fix"
+					disabled={readonly}
+				/>
 			</InputGroup>
 		</Col>
 		<Col>
@@ -142,32 +158,38 @@
 				<Row cols="2">
 					<Col>
 						<InputGroup class="d-flex justify-content-start">
-							<Input type="number" bind:value={t[0]} /> <span class="align-self-center">年</span>
+							<Input type="number" bind:value={t[0]} disabled={readonly} />
+							<span class="align-self-center">年</span>
 						</InputGroup>
 					</Col>
 					<Col>
 						<InputGroup>
-							<Input type="number" bind:value={t[1]} /> <span class="align-self-center">月</span>
+							<Input type="number" bind:value={t[1]} disabled={readonly} />
+							<span class="align-self-center">月</span>
 						</InputGroup>
 					</Col>
 					<Col>
 						<InputGroup>
-							<Input type="number" bind:value={t[2]} /> <span class="align-self-center">日</span>
+							<Input type="number" bind:value={t[2]} disabled={readonly} />
+							<span class="align-self-center">日</span>
 						</InputGroup>
 					</Col>
 					<Col>
 						<InputGroup>
-							<Input type="number" bind:value={t[3]} /> <span class="align-self-center">时</span>
+							<Input type="number" bind:value={t[3]} disabled={readonly} />
+							<span class="align-self-center">时</span>
 						</InputGroup>
 					</Col>
 					<Col>
 						<InputGroup>
-							<Input type="number" bind:value={t[4]} /> <span class="align-self-center">分</span>
+							<Input type="number" bind:value={t[4]} disabled={readonly} />
+							<span class="align-self-center">分</span>
 						</InputGroup>
 					</Col>
 					<Col>
 						<InputGroup>
-							<Input type="number" bind:value={t[5]} /> <span class="align-self-center">秒</span>
+							<Input type="number" bind:value={t[5]} disabled={readonly} />
+							<span class="align-self-center">秒</span>
 						</InputGroup>
 					</Col>
 				</Row>

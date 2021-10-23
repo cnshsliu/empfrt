@@ -14,6 +14,7 @@
 	export let nodeInfo;
 	export let roleOptions = [];
 	export let showHelp;
+	export let readonly;
 	let helpShowing = false;
 </script>
 
@@ -22,7 +23,7 @@
 		<Col>
 			<InputGroup size="sm">
 				<InputGroupText>Label</InputGroupText>
-				<Input bind:value={nodeInfo.nodeProps.label} />
+				<Input bind:value={nodeInfo.nodeProps.label} disabled={readonly} />
 			</InputGroup>
 		</Col>
 	</Row>
@@ -30,28 +31,30 @@
 		<Col>
 			<InputGroup size="sm">
 				<InputGroupText>To Role</InputGroupText>
-				<Input bind:value={nodeInfo.nodeProps.INFORM.role} />
+				<Input bind:value={nodeInfo.nodeProps.INFORM.role} disabled={readonly} />
 			</InputGroup>
 		</Col>
-		<Col>
-			<InputGroup size="sm">
-				<InputGroupText>Pick an existing role</InputGroupText>
-				<Input
-					type="select"
-					bind:value={nodeInfo.nodeProps.INFORM.role}
-					name="select"
-					id="exampleSelect"
-				>
-					{#each roleOptions as aRoleOption}
-						<option>{aRoleOption}</option>
-					{/each}
-				</Input>
-			</InputGroup>
-		</Col>
+		{#if !readonly}
+			<Col>
+				<InputGroup size="sm">
+					<InputGroupText>Pick an existing role</InputGroupText>
+					<Input
+						type="select"
+						bind:value={nodeInfo.nodeProps.INFORM.role}
+						name="select"
+						id="exampleSelect"
+					>
+						{#each roleOptions as aRoleOption}
+							<option>{aRoleOption}</option>
+						{/each}
+					</Input>
+				</InputGroup>
+			</Col>
+		{/if}
 		<Col>
 			<InputGroup size="sm">
 				<InputGroupText>Subject</InputGroupText>
-				<Input bind:value={nodeInfo.nodeProps.INFORM.subject} />
+				<Input bind:value={nodeInfo.nodeProps.INFORM.subject} disabled={readonly} />
 			</InputGroup>
 		</Col>
 		<Col>
@@ -61,6 +64,7 @@
 					bind:value={nodeInfo.nodeProps.INFORM.content}
 					type="textarea"
 					class="kfk-code-input"
+					disabled={readonly}
 				/>
 			</InputGroup>
 		</Col>

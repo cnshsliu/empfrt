@@ -96,7 +96,7 @@
 			noscroll: true,
 			keepfocus: true
 		});
-		await theDesigner.theKFK.loadTemplateDoc(template, tpl_mode);
+		await theDesigner.changeViewMode(tpl_mode);
 	}
 	$: readonly = tpl_mode === 'read';
 	function show_delete_template_modal() {
@@ -258,9 +258,7 @@
 											replaceState: false,
 											keepfocus: true
 										});
-										theDesigner.sayHello();
-										theDesigner.theKFK.sayHello();
-										await theDesigner.theKFK.loadTemplateDoc(template, tpl_mode);
+										await theDesigner.loadTemplate(template, tpl_mode);
 										form_status['create'] = false;
 										form.reset();
 										errmsg = '';
@@ -327,9 +325,7 @@
 											keepfocus: true,
 											noscroll: true
 										});
-										theDesigner.sayHello();
-										theDesigner.theKFK.sayHello();
-										await theDesigner.theKFK.loadTemplateDoc(template, tpl_mode);
+										await theDesigner.loadTemplate(template, tpl_mode);
 										form_status['rename'] = false;
 										form.reset();
 										errmsg = '';
@@ -380,9 +376,7 @@
 											noscroll: true,
 											keepfocus: true
 										});
-										theDesigner.sayHello();
-										theDesigner.theKFK.sayHello();
-										await theDesigner.theKFK.loadTemplateDoc(template, tpl_mode);
+										await theDesigner.loadTemplate(template, tpl_mode);
 										form_status['copyto'] = false;
 										$title = template.tplid;
 										form.reset();

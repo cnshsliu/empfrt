@@ -13,6 +13,7 @@
 
 	export let nodeInfo;
 	export let showHelp;
+	export let readonly;
 	let helpShowing = false;
 	if (Parser.isEmpty(nodeInfo.caseValue)) {
 		nodeInfo.caseValue = '';
@@ -24,7 +25,7 @@
 		<Col>
 			<InputGroup size="sm">
 				<InputGroupText>Case Value</InputGroupText>
-				<Input bind:value={nodeInfo.caseValue} />
+				<Input bind:value={nodeInfo.caseValue} disabled={readonly} />
 			</InputGroup>
 		</Col>
 		<Col class="d-flex mt-3">

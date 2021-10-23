@@ -29,7 +29,7 @@
 	export let template: Template;
 	export let workflow: Workflow;
 	export let tpl_mode: string;
-	export let theKFK: KFKclass;
+	let theKFK: KFKclass;
 	const jq = jQuery;
 
 	let jqueryui: any;
@@ -92,6 +92,8 @@
 	};
 	export function designerCallback(cmd: string, args: any): void {
 		switch (cmd) {
+			case 'setTemplate':
+				template = args;
 			case 'setMode':
 				currentMode = args;
 				break;
@@ -140,6 +142,15 @@
 		theKFK.addDocumentEventHandler(true);
 	});
 
+	export async function changeViewMode(tpl_mode: string) {
+		await theKFK.loadTemplateDoc(template, tpl_mode);
+	}
+	export async function loadTemplate(tpl: Template, tpl_mode: string) {
+		template = tpl;
+		tpl_mode = tpl_mode;
+		await theKFK.loadTemplateDoc(template, tpl_mode);
+	}
+
 	function documentEventOff() {
 		jq(document).off();
 	}
@@ -162,6 +173,8 @@
 
 		modalSize = hid ? 'xl' : undefined;
 	};
+
+	$: readonly = tpl_mode !== 'edit';
 </script>
 
 <div id="S1">
@@ -264,17 +277,17 @@
 			<Row>
 				<Col>
 					{#if nodeInfo.nodeType === 'ACTION'}
-						<Action {nodeInfo} {kvarsArr} {roleOptions} {showHelp} />
+						<Action {nodeInfo} {kvarsArr} {roleOptions} {showHelp} {readonly} />
 					{:else if nodeInfo.nodeType === 'INFORM'}
-						<Inform {nodeInfo} {roleOptions} {showHelp} />
+						<Inform {nodeInfo} {roleOptions} {showHelp} {readonly} />
 					{:else if nodeInfo.nodeType === 'SCRIPT'}
-						<ScriptProp {nodeInfo} {showHelp} />
+						<ScriptProp {nodeInfo} {showHelp} {readonly} />
 					{:else if nodeInfo.nodeType === 'TIMER'}
-						<Timer {nodeInfo} {showHelp} />
+						<Timer {nodeInfo} {showHelp} {readonly} />
 					{:else if nodeInfo.nodeType === 'SUB'}
-						<Sub {nodeInfo} {errMsg} {showHelp} />
+						<Sub {nodeInfo} {errMsg} {showHelp} {readonly} />
 					{:else if nodeInfo.nodeType === 'CONNECT'}
-						<Connect {nodeInfo} {showHelp} />
+						<Connect {nodeInfo} {showHelp} {readonly} />
 					{/if}
 				</Col>
 				{#if helpId === 'ACTION'}
@@ -296,7 +309,11 @@
 		</Container>
 	</ModalBody>
 	<ModalFooter>
-		<Button color="primary" on:click={setNodeOrConnectProperties}>Set</Button>
-		<Button color="secondary" on:click={toggle}>Cancel</Button>
+		{#if !readonly}
+			<Button color="primary" on:click={setNodeOrConnectProperties}>Set</Button>
+			<Button color="secondary" on:click={toggle}>Cancel</Button>
+		{:else}
+			<Button color="primary" on:click={toggle}>Okay</Button>
+		{/if}
 	</ModalFooter>
 </Modal>

@@ -14,6 +14,7 @@
 	export let nodeInfo;
 	export let errMsg;
 	export let showHelp;
+	export let readonly;
 	let helpShowing = false;
 	let timerCodePrefix = '+';
 	if (Parser.isEmpty(nodeInfo.nodeProps.SUB.sub)) {
@@ -26,13 +27,13 @@
 		<Col>
 			<InputGroup size="sm">
 				<InputGroupText>Label</InputGroupText>
-				<Input bind:value={nodeInfo.nodeProps.label} />
+				<Input bind:value={nodeInfo.nodeProps.label} disabled={readonly} />
 			</InputGroup>
 		</Col>
 		<Col>
 			<InputGroup size="sm">
 				<InputGroupText>SUB</InputGroupText>
-				<Input bind:value={nodeInfo.nodeProps.SUB.sub} />
+				<Input bind:value={nodeInfo.nodeProps.SUB.sub} disabled={readonly} />
 			</InputGroup>
 		</Col>
 		<Col>

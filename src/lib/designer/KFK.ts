@@ -747,6 +747,8 @@ class KFKclass {
 		const tpldoc = that.drawingToTemplateDoc();
 		console.log(tpldoc);
 		that.template.doc = tpldoc;
+		that.designerCallback('setTemplate', that.template);
+
 		that.templateChangeTimer = setTimeout(async () => {
 			console.log('saving...');
 			//eslint-disable-next-line

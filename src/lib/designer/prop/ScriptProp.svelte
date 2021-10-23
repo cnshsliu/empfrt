@@ -14,6 +14,7 @@
 
 	export let nodeInfo;
 	export let showHelp;
+	export let readonly;
 	let helpShowing = false;
 </script>
 
@@ -22,7 +23,7 @@
 		<Col>
 			<InputGroup size="sm">
 				<InputGroupText>Label</InputGroupText>
-				<Input bind:value={nodeInfo.nodeProps.SCRIPT.label} />
+				<Input bind:value={nodeInfo.nodeProps.SCRIPT.label} disabled={readonly} />
 			</InputGroup>
 		</Col>
 	</Row>
@@ -34,6 +35,7 @@
 				bind:group={nodeInfo.nodeProps.SCRIPT.runmode}
 				value="SYNC"
 				label="Sync Mode"
+				disabled={readonly}
 			/>
 			<Input
 				class="ms-1"
@@ -41,10 +43,16 @@
 				bind:group={nodeInfo.nodeProps.SCRIPT.runmode}
 				value="ASYNC"
 				label="Async Mode"
+				disabled={readonly}
 			/>
 		</Col>
 		<Col>
-			<Input bind:value={nodeInfo.nodeProps.SCRIPT.code} type="textarea" class="kfk-code-input" />
+			<Input
+				bind:value={nodeInfo.nodeProps.SCRIPT.code}
+				type="textarea"
+				class="kfk-code-input"
+				disabled={readonly}
+			/>
 		</Col>
 		<Col class="d-flex mt-3">
 			<span class="kfk-property-id"> ID: {nodeInfo.nodeProps.SCRIPT.id} </span>
