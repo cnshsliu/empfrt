@@ -17,6 +17,7 @@
 <script lang="ts">
 	import { API_SERVER } from '$lib/Env';
 	import RemoteTable from './RemoteTable.svelte';
+	import ExtraFilter from '$lib/form/ExtraFilter.svelte';
 	import type { User, Workflow, Config } from '$lib/types';
 	import { goto } from '$app/navigation';
 	import * as api from '$lib/api';
@@ -47,6 +48,8 @@
 	import { title } from '$lib/title';
 	$title = 'HyperFlow';
 	$: token = user.sessionToken;
+	let theExtraFilter: any;
+	let filter_status = 'ST_RUN';
 	let remoteTable;
 	let urls = {
 		search: `${API_SERVER}/workflow/search`
@@ -79,6 +82,15 @@
 	let theSearchForm;
 	let dataFile = null;
 	let tplidImport;
+	let payload_extra = { filter: { status: 'ST_RUN' } };
+	$: {
+		payload_extra = {
+			filter: filter_status !== 'All' ? { status: filter_status } : undefined
+		};
+		console.log(payload_extra);
+
+		remoteTable && remoteTable.refresh({ payload_extra });
+	}
 </script>
 
 <Container>
@@ -89,6 +101,19 @@
 	</Row>
 </Container>
 <Container class="mb-3">
+	<svelte:component
+		this={ExtraFilter}
+		bind:this={theExtraFilter}
+		bind:filter_status
+		statuses_label="Workflow status:"
+		fields="{['statuses']},"
+		statuses={[
+			{ value: 'All', label: 'All' },
+			{ value: 'ST_RUN', label: 'Running' },
+			{ value: 'ST_PAUSE', label: 'Paused' },
+			{ value: 'ST_DONE', label: 'Finished' }
+		]}
+	/>
 	<Row class="mt-3">
 		<Col>
 			<RemoteTable endpoint="workflow/search" {token} bind:this={remoteTable} />

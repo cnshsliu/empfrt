@@ -14,6 +14,7 @@
 	import { getData } from '$lib/pagination/Server.js';
 
 	export let token;
+	export let payload_extra;
 	export let endpoint;
 	let rows: Workflow[] = [] as Workflow[];
 	let page = 0; //first page
@@ -31,7 +32,7 @@
 
 	async function load(_page: number) {
 		loading = true;
-		const data = await getData(endpoint, token, _page, pageSize, text, sorting);
+		const data = await getData(endpoint, token, _page, pageSize, text, sorting, payload_extra);
 		rows = data.rows;
 		for (let i = 0; i < rows.length; i++) {
 			rows[i].status = StatusLabel(rows[i].status);
@@ -55,6 +56,8 @@
 		if (detail && detail.text) text = detail.text;
 		if (detail && detail.page) page = detail.page;
 		if (detail && detail.sorting) sorting = detail.sorting;
+		if (detail && detail.payload_extra) payload_extra = detail.payload_extra;
+		console.log('=======', payload_extra);
 		await load(page);
 	}
 

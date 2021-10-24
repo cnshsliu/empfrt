@@ -13,6 +13,7 @@
 <script lang="ts">
 	import * as api from '$lib/api';
 	import RemoteTable from './RemoteTable.svelte';
+	import ExtraFilter from '$lib/form/ExtraFilter.svelte';
 	import type { User, Work } from '$lib/types';
 	import { Container, Row, Col, Button, FormGroup, Input } from 'sveltestrap';
 	import { onMount } from 'svelte';
@@ -28,7 +29,9 @@
 	$title = 'HyperFlow';
 	$: token = user.sessionToken;
 	let remoteTable;
+	let theExtraFilter: any;
 	export let filter_doer = user.email;
+	let filter_status = 'ST_RUN';
 	let input_doer;
 
 	let doer = user.email;
@@ -45,8 +48,7 @@
 	$: {
 		payload_extra = {
 			doer: filter_doer === '' ? user.email : filter_doer,
-			filter:
-				radioWorkStatus !== 'All' ? { wfstatus: 'ST_RUN', status: radioWorkStatus } : undefined
+			filter: filter_status !== 'All' ? { wfstatus: 'ST_RUN', status: filter_status } : undefined
 		};
 
 		remoteTable &&
@@ -83,73 +85,20 @@
 			<h1 class="text-xs-center">Work List</h1>
 		</Col>
 	</Row>
-	<form>
-		<Row>
-			<Col>
-				<input
-					name="tplid"
-					bind:value={input_doer}
-					aria-label="User Email"
-					placeholder="Input user email to query his/her workitems"
-					class="kfk-input-template-name"
-				/>
-			</Col>
-			<Col>
-				<Button
-					size="sm"
-					type="submit"
-					color="primary"
-					on:click={(e) => {
-						e.preventDefault();
-						filter_doer = input_doer;
-					}}>Change User</Button
-				>
-			</Col>
-		</Row>
-		<Row>
-			<Col xs="auto">Work Status:</Col>
-			<Col xs="auto">
-				<Input
-					id="r1"
-					type="radio"
-					bind:group={radioWorkStatus}
-					value="All"
-					label="All"
-					on:input={(e) => radioChanged(e)}
-				/>
-			</Col>
-			<Col xs="auto">
-				<Input
-					id="r2"
-					type="radio"
-					bind:group={radioWorkStatus}
-					value="ST_RUN"
-					label="Running"
-					on:input={(e) => radioChanged(e)}
-				/>
-			</Col>
-			<Col xs="auto">
-				<Input
-					id="r3"
-					type="radio"
-					bind:group={radioWorkStatus}
-					value="ST_PAUSE"
-					label="Paused"
-					on:input={(e) => radioChanged(e)}
-				/>
-			</Col>
-			<Col xs="auto">
-				<Input
-					id="r3"
-					type="radio"
-					bind:group={radioWorkStatus}
-					value="ST_DONE"
-					label="Done"
-					on:input={(e) => radioChanged(e)}
-				/>
-			</Col>
-		</Row>
-	</form>
+	<svelte:component
+		this={ExtraFilter}
+		bind:this={theExtraFilter}
+		bind:filter_status
+		bind:filter_doer
+		fields="{['doer', 'statuses']},"
+		statuses_label="Work status:"
+		statuses={[
+			{ value: 'All', label: 'All' },
+			{ value: 'ST_RUN', label: 'Running' },
+			{ value: 'ST_PAUSE', label: 'Paused' },
+			{ value: 'ST_DONE', label: 'Finished' }
+		]}
+	/>
 	<Row class="mt-3">
 		<Col>
 			<RemoteTable endpoint="work/list" {token} {payload_extra} bind:this={remoteTable} />

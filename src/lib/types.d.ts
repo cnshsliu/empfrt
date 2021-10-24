@@ -95,3 +95,8 @@ export interface KFKclass {
 	designerCallback: any;
 	addDocumentEventHandler: any;
 }
+
+export interface radioOption {
+	value: string;
+	label: string;
+}

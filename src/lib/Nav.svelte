@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page, session } from '$app/stores';
 	import { title } from '$lib/title';
-	import { Icon, Styles } from 'sveltestrap';
+	import { Icon, Styles, Nav, Nav, NavLink, Navbar, NavbarBrand, NavbarToggler } from 'sveltestrap';
 </script>
 
 <Styles />

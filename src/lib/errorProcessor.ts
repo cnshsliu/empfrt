@@ -30,8 +30,11 @@ const ErrorProcessor = {
 							ret.message = '用户名长度必须在4-12之间，且只包含大小写字母和数字';
 						}
 						break;
-					case 'email_duplicate':
-						ret.message = '已存在';
+					case 'duplicate_email':
+						ret.message = 'email已存在';
+						break;
+					case 'duplicate_wfid':
+						ret.message = 'wfid已存在';
 						break;
 					case 'login_no_user':
 						ret.message = '用户不存在';

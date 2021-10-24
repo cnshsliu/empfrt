@@ -1,6 +1,7 @@
 import * as api from '$lib/api';
 
 export async function getData(endpoint, token, page, pageSize, text, sorting, payload_extra) {
+	console.log(payload_extra);
 	let skip = page * pageSize;
 	let limit = pageSize;
 	let payload = { pattern: text, skip: skip, limit: limit };

@@ -58,39 +58,52 @@
 		<Row class="mt-1 d-flex justify-content-center">
 			<Col class="d-flex justify-content-center">
 				<Nav>
-					<a
-						class="btn btn-sm"
-						href={'#'}
-						on:click|preventDefault={() => opWorkflow(workflow.wfid, 'pause')}
-					>
+					{#if workflow.status === 'ST_RUN'}
 						<NavLink
 							class="kfk-link"
 							on:click={() => {
-								opWorkflow(
-									workflow.wfid,
-									workflow.status === 'ST_RUN'
-										? 'pause'
-										: workflow.status === 'ST_PAUSE'
-										? 'resume'
-										: 'unknown'
-								);
+								opWorkflow(workflow.wfid, 'pause');
 							}}
 						>
-							<Icon
-								name={workflow.status === 'ST_RUN'
-									? 'pause-btn'
-									: workflow.status === 'ST_PAUSE'
-									? 'play-btn'
-									: ''}
-							/>
-							{workflow.status === 'ST_RUN'
-								? 'PAUSE'
-								: workflow.status === 'ST_PAUSE'
-								? 'RESUME'
-								: ''}
+							<Icon name="pause-btn" />
+							{'PAUSE'}
 						</NavLink>
-					</a></Nav
-				>
+					{/if}
+					{#if workflow.status === 'ST_PAUSE'}
+						<NavLink
+							class="kfk-link"
+							on:click={() => {
+								opWorkflow(workflow.wfid, 'resume');
+							}}
+						>
+							<Icon name="play-btn" />
+							{'RESUME'}
+						</NavLink>
+					{/if}
+					{#if ['ST_RUN', 'ST_PAUSE'].indexOf(workflow.status) > -1}
+						<NavLink
+							class="kfk-link"
+							on:click={() => {
+								opWorkflow(workflow.wfid, 'stop');
+							}}
+						>
+							<Icon name="pause-btn" />
+							{'STOP'}
+						</NavLink>
+					{/if}
+					{#if ['ST_RUN', 'ST_PAUSE', 'ST_STOP'].indexOf(workflow.status) > -1}
+						<NavLink
+							class="kfk-link"
+							on:click={() => {
+								opWorkflow(workflow.wfid, 'restart');
+								goto('/workflow');
+							}}
+						>
+							<Icon name="pause-btn" />
+							{'RESTART'}
+						</NavLink>
+					{/if}
+				</Nav>
 			</Col>
 		</Row>
 	</Container>
