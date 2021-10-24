@@ -69,7 +69,8 @@
 		export: false,
 		rename: false,
 		copyto: false,
-		delete: false
+		delete: false,
+		start: false
 	};
 	export let form_name = '';
 	export let export_to_filename = template.tplid;
@@ -91,6 +92,14 @@
 	}
 	async function change_mode(what: string) {
 		tpl_mode = what;
+		goto(`/template/@${template.tplid}&${tpl_mode}`, {
+			replaceState: true,
+			noscroll: true,
+			keepfocus: true
+		});
+		await theDesigner.changeViewMode(tpl_mode);
+	}
+	async function startIt() {
 		goto(`/template/@${template.tplid}&${tpl_mode}`, {
 			replaceState: true,
 			noscroll: true,
@@ -230,6 +239,15 @@
 							>
 								<Icon name={readonly ? 'pen' : 'eye'} />
 								{readonly ? 'Edit it' : 'View it'}
+							</NavLink>
+							<NavLink
+								class="kfk-link"
+								on:click={() => {
+									show_form('start');
+								}}
+							>
+								<Icon name="trash" />
+								Start it
 							</NavLink>
 						{/if}
 					</Nav>
@@ -408,6 +426,22 @@
 					{:else if form_status.delete}
 						Delete: {template.tplid}?&nbsp;
 						<Button on:click={() => delete_template()} color="primary">Delete</Button>
+						<Button
+							on:click={(e) => {
+								e.preventDefault();
+								hide_all_form();
+							}}
+							color="secondary">Cancel</Button
+						>
+						{#if errmsg !== ''}{errmsg}{/if}
+					{:else if form_status.start}
+						Start: {template.tplid}?&nbsp;
+						<Button
+							on:click={() => {
+								goto(`/template/start?tplid=${template.tplid}`, { replaceState: false });
+							}}
+							color="primary">Start now</Button
+						>
 						<Button
 							on:click={(e) => {
 								e.preventDefault();

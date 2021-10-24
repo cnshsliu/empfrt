@@ -5788,13 +5788,24 @@ toggleOverview (jc3MousePos) {
 				e.preventDefault();
 				e.stopPropagation();
 				console.log('Click on connnection', theConnect.attr('id'));
-				that.showConnectionProperties(theConnect);
+				//that.showConnectionProperties(theConnect);
+				if (theConnect.attr('fid') !== 'start') that.showConnectionProperties(theConnect);
+				else console.log('Connection from start not configurable');
 			});
 			connectText.on('click', (e) => {
 				e.preventDefault();
 				e.stopPropagation();
-				console.log('Click on connnection', theConnect.attr('id'));
-				that.showConnectionProperties(theConnect);
+				console.log(
+					'Click on connnection',
+					theConnect.attr('id'),
+					'from',
+					theConnect.attr('fid'),
+					'to',
+					theConnect.attr('tid')
+				);
+				//that.showConnectionProperties(theConnect);
+				if (theConnect.attr('fid') !== 'start') that.showConnectionProperties(theConnect);
+				else console.log('Connection from start not configurable');
 			});
 		} catch (error) {
 			console.error(error);

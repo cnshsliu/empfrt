@@ -40,12 +40,13 @@
 	//const jwt = auth && Buffer.from(auth.jwt, 'base64').toString('utf-8');
 
 	//缺省情况下，使用用户邮箱，和ST_RUN
-	let payload_extra = { doer: user.email, filter: { status: 'ST_RUN' } };
+	let payload_extra = { doer: user.email, filter: { wfstatus: 'ST_RUN', status: 'ST_RUN' } };
 	//当filter_doer或radioWorkStatus发生变化时，刷新RemoteTable
 	$: {
 		payload_extra = {
 			doer: filter_doer === '' ? user.email : filter_doer,
-			filter: radioWorkStatus !== 'All' ? { status: radioWorkStatus } : undefined
+			filter:
+				radioWorkStatus !== 'All' ? { wfstatus: 'ST_RUN', status: radioWorkStatus } : undefined
 		};
 
 		remoteTable &&
