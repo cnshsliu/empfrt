@@ -11,9 +11,10 @@
 		InputGroupText,
 		Input
 	} from 'sveltestrap';
+	import type { KvarInput } from '$lib/types';
 
 	export let nodeInfo;
-	export let kvarsArr = [];
+	export let kvarsArr: KvarInput[];
 	export let roleOptions = [];
 	export let showHelp;
 	export let readonly;

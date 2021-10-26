@@ -3,6 +3,7 @@
 <script lang="ts" .>
 	import { Row, Col, Button, Input } from 'sveltestrap';
 	import type { radioOption } from '$lib/types';
+	import { createEventDispatcher } from 'svelte';
 	export let filter_doer: string;
 	export let filter_status: string;
 	export let statuses_label: string;
@@ -13,7 +14,11 @@
 			label: 'Running'
 		}
 	];
-	function radioChanged() {}
+	function radioChanged(e) {
+		dispatch('filterStatusChange', e.target.value);
+	}
+
+	const dispatch = createEventDispatcher();
 </script>
 
 {#if fields.indexOf('doer') > -1}

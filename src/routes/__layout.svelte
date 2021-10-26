@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { navigating, session } from '$app/stores';
-	import Nav from '$lib/Nav.svelte';
+	import NavMenu from '$lib/NavMenu.svelte';
 	import ErrHint from '$lib/ErrHint.svelte';
 	import PreloadingIndicator from '$lib/PreloadingIndicator.svelte';
 	import('jquery-ui-dist/jquery-ui.min.css');
@@ -10,8 +10,7 @@
 {#if $navigating}
 	<PreloadingIndicator />
 {/if}
-<Nav />
-
+<NavMenu />
 <main>
 	<slot />
 </main>

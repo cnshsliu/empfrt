@@ -2,7 +2,6 @@
 	export async function load({ page, fetch, session }) {
 		return {
 			props: {
-				works: [],
 				user: session.user,
 				config: session.config
 			}
@@ -23,7 +22,6 @@
 	import { title } from '$lib/title';
 	import { WorkStatusStore } from '$lib/empStores';
 
-	export let works: Work[];
 	export let user: User;
 	export const lastSearchCondition: string = '';
 	$title = 'HyperFlow';

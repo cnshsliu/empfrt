@@ -26,10 +26,6 @@
 	let text;
 	let sorting = { dir: 'desc', key: 'updatedAt' };
 
-	onMount(async () => {
-		await load(page);
-	});
-
 	async function load(_page: number) {
 		loading = true;
 		const data = await getData(endpoint, token, _page, pageSize, text, sorting, payload_extra);
@@ -57,7 +53,6 @@
 		if (detail && detail.page) page = detail.page;
 		if (detail && detail.sorting) sorting = detail.sorting;
 		if (detail && detail.payload_extra) payload_extra = detail.payload_extra;
-		console.log('=======', payload_extra);
 		await load(page);
 	}
 
@@ -67,7 +62,6 @@
 	}
 
 	const opWorkflow = async function (workflow: Workflow, op: string): Promise<void> {
-		console.log(op);
 		if (op === 'startAnother') {
 			goto(`/template/start?tplid=${workflow.tplid}`);
 			return;
@@ -85,7 +79,6 @@
 		}
 
 		let payload = { wfid: workflow.wfid, op: op };
-		console.log(payload);
 		let ret: Workflow = (await api.post('workflow/op', payload, token)) as Workflow;
 		if (op === 'pause' || op === 'resume' || op === 'stop') {
 			for (let i = 0; i < rows.length; i++) {
@@ -94,7 +87,6 @@
 				}
 			}
 			rows = rows;
-			console.log(workflow.status);
 		} else if (op === 'destroy') {
 			let deletedIndex = -1;
 			for (let i = 0; i < rows.length; i++) {
@@ -143,7 +135,7 @@
 		{#each rows2 as row, index (row)}
 			<tr
 				transition:scale|local={{ start: 0.7 }}
-				animate:flip={{ duration: 200 }}
+				animate:flip={{ duration: 1000 }}
 				class:odd={index % 2 !== 0}
 				class:even={index % 2 === 0}
 			>

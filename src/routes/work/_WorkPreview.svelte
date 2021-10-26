@@ -27,8 +27,10 @@
 			</a> <br />
 			of
 			<a
+				href={'#'}
 				class="kfk-link"
-				on:click={() => {
+				on:click={(e) => {
+					e.preventDefault();
 					goto(`/workflow/@${work.wfid}`);
 				}}
 			>

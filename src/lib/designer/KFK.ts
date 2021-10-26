@@ -13,6 +13,7 @@ import assetIcons from './assetIcons';
 import NodeController from './NodeController';
 import RegHelper from './RegHelper';
 import * as api from '$lib/api';
+import type { NodePropJSON } from '$lib/types';
 
 declare global {
 	interface Array<T> {
@@ -1006,23 +1007,22 @@ class KFKclass {
 	}
 
 	setNodeProperties(jqDIV: myJQuery, props: any) {
-		let propJSON = {
-			subject: '',
-			content: '',
-			role: '',
-			code: '',
-			runmode: '',
-			label: '',
-			sub: ''
-		};
+		let propJSON: NodePropJSON;
 		if (jqDIV.hasClass('ACTION')) {
 			propJSON = props.ACTION;
 			this.setNodeLabel(jqDIV, propJSON.label);
 			jqDIV.attr('role', propJSON.role.trim());
 			const kvars_json = Parser.arrayToKvars(props.kvarsArr);
 			const kvars_string = JSON.stringify(kvars_json);
+			console.log('ACTION:', kvars_string);
 			const codeInBase64 = Parser.codeToBase64(kvars_string);
-			jqDIV.find('.kvars').first().prop('innerText', codeInBase64);
+			let kvarsChildren = jqDIV.find('.kvars');
+			console.log('kvars children number:', kvarsChildren.length);
+			if (kvarsChildren.length === 0) {
+				jqDIV.append('<div class="kvars">' + codeInBase64 + '</div>');
+			} else {
+				jqDIV.find('.kvars').first().prop('innerText', codeInBase64);
+			}
 			if (propJSON.byall) {
 				jqDIV.addClass('BYALL');
 			} else {

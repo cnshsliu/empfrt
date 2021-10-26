@@ -1,14 +1,8 @@
 <script context="module" lang="ts">
 	export async function load({ page, fetch, session }) {
-		let res;
-		let tplid = page.query.get('tplid');
-		res = await fetch(`/workflow/index-${tplid}.json`);
 		return {
 			props: {
-				theTplid: tplid,
-				workflows: await res.json(),
-				user: session.user,
-				config: session.config
+				user: session.user
 			}
 		};
 	}
@@ -16,6 +10,7 @@
 
 <script lang="ts">
 	import { API_SERVER } from '$lib/Env';
+	import { onMount } from 'svelte';
 	import RemoteTable from './RemoteTable.svelte';
 	import ExtraFilter from '$lib/form/ExtraFilter.svelte';
 	import type { User, Workflow, Config } from '$lib/types';
@@ -39,17 +34,13 @@
 	} from 'sveltestrap';
 	import { enhance } from '$lib/form';
 	export let menu_has_form = false;
-	export let theTplid;
-	export let workflows: Workflow[];
 	export let user: User;
-	export let config: Config;
-	export let lastSearchCondition: string = '';
 	export let form_status = { create: false, search: false, sort: false, import: false };
 	import { title } from '$lib/title';
 	$title = 'HyperFlow';
 	$: token = user.sessionToken;
 	let theExtraFilter: any;
-	let filter_status = 'ST_RUN';
+	let filter_status;
 	let remoteTable;
 	let urls = {
 		search: `${API_SERVER}/workflow/search`
@@ -65,31 +56,31 @@
 		form_status[form_name] = true;
 		menu_has_form = true;
 	}
-	function sortBy(field: string, order: number) {
-		config.sort = { field, order };
-		workflows = workflows.sort((a, b): number => {
-			let A: number | string = field === 'name' ? a.tplid : Date.parse(a.updatedAt);
-			let B: number | string = field === 'name' ? b.tplid : Date.parse(b.updatedAt);
-			if (A === B) {
-				return 0;
-			} else if (A > B) {
-				return order;
-			} else return 0 - order;
-		});
-	}
 
 	let files;
 	let theSearchForm;
 	let dataFile = null;
 	let tplidImport;
+	let after_mount = false;
 	let payload_extra = { filter: { status: 'ST_RUN' } };
-	$: {
+
+	function reload(status = 'ST_RUN') {
+		if (status === undefined) {
+			status = 'ST_RUN';
+		}
 		payload_extra = {
-			filter: filter_status !== 'All' ? { status: filter_status } : undefined
+			filter: status !== 'All' ? { status: status } : undefined
 		};
-		console.log(payload_extra);
 
 		remoteTable && remoteTable.refresh({ payload_extra });
+	}
+
+	onMount(() => {
+		reload();
+	});
+
+	function filterStatusChanged(event) {
+		reload(event.detail);
 	}
 </script>
 
@@ -104,14 +95,16 @@
 	<svelte:component
 		this={ExtraFilter}
 		bind:this={theExtraFilter}
-		bind:filter_status
+		on:filterStatusChange={filterStatusChanged}
+		filter_status={'ST_RUN'}
 		statuses_label="Workflow status:"
 		fields="{['statuses']},"
 		statuses={[
 			{ value: 'All', label: 'All' },
 			{ value: 'ST_RUN', label: 'Running' },
 			{ value: 'ST_PAUSE', label: 'Paused' },
-			{ value: 'ST_DONE', label: 'Finished' }
+			{ value: 'ST_DONE', label: 'Finished' },
+			{ value: 'ST_STOP', label: 'Stopped' }
 		]}
 	/>
 	<Row class="mt-3">

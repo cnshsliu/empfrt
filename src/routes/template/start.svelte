@@ -1,18 +1,26 @@
 <script context="module" lang="ts">
+	import type { SearchResult } from '$lib/types';
 	export async function load({ page, fetch, session }) {
 		const tplid = page.query.get('tplid');
 		console.log('TPLID = ', tplid);
 		const tpl_mode = 'read';
 		//const jsonUrl = `/template/@${tplid}&${tpl_mode}.json`;
 		//const res = await fetch(jsonUrl);
-		const res_team = await api.post('team/search', { limit: 1000 }, session.user.sessionToken);
+		const res_team: SearchResult = await api.post(
+			'team/search',
+			{ limit: 1000 },
+			session.user.sessionToken
+		);
+		console.log(res_team);
+		console.log(typeof res_team);
+		const theTeams = res_team.objs;
 
 		return {
 			props: {
 				//template: await res.json(),
 				tplid: tplid,
 				user: session.user,
-				teams: res_team
+				teams: theTeams
 			}
 		};
 	}
@@ -58,8 +66,9 @@
 	}
 	function searchTeam() {
 		search_result.splice(0, search_result.length);
-		console.log(team_id_for_search);
+		console.log(team_id_for_search, teams.length);
 		for (let i = 0; i < teams.length; i++) {
+			console.log(teams[i].teamid);
 			if (teams[i].teamid.match(team_id_for_search)) {
 				console.log(teams[i].teamid, 'match', team_id_for_search);
 				search_result = [...search_result, teams[i]];

@@ -431,8 +431,10 @@
 								e.preventDefault();
 								hide_all_form();
 							}}
-							color="secondary">Cancel</Button
+							color="secondary"
 						>
+							Cancel
+						</Button>
 						{#if errmsg !== ''}{errmsg}{/if}
 					{:else if form_status.start}
 						Start: {template.tplid}?&nbsp;
@@ -440,19 +442,23 @@
 							on:click={() => {
 								goto(`/template/start?tplid=${template.tplid}`, { replaceState: false });
 							}}
-							color="primary">Start now</Button
+							color="primary"
 						>
+							Start now
+						</Button>
 						<Button
 							on:click={(e) => {
 								e.preventDefault();
 								hide_all_form();
 							}}
-							color="secondary">Cancel</Button
+							color="secondary"
 						>
+							Cancel
+						</Button>
 						{#if errmsg !== ''}{errmsg}{/if}
 					{/if}
-				</Col></Row
-			>
+				</Col>
+			</Row>
 		</Container>
 	</div>
 	<svelte:component this={Designer} bind:this={theDesigner} {template} {tpl_mode} />

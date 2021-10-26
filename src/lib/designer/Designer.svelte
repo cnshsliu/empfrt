@@ -26,6 +26,8 @@
 		ListGroup,
 		ListGroupItem
 	} from 'sveltestrap';
+	import type { KvarInput, NodeInfo } from '$lib/types';
+
 	export let template: Template;
 	export let workflow: Workflow;
 	export let tpl_mode: string;
@@ -35,14 +37,11 @@
 	let jqueryui: any;
 	let that = this;
 	let currentMode = KFK.mode;
-	let kvarsArr;
+	let kvarsArr: KvarInput[];
 	let errMsg = '';
 	let roleOptions = [];
-	let nodeInfo = {
-		nodeType: '',
-		jqDiv: null,
-		nodeProps: { kvarsArr: [], label: '' }
-	};
+
+	let nodeInfo: NodeInfo;
 	function designerSetMode(what: string, event: any) {
 		KFK.setMode(what, event);
 		currentMode = KFK.mode;
@@ -70,7 +69,6 @@
 	};
 
 	const setNodeProperties = async () => {
-		console.log('set', nodeInfo.nodeType, ' to ', nodeInfo.nodeProps);
 		if (nodeInfo.nodeType === 'ACTION') {
 			nodeInfo.nodeProps.kvarsArr = kvarsArr;
 		}
@@ -277,7 +275,7 @@
 			<Row>
 				<Col>
 					{#if nodeInfo.nodeType === 'ACTION'}
-						<Action {nodeInfo} {kvarsArr} {roleOptions} {showHelp} {readonly} />
+						<Action {nodeInfo} bind:kvarsArr {roleOptions} {showHelp} {readonly} />
 					{:else if nodeInfo.nodeType === 'INFORM'}
 						<Inform {nodeInfo} {roleOptions} {showHelp} {readonly} />
 					{:else if nodeInfo.nodeType === 'SCRIPT'}

@@ -74,6 +74,12 @@ export interface kvarDef {
 	id: string;
 	options: ArrayLike<string | number>;
 }
+export interface KvarInput {
+	name: string;
+	value: string | number | string[];
+	label: string;
+	type: string;
+}
 export interface Work {
 	_id: string;
 	tenant: string;
@@ -94,9 +100,38 @@ export interface Work {
 export interface KFKclass {
 	designerCallback: any;
 	addDocumentEventHandler: any;
+	setConnectProperties: any;
 }
 
 export interface radioOption {
 	value: string;
 	label: string;
+}
+
+export interface NodeInfo {
+	nodeType: string;
+	jqDiv: any;
+	theConnect: any;
+	caseValue: string;
+	nodeProps: {
+		kvarsArr: KvarInput[];
+		label: string;
+		ACTION: any;
+	};
+}
+
+export interface NodePropJSON {
+	subject: string;
+	content: string;
+	role: string;
+	code: string;
+	runmode: string;
+	label: string;
+	sub: string;
+	byall: boolean;
+}
+
+export interface SearchResult {
+	total: number;
+	objs: any[];
 }

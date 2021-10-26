@@ -40,6 +40,10 @@
 
 	export let errmsg = '';
 	export let user: User;
+	const dumpWorkflow = function () {
+		let wf = jq(workflow.doc);
+		console.log(wf.find('.workflow').attr('class'));
+	};
 	const opWorkflow = (wfid: string, op: string): void => {
 		setTimeout(async () => {
 			let ret = await api.post('workflow/op', { wfid, op }, user.sessionToken);
@@ -94,7 +98,8 @@
 					{#if ['ST_RUN', 'ST_PAUSE', 'ST_STOP'].indexOf(workflow.status) > -1}
 						<NavLink
 							class="kfk-link"
-							on:click={() => {
+							on:click={(e) => {
+								e.preventDefault();
 								opWorkflow(workflow.wfid, 'restart');
 								goto('/workflow');
 							}}
@@ -103,6 +108,15 @@
 							{'RESTART'}
 						</NavLink>
 					{/if}
+					<NavLink
+						class="kfk-link"
+						on:click={() => {
+							dumpWorkflow();
+						}}
+					>
+						<Icon name="pause-btn" />
+						{'DUMP'}
+					</NavLink>
 				</Nav>
 			</Col>
 		</Row>
