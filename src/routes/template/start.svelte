@@ -11,8 +11,6 @@
 			{ limit: 1000 },
 			session.user.sessionToken
 		);
-		console.log(res_team);
-		console.log(typeof res_team);
 		const theTeams = res_team.objs;
 
 		return {
