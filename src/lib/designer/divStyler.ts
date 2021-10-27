@@ -103,7 +103,7 @@ DivStyler.vertSizeSmaller = async function (delta) {
 			if (tmpHeight >= minH) {
 				div.css('top', tmpTop);
 				div.css('height', tmpHeight);
-				KFK.redrawLinkLines(div, 'resize', true);
+				KFK.redrawLinkLines(div, 'resize', 'both');
 			}
 		});
 		if (divNum === 0) {
@@ -125,7 +125,7 @@ DivStyler.horiSizeBigger = async function (delta) {
 			tmpWidth = tmpWidth + delta * 2;
 			div.css('left', tmpLeft);
 			div.css('width', tmpWidth);
-			KFK.redrawLinkLines(div, 'resize', true);
+			KFK.redrawLinkLines(div, 'resize', 'both');
 		});
 		if (divNum === 0) {
 			let shape = KFK.hoverSvgLine();
@@ -151,7 +151,7 @@ DivStyler.horiSizeSmaller = async function (delta) {
 			if (tmpWidth >= minW) {
 				div.css('left', tmpLeft);
 				div.css('width', tmpWidth);
-				KFK.redrawLinkLines(div, 'resize', true);
+				KFK.redrawLinkLines(div, 'resize', 'both');
 			}
 		});
 		if (divNum === 0) {
@@ -172,7 +172,7 @@ DivStyler.vertSizeBigger = async function (delta) {
 			tmpHeight = tmpHeight + delta * 2;
 			div.css('top', tmpTop);
 			div.css('height', tmpHeight);
-			KFK.redrawLinkLines(div, 'resize', true);
+			KFK.redrawLinkLines(div, 'resize', 'both');
 		});
 		if (divNum === 0) {
 			let shape = KFK.hoverSvgLine();
@@ -215,7 +215,7 @@ DivStyler.moveDivByArrowKey = async function (keyCode, ctrlKey) {
 			}
 			div.css('top', newTop);
 			div.css('left', newLeft);
-			KFK.redrawLinkLines(div, 'move', true);
+			KFK.redrawLinkLines(div, 'move', 'both');
 		});
 	} else {
 		console.log('no refDiv, contineu with shape');
@@ -686,7 +686,7 @@ DivStyler.arrangeNodes = async function (direction) {
 		}
 		KFK.setSelectedNodesBoundingRect();
 		KFK.selectedDIVs.forEach((aNode) => {
-			KFK.redrawLinkLines(aNode, 'align', true);
+			KFK.redrawLinkLines(aNode, 'align', 'both');
 		});
 
 		await KFK.syncNodeProp(jqs, propString, 'algignment', KFK.CONST.THIS_IS_NOT_A_UNDOREDO);

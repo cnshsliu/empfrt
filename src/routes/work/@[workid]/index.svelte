@@ -28,6 +28,7 @@
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import { title } from '$lib/title';
+	import { Status } from '$lib/status';
 	import { goto } from '$app/navigation';
 	import * as api from '$lib/api';
 	import { Container, Row, Col, Nav, Icon, NavItem, NavLink } from 'sveltestrap';
@@ -279,12 +280,6 @@ src="${API_SERVER}/work/iframe/${work.workid}"></iframe>`;
 			</Container>
 			<Container class="mt-2">
 				<div><h3>Worklogs</h3></div>
-				<!--div class="hstack gap-3">
-					<div><h3>Worklogs</h3></div>
-					<div class="border ms-auto">Second item</div>
-					<div class="vr" />
-					<div class="border">Third item</div>
-				</div-->
 			</Container>
 			<Container class="mt-0 mb-5">
 				{#each work.history as entry}
@@ -301,20 +296,14 @@ src="${API_SERVER}/work/iframe/${work.workid}"></iframe>`;
 									>
 										<b>{entry.title}</b>
 									</a>
+									: {Status[entry.status]}
 								</div>
-								By: {entry.doer}
-								at: {moment(entry.doneat).format('LLLL')}
 							</Col>
 							{#if entry.route}
 								<Col>
 									Decision: <b> {entry.route} </b>
 								</Col>
 							{/if}
-						</Row>
-						<Row cols={{ lg: 1, md: 1, sm: 1 }}>
-							<Col>
-								Status: {entry.status}
-							</Col>
 						</Row>
 						{#if entry.kvarsArr.length > 0}
 							<Row><Col><b>Variables:</b></Col></Row>
@@ -333,6 +322,14 @@ src="${API_SERVER}/work/iframe/${work.workid}"></iframe>`;
 								</Col>
 							</Row>
 						{/if}
+						<Row>
+							<Col class="d-flex align-content-end">
+								<div>
+									By: {entry.doer}
+									at: {moment(entry.doneat).format('LLLL')}
+								</div>
+							</Col>
+						</Row>
 					</Container>
 				{/each}
 			</Container>

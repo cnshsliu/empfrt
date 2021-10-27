@@ -948,7 +948,7 @@ class KFKclass {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		const ret = {
-			ACTION: { id: '', role: '', label: '', kvars: '', katts: '', byall: true },
+			ACTION: { id: '', role: '', label: '', kvars: '', katts: '', byall: true, doer: '' },
 			SCRIPT: { id: '', label: '', code: '', runmode: 'ASYNC' },
 			INFORM: { id: '', label: '', role: '', subject: '', content: '' },
 			TIMER: { id: '', label: '', code: '' },
@@ -956,6 +956,11 @@ class KFKclass {
 			AND: { id: '', label: '' },
 			label: ''
 		};
+		if (that.workflow) {
+			console.log('Get Node Properties for Workflow');
+		} else {
+			console.log('Get Node Properties for Template');
+		}
 		if (KFKclass.NotSet(jqDIV)) jqDIV = that.currentJqNode;
 		if (jqDIV.hasClass('START')) {
 			ret.label = 'START';
@@ -971,6 +976,15 @@ class KFKclass {
 			kattsString = that.base64ToCode(kattsString);
 			ret.ACTION.katts = kattsString;
 			ret.ACTION.byall = jqDIV.hasClass('BYALL');
+
+			if (that.workflow) {
+				let theWork = jqDIV.find('.work').first();
+				console.log(theWork.attr('doer'));
+				ret.ACTION.doer = theWork.attr('doer');
+				let kvarsString = BlankToDefault(theWork.find('.kvars').text(), 'e30=');
+				kvarsString = that.base64ToCode(kvarsString);
+				ret.ACTION.kvars = kvarsString;
+			}
 		} else if (jqDIV.hasClass('SCRIPT')) {
 			ret.SCRIPT.id = jqDIV.attr('id');
 			ret.SCRIPT.runmode = jqDIV.attr('runmode') ? jqDIV.attr('runmode') : 'SYNC';
@@ -1157,7 +1171,7 @@ class KFKclass {
 			$(tplLinks[i]).attr('case', caseValue);
 		}
 
-		await that.redrawLinkLines(that.JC3.find(`#${theConnect.attr('fid')}`), 'after moving', false);
+		await that.redrawLinkLines(that.JC3.find(`#${theConnect.attr('fid')}`), 'after moving');
 
 		this.onChange('Connect case Changed');
 	}
@@ -1455,7 +1469,7 @@ class KFKclass {
 		that.cancelAlreadySelected();
 		that.clearNodeMessage();
 		that.buildConnectionBetween(that.linkPosNode[0], that.linkPosNode[1]);
-		await that.redrawLinkLines(that.linkPosNode[0], 'connect', false);
+		await that.redrawLinkLines(that.linkPosNode[0], 'connect');
 		//看两个节点的Linkto属性，在添加一个连接线后有没有什么变化，
 		//如果有变化，就上传U， 如果没变化，就不用U
 		//没有变化的情况：之前就有从linkPosNode[0]到 linkPosNode[1]的链接存在
@@ -2100,7 +2114,7 @@ class KFKclass {
 									}
 								}
 								for (let i = 0; i < that.shouldMovedInParalles.length; i++) {
-									await that.redrawLinkLines(that.shouldMovedInParalles[i], 'codrag', true);
+									await that.redrawLinkLines(that.shouldMovedInParalles[i], 'codrag', 'both');
 								}
 							}
 						}
@@ -2228,7 +2242,7 @@ class KFKclass {
 				jqNode = that.JC3.find(`#${nodeId}`);
 				//that.addSvgLayer();
 				await that.setNodeEventHandler(jqNode);
-				await that.redrawLinkLines(jqNode, 'undo', true);
+				await that.redrawLinkLines(jqNode, 'undo', 'both');
 			} else if (pair.from === null && pair.to !== null) {
 				//A create
 				const nodeId = pair.to.attr('id');
@@ -2241,7 +2255,7 @@ class KFKclass {
 				that.JC3.append(pair.from);
 				const jqNode = that.JC3.find(`#${nodeId}`);
 				await that.setNodeEventHandler(jqNode);
-				await that.redrawLinkLines(jqNode, 'undo', true);
+				await that.redrawLinkLines(jqNode, 'undo', 'both');
 			}
 		} else if (pair.obj === 'link') {
 			//对连接的操作
@@ -2251,7 +2265,7 @@ class KFKclass {
 				const jqFrom = that.JC3.find(`#${fromNodeId}`);
 				if (jqFrom && jqFrom.length > 0) {
 					await that.tpl.append(pair.from);
-					await that.redrawLinkLines(jqFrom, 'undo', false);
+					await that.redrawLinkLines(jqFrom, 'undo');
 				}
 			}
 		}
@@ -2277,13 +2291,13 @@ class KFKclass {
 				jqNode.prop('outerHTML', pair.to.prop('outerHTML'));
 				jqNode = that.JC3.find(`#${nodeId}`);
 				await that.setNodeEventHandler(jqNode);
-				await that.redrawLinkLines(jqNode, 'redo', true);
+				await that.redrawLinkLines(jqNode, 'redo', 'both');
 			} else if (pair.from === null && pair.to !== null) {
 				const nodeId = pair.to.attr('id');
 				that.JC3.append(pair.to);
 				const jqNode = that.JC3.find(`#${nodeId}`);
 				await that.setNodeEventHandler(jqNode);
-				await that.redrawLinkLines(jqNode, 'redo', true);
+				await that.redrawLinkLines(jqNode, 'redo', 'both');
 			} else if (pair.from !== null && pair.to === null) {
 				const nodeId = pair.from.attr('id');
 				const jqNode = that.JC3.find(`#${nodeId}`);
@@ -3157,7 +3171,7 @@ toggleOverview (jc3MousePos) {
 	async redrawLinkLines(
 		jqNode: myJQuery,
 		reason = 'unknown',
-		bothside = true,
+		bothside = 'left',
 		allowConnectPoints = [[2], [0], [2], [0]]
 	) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
@@ -3168,13 +3182,13 @@ toggleOverview (jc3MousePos) {
 			return;
 		}
 		const myId = jqNode.attr('id');
-		const guiLinks = that.tpl.find(`.link[from="${myId}"]`);
+		const tplLinks = that.tpl.find(`.link[from="${myId}"]`);
 		//得到当前节点连接到的节点id列表
 		//let toIds = that.getNodeLinkIds(jqNode, "linkto");
 		//找出所有svg连接线条
-		const list = that.svgDraw.find('.connect');
+		const connectLines = that.svgDraw.find('.connect');
 
-		list.each(async (connect: any) => {
+		connectLines.each(async (connect: any) => {
 			//如果这根连接线条的fid属性是当前node的id
 			if (connect.attr('fid') === myId) {
 				const connect_id = connect.attr('id');
@@ -3187,10 +3201,10 @@ toggleOverview (jc3MousePos) {
 		});
 		//画出从当前node:jqNode到所有"连接到"节点的连接线
 		const anchorPositions = [];
-		for (let i = 0; i < guiLinks.length; i++) {
-			const toId = $(guiLinks[i]).attr('to');
+		for (let i = 0; i < tplLinks.length; i++) {
+			const toId = $(tplLinks[i]).attr('to');
 			const jqTo = $(`#${toId}`);
-			let caseValue = $(guiLinks[i]).attr('case');
+			let caseValue = $(tplLinks[i]).attr('case');
 			caseValue = lodash.isEmpty(caseValue) ? '' : caseValue;
 			const anchorPair = await that.drawConnect(
 				jqNode,
@@ -3205,7 +3219,7 @@ toggleOverview (jc3MousePos) {
 		}
 
 		//如果是双边画线,则需要找出那些父节点
-		if (bothside) {
+		if (bothside === 'both' || bothside === 'right') {
 			const guiLinks_toMe = that.tpl.find(`.link[to="${myId}"]`);
 
 			const anchorPositions = [];
@@ -3225,6 +3239,20 @@ toggleOverview (jc3MousePos) {
 				anchorPositions.push(anchorPair[0]);
 			}
 		}
+	}
+
+	async setConnectionStatusColor() {
+		const connectLines = this.svgDraw.find('.connect');
+
+		connectLines.each(async (connect: any) => {
+			//如果这根连接线条的fid属性是当前node的id
+			const toDIV: any = $(`#${connect.attr('tid')}`);
+			if (toDIV.hasClass('ST_DONE')) {
+				console.log(toDIV.attr('id'));
+				//connect.stroke({ color: '#FF0000' });
+				connect.addClass('ST_DONE');
+			}
+		});
 	}
 
 	getNodeDefaultSize(nodeType: string, variant: string) {
@@ -4636,6 +4664,7 @@ toggleOverview (jc3MousePos) {
 		await that.cleanupJC3();
 		that.tmpBalls.clear();
 		that.template = template;
+		that.workflow = null;
 		that.tpl_mode = tplmode;
 		try {
 			that.tplid = that.template.tplid;
@@ -4652,7 +4681,7 @@ toggleOverview (jc3MousePos) {
 				} else {
 					jqNode.draggable('enable');
 				}
-				await that.redrawLinkLines(jqNode, 'loadTemplateDoc', false);
+				await that.redrawLinkLines(jqNode, 'loadTemplateDoc');
 			}
 
 			if (that.docIsNotReadOnly()) {
@@ -4692,6 +4721,7 @@ toggleOverview (jc3MousePos) {
 	async loadWorkflowDoc(wfobj: any) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
+		that.template = null;
 		try {
 			$('#leftPanel').addClass('noshow');
 			$('#minimap').addClass('noshow');
@@ -4707,7 +4737,7 @@ toggleOverview (jc3MousePos) {
 				const jqNode = $(guiNodes[i]);
 				await that.setNodeEventHandler(jqNode);
 				jqNode.draggable('disable');
-				await that.redrawLinkLines(jqNode, 'loadDoc', false);
+				await that.redrawLinkLines(jqNode, 'loadDoc');
 			}
 
 			//eslint-disable-next-line
@@ -4731,9 +4761,10 @@ toggleOverview (jc3MousePos) {
 				//Add node className by it's running status in process
 				//Change link line style by it's status
 			}
+			await that.setConnectionStatusColor();
 
 			that.myFadeOut($('.loading'));
-			that.myFadeIn(that.JC3, 100);
+			that.myFadeIn(that.JC3, 1000);
 			$('#overallbackground').removeClass('grid1');
 
 			//focusOnC3会导致C3居中
@@ -5325,7 +5356,7 @@ toggleOverview (jc3MousePos) {
 						movedSer = movedSer + 1;
 					}
 					for (let i = 0; i < that.selectedDIVs.length; i++) {
-						await that.redrawLinkLines(that.selectedDIVs[i], 'codrag', true);
+						await that.redrawLinkLines(that.selectedDIVs[i], 'codrag', 'both');
 					}
 				} finally {
 					that.endTrx();

@@ -2524,10 +2524,14 @@ table.quick-help-table td:first-of-type {
 }
 
 .node.ST_DONE {
-	background-color: rgba(0, 255, 0, 0.8);
+	background-color: #dbdb22cc;
 }
 .node.ST_RUN {
-	background-color: rgba(0, 0, 255, 0.8);
+	background-color: rgba(0, 0, 155, 0.2);
+}
+.connect.ST_DONE {
+	stroke-width: 5;
+	stroke: #4bdb92;
 }
 
 #rightPanel {

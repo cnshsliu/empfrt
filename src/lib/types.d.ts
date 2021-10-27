@@ -39,6 +39,7 @@ export interface Workflow {
 	teamid: string;
 	tplid: string;
 	status: string;
+	statusLabel: string;
 	starter: string;
 	doc: string;
 	createdAt: string;

@@ -80,7 +80,7 @@
 								opWorkflow(workflow.wfid, 'resume');
 							}}
 						>
-							<Icon name="play-btn" />
+							<Icon name="arrow-counterclockwise" />
 							{'RESUME'}
 						</NavLink>
 					{/if}
@@ -91,7 +91,7 @@
 								opWorkflow(workflow.wfid, 'stop');
 							}}
 						>
-							<Icon name="pause-btn" />
+							<Icon name="slash-square" />
 							{'STOP'}
 						</NavLink>
 					{/if}
@@ -104,19 +104,10 @@
 								goto('/workflow');
 							}}
 						>
-							<Icon name="pause-btn" />
+							<Icon name="caret-right-square" />
 							{'RESTART'}
 						</NavLink>
 					{/if}
-					<NavLink
-						class="kfk-link"
-						on:click={() => {
-							dumpWorkflow();
-						}}
-					>
-						<Icon name="pause-btn" />
-						{'DUMP'}
-					</NavLink>
 				</Nav>
 			</Col>
 		</Row>

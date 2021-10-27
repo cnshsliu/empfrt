@@ -31,7 +31,7 @@
 		const data = await getData(endpoint, token, _page, pageSize, text, sorting, payload_extra);
 		rows = data.rows;
 		for (let i = 0; i < rows.length; i++) {
-			rows[i].status = StatusLabel(rows[i].status);
+			rows[i].statusLabel = StatusLabel(rows[i].status);
 		}
 		rowsCount = data.rowsCount;
 		loading = false;
@@ -144,38 +144,64 @@
 						{row.wftitle}
 					</a>
 				</td>
-				<td data-label="Status">{row.status}</td>
+				<td data-label="Status">{row.statusLabel}</td>
 				<td data-label="Starter">{row.starter}</td>
 				<td data-label="Updated at">{moment(row.updatedAt).format('LLLL')}</td>
 				<td>
 					<Dropdown>
 						<DropdownToggle caret color="notexist" class="btn-sm">Actions</DropdownToggle>
 						<DropdownMenu>
-							<DropdownItem>
-								{#if row.status === 'ST_RUN'}
+							{#if row.status === 'ST_RUN'}
+								<DropdownItem>
 									<a
 										class="nav-link"
 										href={'#'}
 										on:click|preventDefault={() => opWorkflow(row, 'pause')}
 									>
-										<Icon name="play-circle-fill" /> Pause
+										<Icon name="pause-btn" /> Pause
 									</a>
-								{:else if row.status === 'ST_PAUSE'}
+								</DropdownItem>
+							{/if}
+							{#if row.status === 'ST_PAUSE'}
+								<DropdownItem>
 									<a
 										class="nav-link"
 										href={'#'}
 										on:click|preventDefault={() => opWorkflow(row, 'resume')}
 									>
-										<Icon name="play-circle-fill" /> Resume
+										<Icon name="arrow-counterclockwise" /> Resume
 									</a>
-								{/if}
-							</DropdownItem>
+								</DropdownItem>
+							{/if}
+							{#if row.status === 'ST_PAUSE' || row.status === 'ST_RUN'}
+								<DropdownItem>
+									<a
+										class="nav-link"
+										href={'#'}
+										on:click|preventDefault={() => opWorkflow(row, 'stop')}
+									>
+										<Icon name="slash-square" /> Stop
+									</a>
+								</DropdownItem>
+							{/if}
+							{#if ['ST_RUN', 'ST_PAUSE', 'ST_STOP'].indexOf(row.status) > -1}
+								<DropdownItem>
+									<a
+										class="nav-link"
+										href={'#'}
+										on:click|preventDefault={() => opWorkflow(row, 'restart')}
+									>
+										<Icon name="caret-right-square" /> Restart
+									</a>
+								</DropdownItem>
+							{/if}
 							<DropdownItem>
 								<a
 									href={'#'}
 									on:click|preventDefault={() => opWorkflow(row, 'startAnother')}
 									class="nav-link "
-									><Icon name="trash" />
+								>
+									<Icon name="caret-right-fill" />
 									Start Another
 								</a>
 							</DropdownItem>
@@ -184,7 +210,8 @@
 									href={'#'}
 									on:click|preventDefault={() => opWorkflow(row, 'viewTemplate')}
 									class="nav-link "
-									><Icon name="trash" />
+								>
+									<Icon name="code-square" />
 									View Template
 								</a>
 							</DropdownItem>
@@ -193,7 +220,7 @@
 									href={'#'}
 									on:click|preventDefault={() => opWorkflow(row, 'viewInstanceTemplate')}
 									class="nav-link "
-									><Icon name="trash" />
+									><Icon name="code" />
 									View Instance Template
 								</a>
 							</DropdownItem>

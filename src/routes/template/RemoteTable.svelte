@@ -145,7 +145,7 @@
 										goto(`template/start?tplid=${row.tplid}`, { replaceState: false });
 									}}
 									class="nav-link "
-									><Icon name="play-circle-fill" />
+									><Icon name="caret-right-square" />
 									Start it
 								</a>
 							</DropdownItem>
