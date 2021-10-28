@@ -32,6 +32,7 @@
 <script lang="ts">
 	import { API_SERVER } from '$lib/Env';
 	import type { User, Template, Team } from '$lib/types';
+	import ErrorNotify from '$lib/ErrorNotify.svelte';
 	import jQuery from 'jquery';
 	import { goto } from '$app/navigation';
 	import { session } from '$app/stores';
@@ -154,26 +155,31 @@
 	<title>{template.tplid} • Template</title>
 </svelte:head>
 {#if template.tplid === 'Not Found'}
-	<Container>
-		<Row>
-			<Col>
-				Template {tplid} not found <br />
-				{#if $session.wfid}
-					Seems like you are trying to view the ORIGINAL TEMPLATE of a workflow {$session.wfid},
-					<br />however, the ORIGINAL TEMPLATE of this workflow might have been deleted. <br />
-					you may
-					<a
-						href={'#'}
-						on:click={() => {
-							viewInstanceTemplate($session.wfid);
-						}}
-					>
-						view the INSTANCE TEMPLATE
-					</a> of this workflow instead
-				{/if}
-			</Col>
-		</Row>
-	</Container>
+	{#if $session.wfid}
+		<ErrorNotify
+			title="Original Template not Found"
+			subtitle={`${tplid}`}
+			info={`
+				does not exist.
+					Seems like you are trying to view the ORIGINAL TEMPLATE of a workflow ${$session.wfid},
+					however, the ORIGINAL TEMPLATE of this workflow might have been deleted.
+					you may view the INSTANCE TEMPLATE of this workflow instead`}
+			btnTitle="View Instance Template Instead"
+			callback={() => {
+				viewInstanceTemplate($session.wfid);
+			}}
+		/>
+	{:else}
+		<ErrorNotify
+			title="Error Found"
+			subtitle="Template not found"
+			info={`Template ${tplid} does not exist`}
+			btnTitle="Back"
+			callback={() => {
+				goto('/template');
+			}}
+		/>
+	{/if}
 {:else}
 	<div id="designer_topMenu" class={topmenu_class}>
 		<Container>

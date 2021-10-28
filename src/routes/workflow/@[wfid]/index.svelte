@@ -2,20 +2,43 @@
 	export const ssr = false;
 	export async function load({ page, fetch, session }) {
 		const wfid = page.params.wfid;
-		const jsonUrl = `/workflow/@${wfid}.json`;
-		const res = await fetch(jsonUrl);
+		const res = await fetch(`/workflow/@${wfid}.json`);
 
-		return {
-			props: {
-				workflow: await res.json(),
-				user: session.user
-			}
-		};
+		try {
+			return {
+				props: {
+					workflow: await res.json(),
+					wfid: page.params.wfid,
+					user: session.user
+				}
+			};
+		} catch (e) {
+			console.error(e);
+			return {
+				props: {
+					workflow: {
+						wftitle: 'Not Found'
+					},
+					wfid: page.params.wfid,
+					user: session.user
+				}
+			};
+		}
 	}
 </script>
 
 <script lang="ts">
 	import type { User, Template, Workflow } from '$lib/types';
+	import ErrorNotify from '$lib/ErrorNotify.svelte';
+	import {
+		Card,
+		CardBody,
+		CardFooter,
+		CardHeader,
+		CardSubtitle,
+		CardText,
+		CardTitle
+	} from 'sveltestrap';
 	import jQuery from 'jquery';
 	import { goto } from '$app/navigation';
 	import { title } from '$lib/title';
@@ -25,7 +48,7 @@
 	import { Icon, Button, Modal, ModalBody, ModalFooter, ModalHeader, Styles } from 'sveltestrap';
 	import { enhance } from '$lib/form';
 	export let workflow: Workflow;
-	export let tpl_mode: string;
+	export let wfid: string;
 
 	const jq = jQuery;
 
@@ -38,7 +61,6 @@
 		Designer = module.default;
 	});
 
-	export let errmsg = '';
 	export let user: User;
 	const dumpWorkflow = function () {
 		let wf = jq(workflow.doc);
@@ -46,8 +68,12 @@
 	};
 	const opWorkflow = (wfid: string, op: string): void => {
 		setTimeout(async () => {
-			let ret = await api.post('workflow/op', { wfid, op }, user.sessionToken);
-			workflow.status = ret.status; //eslint-disable-line
+			let ret: Workflow = (await api.post(
+				'workflow/op',
+				{ wfid, op },
+				user.sessionToken
+			)) as Workflow;
+			workflow.status = ret.status;
 		}, 1);
 	};
 </script>
@@ -113,4 +139,16 @@
 		</Row>
 	</Container>
 </div>
-<svelte:component this={Designer} bind:this={theDesigner} {workflow} />
+{#if workflow.wftitle !== 'Not Found'}
+	<svelte:component this={Designer} bind:this={theDesigner} {workflow} />
+{:else}
+	<ErrorNotify
+		title="Error Found"
+		subtitle="Workflow not found"
+		info={`Workflow ${wfid} does not exist`}
+		btnTitle="Back"
+		callback={() => {
+			goto('/workflow');
+		}}
+	/>
+{/if}

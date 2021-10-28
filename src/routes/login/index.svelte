@@ -41,7 +41,8 @@
 		}
 
 		if (response.user) {
-			$session.user = response.user;
+			//$session.user = response.user;
+			$session.user = null;
 			goto('/');
 		}
 	}

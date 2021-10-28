@@ -1,7 +1,7 @@
 <script context="module">
 	export function load({ session }) {
 		const { user } = session;
-
+		console.log(user);
 		if (!user) {
 			return {
 				status: 302,
@@ -17,8 +17,8 @@
 
 <script lang="ts">
 	import { session } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import * as api from '$lib/api';
-	import ErrorProcessor from '$lib/errorProcessor';
 	import { post } from '$lib/utils';
 	import { Fade, Card } from 'sveltestrap';
 
@@ -37,6 +37,8 @@
 		// this will trigger a redirect, because it
 		// causes the `load` function to run again
 		$session.user = null;
+		console.log($session);
+		goto('/');
 	}
 
 	function setFadeMessage(message) {
