@@ -6,7 +6,7 @@ type OPTS = {
 	headers: unknown;
 	body?: string;
 };
-async function send({ method, path, data, token }) {
+async function send({ method, path, data = null, token = null }) {
 	const opts: OPTS = { method, headers: {} };
 
 	if (data) {
@@ -42,7 +42,7 @@ export function del(path: string, token: string): Promise<unknown> {
 	return send({ method: 'DELETE', path, data: null, token });
 }
 
-export function post(path: string, data: any, token: string): Promise<unknown> {
+export function post(path: string, data: any = null, token: string = null): Promise<unknown> {
 	return send({ method: 'POST', path, data, token });
 }
 

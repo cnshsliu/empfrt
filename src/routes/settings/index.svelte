@@ -37,6 +37,7 @@
 		// this will trigger a redirect, because it
 		// causes the `load` function to run again
 		$session.user = null;
+		console.log($session.user);
 		console.log($session);
 		goto('/');
 	}

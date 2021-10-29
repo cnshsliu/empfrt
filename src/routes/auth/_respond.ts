@@ -17,7 +17,7 @@ export function respond(body) {
 	authStore.set({ jwt: value });
 
 	return {
-		headcrs: {
+		headers: {
 			'set-cookie': `jwt=${value}; Path=/; HttpOnly`
 		},
 		body

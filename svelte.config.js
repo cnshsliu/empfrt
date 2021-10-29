@@ -8,7 +8,13 @@ const config = {
 
 	kit: {
 		// hydrate the <div id="svelte"> element in src/app.html
-		target: '#svelte'
+		target: '#svelte',
+		//https://www.npmjs.com/package/svelte-kit-cookie-session
+		vite: {
+			optimizeDeps: {
+				exclude: ['svelte-kit-cookie-session']
+			}
+		}
 	}
 };
 

@@ -41,9 +41,8 @@
 		}
 
 		if (response.user) {
-			//$session.user = response.user;
-			$session.user = null;
-			goto('/');
+			$session.user = response.user;
+			goto('/work');
 		}
 	}
 </script>
@@ -56,8 +55,8 @@
 	<div class="container page">
 		<div class="row">
 			<div class="col-md-6 offset-md-3 col-xs-12">
-				<h1 class="text-xs-center">Sign In</h1>
-				<p class="text-xs-center">
+				<h1 class="text-center">Sign In</h1>
+				<p class="text-center">
 					<a href="/register">Need an account?</a>
 				</p>
 
@@ -82,7 +81,7 @@
 							bind:value={password}
 						/>
 					</fieldset>
-					<button class="btn btn-lg btn-primary pull-xs-right" type="submit"> Sign in </button>
+					<button class="btn btn-lg btn-primary pull-xs-right mt-2" type="submit"> Sign in </button>
 				</form>
 				<Fade isOpen={fade_message != ''}>
 					<Card body>

@@ -6,27 +6,28 @@
 	import Counter from '$lib/Counter.svelte';
 	import { title } from '$lib/title';
 	$title = 'HyperFlow';
+	import { session } from '$app/stores';
 </script>
 
 <svelte:head>
 	<title>Home</title>
 </svelte:head>
 
-<section>
-	<h1>
-		<div class="welcome">
-			<picture>
-				<source srcset="svelte-welcome.webp" type="image/webp" />
-				<img src="svelte-welcome.png" alt="Welcome" />
-			</picture>
-		</div>
+<div class="container">
+	<pre>
+      {JSON.stringify($session, null, 2)}
+  </pre>
+</div>
 
-		to your new<br />SvelteKit app
-	</h1>
-
-	<h2>
-		try editing <strong>src/routes/index.svelte</strong>
-	</h2>
-
-	<Counter />
-</section>
+<style>
+	.container {
+		margin: 0 auto;
+		max-width: 850px;
+	}
+	pre {
+		background-color: #000000;
+		color: #fff;
+		border-radius: 0.4em;
+		padding: 2em;
+	}
+</style>
