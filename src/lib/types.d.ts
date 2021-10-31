@@ -16,6 +16,11 @@ export interface User {
 	avatar: string;
 	bio: string;
 	sessionToken: string;
+	password?: string;
+	extra?: {
+		input_search?: string;
+		filter_status?: string;
+	};
 }
 
 export interface Template {

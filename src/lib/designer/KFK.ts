@@ -3251,6 +3251,8 @@ toggleOverview (jc3MousePos) {
 				console.log(toDIV.attr('id'));
 				//connect.stroke({ color: '#FF0000' });
 				connect.addClass('ST_DONE');
+			} else if (toDIV.hasClass('ST_RUN')) {
+				connect.addClass('ST_RUN');
 			}
 		});
 	}

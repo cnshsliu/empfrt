@@ -639,25 +639,8 @@ input::placeholder {
 
 #designer_topMenu {
 	position: absolute;
-	top: 60px;
-	left: 70px;
-	width: 100%;
-	border: 0px;
-	border-radius: 10px;
-	padding-bottom: 10px;
 	z-index: 1000;
 }
-#designer_topMenu_read {
-	position: absolute;
-	top: 60px;
-	left: 70px;
-	width: 100%;
-	border: 0px;
-	border-radius: 10px;
-	padding-bottom: 10px;
-	z-index: 1000;
-}
-
 .whiteback {
 	background-color: #ffffffff;
 }
@@ -2532,6 +2515,10 @@ table.quick-help-table td:first-of-type {
 .connect.ST_DONE {
 	stroke-width: 5;
 	stroke: #4bdb92;
+}
+.connect.ST_RUN {
+	stroke-width: 5;
+	stroke: #4b92db;
 }
 
 #rightPanel {

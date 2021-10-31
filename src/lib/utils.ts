@@ -1,4 +1,4 @@
-export async function post(endpoint, data): Promise<Response> {
+export async function post(endpoint: string, data = {}): Promise<Response> {
 	console.log(endpoint);
 	console.log(data);
 	return fetch(endpoint, {

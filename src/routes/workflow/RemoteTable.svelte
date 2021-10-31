@@ -65,6 +65,24 @@
 		if (op === 'startAnother') {
 			goto(`/template/start?tplid=${workflow.tplid}`);
 			return;
+		} else if (op === 'works') {
+			let user = $session.user;
+			user.extra.input_search = 'wf:' + workflow.wfid;
+			$session.user = user;
+			goto('/work');
+			return;
+		} else if (op === 'works_running') {
+			let user = $session.user;
+			user.extra = { input_search: 'wf:' + workflow.wfid, filter_status: 'ST_RUN' };
+			$session.user = user;
+			goto('/work');
+			return;
+		} else if (op === 'works_all') {
+			let user = $session.user;
+			user.extra = { input_search: 'wf:' + workflow.wfid, filter_status: 'All' };
+			$session.user = user;
+			goto('/work');
+			return;
 		} else if (op === 'viewTemplate') {
 			$session.wfid = workflow.wfid;
 			goto(`/template/@${workflow.tplid}&read`);
@@ -151,6 +169,24 @@
 					<Dropdown>
 						<DropdownToggle caret color="notexist" class="btn-sm">Actions</DropdownToggle>
 						<DropdownMenu>
+							<DropdownItem>
+								<a
+									class="nav-link"
+									href={'#'}
+									on:click|preventDefault={() => opWorkflow(row, 'works_running')}
+								>
+									<Icon name="list-check" /> Running Works
+								</a>
+							</DropdownItem>
+							<DropdownItem>
+								<a
+									class="nav-link"
+									href={'#'}
+									on:click|preventDefault={() => opWorkflow(row, 'works_all')}
+								>
+									<Icon name="list-check" /> All Works
+								</a>
+							</DropdownItem>
 							{#if row.status === 'ST_RUN'}
 								<DropdownItem>
 									<a

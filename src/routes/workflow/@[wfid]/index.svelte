@@ -29,6 +29,7 @@
 
 <script lang="ts">
 	import type { User, Template, Workflow } from '$lib/types';
+	import { session } from '$app/stores';
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
 	import {
 		Card,
@@ -67,6 +68,12 @@
 		console.log(wf.find('.workflow').attr('class'));
 	};
 	const opWorkflow = (wfid: string, op: string): void => {
+		if (op === 'works') {
+			user = $session.user;
+			user.extra = { input_search: 'wf:' + wfid };
+			$session.user = user;
+			goto('/work');
+		}
 		setTimeout(async () => {
 			let ret: Workflow = (await api.post(
 				'workflow/op',
@@ -84,60 +91,67 @@
 	<title>{workflow.wftitle} • Workflow</title>
 </svelte:head>
 <div id="designer_topMenu">
-	<Container>
-		<Row class="mt-1 d-flex justify-content-center">
-			<Col class="d-flex justify-content-center">
-				<Nav>
-					{#if workflow.status === 'ST_RUN'}
-						<NavLink
-							class="kfk-link"
-							on:click={() => {
-								opWorkflow(workflow.wfid, 'pause');
-							}}
-						>
-							<Icon name="pause-btn" />
-							{'PAUSE'}
-						</NavLink>
-					{/if}
-					{#if workflow.status === 'ST_PAUSE'}
-						<NavLink
-							class="kfk-link"
-							on:click={() => {
-								opWorkflow(workflow.wfid, 'resume');
-							}}
-						>
-							<Icon name="arrow-counterclockwise" />
-							{'RESUME'}
-						</NavLink>
-					{/if}
-					{#if ['ST_RUN', 'ST_PAUSE'].indexOf(workflow.status) > -1}
-						<NavLink
-							class="kfk-link"
-							on:click={() => {
-								opWorkflow(workflow.wfid, 'stop');
-							}}
-						>
-							<Icon name="slash-square" />
-							{'STOP'}
-						</NavLink>
-					{/if}
-					{#if ['ST_RUN', 'ST_PAUSE', 'ST_STOP'].indexOf(workflow.status) > -1}
-						<NavLink
-							class="kfk-link"
-							on:click={(e) => {
-								e.preventDefault();
-								opWorkflow(workflow.wfid, 'restart');
-								goto('/workflow');
-							}}
-						>
-							<Icon name="caret-right-square" />
-							{'RESTART'}
-						</NavLink>
-					{/if}
-				</Nav>
-			</Col>
-		</Row>
-	</Container>
+	<Row class="mt-1 d-flex justify-content-center">
+		<Col class="d-flex justify-content-center">
+			<Nav>
+				<NavLink
+					class="kfk-link"
+					on:click={() => {
+						opWorkflow(workflow.wfid, 'works');
+					}}
+				>
+					<Icon name="list-check" />
+					{'Works'}
+				</NavLink>
+				{#if workflow.status === 'ST_RUN'}
+					<NavLink
+						class="kfk-link"
+						on:click={() => {
+							opWorkflow(workflow.wfid, 'pause');
+						}}
+					>
+						<Icon name="pause-btn" />
+						{'PAUSE'}
+					</NavLink>
+				{/if}
+				{#if workflow.status === 'ST_PAUSE'}
+					<NavLink
+						class="kfk-link"
+						on:click={() => {
+							opWorkflow(workflow.wfid, 'resume');
+						}}
+					>
+						<Icon name="arrow-counterclockwise" />
+						{'RESUME'}
+					</NavLink>
+				{/if}
+				{#if ['ST_RUN', 'ST_PAUSE'].indexOf(workflow.status) > -1}
+					<NavLink
+						class="kfk-link"
+						on:click={() => {
+							opWorkflow(workflow.wfid, 'stop');
+						}}
+					>
+						<Icon name="slash-square" />
+						{'STOP'}
+					</NavLink>
+				{/if}
+				{#if ['ST_RUN', 'ST_PAUSE', 'ST_STOP'].indexOf(workflow.status) > -1}
+					<NavLink
+						class="kfk-link"
+						on:click={(e) => {
+							e.preventDefault();
+							opWorkflow(workflow.wfid, 'restart');
+							goto('/workflow');
+						}}
+					>
+						<Icon name="caret-right-square" />
+						{'RESTART'}
+					</NavLink>
+				{/if}
+			</Nav>
+		</Col>
+	</Row>
 </div>
 {#if workflow.wftitle !== 'Not Found'}
 	<svelte:component this={Designer} bind:this={theDesigner} {workflow} />
@@ -152,3 +166,6 @@
 		}}
 	/>
 {/if}
+
+<style>
+</style>

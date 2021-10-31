@@ -20,7 +20,7 @@
 
 	let loading = true;
 	let rowsCount = 0;
-	let text;
+	export let input_search;
 	let sorting = { dir: 'desc', key: 'lastdays' };
 
 	onMount(async () => {
@@ -29,7 +29,16 @@
 
 	async function load(_page) {
 		loading = true;
-		const data = await getData(endpoint, token, _page, pageSize, text, sorting, payload_extra);
+		console.log('loading...', input_search);
+		const data = await getData(
+			endpoint,
+			token,
+			_page,
+			pageSize,
+			input_search,
+			sorting,
+			payload_extra
+		);
 		rows = data.rows;
 		rowsCount = data.rowsCount;
 		loading = false;
@@ -46,13 +55,13 @@
 	}
 
 	async function onSearch(event) {
-		text = event.detail.text;
+		input_search = event.detail.text;
 		await load(page);
 		page = 0;
 	}
 
 	export async function refresh(detail) {
-		if (detail && detail.text) text = detail.text;
+		if (detail && detail.input_search) input_search = detail.input_search;
 		if (detail && detail.page) page = detail.page;
 		if (detail && detail.sorting) sorting = detail.sorting;
 		if (detail && detail.payload_extra) payload_extra = detail.payload_extra;
@@ -70,7 +79,7 @@
 
 <Table {loading} {rows} {pageIndex} {pageSize} let:rows={rows2}>
 	<div slot="top">
-		<Search on:search={onSearch} />
+		<Search on:search={onSearch} text={input_search} />
 	</div>
 	<thead slot="head">
 		<tr>
@@ -91,12 +100,7 @@
 	</thead>
 	<tbody>
 		{#each rows2 as row, index (row)}
-			<tr
-				transition:scale|local={{ start: 0.7 }}
-				animate:flip={{ duration: 200 }}
-				class:odd={index % 2 !== 0}
-				class:even={index % 2 === 0}
-			>
+			<tr class:odd={index % 2 !== 0} class:even={index % 2 === 0}>
 				<td data-label="Title">
 					<a
 						class="preview-link  kfk-link"

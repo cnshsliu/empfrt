@@ -17,22 +17,22 @@
 
 <script lang="ts">
 	import { session } from '$app/stores';
+	import type { User } from '$lib/types';
 	import { goto } from '$app/navigation';
 	import * as api from '$lib/api';
 	import { post } from '$lib/utils';
 	import { Fade, Card } from 'sveltestrap';
 
-	export let user;
+	export let user: User;
 	let fade_message = '';
-	let fade_timer;
+	let fade_timer: any;
 
 	import { title } from '$lib/title';
 	$title = 'HyperFlow';
-	let in_progress;
-	let errors;
+	let in_progress: boolean;
 
 	async function logout() {
-		await post(`auth/logout`);
+		await post(`auth/logout`, {});
 
 		// this will trigger a redirect, because it
 		// causes the `load` function to run again
@@ -42,7 +42,7 @@
 		goto('/');
 	}
 
-	function setFadeMessage(message) {
+	function setFadeMessage(message: string) {
 		fade_message = message;
 		if (fade_timer) clearTimeout(fade_timer);
 		fade_timer = setTimeout(() => {
@@ -91,7 +91,7 @@
 								class="form-control"
 								type="text"
 								placeholder="URL of profile picture"
-								bind:value={user.image}
+								bind:value={user.avatar}
 							/>
 						</fieldset>
 
@@ -101,15 +101,6 @@
 								type="text"
 								placeholder="Username"
 								bind:value={user.username}
-							/>
-						</fieldset>
-
-						<fieldset class="form-group">
-							<textarea
-								class="form-control form-control-lg"
-								rows="8"
-								placeholder="Short bio about you"
-								bind:value={user.bio}
 							/>
 						</fieldset>
 

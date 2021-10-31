@@ -11,18 +11,21 @@
 	}
 </script>
 
-<script>
+<script lang="ts">
 	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { post } from '$lib/utils';
-	import { Fade, Card } from 'sveltestrap';
-	import ListErrors from '$lib/ListErrors.svelte';
+	import * as api from '$lib/api';
+	import { Fade, Card, NavLink } from 'sveltestrap';
+	import Countdown from '$lib/Countdown.svelte';
 
 	let email = '';
 	let password = '';
 	let errors = null;
 	let fade_message = '';
 	let fade_timer;
+	let show_resend_email_verification = false;
+	let theCountdown;
 
 	function setFadeMessage(message) {
 		fade_message = message;
@@ -36,6 +39,11 @@
 
 		if (response.error) {
 			setFadeMessage(response.message);
+			if (response.error === 'login_emailVerified_false') {
+				show_resend_email_verification = true;
+				//resendCountdown = 0;
+				//theCountdown.reset(0);
+			}
 		} else {
 			setFadeMessage('');
 		}
@@ -43,6 +51,17 @@
 		if (response.user) {
 			$session.user = response.user;
 			goto('/work');
+		}
+	}
+
+	let resendCountdown = 0;
+	async function resendEmailVerification() {
+		resendCountdown = 10;
+		const response = await api.post('account/evc', { email });
+		if (response.error) {
+			setFadeMessage(response.message);
+		} else {
+			setFadeMessage('Please check your mailbox');
 		}
 	}
 </script>
@@ -59,8 +78,6 @@
 				<p class="text-center">
 					<a href="/register">Need an account?</a>
 				</p>
-
-				<ListErrors {errors} />
 
 				<form on:submit|preventDefault={submit}>
 					<fieldset class="form-group">
@@ -83,6 +100,15 @@
 					</fieldset>
 					<button class="btn btn-lg btn-primary pull-xs-right mt-2" type="submit"> Sign in </button>
 				</form>
+				{#if show_resend_email_verification && resendCountdown < 1}
+					<NavLink
+						on:click={() => {
+							resendEmailVerification();
+						}}>Resend Verification Email</NavLink
+					>
+				{:else if resendCountdown > 0}
+					<svelte:component this={Countdown} bind:this={theCountdown} bind:resendCountdown />
+				{/if}
 				<Fade isOpen={fade_message != ''}>
 					<Card body>
 						{fade_message}

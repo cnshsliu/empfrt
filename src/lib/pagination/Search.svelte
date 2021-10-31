@@ -72,7 +72,7 @@
 
 <style>
 	.search {
-		width: 33.3%;
+		width: 100%;
 		float: left;
 	}
 	.search input {
