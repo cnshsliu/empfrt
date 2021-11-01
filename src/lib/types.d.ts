@@ -138,3 +138,10 @@ export interface SearchResult {
 	total: number;
 	objs: any[];
 }
+
+export interface KFKError {
+	statusCode: number;
+	error: string;
+	code: string;
+	message: string;
+}

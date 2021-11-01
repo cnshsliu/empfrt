@@ -87,8 +87,8 @@
 		How to use RemoteTable Pagination 
 		1. Copy RemoteTable.svelet to object folder
 			(team/template/workflow/work etc.) 
-		2. Do following modification to RemoteTable.svelte 
 			2.1. modify deleteRow to match API endpoint and payload 
+		2. Do following modification to RemoteTable.svelte 
 			2.2. modify link href of object in remote table row
 			2.3. modify link hrefs in DropDown
 			3. in index.svelete, change "RemoteTable endpoint" to the correct one. 

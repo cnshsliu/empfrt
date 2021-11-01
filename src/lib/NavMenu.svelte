@@ -17,11 +17,23 @@
 		DropdownItem,
 		Container
 	} from 'sveltestrap';
+	import { post } from '$lib/utils';
+	import { goto } from '$app/navigation';
 
 	let isMenuOpen = false;
 
 	function handleUpdate(event) {
 		isMenuOpen = event.detail.isOpen;
+	}
+	async function logout() {
+		await post(`auth/logout`, {});
+
+		// this will trigger a redirect, because it
+		// causes the `load` function to run again
+		$session.user = null;
+		console.log($session.user);
+		console.log($session);
+		goto('/');
 	}
 </script>
 
@@ -65,7 +77,7 @@
 						</NavLink>
 					</DropdownItem>
 					<DropdownItem divider />
-					<DropdownItem>Reset</DropdownItem>
+					<DropdownItem on:click={logout}>Logout</DropdownItem>
 				</DropdownMenu>
 			</Dropdown>
 		{:else}
