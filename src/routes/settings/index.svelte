@@ -21,7 +21,21 @@
 	import { goto } from '$app/navigation';
 	import * as api from '$lib/api';
 	import { post } from '$lib/utils';
-	import { Fade, Card } from 'sveltestrap';
+	import {
+		Container,
+		Row,
+		Col,
+		Button,
+		TabContent,
+		TabPane,
+		Fade,
+		Card,
+		InputGroup,
+		InputGroupText,
+		Input,
+		FormGroup,
+		Label
+	} from 'sveltestrap';
 
 	export let user: User;
 	let fade_message = '';
@@ -30,6 +44,7 @@
 	import { title } from '$lib/title';
 	$title = 'HyperFlow';
 	let in_progress: boolean;
+	let orgname;
 
 	async function logout() {
 		await post(`auth/logout`, {});
@@ -72,75 +87,141 @@
 
 		in_progress = false;
 	}
+	async function setMyTenantName() {
+		in_progress = true;
+
+		let ret = await api.post('tnt/name/save', { orgname: orgname }, user.sessionToken);
+		if (ret.error) {
+			setFadeMessage(ret.message);
+		} else {
+			//eslint-disable-next-line
+			if (ret.user) {
+				setFadeMessage('Orgniazation name is set succesfully');
+			} else {
+				setFadeMessage('Error');
+			}
+		}
+
+		in_progress = false;
+	}
 </script>
 
 <svelte:head>
 	<title>Settings • HyperFlow</title>
 </svelte:head>
+<Container>
+	<TabContent>
+		<TabPane tabId="personal" tab="Personal">
+			<div class="settings-page">
+				<div class="container page">
+					<div class="row">
+						<div class="col-md-6 offset-md-3 col-xs-12">
+							<h1 class="text-xs-center">Personel</h1>
 
-<div class="settings-page">
-	<div class="container page">
-		<div class="row">
-			<div class="col-md-6 offset-md-3 col-xs-12">
-				<h1 class="text-xs-center">Your Settings</h1>
+							<form on:submit|preventDefault={save}>
+								<fieldset>
+									<fieldset class="form-group">
+										<input
+											class="form-control"
+											type="text"
+											placeholder="URL of profile picture"
+											bind:value={user.avatar}
+										/>
+									</fieldset>
 
-				<form on:submit|preventDefault={save}>
-					<fieldset>
-						<fieldset class="form-group">
-							<input
-								class="form-control"
-								type="text"
-								placeholder="URL of profile picture"
-								bind:value={user.avatar}
-							/>
-						</fieldset>
+									<fieldset class="form-group">
+										<input
+											class="form-control form-control-lg"
+											type="text"
+											placeholder="Username"
+											bind:value={user.username}
+										/>
+									</fieldset>
 
-						<fieldset class="form-group">
-							<input
-								class="form-control form-control-lg"
-								type="text"
-								placeholder="Username"
-								bind:value={user.username}
-							/>
-						</fieldset>
+									<fieldset class="form-group">
+										<input
+											class="form-control form-control-lg"
+											type="email"
+											placeholder="Email"
+											bind:value={user.email}
+										/>
+									</fieldset>
 
-						<fieldset class="form-group">
-							<input
-								class="form-control form-control-lg"
-								type="email"
-								placeholder="Email"
-								bind:value={user.email}
-							/>
-						</fieldset>
+									<fieldset class="form-group">
+										<input
+											class="form-control form-control-lg"
+											type="password"
+											placeholder="New Password"
+											bind:value={user.password}
+										/>
+									</fieldset>
 
-						<fieldset class="form-group">
-							<input
-								class="form-control form-control-lg"
-								type="password"
-								placeholder="New Password"
-								bind:value={user.password}
-							/>
-						</fieldset>
+									<button
+										class="btn btn-lg btn-primary pull-xs-right"
+										type="submit"
+										disabled={in_progress}
+									>
+										Update Settings
+									</button>
+								</fieldset>
+							</form>
 
-						<button
-							class="btn btn-lg btn-primary pull-xs-right"
-							type="submit"
-							disabled={in_progress}
-						>
-							Update Settings
-						</button>
-					</fieldset>
-				</form>
+							<Fade isOpen={fade_message != ''}>
+								<Card body>
+									{fade_message}
+								</Card>
+							</Fade>
+							<hr />
 
-				<Fade isOpen={fade_message != ''}>
-					<Card body>
-						{fade_message}
-					</Card>
-				</Fade>
-				<hr />
-
-				<button class="btn btn-outline-danger" on:click={logout}> Or click here to logout. </button>
+							<button class="btn btn-outline-danger" on:click={logout}>
+								Or click here to logout.
+							</button>
+						</div>
+					</div>
+				</div>
 			</div>
-		</div>
-	</div>
-</div>
+		</TabPane>
+		<TabPane tabId="tenant" tab="Org">
+			<h1 class="text-xs-center">Orgnization</h1>
+			<Container>
+				<Row cols="1">
+					<Col>
+						<InputGroup>
+							<InputGroupText>Name</InputGroupText>
+							<Input bind:value={orgname} placeholder="Orgniazation name" />
+						</InputGroup>
+					</Col>
+					<Col class="mt-3 mt-1">
+						<InputGroup>
+							<Button
+								color="primary"
+								on:click={(e) => {
+									e.preventDefault();
+									setMyTenantName();
+								}}
+							>
+								设定
+							</Button>
+						</InputGroup>
+					</Col>
+				</Row>
+			</Container>
+		</TabPane>
+		<TabPane tabId="members" tab="Members" active>
+			<h1 class="text-xs-center">Members</h1>
+			<Container>
+				<Row cols="1" />
+				<Col>
+					<FormGroup>
+						<Label for="input_members">Paste Members</Label>
+						<Input type="textarea" name="text" id="input_members" />
+					</FormGroup>
+				</Col>
+				<Col>
+					<Button>Save</Button>
+				</Col>
+				<Col>Table here</Col>
+			</Container>
+		</TabPane>
+	</TabContent>
+</Container>
