@@ -1,7 +1,7 @@
 <script context="module">
-	export function load({ session }) {
+	import * as api from '$lib/api';
+	export async function load({ session }) {
 		const { user } = session;
-		console.log(user);
 		if (!user) {
 			return {
 				status: 302,
@@ -9,8 +9,15 @@
 			};
 		}
 
+		let myorg = await api.post('tnt/my/org', {}, user.sessionToken);
+		if (myorg && myorg.joinapps && Array.isArray(myorg.joinapps)) {
+			for (let i = 0; i < myorg.joinapps.length; i++) {
+				myorg.joinapps[i].checked = true;
+			}
+		}
+
 		return {
-			props: { user }
+			props: { user, myorg }
 		};
 	}
 </script>
@@ -21,7 +28,6 @@
 	import { flip } from 'svelte/animate';
 	import type { User, KFKError } from '$lib/types';
 	import { goto } from '$app/navigation';
-	import * as api from '$lib/api';
 	import { post } from '$lib/utils';
 	import {
 		Container,
@@ -40,6 +46,7 @@
 	} from 'sveltestrap';
 
 	export let user: User;
+	export let myorg;
 	let fade_message = '';
 	let timeoutID = null;
 	let fade_timer: any;
@@ -47,7 +54,7 @@
 	import { title } from '$lib/title';
 	$title = 'HyperFlow';
 	let in_progress: boolean;
-	let orgname;
+	let orgname = myorg.orgname;
 
 	interface membersDef {
 		email: string;
@@ -129,7 +136,7 @@
 	let joinorgwithcode = '';
 
 	async function generateJoinCode() {
-		let res = (await api.post('tnt/joincode/new', {}, user.sessionToken)) as Record<string, any>;
+		let res = await api.post('tnt/joincode/new', {}, user.sessionToken);
 		if (res.error) {
 			setFadeMessage(res.message);
 		} else if (res.joincode) {
@@ -139,11 +146,11 @@
 	}
 
 	async function setUserDefinedJoinCode() {
-		let res = (await api.post(
+		let res = await api.post(
 			'tnt/joincode/save',
 			{ joincode: userDefinedJoinCode },
 			user.sessionToken
-		)) as Record<string, any>;
+		);
 		if (res.error) {
 			setFadeMessage(res.message);
 		} else if (res.joincode) {
@@ -153,11 +160,7 @@
 	}
 
 	async function joinOrgWithCode() {
-		let res = (await api.post(
-			'tnt/join',
-			{ joincode: joinorgwithcode },
-			user.sessionToken
-		)) as Record<string, any>;
+		let res = await api.post('tnt/join', { joincode: joinorgwithcode }, user.sessionToken);
 		if (res.message) setFadeMessage(res.message);
 	}
 
@@ -167,14 +170,47 @@
 		userInfoNotChange = false;
 		console.log('userInfoNotChange');
 	}
+
+	let password_for_approve = '';
+
+	async function approveJoinOrgApplications() {
+		let ems = myorg.joinapps
+			.filter((x) => x.checked)
+			.map((x) => x.user_email)
+			.join(':');
+		let res = await api.post(
+			'tnt/approve',
+			{ ems, password: password_for_approve },
+			user.sessionToken
+		);
+		if (res.error) {
+			setFadeMessage(res.message);
+		} else {
+			if (res.joinapps) {
+				myorg.joinapps = res.joinapps;
+				for (let i = 0; i < myorg.joinapps.length; i++) {
+					myorg.joinapps[i].checked = true;
+				}
+			}
+		}
+	}
+
+	async function refreshMyOrg() {
+		myorg = await api.post('tnt/my/org', {}, user.sessionToken);
+		if (myorg && myorg.joinapps && Array.isArray(myorg.joinapps)) {
+			for (let i = 0; i < myorg.joinapps.length; i++) {
+				myorg.joinapps[i].checked = true;
+			}
+		}
+	}
 </script>
 
 <svelte:head>
 	<title>Settings • HyperFlow</title>
 </svelte:head>
-<Container>
+<Container class="mt-3">
 	<TabContent>
-		<TabPane tabId="personal" tab="Personal" active>
+		<TabPane tabId="personal" tab="Personal">
 			<h1 class="text-xs-center">Personel</h1>
 			<form on:submit|preventDefault={save}>
 				<Container>
@@ -254,16 +290,11 @@
 					</Col>
 				</Row>
 			</Container>
-			<Fade isOpen={fade_message != ''}>
-				<Card body>
-					{fade_message}
-				</Card>
-			</Fade>
 		</TabPane>
-		<TabPane tabId="tenant" tab="Org">
-			<h1 class="text-xs-center">Orgnization</h1>
-			<Container>
+		<TabPane tabId="tenant" tab="Org" active>
+			<Container class="mt-3">
 				<Row cols="1">
+					<Col><h1>My Orgniazation</h1></Col>
 					<Col>
 						<InputGroup>
 							<InputGroupText>Set Org Name to:</InputGroupText>
@@ -280,6 +311,9 @@
 						</InputGroup>
 					</Col>
 					<Col class="mt-3 mt-1">
+						Current Joincode is : {myorg.joincode}
+					</Col>
+					<Col class="mt-1">
 						<InputGroup>
 							<InputGroupText>Generated Join Code</InputGroupText>
 							<Input bind:value={generatedJoinCode} />
@@ -290,11 +324,11 @@
 									generateJoinCode();
 								}}
 							>
-								Generate Now
+								Generate
 							</Button>
 						</InputGroup>
 					</Col>
-					<Col class="mt-3 mt-1">
+					<Col class="mt-1">
 						<InputGroup>
 							<InputGroupText>Self-defined Join Code</InputGroupText>
 							<Input bind:value={userDefinedJoinCode} />
@@ -310,11 +344,55 @@
 						</InputGroup>
 					</Col>
 				</Row>
-				<Fade isOpen={fade_message != ''} class="mt-3">
-					<Card body>
-						{fade_message}
-					</Card>
-				</Fade>
+			</Container>
+			<Container class="mt-3">
+				<Row><Col><h1>Join applications to approve</h1></Col></Row>
+				<Row
+					><Col class="text-center">
+						<Button
+							color="secondary"
+							on:click={(e) => {
+								e.preventDefault();
+								refreshMyOrg();
+							}}
+						>
+							Refresh
+						</Button>
+					</Col></Row
+				>
+				<table class="w-100">
+					<thead>
+						<tr> <th>Email</th><th>Name</th><th>Approve</th></tr>
+					</thead>
+					<tbody>
+						{#each myorg.joinapps as appl, index (appl)}
+							<tr>
+								<td>
+									{appl.user_email}
+								</td>
+								<td>
+									{appl.user_name}
+								</td>
+								<td>
+									<Input type="checkbox" bind:checked={appl.checked} />
+								</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+				<InputGroup>
+					<InputGroupText>Confirm with your password:</InputGroupText>
+					<Input bind:value={password_for_approve} placeholder="Input your login password" />
+					<Button
+						color="primary"
+						on:click={(e) => {
+							e.preventDefault();
+							approveJoinOrgApplications();
+						}}
+					>
+						Approve
+					</Button>
+				</InputGroup>
 			</Container>
 		</TabPane>
 		<TabPane tabId="members" tab="Members">
@@ -364,3 +442,8 @@
 		</TabPane>
 	</TabContent>
 </Container>
+<Fade isOpen={fade_message != ''} class="kfk-fade">
+	<Card body>
+		{fade_message}
+	</Card>
+</Fade>

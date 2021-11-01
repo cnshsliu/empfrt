@@ -2631,3 +2631,10 @@ table.quick-help-table td:first-of-type {
 	font-size: 24px;
 	color: #666666;
 }
+.kfk-fade {
+	position: absolute;
+	z-index: 1000;
+	left: 0px;
+	bottom: 0px;
+	border: 1px solid #0000004c;
+}

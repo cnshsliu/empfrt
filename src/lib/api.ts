@@ -42,7 +42,11 @@ export function del(path: string, token: string): Promise<unknown> {
 	return send({ method: 'DELETE', path, data: null, token });
 }
 
-export function post(path: string, data: any = null, token: string = null): Promise<unknown> {
+export function post(
+	path: string,
+	data: any = null,
+	token: string = null
+): Promise<Record<string, any>> {
 	return send({ method: 'POST', path, data, token });
 }
 
