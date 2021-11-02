@@ -16,7 +16,7 @@
 	import { goto } from '$app/navigation';
 	import { post } from '$lib/utils';
 	import * as api from '$lib/api';
-	import { Fade, Card, NavLink } from 'sveltestrap';
+	import { Fade, Input, Card, NavLink } from 'sveltestrap';
 	import Countdown from '$lib/Countdown.svelte';
 
 	let email = '';
@@ -81,7 +81,7 @@
 
 				<form on:submit|preventDefault={submit}>
 					<fieldset class="form-group">
-						<input
+						<Input
 							class="form-control form-control-lg"
 							type="email"
 							required
@@ -90,7 +90,7 @@
 						/>
 					</fieldset>
 					<fieldset class="form-group">
-						<input
+						<Input
 							class="form-control form-control-lg"
 							type="password"
 							required

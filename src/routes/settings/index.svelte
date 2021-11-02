@@ -15,6 +15,7 @@
 				myorg.joinapps[i].checked = true;
 			}
 		}
+		console.log(JSON.stringify(myorg));
 
 		return {
 			props: { user, myorg }
@@ -27,6 +28,7 @@
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import type { User, KFKError } from '$lib/types';
+	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { post } from '$lib/utils';
 	import {
@@ -142,6 +144,7 @@
 		} else if (res.joincode) {
 			fade_message = '';
 			generatedJoinCode = res.joincode;
+			myorg.joincode = generatedJoinCode;
 		}
 	}
 
@@ -156,6 +159,7 @@
 		} else if (res.joincode) {
 			fade_message = '';
 			generatedJoinCode = res.joincode;
+			myorg.joincode = generatedJoinCode;
 		}
 	}
 
@@ -171,7 +175,7 @@
 		console.log('userInfoNotChange');
 	}
 
-	let password_for_approve = '';
+	let password_for_admin = '';
 
 	async function approveJoinOrgApplications() {
 		let ems = myorg.joinapps
@@ -180,7 +184,7 @@
 			.join(':');
 		let res = await api.post(
 			'tnt/approve',
-			{ ems, password: password_for_approve },
+			{ ems, password: password_for_admin },
 			user.sessionToken
 		);
 		if (res.error) {
@@ -197,10 +201,55 @@
 
 	async function refreshMyOrg() {
 		myorg = await api.post('tnt/my/org', {}, user.sessionToken);
+		console.log(myorg.joinapps);
 		if (myorg && myorg.joinapps && Array.isArray(myorg.joinapps)) {
 			for (let i = 0; i < myorg.joinapps.length; i++) {
 				myorg.joinapps[i].checked = true;
 			}
+		}
+	}
+
+	let orgMembers;
+	async function refreshMembers() {
+		orgMembers = await api.post('tnt/members', {}, user.sessionToken);
+		console.log(orgMembers);
+		if (orgMembers && orgMembers.members && orgMembers.members.length > 0) {
+			orgMembers.members = orgMembers.members.filter((x) => x.email !== user.email);
+			orgMembers.members.unshift({ email: user.email, username: user.username });
+			for (let i = 0; i < orgMembers.members.length; i++) {
+				orgMembers.members[i].checcked = false;
+			}
+		}
+	}
+
+	async function showTab(tabId) {
+		if (tabId === 'org') {
+			refreshMyOrg();
+		} else if (tabId === 'members') {
+			refreshMembers();
+		}
+	}
+
+	onMount(() => {
+		refreshMyOrg();
+		refreshMembers();
+	});
+
+	async function removeSelectedMembers() {
+		let ems = orgMembers.members
+			.filter((x) => x.email !== user.email)
+			.filter((x) => x.checked)
+			.map((x) => x.email)
+			.join(':');
+		let res = await api.post(
+			'tnt/member/remove',
+			{ ems, password: password_for_admin },
+			user.sessionToken
+		);
+		if (res.error) {
+			setFadeMessage(res.message);
+		} else {
+			refreshMembers();
 		}
 	}
 </script>
@@ -209,7 +258,11 @@
 	<title>Settings • HyperFlow</title>
 </svelte:head>
 <Container class="mt-3">
-	<TabContent>
+	<TabContent
+		on:tab={(e) => {
+			showTab(e.detail);
+		}}
+	>
 		<TabPane tabId="personal" tab="Personal">
 			<h1 class="text-xs-center">Personel</h1>
 			<form on:submit|preventDefault={save}>
@@ -291,7 +344,7 @@
 				</Row>
 			</Container>
 		</TabPane>
-		<TabPane tabId="tenant" tab="Org" active>
+		<TabPane tabId="org" tab="Org">
 			<Container class="mt-3">
 				<Row cols="1">
 					<Col><h1>My Orgniazation</h1></Col>
@@ -310,135 +363,158 @@
 							</Button>
 						</InputGroup>
 					</Col>
-					<Col class="mt-3 mt-1">
-						Current Joincode is : {myorg.joincode}
-					</Col>
-					<Col class="mt-1">
-						<InputGroup>
-							<InputGroupText>Generated Join Code</InputGroupText>
-							<Input bind:value={generatedJoinCode} />
-							<Button
-								color="primary"
-								on:click={(e) => {
-									e.preventDefault();
-									generateJoinCode();
-								}}
-							>
-								Generate
-							</Button>
-						</InputGroup>
-					</Col>
-					<Col class="mt-1">
-						<InputGroup>
-							<InputGroupText>Self-defined Join Code</InputGroupText>
-							<Input bind:value={userDefinedJoinCode} />
-							<Button
-								color="primary"
-								on:click={(e) => {
-									e.preventDefault();
-									setUserDefinedJoinCode();
-								}}
-							>
-								Use it
-							</Button>
-						</InputGroup>
-					</Col>
 				</Row>
 			</Container>
-			<Container class="mt-3">
-				<Row><Col><h1>Join applications to approve</h1></Col></Row>
-				<Row
-					><Col class="text-center">
-						<Button
-							color="secondary"
-							on:click={(e) => {
-								e.preventDefault();
-								refreshMyOrg();
-							}}
-						>
-							Refresh
-						</Button>
-					</Col></Row
-				>
-				<table class="w-100">
-					<thead>
-						<tr> <th>Email</th><th>Name</th><th>Approve</th></tr>
-					</thead>
-					<tbody>
-						{#each myorg.joinapps as appl, index (appl)}
-							<tr>
-								<td>
-									{appl.user_email}
-								</td>
-								<td>
-									{appl.user_name}
-								</td>
-								<td>
-									<Input type="checkbox" bind:checked={appl.checked} />
-								</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-				<InputGroup>
-					<InputGroupText>Confirm with your password:</InputGroupText>
-					<Input bind:value={password_for_approve} placeholder="Input your login password" />
-					<Button
-						color="primary"
-						on:click={(e) => {
-							e.preventDefault();
-							approveJoinOrgApplications();
-						}}
-					>
-						Approve
-					</Button>
-				</InputGroup>
-			</Container>
-		</TabPane>
-		<TabPane tabId="members" tab="Members">
-			<h1 class="text-xs-center">Members</h1>
-			<Container>
-				<Row cols="1" />
-				<Col>
-					<FormGroup>
-						<Label for="input_members">Paste Members</Label>
-						<Input type="textarea" name="text" id="input_members" bind:value={input_members} />
-					</FormGroup>
-				</Col>
-				<Col>
-					<Button
-						disabled={in_progress}
-						on:click={(e) => {
-							e.preventDefault();
-							save_new_members();
-						}}>Save</Button
-					>
-					{JSON.stringify(membersToAdd)}
-				</Col>
-				<Col>
-					<table class="w-100">
-						<thead>
-							<tr> <th> Email</th> <th>Display Nme</th> <th> Status </th> </tr>
-						</thead>
-						<tbody>
-							{#each membersToAdd as member, index (member)}
-								<tr
-									transition:scale|local={{ start: 0.7 }}
-									animate:flip={{ duration: 200 }}
-									class:odd={index % 2 !== 0}
-									class:even={index % 2 === 0}
+			{#if myorg.adminorg}
+				<Container class="mt-3">
+					<Row cols="1">
+						<Col class="mt-3 mt-1">
+							Current Joincode is : {myorg.joincode}
+						</Col>
+						<Col class="mt-1">
+							<InputGroup>
+								<InputGroupText>Generated Join Code</InputGroupText>
+								<Input bind:value={generatedJoinCode} />
+								<Button
+									color="primary"
+									on:click={(e) => {
+										e.preventDefault();
+										generateJoinCode();
+									}}
 								>
-									<td data-label="Email">
-										{member.email}
-									</td>
-									<td data-label="Display Name">{member.displayName}</td>
-									<td> {member.status} </td>
-								</tr>
-							{/each}
-						</tbody>
-					</table>
-				</Col>
-			</Container>
+									Generate
+								</Button>
+							</InputGroup>
+						</Col>
+						<Col class="mt-1">
+							<InputGroup>
+								<InputGroupText>Self-defined Join Code</InputGroupText>
+								<Input bind:value={userDefinedJoinCode} />
+								<Button
+									color="primary"
+									on:click={(e) => {
+										e.preventDefault();
+										setUserDefinedJoinCode();
+									}}
+								>
+									Use it
+								</Button>
+							</InputGroup>
+						</Col>
+					</Row>
+				</Container>
+				<Container class="mt-3">
+					<Row><Col><h1>Join applications to approve</h1></Col></Row>
+					<Row
+						><Col class="text-center">
+							<Button
+								color="secondary"
+								on:click={(e) => {
+									e.preventDefault();
+									refreshMyOrg();
+								}}
+							>
+								Refresh
+							</Button>
+						</Col></Row
+					>
+					{#if myorg.joinapps && Array.isArray(myorg.joinapps) && myorg.joinapps.length > 0}
+						<table class="w-100">
+							<thead>
+								<tr> <th>Email</th><th>Name</th><th>Approve</th></tr>
+							</thead>
+							<tbody>
+								{#each myorg.joinapps as appl, index (appl)}
+									<tr>
+										<td>
+											{appl.user_email}
+										</td>
+										<td>
+											{appl.user_name}
+										</td>
+										<td>
+											<Input type="checkbox" bind:checked={appl.checked} />
+										</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+						<InputGroup>
+							<Input
+								type="password"
+								bind:value={password_for_admin}
+								placeholder="Confirm with your password"
+							/>
+							<Button
+								color="primary"
+								on:click={(e) => {
+									e.preventDefault();
+									approveJoinOrgApplications();
+								}}
+							>
+								Approve
+							</Button>
+						</InputGroup>
+					{:else}
+						There is no join application at this moment
+					{/if}
+				</Container>
+			{:else}
+				This orgnization is under PRIVATE mode,
+			{/if}
+		</TabPane>
+		<TabPane tabId="members" tab="Members" active>
+			<h1 class="text-xs-center">Members</h1>
+			{#if myorg.adminorg === false}
+				This is a PRIVTATE orgnization, the only member is youself.
+			{:else if orgMembers && orgMembers.members && orgMembers.members.length > 0}
+				<Container>
+					<Row cols="1" />
+					<Col>
+						<table class="w-100">
+							<thead>
+								<tr> <th> Email</th> <th> {orgMembers.adminorg ? 'Remove' : ''} </th> </tr>
+							</thead>
+							<tbody>
+								{#each orgMembers.members as member, index (member)}
+									<tr
+										transition:scale|local={{ start: 0.7 }}
+										animate:flip={{ duration: 200 }}
+										class:odd={index % 2 !== 0}
+										class:even={index % 2 === 0}
+									>
+										<td data-label="Email">
+											{member.email}
+										</td>
+										<td>
+											{#if index > 0}
+												<Input type="checkbox" bind:checked={member.checked} />
+											{/if}
+										</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</Col>
+					<Col class="d-flex justify-content-end mt-2">
+						<InputGroup>
+							<Input
+								type="password"
+								bind:value={password_for_admin}
+								placeholder="Confirm with your password"
+							/>
+							<Button
+								on:click={(e) => {
+									e.preventDefault();
+									removeSelectedMembers();
+								}}
+							>
+								Remove selected from my Org
+							</Button>
+						</InputGroup>
+					</Col>
+				</Container>
+			{/if}
 		</TabPane>
 	</TabContent>
 </Container>
@@ -447,3 +523,9 @@
 		{fade_message}
 	</Card>
 </Fade>
+
+<style>
+	.odd {
+		background-color: #f7f7f7;
+	}
+</style>
