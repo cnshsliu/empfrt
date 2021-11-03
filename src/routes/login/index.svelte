@@ -91,14 +91,18 @@
 					</fieldset>
 					<fieldset class="form-group">
 						<Input
-							class="form-control form-control-lg"
+							class="form-control form-control-lg mt-2"
 							type="password"
 							required
 							placeholder="Password"
 							bind:value={password}
 						/>
 					</fieldset>
-					<button class="btn btn-lg btn-primary pull-xs-right mt-2" type="submit"> Sign in </button>
+					<div class="w-100 d-flex justify-content-end">
+						<button class="btn btn-lg btn-primary pull-xs-right mt-3" type="submit">
+							Sign in
+						</button>
+					</div>
 				</form>
 				{#if show_resend_email_verification && resendCountdown < 1}
 					<NavLink

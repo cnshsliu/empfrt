@@ -65,7 +65,7 @@
 				<form on:submit|preventDefault={submit}>
 					<fieldset class="form-group">
 						<input
-							class="form-control form-control-lg"
+							class="form-control form-control-lg mt-2"
 							type="text"
 							required
 							placeholder="Your Name"
@@ -74,7 +74,7 @@
 					</fieldset>
 					<fieldset class="form-group">
 						<input
-							class="form-control form-control-lg"
+							class="form-control form-control-lg mt-2"
 							type="email"
 							required
 							placeholder="Email"
@@ -83,14 +83,14 @@
 					</fieldset>
 					<fieldset class="form-group">
 						<input
-							class="form-control form-control-lg"
+							class="form-control form-control-lg mt-2"
 							type="password"
 							required
 							placeholder="Password"
 							bind:value={password}
 						/>
 					</fieldset>
-					<button class="btn btn-lg btn-primary pull-xs-right"> Sign up </button>
+					<button class="btn btn-lg btn-primary pull-xs-right mt-3"> Sign up </button>
 				</form>
 				<Fade isOpen={fade_message != ''}>
 					<Card body>

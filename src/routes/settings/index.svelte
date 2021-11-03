@@ -44,7 +44,14 @@
 		InputGroupText,
 		Input,
 		FormGroup,
-		Label
+		Label,
+		Card,
+		CardBody,
+		CardFooter,
+		CardHeader,
+		CardSubtitle,
+		CardText,
+		CardTitle
 	} from 'sveltestrap';
 
 	export let user: User;
@@ -252,6 +259,14 @@
 			refreshMembers();
 		}
 	}
+
+	let invitation;
+
+	async function sendInvitation() {
+		let emails = invitation.split(/[ ;,]/).filter((x) => x.length > 0);
+		console.log(emails);
+		await api.post('tnt/send/invitation', { ems: emails.join(':') }, user.sessionToken);
+	}
 </script>
 
 <svelte:head>
@@ -314,7 +329,7 @@
 						</Col>
 						<Col>
 							<button
-								class="btn btn-lg btn-primary pull-xs-right"
+								class="btn btn-lg  pull-xs-right"
 								type="submit"
 								disabled={in_progress || userInfoNotChange}
 							>
@@ -331,7 +346,6 @@
 							<InputGroupText>Join Org with joincode:</InputGroupText>
 							<Input bind:value={joinorgwithcode} placeholder="Orgniazation name" />
 							<Button
-								color="primary"
 								on:click={(e) => {
 									e.preventDefault();
 									joinOrgWithCode();
@@ -344,126 +358,134 @@
 				</Row>
 			</Container>
 		</TabPane>
-		<TabPane tabId="org" tab="Org">
-			<Container class="mt-3">
-				<Row cols="1">
-					<Col><h1>My Orgniazation</h1></Col>
-					<Col>
+		<TabPane tabId="org" tab="Org" active>
+			<Card class="mt-3">
+				<CardHeader><CardTitle>My Orgniazation</CardTitle></CardHeader>
+				<CardBody>
+					<InputGroup>
+						<InputGroupText>Set Org Name to:</InputGroupText>
+						<Input bind:value={orgname} placeholder="Orgniazation name" />
+						<Button
+							on:click={(e) => {
+								e.preventDefault();
+								setMyTenantName();
+							}}
+						>
+							Set
+						</Button>
+					</InputGroup>
+				</CardBody>
+			</Card>
+			{#if myorg.adminorg}
+				<Card class="mt-5">
+					<CardHeader><CardTitle>Joincode</CardTitle></CardHeader>
+					<CardBody>
+						<div class="w-100 d-flex align-content-center">Current code: {myorg.joincode}</div>
 						<InputGroup>
-							<InputGroupText>Set Org Name to:</InputGroupText>
-							<Input bind:value={orgname} placeholder="Orgniazation name" />
+							<InputGroupText>Generated Join Code</InputGroupText>
+							<Input bind:value={generatedJoinCode} />
 							<Button
-								color="primary"
 								on:click={(e) => {
 									e.preventDefault();
-									setMyTenantName();
+									generateJoinCode();
 								}}
 							>
-								Set
+								Generate
 							</Button>
 						</InputGroup>
-					</Col>
-				</Row>
-			</Container>
-			{#if myorg.adminorg}
-				<Container class="mt-3">
-					<Row cols="1">
-						<Col class="mt-3 mt-1">
-							Current Joincode is : {myorg.joincode}
-						</Col>
-						<Col class="mt-1">
-							<InputGroup>
-								<InputGroupText>Generated Join Code</InputGroupText>
-								<Input bind:value={generatedJoinCode} />
-								<Button
-									color="primary"
-									on:click={(e) => {
-										e.preventDefault();
-										generateJoinCode();
-									}}
-								>
-									Generate
-								</Button>
-							</InputGroup>
-						</Col>
-						<Col class="mt-1">
-							<InputGroup>
-								<InputGroupText>Self-defined Join Code</InputGroupText>
-								<Input bind:value={userDefinedJoinCode} />
-								<Button
-									color="primary"
-									on:click={(e) => {
-										e.preventDefault();
-										setUserDefinedJoinCode();
-									}}
-								>
-									Use it
-								</Button>
-							</InputGroup>
-						</Col>
-					</Row>
-				</Container>
-				<Container class="mt-3">
-					<Row><Col><h1>Join applications to approve</h1></Col></Row>
-					<Row
-						><Col class="text-center">
+						<InputGroup>
+							<InputGroupText>Self-defined Join Code</InputGroupText>
+							<Input bind:value={userDefinedJoinCode} />
 							<Button
-								color="secondary"
 								on:click={(e) => {
 									e.preventDefault();
-									refreshMyOrg();
+									setUserDefinedJoinCode();
 								}}
 							>
-								Refresh
+								Use it
 							</Button>
-						</Col></Row
+						</InputGroup>
+					</CardBody>
+				</Card>
+				<Card class="mt-3">
+					<CardHeader>
+						<CardTitle>Invite</CardTitle></CardHeader
 					>
-					{#if myorg.joinapps && Array.isArray(myorg.joinapps) && myorg.joinapps.length > 0}
-						<table class="w-100">
-							<thead>
-								<tr> <th>Email</th><th>Name</th><th>Approve</th></tr>
-							</thead>
-							<tbody>
-								{#each myorg.joinapps as appl, index (appl)}
-									<tr>
-										<td>
-											{appl.user_email}
-										</td>
-										<td>
-											{appl.user_name}
-										</td>
-										<td>
-											<Input type="checkbox" bind:checked={appl.checked} />
-										</td>
-									</tr>
-								{/each}
-							</tbody>
-						</table>
+					<CardBody>
 						<InputGroup>
 							<Input
-								type="password"
-								bind:value={password_for_admin}
-								placeholder="Confirm with your password"
+								type="textarea"
+								bind:value={invitation}
+								placeholder="Email list to invite, separated by space or comma or semicolon"
 							/>
 							<Button
-								color="primary"
 								on:click={(e) => {
-									e.preventDefault();
-									approveJoinOrgApplications();
-								}}
+									sendInvitation();
+								}}>Invite</Button
 							>
-								Approve
-							</Button>
 						</InputGroup>
-					{:else}
-						There is no join application at this moment
-					{/if}
-				</Container>
+					</CardBody>
+				</Card>
+				<Card class="mt-3">
+					<CardHeader>
+						<CardTitle>Join applications</CardTitle></CardHeader
+					>
+					<CardBody>
+						<Button
+							color="secondary"
+							on:click={(e) => {
+								e.preventDefault();
+								refreshMyOrg();
+							}}
+						>
+							Refresh
+						</Button>
+						{#if myorg.joinapps && Array.isArray(myorg.joinapps) && myorg.joinapps.length > 0}
+							<table class="w-100">
+								<thead>
+									<tr> <th>Email</th><th>Name</th><th>Approve</th></tr>
+								</thead>
+								<tbody>
+									{#each myorg.joinapps as appl, index (appl)}
+										<tr>
+											<td>
+												{appl.user_email}
+											</td>
+											<td>
+												{appl.user_name}
+											</td>
+											<td>
+												<Input type="checkbox" bind:checked={appl.checked} />
+											</td>
+										</tr>
+									{/each}
+								</tbody>
+							</table>
+							<InputGroup>
+								<Input
+									type="password"
+									bind:value={password_for_admin}
+									placeholder="Confirm with your password"
+								/>
+								<Button
+									on:click={(e) => {
+										e.preventDefault();
+										approveJoinOrgApplications();
+									}}
+								>
+									Approve
+								</Button>
+							</InputGroup>
+						{:else}
+							There is no join application at this moment
+						{/if}
+					</CardBody>
+				</Card>
 			{:else}
 				This orgnization is under PRIVATE mode,
 			{/if}
 		</TabPane>
-		<TabPane tabId="members" tab="Members" active>
+		<TabPane tabId="members" tab="Members">
 			<h1 class="text-xs-center">Members</h1>
 			{#if myorg.adminorg === false}
 				This is a PRIVTATE orgnization, the only member is youself.
