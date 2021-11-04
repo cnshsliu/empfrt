@@ -13,7 +13,7 @@
 
 <script lang="ts">
 	import { session } from '$app/stores';
-	import { goto } from '$app/navigation';
+	import { invalidate, goto } from '$app/navigation';
 	import { post } from '$lib/utils';
 	import * as api from '$lib/api';
 	import { Fade, Input, Card, NavLink } from 'sveltestrap';
@@ -46,11 +46,11 @@
 			}
 		} else {
 			setFadeMessage('');
-		}
 
-		if (response.user) {
-			$session.user = response.user;
-			goto('/work');
+			if (response.user) {
+				$session.user = response.user;
+				goto('/');
+			}
 		}
 	}
 
@@ -85,6 +85,7 @@
 							class="form-control form-control-lg"
 							type="email"
 							required
+							autocomplete="username"
 							placeholder="Email"
 							bind:value={email}
 						/>
@@ -95,6 +96,7 @@
 							type="password"
 							required
 							placeholder="Password"
+							autocomplete="current-password"
 							bind:value={password}
 						/>
 					</fieldset>

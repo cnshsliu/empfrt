@@ -13,6 +13,7 @@ export function respond(body) {
 
 	const json = JSON.stringify(body.user);
 	const value = Buffer.from(json).toString('base64');
+	console.log('.......JWT', value);
 
 	authStore.set({ jwt: value });
 

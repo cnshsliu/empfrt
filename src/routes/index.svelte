@@ -1,12 +1,18 @@
 <script context="module" lang="ts">
-	export const prerender = true;
+	export async function load({ session }) {
+		return {
+			props: {
+				user: session.user
+			}
+		};
+	}
 </script>
 
 <script lang="ts">
 	import Counter from '$lib/Counter.svelte';
 	import { title } from '$lib/title';
 	$title = 'HyperFlow';
-	import { session } from '$app/stores';
+	export let user;
 </script>
 
 <svelte:head>
@@ -15,7 +21,7 @@
 
 <div class="container">
 	<pre>
-      {JSON.stringify($session, null, 2)}
+		{JSON.stringify(user, null,2)}
   </pre>
 </div>
 

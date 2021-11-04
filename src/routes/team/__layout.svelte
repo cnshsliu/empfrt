@@ -2,6 +2,7 @@
 	export async function load({ page, fetch, session }) {
 		const { user } = session;
 		if (!user) {
+			console.log('/team/__layout redirect to login');
 			return {
 				status: 302,
 				redirect: '/login'

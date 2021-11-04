@@ -70,46 +70,48 @@
 	</div>
 </slot>
 
-<table class={'table ' + $$props.class} class:responsive>
-	<slot name="head" />
-	{#if loading}
-		<tbody>
-			<tr>
-				<td class="center" colspan="100%">
-					<span>
-						{@html labels.loading}
-					</span>
-				</td>
-			</tr>
-		</tbody>
-	{:else if visibleRows.length === 0}
-		<tbody>
-			<tr>
-				<td class="center" colspan="100%">
-					<span>
-						{@html labels.empty}
-					</span>
-				</td>
-			</tr>
-		</tbody>
-	{:else}
-		<slot rows={visibleRows} />
-	{/if}
-	<slot name="foot" />
-</table>
+{#if filteredRows && visibleRows && filteredRows.length && visibleRows.length}
+	<table class={'table ' + $$props.class} class:responsive>
+		<slot name="head" />
+		{#if loading}
+			<tbody>
+				<tr>
+					<td class="center" colspan="100%">
+						<span>
+							{@html labels.loading}
+						</span>
+					</td>
+				</tr>
+			</tbody>
+		{:else if visibleRows.length === 0}
+			<tbody>
+				<tr>
+					<td class="center" colspan="100%">
+						<span>
+							{@html labels.empty}
+						</span>
+					</td>
+				</tr>
+			</tbody>
+		{:else}
+			<slot rows={visibleRows} />
+		{/if}
+		<slot name="foot" />
+	</table>
 
-<slot name="bottom">
-	<div class="slot-bottom">
-		<svelte:component
-			this={Pagination}
-			{page}
-			{pageSize}
-			{serverSide}
-			count={filteredRows.length - 1}
-			on:pageChange={onPageChange}
-		/>
-	</div>
-</slot>
+	<slot name="bottom">
+		<div class="slot-bottom">
+			<svelte:component
+				this={Pagination}
+				{page}
+				{pageSize}
+				{serverSide}
+				count={filteredRows.length - 1}
+				on:pageChange={onPageChange}
+			/>
+		</div>
+	</slot>
+{/if}
 
 <style>
 	.table {

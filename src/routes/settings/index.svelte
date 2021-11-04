@@ -3,6 +3,7 @@
 	export async function load({ session }) {
 		const { user } = session;
 		if (!user) {
+			console.log('setting redict to login');
 			return {
 				status: 302,
 				redirect: '/login'
@@ -123,6 +124,13 @@
 		}
 
 		in_progress = false;
+	}
+	async function logout() {
+		await post(`auth/logout`);
+
+		// this will trigger a redirect, because it
+		// causes the `load` function to run again
+		$session.user = null;
 	}
 
 	async function save_new_members() {

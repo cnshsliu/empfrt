@@ -2,8 +2,7 @@
 	export async function load({ page, fetch, session }) {
 		return {
 			props: {
-				user: session.user,
-				config: session.config
+				user: session.user
 			}
 		};
 	}
@@ -25,6 +24,7 @@
 	$title = 'HyperFlow';
 	$: token = user.sessionToken;
 	let remoteTable;
+	console.log(user);
 	function hide_all_form() {
 		Object.keys(form_status).forEach((key) => {
 			form_status[key] = false;

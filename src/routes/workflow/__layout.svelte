@@ -2,6 +2,7 @@
 	export async function load({ session }) {
 		const { user } = session;
 		if (!user) {
+			console.log('workflow/__layout redirect to login');
 			return {
 				status: 302,
 				redirect: '/login'

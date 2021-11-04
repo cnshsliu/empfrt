@@ -2,10 +2,13 @@
 	export async function load({ page, fetch, session }) {
 		const { user } = session;
 		if (!user) {
+			console.log('work/__layout redirect to login', session);
+			/*
 			return {
 				status: 302,
 				redirect: '/login'
 			};
+			 */
 		}
 		return {
 			props: {

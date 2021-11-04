@@ -1,35 +1,41 @@
 import cookie from 'cookie';
-import { v4 as uuid } from '@lukeed/uuid';
-import type { Handle } from '@sveltejs/kit';
-import { authStore } from '$lib/authstore';
-import { writable, get } from 'svelte/store';
+import Parser from '$lib/parser';
 
-export const handle: Handle = async ({ request, resolve }) => {
-	//console.log(request.headers.cookie.split('; '));
-
-	// TODO https://github.com/sveltejs/kit/issues/1046
-	if (request.query.has('_method')) {
-		request.method = request.query.get('_method').toUpperCase();
-	}
-
-	let auth = get(authStore);
-
-	const jwt = auth && auth.jwt && Buffer.from(auth.jwt, 'base64').toString('utf-8');
-	request.locals.user = jwt ? JSON.parse(jwt) : null;
+export async function handle({ request, resolve }) {
+	/*
+	const cookies = cookie.parse(request.headers.cookie || '');
+	request.locals.user = cookies.user;
 
 	const response = await resolve(request);
+	response.headers['set-cookie'] = `user=${request.locals.user || ''}; Path=/; HttpOnly`;
+	console.log('SetCookie:', request.locals.user);
 
 	return response;
-};
+	*/
+	const cookies = cookie.parse(request.headers.cookie || '');
+	const jwt = cookies.jwt && Buffer.from(cookies.jwt, 'base64').toString('utf-8');
+	request.locals.user = jwt ? JSON.parse(jwt) : null;
+	return await resolve(request);
+}
 
 export function getSession({ locals }) {
+	console.log('-----', locals.user);
 	return {
-		user: locals.user && {
-			username: locals.user.username,
-			email: locals.user.email,
-			avatar: locals.user.avatar,
-			bio: locals.user.bio,
-			sessionToken: locals.user.sessionToken
-		}
+		user: locals.user
 	};
 }
+
+/*
+ * manifest
+export async function getSession(request) {
+	let userValue = '';
+	if (request.locals.user) {
+		userValue = JSON.parse(Parser.base64ToCode(request.locals.user));
+	}
+	console.log('Session.user=', userValue);
+
+	return {
+		user: userValue
+	};
+}
+ */

@@ -17,8 +17,8 @@
 		DropdownItem,
 		Container
 	} from 'sveltestrap';
-	import { post } from '$lib/utils';
 	import { goto } from '$app/navigation';
+	import { post } from '$lib/utils';
 
 	let isMenuOpen = false;
 
@@ -26,20 +26,17 @@
 		isMenuOpen = event.detail.isOpen;
 	}
 	async function logout() {
-		await post(`auth/logout`, {});
+		await post(`auth/logout`);
 
 		// this will trigger a redirect, because it
 		// causes the `load` function to run again
 		$session.user = null;
-		console.log($session.user);
-		console.log($session);
-		goto('/');
 	}
 </script>
 
 <Styles />
 <Navbar class="light px-5 kfknavbar" light expand="md">
-	<NavbarBrand href="/">sveltestrap</NavbarBrand>
+	<NavbarBrand href="/">HyperFlow</NavbarBrand>
 	<NavbarToggler on:click={() => (isMenuOpen = !isMenuOpen)} />
 	<Nav class="ms-auto" navbar>
 		{#if $session.user}
@@ -63,21 +60,22 @@
 					<Icon name="bar-chart-steps" />&nbsp;Workflow
 				</NavLink>
 			</NavItem>
-			<Dropdown nav inNavbar>
-				<DropdownToggle nav caret>Options</DropdownToggle>
+			<Dropdown>
+				<DropdownToggle nav caret>Me</DropdownToggle>
 				<DropdownMenu end>
 					<DropdownItem>
-						<NavLink rel="prefetch" href="/settings" active={$page.path === '/settings'}>
-							<Icon name="gear" />&nbsp;Settings
-						</NavLink>
-					</DropdownItem>
-					<DropdownItem>
-						<NavLink rel="prefetch" href="/profile/@{$session.user.email}" class="nav-link">
-							{$session.user.username}
-						</NavLink>
+						{$session.user.username}
 					</DropdownItem>
 					<DropdownItem divider />
-					<DropdownItem on:click={logout}>Logout</DropdownItem>
+					<DropdownItem
+						on:click={(e) => {
+							goto('settings');
+						}}
+					>
+						<Icon name="gear" />&nbsp;Settings
+					</DropdownItem>
+					<DropdownItem divider />
+					<DropdownItem on:click={logout}><Icon name="door-open" />Logout</DropdownItem>
 				</DropdownMenu>
 			</Dropdown>
 		{:else}
