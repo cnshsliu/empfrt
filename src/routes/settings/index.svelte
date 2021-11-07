@@ -26,11 +26,13 @@
 
 <script lang="ts">
 	import { session } from '$app/stores';
+	import { get } from 'svelte/store';
+	import type { WhichTab } from '$lib/types';
+	import { whichTabStore } from '$lib/empstores';
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
-	import type { User, KFKError } from '$lib/types';
-	import { onMount, onDestroy } from 'svelte';
-	import { goto } from '$app/navigation';
+	import type { User } from '$lib/types';
+	import { onMount } from 'svelte';
 	import { post } from '$lib/utils';
 	import {
 		Container,
@@ -58,7 +60,6 @@
 	export let user: User;
 	export let myorg;
 	let fade_message = '';
-	let timeoutID = null;
 	let fade_timer: any;
 	let input_members = '';
 	import { title } from '$lib/title';
@@ -191,6 +192,7 @@
 	}
 
 	let password_for_admin = '';
+	let set_group_to = '';
 
 	async function approveJoinOrgApplications() {
 		let ems = myorg.joinapps
@@ -216,7 +218,6 @@
 
 	async function refreshMyOrg() {
 		myorg = await api.post('tnt/my/org', {}, user.sessionToken);
-		console.log(myorg.joinapps);
 		if (myorg && myorg.joinapps && Array.isArray(myorg.joinapps)) {
 			for (let i = 0; i < myorg.joinapps.length; i++) {
 				myorg.joinapps[i].checked = true;
@@ -227,22 +228,26 @@
 	let orgMembers;
 	async function refreshMembers() {
 		orgMembers = await api.post('tnt/members', {}, user.sessionToken);
-		console.log(orgMembers);
 		if (orgMembers && orgMembers.members && orgMembers.members.length > 0) {
 			orgMembers.members = orgMembers.members.filter((x) => x.email !== user.email);
-			orgMembers.members.unshift({ email: user.email, username: user.username });
+			orgMembers.members.unshift({ email: user.email, username: user.username, group: user.group });
 			for (let i = 0; i < orgMembers.members.length; i++) {
-				orgMembers.members[i].checcked = false;
+				orgMembers.members[i].checked = false;
 			}
 		}
 	}
 
+	let whichTab: WhichTab = get(whichTabStore);
 	async function showTab(tabId) {
 		if (tabId === 'org') {
 			refreshMyOrg();
 		} else if (tabId === 'members') {
 			refreshMembers();
 		}
+		whichTab = get(whichTabStore);
+		whichTab['setting'] = tabId;
+		whichTabStore.set(whichTab);
+		console.log(get(whichTabStore));
 	}
 
 	onMount(() => {
@@ -259,6 +264,24 @@
 		let res = await api.post(
 			'tnt/member/remove',
 			{ ems, password: password_for_admin },
+			user.sessionToken
+		);
+		if (res.error) {
+			setFadeMessage(res.message);
+		} else {
+			refreshMembers();
+		}
+	}
+
+	async function setSelectedGroup() {
+		let ems = orgMembers.members
+			.filter((x) => x.email !== user.email)
+			.filter((x) => x.checked)
+			.map((x) => x.email)
+			.join(':');
+		let res = await api.post(
+			'tnt/member/setgroup',
+			{ ems, password: password_for_admin, member_group: set_group_to },
 			user.sessionToken
 		);
 		if (res.error) {
@@ -286,7 +309,11 @@
 			showTab(e.detail);
 		}}
 	>
-		<TabPane tabId="personal" tab="Personal">
+		<TabPane
+			tabId="personal"
+			tab="Personal"
+			active={!whichTab || whichTab['setting'] === 'personal'}
+		>
 			<h1 class="text-xs-center">Personel</h1>
 			<form on:submit|preventDefault={save}>
 				<Container>
@@ -352,7 +379,12 @@
 					<Col>
 						<InputGroup>
 							<InputGroupText>Join Org with joincode:</InputGroupText>
-							<Input bind:value={joinorgwithcode} placeholder="Orgniazation name" />
+							<Input
+								type="text"
+								bind:value={joinorgwithcode}
+								placeholder="join code"
+								autocomplete="off"
+							/>
 							<Button
 								on:click={(e) => {
 									e.preventDefault();
@@ -366,7 +398,7 @@
 				</Row>
 			</Container>
 		</TabPane>
-		<TabPane tabId="org" tab="Org" active>
+		<TabPane tabId="org" tab="Org" active={whichTab && whichTab['setting'] === 'org'}>
 			<Card class="mt-3">
 				<CardHeader><CardTitle>My Orgniazation</CardTitle></CardHeader>
 				<CardBody>
@@ -493,7 +525,7 @@
 				This orgnization is under PRIVATE mode,
 			{/if}
 		</TabPane>
-		<TabPane tabId="members" tab="Members">
+		<TabPane tabId="members" tab="Members" active={whichTab && whichTab['setting'] === 'members'}>
 			<h1 class="text-xs-center">Members</h1>
 			{#if myorg.adminorg === false}
 				This is a PRIVTATE orgnization, the only member is youself.
@@ -503,7 +535,9 @@
 					<Col>
 						<table class="w-100">
 							<thead>
-								<tr> <th> Email</th> <th> {orgMembers.adminorg ? 'Remove' : ''} </th> </tr>
+								<tr>
+									<th> Email</th> <th> Group </th> <th> {orgMembers.adminorg ? 'Remove' : ''} </th>
+								</tr>
 							</thead>
 							<tbody>
 								{#each orgMembers.members as member, index (member)}
@@ -515,6 +549,9 @@
 									>
 										<td data-label="Email">
 											{member.email}
+										</td>
+										<td data-label="Group">
+											{member.group}
 										</td>
 										<td>
 											{#if index > 0}
@@ -540,6 +577,24 @@
 								}}
 							>
 								Remove selected from my Org
+							</Button>
+						</InputGroup>
+					</Col>
+					<Col class="d-flex justify-content-end mt-2">
+						<InputGroup>
+							<Label for="groupSelect">Set group for selected members</Label>
+							<Input type="select" name="select" id="groupSelect" bind:value={set_group_to}>
+								<option value="ADMIN">Administrator</option>
+								<option value="OBSERVER">Observer</option>
+								<option value="DOER">Doer</option>
+							</Input>
+							<Button
+								on:click={(e) => {
+									e.preventDefault();
+									setSelectedGroup();
+								}}
+							>
+								Set selected group
 							</Button>
 						</InputGroup>
 					</Col>

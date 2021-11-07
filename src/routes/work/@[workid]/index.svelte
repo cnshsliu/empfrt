@@ -1,4 +1,6 @@
 <script context="module" lang="ts">
+	import moment from 'moment';
+	import 'moment/locale/zh-cn';
 	export const ssr = false;
 	export async function load({ page, fetch, session }) {
 		const workid = page.params.workid;
@@ -20,7 +22,6 @@
 
 <script lang="ts">
 	import jQuery from 'jquery';
-	import moment from 'moment';
 	import { API_SERVER } from '$lib/Env';
 	import { Form, FormGroup, FormText, Input, Label } from 'sveltestrap';
 	import type { User, Work } from '$lib/types';
@@ -40,6 +41,10 @@
 	let radioGroup;
 
 	const jq = jQuery;
+	moment.locale('zh-CN');
+	console.log(moment([2007, 0, 29]).toNow());
+	let browser_locale = window.navigator.userLanguage || window.navigator.language;
+	console.log(browser_locale);
 
 	$title = work.title;
 
@@ -119,10 +124,18 @@ src="${API_SERVER}/work/iframe/${work.workid}"></iframe>`;
 </script>
 
 <Container>
-	<h5>Current state: {currentTab}</h5>
+	<div class="d-flex">
+		<div class="flex-shrink-0">
+			<h1>{work.title}</h1>
+		</div>
+		<div class="mx-5 align-self-center flex-grow-1">
+			{moment(work.createdAt).toNow()}
+		</div>
+	</div>
+</Container>
+<Container>
 	<TabContent on:tab={(e) => (currentTab = '' + e.detail)}>
 		<TabPane tabId="work" tab="Work" active>
-			<h3>{work.title}</h3>
 			<Container id={'workitem_' + work.workid} class="mt-3">
 				<Form>
 					<Container class="mt-3 kfk-highlight-2">

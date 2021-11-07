@@ -1,17 +1,31 @@
 <script context="module" lang="ts">
 	export async function load({ page, fetch, session }) {
-		return {
-			props: {
-				user: session.user
-			}
-		};
+		try {
+			return {
+				props: {
+					user: session.user
+				}
+			};
+		} catch (err) {
+			return {
+				props: {
+					user: session.user
+				}
+			};
+		}
 	}
 </script>
 
 <script lang="ts">
 	import { API_SERVER } from '$lib/Env';
+	import Parser from '$lib/parser';
 	import RemoteTable from './RemoteTable.svelte';
 	import ErrorProcessor from '$lib/errorProcessor';
+	import { get } from 'svelte/store';
+	import type { Perm, WhichTab } from '$lib/types';
+	import { whichTabStore, permStore } from '$lib/empstores';
+	import { PermControl } from '$lib/permissionControl';
+	import { TabContent, Fade, Card, TabPane } from 'sveltestrap';
 	import type { User } from '$lib/types';
 	import { session } from '$app/stores';
 	import { Container, Row, Col, Styles, Icon, Button, Nav, NavLink } from 'sveltestrap';
@@ -24,7 +38,6 @@
 	$title = 'HyperFlow';
 	$: token = user.sessionToken;
 	let remoteTable;
-	console.log(user);
 	function hide_all_form() {
 		Object.keys(form_status).forEach((key) => {
 			form_status[key] = false;
@@ -47,6 +60,10 @@
 
 	function upload(e) {
 		e.preventDefault();
+		if (PermControl(perms, user.email, 'template', '', 'create') === false) {
+			setFadeMessage("You don't have upload permission");
+			return;
+		}
 		const formData = new FormData();
 		formData.append('tplid', tplidImport);
 		formData.append('file', files[0]);
@@ -67,119 +84,143 @@
 				console.error('Error:', error);
 			});
 	}
+	let whichTab: WhichTab = get(whichTabStore);
+	async function showTab(tabId) {
+		whichTab = get(whichTabStore);
+		whichTab['template'] = tabId;
+		whichTabStore.set(whichTab);
+	}
+	let perm: Perm = get(permStore);
+	let perms: string = null;
+	try {
+		perms = perm ? JSON.parse(Parser.base64ToCode(perm.perm64)) : [];
+	} catch (err) {}
+
+	let fade_message = '';
+	let fade_timer: any;
+	function setFadeMessage(message: string, time = 2000) {
+		fade_message = message;
+		if (fade_timer) clearTimeout(fade_timer);
+		fade_timer = setTimeout(() => {
+			fade_message = '';
+		}, time);
+	}
 </script>
 
 <Styles />
 
+{JSON.stringify(perms)}
 <Container>
-	<Row>
-		<Col class="d-flex justify-content-center">
-			<h1 class="text-center">Workflow Templates</h1>
-		</Col>
-	</Row>
+	<div class="d-flex">
+		<div class="flex-shrink-0">
+			<h1>Templates</h1>
+		</div>
+		<div class="mx-5 align-self-center flex-grow-1">Defines how workflow would be running</div>
+	</div>
 </Container>
-<Container class="kfk-menu">
-	<Row class="kfk-menu-border">
-		<Col class="mt-1">
-			<Nav>
-				<NavLink
-					class="kfk-link"
-					on:click={() => {
-						show_form('create');
-					}}
-				>
+<Container>
+	<TabContent
+		class="kfk-tab-menu"
+		on:tab={(e) => {
+			showTab(e.detail);
+		}}
+	>
+		<TabPane tabId="home" active={!whichTab || whichTab['template'] === 'home'}>
+			<span slot="tab">
+				<Icon name="code-square" />
+				Template
+			</span>
+			<div class="mx-3">A template describe how a workflow sould run</div>
+		</TabPane>
+		{#if perms && PermControl(perms, user.email, 'template', '', 'create')}
+			<TabPane tabId="create" active={whichTab && whichTab['template'] === 'create'}>
+				<span slot="tab">
 					<Icon name="plus-circle" />
-					New
-				</NavLink>
-				<NavLink
-					class="kfk-link"
-					on:click={() => {
-						show_form('import');
+					Create
+				</span>
+				<form
+					class="new"
+					action={urls.create}
+					method="post"
+					use:enhance={{
+						preCheck: () => {
+							return PermControl(perms, user.email, 'template', '', 'create');
+						},
+						token: user.sessionToken,
+						result: async (res, form) => {
+							const created = await res.json();
+							/* templates = [created, ...templates]; */
+							lastSearchCondition = created.tplid;
+							remoteTable.rows = [created, ...remoteTable.rows];
+							remoteTable.rowsCount = remoteTable.rowsCount + 1;
+							form.reset();
+							//form_status['create'] = false;
+						},
+						error: async (res, error, form) => {
+							let retError = await res.json();
+							let tmp = ErrorProcessor.setError(retError.errors, '<br />');
+							$session.errors = tmp;
+							setTimeout(() => {
+								$session.errors = '';
+							}, 2000);
+						}
 					}}
 				>
+					<Container class="mt-3">
+						<Row>
+							<Col>
+								<input
+									name="tplid"
+									aria-label="Create template"
+									placeholder="New template name"
+									class="kfk-input-template-name"
+								/>
+							</Col>
+							<Col>
+								<Button size="sm" type="submit" color="primary">Create</Button>
+							</Col>
+						</Row>
+					</Container>
+				</form>
+			</TabPane>
+			<TabPane tabId="import" active={whichTab && whichTab['template'] === 'import'}>
+				<span slot="tab">
 					<Icon name="cloud-upload" />
 					Import
-				</NavLink>
-			</Nav>
-		</Col>
-	</Row>
-	{#if menu_has_form}
-		<Row class="mt-2 pb-2 kfk-menu-border">
-			<Col>
-				{#if form_status.create}
-					<!-- svelte-ignore missing-declaration -->
-					<form
-						class="new"
-						action={urls.create}
-						method="post"
-						use:enhance={{
-							token: user.sessionToken,
-							result: async (res, form) => {
-								const created = await res.json();
-								/* templates = [created, ...templates]; */
-								lastSearchCondition = created.tplid;
-								remoteTable.rows = [created, ...remoteTable.rows];
-								remoteTable.rowsCount = remoteTable.rowsCount + 1;
-								form.reset();
-								//form_status['create'] = false;
-							},
-							error: async (res, error, form) => {
-								console.log('Here0');
-								let retError = await res.json();
-								let tmp = ErrorProcessor.setError(retError.errors, '<br />');
-								$session.errors = tmp;
-								setTimeout(() => {
-									$session.errors = '';
-								}, 2000);
-							}
-						}}
-					>
-						<Container>
-							<Row
-								><Col>
-									<input
-										name="tplid"
-										aria-label="Create template"
-										placeholder="New template name"
-										class="kfk-input-template-name"
-									/>
-								</Col>
-								<Col>
-									<Button size="sm" type="submit" color="primary">Create</Button>
-									<Button size="sm" on:click={hide_all_form} color="secondary">Cancel</Button>
-								</Col>
-							</Row>
-						</Container>
-					</form>
-				{:else if form_status.import}
-					<form class="new" enctype="multipart/form-data">
-						<Container>
-							<Row>
-								<Col>
-									<input
-										name="tplid"
-										placeholder="New template name"
-										class="kfk-input-template-name"
-										bind:value={tplidImport}
-									/>
-								</Col>
-								<Col>
-									<input name="file" type="file" class="kfk_input_template_name" bind:files />
-								</Col>
-								<Col>
-									<Button size="sm" on:click={upload} color="primary">Import</Button>
-									<Button size="sm" on:click={hide_all_form} color="secondary">Cancel</Button>
-								</Col>
-							</Row>
-						</Container>
-					</form>
-				{/if}
-			</Col>
-		</Row>
-	{/if}
+				</span>
+				<form class="new" enctype="multipart/form-data">
+					<Container class="mt-3">
+						<Row>
+							<Col>
+								<input
+									name="tplid"
+									placeholder="New template name"
+									class="kfk-input-template-name"
+									bind:value={tplidImport}
+								/>
+							</Col>
+							<Col>
+								<input name="file" type="file" class="kfk_input_template_name" bind:files />
+							</Col>
+							<Col>
+								<Button size="sm" on:click={upload} color="primary">Import</Button>
+							</Col>
+						</Row>
+					</Container>
+				</form>
+			</TabPane>
+		{/if}
+	</TabContent>
+</Container>
+<Container class="mt-3">
 	<Row class="mt-3">
 		<Col>
-			<RemoteTable endpoint="template/search" {token} bind:this={remoteTable} />
+			<RemoteTable endpoint="template/search" {token} {user} {perms} bind:this={remoteTable} />
 		</Col>
 	</Row>
 </Container>
+<Fade isOpen={fade_message != ''}>
+	<Card body>
+		{fade_message}
+	</Card>
+</Fade>

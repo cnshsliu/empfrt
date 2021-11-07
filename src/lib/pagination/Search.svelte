@@ -8,6 +8,8 @@
 
 <script>
 	import { createEventDispatcher, getContext } from 'svelte';
+	import { InputGroup, InputGroupText } from 'sveltestrap';
+
 	const dispatch = createEventDispatcher();
 	const stateContext = getContext('state');
 	let searchTimer = undefined;
@@ -25,7 +27,7 @@
 	export let text = '';
 
 	export let labels = {
-		placeholder: 'Search',
+		placeholder: 'Search by name or title',
 		...globalLabels
 	};
 
@@ -60,31 +62,24 @@
 	}
 </script>
 
-<div class="search">
-	<input
-		type="search"
-		title={labels.placeholder}
-		placeholder={labels.placeholder}
-		bind:value={text}
-		on:input={onSearch}
-	/>
+<div class="search d-flex">
+	<InputGroup>
+		<InputGroupText>Search</InputGroupText>
+		<input
+			class="flex-fill"
+			type="search"
+			title={labels.placeholder}
+			placeholder={labels.placeholder}
+			bind:value={text}
+			on:input={onSearch}
+		/>
+	</InputGroup>
 </div>
 
 <style>
-	.search {
-		width: 100%;
-		float: left;
-	}
 	.search input {
-		width: 100%;
 		border: 1px solid #eee;
 		border-radius: 3px;
 		padding: 5px 3px;
-	}
-
-	@media screen and (max-width: 767px) {
-		.search {
-			width: 100%;
-		}
 	}
 </style>

@@ -12,6 +12,7 @@ export interface EmpResponse {
 export interface User {
 	userid: string;
 	username: string;
+	group: string;
 	email: string;
 	avatar: string;
 	bio: string;
@@ -144,4 +145,18 @@ export interface KFKError {
 	error: string;
 	code: string;
 	message: string;
+}
+
+export interface WhichTab {
+	template: string;
+	team: string;
+	worklist: string;
+	workflow: string;
+	setting: string;
+}
+export interface WorkStatus {
+	status: string;
+}
+export interface Perm {
+	perm64: string;
 }

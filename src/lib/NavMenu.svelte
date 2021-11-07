@@ -63,7 +63,11 @@
 			<Dropdown>
 				<DropdownToggle nav caret>Me</DropdownToggle>
 				<DropdownMenu end>
-					<DropdownItem>
+					<DropdownItem
+						on:click={(e) => {
+							goto('settings');
+						}}
+					>
 						{$session.user.username}
 					</DropdownItem>
 					<DropdownItem divider />

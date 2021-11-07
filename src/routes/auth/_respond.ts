@@ -11,15 +11,14 @@ export function respond(body) {
 		return { status: 401, body };
 	}
 
-	const json = JSON.stringify(body.user);
-	const value = Buffer.from(json).toString('base64');
-	console.log('.......JWT', value);
+	const jwtValue = Buffer.from(JSON.stringify(body.user)).toString('base64');
 
-	authStore.set({ jwt: value });
+	authStore.set({ jwt: jwtValue });
+	let cookieString = `jwt=${jwtValue}; Path=/; HttpOnly`;
 
 	return {
 		headers: {
-			'set-cookie': `jwt=${value}; Path=/; HttpOnly`
+			'set-cookie': cookieString
 		},
 		body
 	};

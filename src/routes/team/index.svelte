@@ -15,6 +15,11 @@
 <script lang="ts">
 	import { API_SERVER } from '$lib/Env';
 	import RemoteTable from './RemoteTable.svelte';
+	import { get } from 'svelte/store';
+	import type { Perm, WhichTab } from '$lib/types';
+	import { permStore, whichTabStore } from '$lib/empstores';
+	import { PermControl } from '$lib/permissionControl';
+	import Parser from '$lib/parser';
 	import * as api from '$lib/api';
 	import {
 		Container,
@@ -35,7 +40,7 @@
 
 	import type { User, Team, Config } from '$lib/types';
 	import { enhance } from '$lib/form';
-	import TeamList from './_TeamList.svelte';
+	import { TabContent, TabPane } from 'sveltestrap';
 	export let teams: Team[];
 	export let user: User;
 	export let config: Config;
@@ -84,6 +89,10 @@
 
 	function upload(e) {
 		e.preventDefault();
+		if (PermControl(perms, user.email, 'team', '', 'create') === false) {
+			setFadeMessage("You don't have create team permission");
+			return;
+		}
 		const formData = new FormData();
 		formData.append('teamid', teamidImport);
 		formData.append('file', files[0]);
@@ -103,162 +112,138 @@
 				console.error('Error:', error);
 			});
 	}
+	let whichTab: WhichTab = get(whichTabStore);
+	async function showTab(tabId) {
+		whichTab = get(whichTabStore);
+		whichTab['team'] = tabId;
+		whichTabStore.set(whichTab);
+	}
+
+	let perm: Perm = get(permStore);
+	let perms: string = null;
+	try {
+		perms = perm ? JSON.parse(Parser.base64ToCode(perm.perm64)) : [];
+	} catch (err) {}
+
+	let fade_message = '';
+	let fade_timer: any;
+	function setFadeMessage(message: string, time = 2000) {
+		fade_message = message;
+		if (fade_timer) clearTimeout(fade_timer);
+		fade_timer = setTimeout(() => {
+			fade_message = '';
+		}, time);
+	}
 </script>
 
 <Container>
-	<Row>
-		<Col class="d-flex justify-content-center">
-			<h1 class="text-center">Team Configuration</h1>
-		</Col>
-	</Row>
+	<div class="d-flex">
+		<div class="flex-shrink-0">
+			<h1>Teams</h1>
+		</div>
+		<div class="mx-5 align-self-center flex-grow-1">
+			Map role definition in template to real people
+		</div>
+	</div>
 </Container>
 <Container>
-	<Row class="kfk-menu-border">
-		<Col class="mt-1">
-			<Nav>
-				<NavLink
-					class="kfk-link"
-					on:click={() => {
-						show_form('create');
-					}}
-				>
-					<Icon name="plus-circle" />
-					New
-				</NavLink>
-				<NavLink
-					class="kfk-link"
-					on:click={() => {
-						show_form('import');
-					}}
-				>
-					<Icon name="cloud-upload" />
-					Import
-				</NavLink>
-			</Nav>
-		</Col>
-	</Row>
-	{#if menu_has_form}
-		<Row class="mt-2 pb-2 kfk-menu-border">
-			<Col>
-				{#if form_status.create}
-					<form
-						class="new"
-						action={urls.create}
-						method="post"
-						use:enhance={{
-							token: user.sessionToken,
-							result: async (res, form) => {
-								const created = await res.json();
-								console.log(created);
-								if (created.error) {
-									if (created.errMsg.indexOf('duplicate key error') > 0) {
-										console.log('Dupliated key', '//TODO');
-									} else console.log(created.error);
-								} else {
-									lastSearchCondition = created.teamid;
-									remoteTable.rows = [created, ...remoteTable.rows];
-									remoteTable.rowsCount = remoteTable.rowsCount + 1;
-								}
-								form.reset();
-								//form_status['create'] = false;
-							}
-						}}
-					>
-						<Container>
-							<Row>
-								<Col>
-									<input
-										name="teamid"
-										aria-label="Create team"
-										placeholder="New team name"
-										class="kfk-input-team-name"
-									/>
-								</Col>
-								<Col>
-									<Button size="sm" type="submit" color="primary">Create</Button>
-									<Button size="sm" on:click={hide_all_form} color="secondary">Cancel</Button>
-								</Col>
-							</Row>
-						</Container>
-					</form>
-				{:else if form_status.search}
-					<form
-						class="new"
-						action={urls.search}
-						method="post"
-						use:enhance={{
-							token: user.sessionToken,
-							result: async (res, form) => {
-								const tmp = await res.json();
-								if (tmp.error) {
-									console.log(tmp.error);
-								} else {
-									teams = tmp;
-								}
-								//form_status['search'] = false;
-							}
-						}}
-					>
-						<Container>
-							<Row>
-								<Col>
-									<input name="sort_field" type="hidden" bind:value={config.sort.field} />
-									<input name="sort_order" type="hidden" bind:value={config.sort.order} />
-									<input
-										name="pattern"
-										bind:value={lastSearchCondition}
-										aria-label="Search team"
-										placeholder="What to search for"
-										class="kfk-input-team-name"
-									/>
-								</Col>
-								<Col>
-									<Button size="sm" type="submit" color="primary" bind:this={theSearchForm}
-										>Search</Button
-									>
-									<Button
-										size="sm"
-										on:click={() => {
-											lastSearchCondition = '';
-										}}
-										color="secondary"
-									>
-										Show All
-									</Button>
-									<Button size="sm" on:click={hide_all_form} color="secondary">Cancel</Button>
-								</Col>
-							</Row>
-						</Container>
-					</form>
-				{:else if form_status.import}
-					<form class="new" enctype="multipart/form-data">
-						<Container>
-							<Row>
-								<Col>
-									<input
-										name="teamid"
-										placeholder="New team name"
-										class="kfk-input-team-name"
-										bind:value={teamidImport}
-									/>
-								</Col>
-								<Col>
-									<input name="file" type="file" class="kfk_input_team_name" bind:files />
-								</Col>
-								<Col>
-									<Button size="sm" on:click={upload} color="primary">Import</Button>
-									<Button size="sm" on:click={hide_all_form} color="secondary">Cancel</Button>
-								</Col>
-							</Row>
-						</Container>
-					</form>
-				{/if}
-			</Col>
-		</Row>
-	{/if}
+	<TabContent
+		class="kfk-tab-menu"
+		on:tab={(e) => {
+			showTab(e.detail);
+		}}
+	>
+		<TabPane tabId="search" active={!whichTab || whichTab['team'] === 'search'}>
+			<span slot="tab">
+				<Icon name="code-square" />
+				Team
+			</span>
+			<div class="mx-3">
+				Team is used to define the mapping between workflow roles and real people.
+			</div>
+		</TabPane>
+		<TabPane tabId="create" active={whichTab && whichTab['team'] === 'create'}>
+			<span slot="tab">
+				<Icon name="plus-circle" />
+				Create
+			</span>
+			<form
+				class="new"
+				action={urls.create}
+				method="post"
+				use:enhance={{
+					preCheck: () => {
+						return PermControl(perms, user.email, 'team', '', 'create');
+					},
+					token: user.sessionToken,
+					result: async (res, form) => {
+						const created = await res.json();
+						console.log(created);
+						if (created.error) {
+							if (created.errMsg.indexOf('duplicate key error') > 0) {
+								console.log('Dupliated key', '//TODO');
+							} else console.log(created.error);
+						} else {
+							lastSearchCondition = created.teamid;
+							remoteTable.rows = [created, ...remoteTable.rows];
+							remoteTable.rowsCount = remoteTable.rowsCount + 1;
+						}
+						form.reset();
+						//form_status['create'] = false;
+					}
+				}}
+			>
+				<Container>
+					<Row>
+						<Col>
+							<input
+								name="teamid"
+								aria-label="Create team"
+								placeholder="New team name"
+								class="kfk-input-team-name"
+							/>
+						</Col>
+						<Col>
+							<Button size="sm" type="submit" color="primary">Create</Button>
+							<Button size="sm" on:click={hide_all_form} color="secondary">Cancel</Button>
+						</Col>
+					</Row>
+				</Container>
+			</form>
+		</TabPane>
+		<TabPane tabId="import" active={whichTab && whichTab['team'] === 'import'}>
+			<span slot="tab">
+				<Icon name="cloud-upload" />
+				Import
+			</span>
+			<form class="new" enctype="multipart/form-data">
+				<Container>
+					<Row>
+						<Col>
+							<input
+								name="teamid"
+								placeholder="New team name"
+								class="kfk-input-team-name"
+								bind:value={teamidImport}
+							/>
+						</Col>
+						<Col>
+							<input name="file" type="file" class="kfk_input_team_name" bind:files />
+						</Col>
+						<Col>
+							<Button size="sm" on:click={upload} color="primary">Import</Button>
+							<Button size="sm" on:click={hide_all_form} color="secondary">Cancel</Button>
+						</Col>
+					</Row>
+				</Container>
+			</form>
+		</TabPane>
+	</TabContent>
+</Container>
+<Container class="mt-3">
 	<Row class="mt-3">
 		<Col>
-			<RemoteTable endpoint="team/search" {token} bind:this={remoteTable} />
+			<RemoteTable endpoint="team/search" {token} {user} {perms} bind:this={remoteTable} />
 		</Col>
 	</Row>
 </Container>

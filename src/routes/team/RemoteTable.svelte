@@ -12,10 +12,13 @@
 	import { goto } from '$app/navigation';
 	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Icon } from 'sveltestrap';
 	import { getData } from '$lib/pagination/Server.js';
+	import { PermControl } from '$lib/permissionControl';
 
 	export let token;
 	export let endpoint;
 	export let rows = [];
+	export let user;
+	export let perms;
 	let page = 0; //first page
 	let pageIndex = 0; //first row
 	let pageSize = 10; //optional, 10 by default
@@ -122,15 +125,17 @@
 					<Dropdown>
 						<DropdownToggle caret color="notexist" class="btn-sm">Actions</DropdownToggle>
 						<DropdownMenu>
-							<DropdownItem>
-								<a
-									href={'#'}
-									on:click|preventDefault={() => deleteRow(row.teamid)}
-									class="nav-link "
-									><Icon name="trash" />
-									Delete this team
-								</a>
-							</DropdownItem>
+							{#if perms && PermControl(perms, user.email, 'team', row, 'delete')}
+								<DropdownItem>
+									<a
+										href={'#'}
+										on:click|preventDefault={() => deleteRow(row.teamid)}
+										class="nav-link "
+										><Icon name="trash" />
+										Delete this team
+									</a>
+								</DropdownItem>
+							{/if}
 						</DropdownMenu>
 					</Dropdown>
 				</td>

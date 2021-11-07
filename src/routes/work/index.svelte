@@ -13,6 +13,9 @@
 	import RemoteTable from './RemoteTable.svelte';
 	import ExtraFilter from '$lib/form/ExtraFilter.svelte';
 	import type { User, Work } from '$lib/types';
+	import { get } from 'svelte/store';
+	import type { WhichTab } from '$lib/types';
+	import { whichTabStore } from '$lib/empstores';
 	import { session } from '$app/stores';
 	import { Container, Row, Col, Button, FormGroup, Input } from 'sveltestrap';
 	import { onMount } from 'svelte';
@@ -100,17 +103,23 @@
 </script>
 
 <Container>
-	<Row>
-		<Col class="d-flex justify-content-center">
-			<h1 class="text-xs-center">Work List</h1>
-		</Col>
-	</Row>
+	<div class="d-flex">
+		<div class="flex-shrink-0">
+			<h1>Work list</h1>
+		</div>
+		<div class="mx-5 align-self-center flex-grow-1">
+			of {payload_extra.doer}
+		</div>
+	</div>
+</Container>
+<Container>
 	<svelte:component
 		this={ExtraFilter}
 		bind:this={theExtraFilter}
 		bind:filter_status
 		bind:filter_doer
 		fields="{['doer', 'statuses']},"
+		object_type="work items"
 		statuses_label="Work status:"
 		statuses={[
 			{ value: 'All', label: 'All' },

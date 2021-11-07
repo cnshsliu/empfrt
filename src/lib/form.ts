@@ -4,11 +4,13 @@
 export function enhance(
 	form: HTMLFormElement,
 	{
+		preCheck,
 		token,
 		pending,
 		error,
 		result
 	}: {
+		preCheck?: () => boolean;
 		token?: string;
 		pending?: (data: FormData, form: HTMLFormElement) => void;
 		error?: (res: Response, error: Error, form: HTMLFormElement) => void;
@@ -20,12 +22,14 @@ export function enhance(
 	async function handle_submit(e: Event) {
 		e.preventDefault();
 
+		if (preCheck) {
+			if (preCheck() === false) return;
+		}
+
 		const contentType = 'application/json';
 		const formData = new FormData(form);
 		const tmp: { [k: string]: any } = Object.fromEntries(formData);
 		const body = JSON.stringify(tmp);
-
-		//if (pending) pending(data, form);
 
 		try {
 			const res = await fetch(form.action, {
@@ -46,7 +50,6 @@ export function enhance(
 				console.error(await res.text());
 			}
 		} catch (e) {
-			console.log('Hereeee');
 			if (error) {
 				error(null, e, form);
 			} else {

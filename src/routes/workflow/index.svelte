@@ -85,11 +85,12 @@
 </script>
 
 <Container>
-	<Row>
-		<Col class="d-flex justify-content-center">
-			<h1 class="text-xs-center">Workflows</h1>
-		</Col>
-	</Row>
+	<div class="d-flex">
+		<div class="flex-shrink-0">
+			<h1>Processes</h1>
+		</div>
+		<div class="mx-5 align-self-center flex-grow-1">Instantiated workflow processes</div>
+	</div>
 </Container>
 <Container class="mb-3">
 	<svelte:component
@@ -99,6 +100,7 @@
 		filter_status={'ST_RUN'}
 		statuses_label="Workflow status:"
 		fields="{['statuses']},"
+		object_type="processes"
 		statuses={[
 			{ value: 'All', label: 'All' },
 			{ value: 'ST_RUN', label: 'Running' },

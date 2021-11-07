@@ -18,6 +18,7 @@
 	import { API_SERVER } from '$lib/Env';
 	import type { User, Team } from '$lib/types';
 	import jQuery from 'jquery';
+	import { TabContent, TabPane } from 'sveltestrap';
 	import RolePreview from './_RolePreview.svelte';
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
@@ -27,6 +28,11 @@
 	import { Container, Row, Col, Nav, Icon, NavItem, NavLink } from 'sveltestrap';
 	import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'sveltestrap';
 	import { enhance } from '$lib/form';
+	import { get } from 'svelte/store';
+	import type { Perm } from '$lib/types';
+	import { permStore } from '$lib/empstores';
+	import { PermControl } from '$lib/permissionControl';
+	import Parser from '$lib/parser';
 	export let team: Team;
 	export let mouseover_objid: string = '';
 
@@ -57,6 +63,22 @@
 	export let export_to_filename = team.teamid;
 	export let errmsg = '';
 	export let user: User;
+
+	let perm: Perm = get(permStore);
+	let perms: string = null;
+	try {
+		perms = perm ? JSON.parse(Parser.base64ToCode(perm.perm64)) : [];
+	} catch (err) {}
+
+	let fade_message = '';
+	let fade_timer: any;
+	function setFadeMessage(message: string, time = 2000) {
+		fade_message = message;
+		if (fade_timer) clearTimeout(fade_timer);
+		fade_timer = setTimeout(() => {
+			fade_message = '';
+		}, time);
+	}
 
 	$: topmenu_class = form_name === '' ? '' : 'whiteback';
 	function hide_all_form() {
@@ -154,161 +176,62 @@
 		copyto: `${API_SERVER}/team/copyto`,
 		role_member_add: `${API_SERVER}/team/role/member/add`
 	};
+	async function showTab(tabId) {
+		return;
+	}
 </script>
 
 <svelte:head>
 	<title>{team.teamid} • Team</title>
 </svelte:head>
 <Container>
-	<Row>
-		<Col class="d-flex justify-content-center">
-			<h2>Team {team.teamid}</h2>
-		</Col>
-	</Row>
+	<div class="d-flex">
+		<div class="flex-shrink-0">
+			<h1>Team</h1>
+		</div>
+		<div class="mx-5 align-self-center flex-grow-1">{team.teamid}</div>
+	</div>
 </Container>
 <Container>
-	<Row class="kfk-menu-border">
-		<Col class="mt-1">
-			<Nav>
-				<NavLink
-					class="kfk-link"
-					href="#"
-					on:click={() => {
-						show_form('create');
-					}}
-				>
-					<Icon name="plus-circle" />
-					New
-				</NavLink>
-				<NavLink
-					class="kfk-link"
-					href="#"
-					on:click={() => {
-						show_form('import');
-					}}
-				>
-					<Icon name="cloud-upload" />
-					Import
-				</NavLink>
-				<NavLink
-					class="kfk-link"
-					href="#"
-					on:click={() => {
-						show_form('export');
-					}}
-				>
-					<Icon name="cloud-download" />
-					Export
-				</NavLink>
-				<NavLink
-					class="kfk-link"
-					href="#"
-					on:click={() => {
-						show_form('rename');
-					}}
-				>
+	<TabContent
+		class="kfk-tab-menu"
+		on:tab={(e) => {
+			showTab(e.detail);
+		}}
+	>
+		<TabPane tabId="Search" active>
+			<span slot="tab">
+				<Icon name="person-lines-fill" />Team
+			</span>
+			<div class="mx-3">
+				Current team id is: {team.teamid}
+			</div>
+		</TabPane>
+		<TabPane tabId="export">
+			<span slot="tab">
+				<Icon name="cloud-download" />
+				Export
+			</span>
+			<div class="mx-3">
+				Export current team to:
+				<input
+					name="exorttoname"
+					placeholder="Export to file"
+					class="kfk_input_team_name"
+					bind:value={export_to_filename}
+					autocomplete="off"
+				/>
+				<Button on:click={() => export_team()} color="primary">Export</Button>
+				{#if errmsg !== ''}{errmsg}{/if}
+			</div>
+		</TabPane>
+		{#if PermControl(perms, user.email, 'team', team, 'update')}
+			<TabPane tabId="rename">
+				<span slot="tab">
 					<Icon name="input-cursor-text" />
 					Rename
-				</NavLink>
-				<NavLink
-					class="kfk-link"
-					href="#"
-					on:click={() => {
-						show_form('copyto');
-					}}
-				>
-					<Icon name="files" />
-					Copy to
-				</NavLink>
-				<NavLink
-					class="kfk-link"
-					href="#"
-					on:click={() => {
-						show_form('delete');
-					}}
-				>
-					<Icon name="trash" />
-					Delete
-				</NavLink>
-			</Nav>
-		</Col>
-	</Row>
-	{#if menu_has_form}
-		<Row class="kfk-menu-border mt-2 pb-2 mb-2">
-			<Col>
-				{#if form_status.create}
-					<form
-						action={urls.create}
-						method="post"
-						use:enhance={{
-							token: user.sessionToken,
-							result: async (res, form) => {
-								const created = await res.json();
-								console.log(created);
-								if (created.error) {
-									console.log(created.error);
-									errmsg = created.errMsg;
-									if (errmsg.indexOf('MongoError: E11000 duplicate key error') >= 0) {
-										errmsg = '同名模板已存在, 请重新录入';
-									}
-								} else {
-									team = created;
-									goto(`/team/@${team.teamid}`, {
-										replaceState: false,
-										keepfocus: true
-									});
-									form_status['create'] = false;
-									form.reset();
-									errmsg = '';
-								}
-								hide_all_form();
-							}
-						}}
-					>
-						New team name:
-						<input
-							name="teamid"
-							aria-label="Create team"
-							placeholder="New team name"
-							class="kfk_input_team_name"
-							autocomplete="off"
-						/>
-						<Button type="submit" color="primary">Create</Button>
-						<Button
-							on:click={(e) => {
-								e.preventDefault();
-								hide_all_form();
-							}}
-							color="secondary">Cancel</Button
-						>
-						{#if errmsg !== ''}{errmsg}{/if}
-					</form>
-				{:else if form_status.import}
-					<form class="new" enctype="multipart/form-data">
-						<input name="teamid" type="hidden" value={team.teamid} />
-						<input name="file" type="file" class="kfk_input_team_name" bind:files />
-						<Button on:click={upload} color="primary">Import</Button>
-						<Button on:click={hide_all_form} color="secondary">Cancel</Button>
-					</form>
-				{:else if form_status.export}
-					Export current team to:
-					<input
-						name="exorttoname"
-						placeholder="Export to file"
-						class="kfk_input_team_name"
-						bind:value={export_to_filename}
-						autocomplete="off"
-					/>
-					<Button on:click={() => export_team()} color="primary">Export</Button>
-					<Button
-						on:click={(e) => {
-							e.preventDefault();
-							hide_all_form();
-						}}
-						color="secondary">Cancel</Button
-					>
-					{#if errmsg !== ''}{errmsg}{/if}
-				{:else if form_status.rename}
+				</span>
+				<div class="mx-3">
 					<form
 						action={urls.rename}
 						method="post"
@@ -348,120 +271,118 @@
 						/>
 						<input type="hidden" name="fromid" value={team.teamid} />
 						<Button type="submit" color="primary">Rename</Button>
-						<Button
-							on:click={(e) => {
-								e.preventDefault();
-								hide_all_form();
-							}}
-							color="secondary">Cancel</Button
-						>
 						{#if errmsg !== ''}{errmsg}{/if}
 					</form>
-				{:else if form_status.copyto}
-					<form
-						action={urls.copyto}
-						method="post"
-						use:enhance={{
-							token: user.sessionToken,
-							result: async (res, form) => {
-								const newTeam = await res.json();
-								console.log(newTeam);
-								if (newTeam.error) {
-									console.log(newTeam.error);
-									errmsg = newTeam.errMsg;
-									if (errmsg.indexOf('MongoError: E11000 duplicate key error') >= 0) {
-										errmsg = '同名Team已存在, 请重新录入';
-									}
-								} else {
-									refreshTeam(newTeam);
-									goto(`/team/@${team.teamid}`, {
-										replaceState: true,
-										noscroll: true,
-										keepfocus: true
-									});
-									form_status['copyto'] = false;
-									form.reset();
-									errmsg = '';
+				</div>
+			</TabPane>
+		{/if}
+		<TabPane tabId="copyto">
+			<span slot="tab">
+				<Icon name="files" />
+				Copy to
+			</span>
+
+			<div class="mx-3">
+				<form
+					action={urls.copyto}
+					method="post"
+					use:enhance={{
+						token: user.sessionToken,
+						result: async (res, form) => {
+							const newTeam = await res.json();
+							console.log(newTeam);
+							if (newTeam.error) {
+								console.log(newTeam.error);
+								errmsg = newTeam.errMsg;
+								if (errmsg.indexOf('MongoError: E11000 duplicate key error') >= 0) {
+									errmsg = '同名Team已存在, 请重新录入';
 								}
-								hide_all_form();
+							} else {
+								refreshTeam(newTeam);
+								goto(`/team/@${team.teamid}`, {
+									replaceState: true,
+									noscroll: true,
+									keepfocus: true
+								});
+								form_status['copyto'] = false;
+								form.reset();
+								errmsg = '';
 							}
-						}}
-					>
-						Copy {team.teamid} to:
-						<input
-							name="teamid"
-							placeholder="New team name"
-							class="kfk_input_team_name"
-							value={team.teamid}
-							autocomplete="off"
-						/>
-						<input type="hidden" name="fromid" value={team.teamid} />
-						<Button type="submit" color="primary">Copy</Button>
-						<Button
-							on:click={(e) => {
-								e.preventDefault();
-								hide_all_form();
-							}}
-							color="secondary">Cancel</Button
-						>
-						{#if errmsg !== ''}{errmsg}{/if}
-					</form>
-				{:else if form_status.delete}
+							hide_all_form();
+						}
+					}}
+				>
+					Copy {team.teamid} to:
+					<input
+						name="teamid"
+						placeholder="New team name"
+						class="kfk_input_team_name"
+						value={team.teamid}
+						autocomplete="off"
+					/>
+					<input type="hidden" name="fromid" value={team.teamid} />
+					<Button type="submit" color="primary">Copy</Button>
+					{#if errmsg !== ''}{errmsg}{/if}
+				</form>
+			</div>
+		</TabPane>
+		{#if PermControl(perms, user.email, 'team', team, 'delete')}
+			<TabPane tabId="delete">
+				<span slot="tab">
+					<Icon name="trash" />
+					Delete
+				</span>
+				<div class="mx-3">
 					Are you sure to delete team: {team.teamid}? &nbsp;
 					<Button on:click={() => delete_team()} color="primary">Delete</Button>
+					{#if errmsg !== ''}{errmsg}{/if}
+				</div>
+			</TabPane>
+		{/if}
+	</TabContent>
+</Container>
+<Container class="mt-3">
+	{#if PermControl(perms, user.email, 'team', team, 'update')}
+		<Row>
+			<Col>
+				<form
+					action={urls.role_member_add}
+					method="post"
+					use:enhance={{
+						token: user.sessionToken,
+						result: async (res, form) => {
+							const retObj = await res.json();
+							console.log('--------');
+							console.log(JSON.stringify(retObj, null, 2));
+							console.log('--------');
+							if (retObj.error) {
+								console.log(retObj.error);
+								errmsg = retObj.errMsg;
+							} else {
+								team = retObj;
+								form.reset();
+								errmsg = '';
+							}
+						}
+					}}
+				>
+					<h4>Add New Role:</h4>
+					<input name="role" placeholder="New role id" bind:value={newrole} autocomplete="off" />
+					<input type="hidden" name="teamid" value={team.teamid} />
+					<Button type="submit" color="primary" size="sm">Add</Button>
 					<Button
+						size="sm"
 						on:click={(e) => {
 							e.preventDefault();
-							hide_all_form();
+							newrole = '';
 						}}
-						color="secondary">Cancel</Button
+						color="secondary">Reset</Button
 					>
 					{#if errmsg !== ''}{errmsg}{/if}
-				{/if}
+				</form>
 			</Col>
 		</Row>
 	{/if}
-</Container>
-<Container class="mt-3">
-	<Row>
-		<Col>
-			<form
-				action={urls.role_member_add}
-				method="post"
-				use:enhance={{
-					token: user.sessionToken,
-					result: async (res, form) => {
-						const retObj = await res.json();
-						console.log('--------');
-						console.log(JSON.stringify(retObj, null, 2));
-						console.log('--------');
-						if (retObj.error) {
-							console.log(retObj.error);
-							errmsg = retObj.errMsg;
-						} else {
-							team = retObj;
-							form.reset();
-							errmsg = '';
-						}
-					}
-				}}
-			>
-				<h4>Add New Role:</h4>
-				<input name="role" placeholder="New role id" bind:value={newrole} autocomplete="off" />
-				<input type="hidden" name="teamid" value={team.teamid} />
-				<Button type="submit" color="primary" size="sm">Add</Button>
-				<Button
-					size="sm"
-					on:click={(e) => {
-						e.preventDefault();
-						newrole = '';
-					}}
-					color="secondary">Reset</Button
-				>
-				{#if errmsg !== ''}{errmsg}{/if}
-			</form>
-		</Col>
-	</Row>
 	<Row class="mt-5">
 		<Col xs="12">
 			<h4>Roles:</h4>
@@ -480,7 +401,15 @@
 						on:focus={() => setMouseFocus()}
 						on:mouseover={() => setMouseOverObjid(aRole)}
 					>
-						<RolePreview {team} {user} {aRole} {mouseover_objid} {deleteRole} {refreshTeam} />
+						<RolePreview
+							{team}
+							{user}
+							{perms}
+							{aRole}
+							{mouseover_objid}
+							{deleteRole}
+							{refreshTeam}
+						/>
 					</div>
 				{/each}
 			{/if}

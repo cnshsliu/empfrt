@@ -12,6 +12,9 @@
 </script>
 
 <script lang="ts">
+	import { get } from 'svelte/store';
+	import type { Perm, WhichTab } from '$lib/types';
+	import { permStore, whichTabStore } from '$lib/empstores';
 	import { session } from '$app/stores';
 	import { invalidate, goto } from '$app/navigation';
 	import { post } from '$lib/utils';
@@ -47,9 +50,14 @@
 		} else {
 			setFadeMessage('');
 
+			localStorage;
+
 			if (response.user) {
 				$session.user = response.user;
 				goto('/');
+				whichTabStore.set(null);
+				permStore.set({ perm64: response.perm });
+				console.log('>>>', response.perm);
 			}
 		}
 	}

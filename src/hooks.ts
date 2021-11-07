@@ -19,10 +19,10 @@ export async function handle({ request, resolve }) {
 }
 
 export function getSession({ locals }) {
-	console.log('-----', locals.user);
-	return {
+	let ret = {
 		user: locals.user
 	};
+	return ret;
 }
 
 /*

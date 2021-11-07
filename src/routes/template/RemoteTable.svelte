@@ -9,6 +9,7 @@
 	import * as api from '$lib/api';
 	import { onMount } from 'svelte';
 	import moment from 'moment';
+	import { PermControl } from '$lib/permissionControl';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
 	import { goto } from '$app/navigation';
 	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Icon } from 'sveltestrap';
@@ -17,6 +18,8 @@
 	export let token;
 	export let endpoint;
 	export let rows = [];
+	export let user;
+	export let perms;
 	let page = 0; //first page
 	let pageIndex = 0; //first row
 	let pageSize = 10; //optional, 10 by default
@@ -138,17 +141,19 @@
 					<Dropdown>
 						<DropdownToggle caret color="notexist" class="btn-sm">Actions</DropdownToggle>
 						<DropdownMenu>
-							<DropdownItem>
-								<a
-									href={'#'}
-									on:click|preventDefault={() => {
-										goto(`template/start?tplid=${row.tplid}`, { replaceState: false });
-									}}
-									class="nav-link "
-									><Icon name="caret-right-square" />
-									Start it
-								</a>
-							</DropdownItem>
+							{#if perms && PermControl(perms, user.email, 'workflow', '', 'create')}
+								<DropdownItem>
+									<a
+										href={'#'}
+										on:click|preventDefault={() => {
+											goto(`template/start?tplid=${row.tplid}`, { replaceState: false });
+										}}
+										class="nav-link "
+										><Icon name="caret-right-square" />
+										Start it
+									</a>
+								</DropdownItem>
+							{/if}
 							<DropdownItem>
 								<a
 									href={'#'}
@@ -160,12 +165,17 @@
 									See workflows
 								</a>
 							</DropdownItem>
-							<DropdownItem>
-								<a href={'#'} on:click|preventDefault={() => deleteRow(row.tplid)} class="nav-link "
-									><Icon name="trash" />
-									Delete this template
-								</a>
-							</DropdownItem>
+							{#if perms && PermControl(perms, user.email, 'template', row, 'delete')}
+								<DropdownItem>
+									<a
+										href={'#'}
+										on:click|preventDefault={() => deleteRow(row.tplid)}
+										class="nav-link "
+										><Icon name="trash" />
+										Delete this template
+									</a>
+								</DropdownItem>
+							{/if}
 						</DropdownMenu>
 					</Dropdown>
 				</td>
