@@ -12,6 +12,7 @@
 
 <script lang="ts">
 	import { session } from '$app/stores';
+	import { Container, Row, Col } from 'sveltestrap';
 	import type { EmpResponse } from '$lib/types';
 	import { goto } from '$app/navigation';
 	import { post } from '$lib/utils';
@@ -53,51 +54,54 @@
 	<title>Sign up • HyperFlow</title>
 </svelte:head>
 
-<div class="auth-page">
-	<div class="container page">
-		<div class="row">
-			<div class="col-md-6 offset-md-3 col-xs-12">
-				<h1 class="text-xs-center">Sign up</h1>
-				<p class="text-xs-center">
-					<a href="/login">Have an account?</a>
-				</p>
-
-				<form on:submit|preventDefault={submit}>
-					<fieldset class="form-group">
-						<input
-							class="form-control form-control-lg mt-2"
-							type="text"
-							required
-							placeholder="Your Name"
-							bind:value={username}
-						/>
-					</fieldset>
-					<fieldset class="form-group">
-						<input
-							class="form-control form-control-lg mt-2"
-							type="email"
-							required
-							placeholder="Email"
-							bind:value={email}
-						/>
-					</fieldset>
-					<fieldset class="form-group">
-						<input
-							class="form-control form-control-lg mt-2"
-							type="password"
-							required
-							placeholder="Password"
-							bind:value={password}
-						/>
-					</fieldset>
-					<button class="btn btn-lg btn-primary pull-xs-right mt-3"> Sign up </button>
-				</form>
-				<Fade isOpen={fade_message != ''}>
-					<Card body>
-						{fade_message}
-					</Card>
-				</Fade>
-			</div>
-		</div>
-	</div>
-</div>
+<Container class="kfk-login-container">
+	<Row cols="1">
+		<Col>
+			<h1 class="text-center">Sign up</h1>
+		</Col>
+		<Col>
+			<p class="text-center">
+				<a href="/login">Have an account?</a>
+			</p>
+		</Col>
+		<Col>
+			<form on:submit|preventDefault={submit}>
+				<fieldset class="form-group">
+					<input
+						class="form-control form-control-lg mt-2"
+						type="text"
+						required
+						placeholder="Your Name"
+						bind:value={username}
+					/>
+				</fieldset>
+				<fieldset class="form-group">
+					<input
+						class="form-control form-control-lg mt-2"
+						type="email"
+						required
+						placeholder="Email"
+						bind:value={email}
+					/>
+				</fieldset>
+				<fieldset class="form-group">
+					<input
+						class="form-control form-control-lg mt-2"
+						type="password"
+						required
+						placeholder="Password"
+						bind:value={password}
+					/>
+				</fieldset>
+				<button class="w-100 btn btn-lg btn-primary pull-xs-right mt-3"> Sign up </button>
+			</form>
+		</Col>
+		<Col>
+			<Fade isOpen={fade_message != ''}>
+				<Card body>
+					{fade_message}
+				</Card>
+			</Fade>
+		</Col>
+	</Row>
+</Container>

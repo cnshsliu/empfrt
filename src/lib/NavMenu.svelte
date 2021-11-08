@@ -2,6 +2,8 @@
 	import { page, session } from '$app/stores';
 	import { title } from '$lib/title';
 	import {
+		Row,
+		Col,
 		Icon,
 		Styles,
 		Collapse,
@@ -34,9 +36,17 @@
 	}
 </script>
 
+{#if $session.user.tenant.css}
+	<link href={$session.user.tenant.css} rel="stylesheet" type="text/css" />
+{/if}
 <Styles />
 <Navbar class="light px-5 kfknavbar" light expand="md">
-	<NavbarBrand href="/">HyperFlow</NavbarBrand>
+	<NavbarBrand href="/">
+		<Row>
+			<Col><div class="kfk-org-logo org-logo" /></Col>
+			<Col class="d-flex">{$session.user.tenant.name}</Col>
+		</Row>
+	</NavbarBrand>
 	<NavbarToggler on:click={() => (isMenuOpen = !isMenuOpen)} />
 	<Nav class="ms-auto" navbar>
 		{#if $session.user}
@@ -63,12 +73,10 @@
 			<Dropdown>
 				<DropdownToggle nav caret>Me</DropdownToggle>
 				<DropdownMenu end>
-					<DropdownItem
-						on:click={(e) => {
-							goto('settings');
-						}}
-					>
+					<DropdownItem>
 						{$session.user.username}
+						of<br />
+						{$session.user.tenant.name}
 					</DropdownItem>
 					<DropdownItem divider />
 					<DropdownItem
@@ -101,3 +109,6 @@
 		{/if}
 	</Nav>
 </Navbar>
+
+<style>
+</style>

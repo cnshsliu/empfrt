@@ -15,6 +15,7 @@
 	import { get } from 'svelte/store';
 	import type { Perm, WhichTab } from '$lib/types';
 	import { permStore, whichTabStore } from '$lib/empstores';
+	import { Container, Row, Col } from 'sveltestrap';
 	import { session } from '$app/stores';
 	import { invalidate, goto } from '$app/navigation';
 	import { post } from '$lib/utils';
@@ -78,57 +79,63 @@
 	<title>Sign in • HyperFlow</title>
 </svelte:head>
 
-<div class="auth-page">
-	<div class="container page">
-		<div class="row">
-			<div class="col-md-6 offset-md-3 col-xs-12">
-				<h1 class="text-center">Sign In</h1>
-				<p class="text-center">
-					<a href="/register">Need an account?</a>
-				</p>
-
-				<form on:submit|preventDefault={submit}>
-					<fieldset class="form-group">
-						<Input
-							class="form-control form-control-lg"
-							type="email"
-							required
-							autocomplete="username"
-							placeholder="Email"
-							bind:value={email}
-						/>
-					</fieldset>
-					<fieldset class="form-group">
-						<Input
-							class="form-control form-control-lg mt-2"
-							type="password"
-							required
-							placeholder="Password"
-							autocomplete="current-password"
-							bind:value={password}
-						/>
-					</fieldset>
-					<div class="w-100 d-flex justify-content-end">
-						<button class="btn btn-lg btn-primary pull-xs-right mt-3" type="submit">
-							Sign in
-						</button>
-					</div>
-				</form>
-				{#if show_resend_email_verification && resendCountdown < 1}
-					<NavLink
-						on:click={() => {
-							resendEmailVerification();
-						}}>Resend Verification Email</NavLink
-					>
-				{:else if resendCountdown > 0}
-					<svelte:component this={Countdown} bind:this={theCountdown} bind:resendCountdown />
-				{/if}
-				<Fade isOpen={fade_message != ''}>
-					<Card body>
-						{fade_message}
-					</Card>
-				</Fade>
-			</div>
-		</div>
-	</div>
-</div>
+<Container class="kfk-login-container">
+	<Row cols="1">
+		<Col>
+			<h1 class="text-center">Sign In</h1>
+		</Col>
+		<Col>
+			<p class="text-center">
+				<a href="/register">Need an account?</a>
+			</p>
+		</Col>
+		<Col>
+			<form on:submit|preventDefault={submit}>
+				<fieldset class="form-group">
+					<Input
+						class="form-control form-control-lg"
+						type="email"
+						required
+						autocomplete="username"
+						placeholder="Email"
+						bind:value={email}
+					/>
+				</fieldset>
+				<fieldset class="form-group">
+					<Input
+						class="form-control form-control-lg mt-2"
+						type="password"
+						required
+						placeholder="Password"
+						autocomplete="current-password"
+						bind:value={password}
+					/>
+				</fieldset>
+				<div class="w-100 d-flex justify-content-end">
+					<button class="w-100 btn btn-lg btn-primary pull-xs-right mt-3" type="submit">
+						Sign in
+					</button>
+				</div>
+			</form>
+		</Col>
+		<Col>
+			{#if show_resend_email_verification && resendCountdown < 1}
+				<NavLink
+					on:click={() => {
+						resendEmailVerification();
+					}}
+					>Resend Verification Email
+				</NavLink>
+			{:else if resendCountdown > 0}
+				<svelte:component this={Countdown} bind:this={theCountdown} bind:resendCountdown />
+			{/if}
+		</Col>
+		<Col>
+			<Fade isOpen={fade_message != ''}>
+				<Card body>
+					{fade_message}
+				</Card>
+			</Fade>
+		</Col>
+	</Row>
+</Container>

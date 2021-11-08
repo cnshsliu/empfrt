@@ -66,6 +66,7 @@
 	$title = 'HyperFlow';
 	let in_progress: boolean;
 	let orgname = myorg.orgname;
+	let orgtheme = myorg.css;
 
 	interface membersDef {
 		email: string;
@@ -112,13 +113,18 @@
 	async function setMyTenantName() {
 		in_progress = true;
 
-		let ret = await api.post('tnt/name/save', { orgname: orgname }, user.sessionToken);
+		let ret = await api.post(
+			'tnt/name/save',
+			{ orgname: orgname, password: password_for_admin },
+			user.sessionToken
+		);
 		if (ret.error) {
 			setFadeMessage(ret.message);
 		} else {
 			//eslint-disable-next-line
-			if (ret.user) {
+			if (ret.orgname) {
 				setFadeMessage('Orgniazation name is set succesfully');
+				$session.user.tenant.name = ret.orgname;
 			} else {
 				setFadeMessage('Error');
 			}
@@ -126,27 +132,27 @@
 
 		in_progress = false;
 	}
-	async function logout() {
-		await post(`auth/logout`);
+	async function setMyTenantTheme() {
+		in_progress = true;
 
-		// this will trigger a redirect, because it
-		// causes the `load` function to run again
-		$session.user = null;
-	}
+		let ret = await api.post(
+			'tnt/theme/save',
+			{ css: orgtheme, password: password_for_admin },
+			user.sessionToken
+		);
+		if (ret.error) {
+			setFadeMessage(ret.message);
+		} else {
+			//eslint-disable-next-line
+			if (ret.css) {
+				setFadeMessage('Orgniazation theme is set succesfully');
+				$session.user.tenant.css = ret.css;
+			} else {
+				setFadeMessage('Error');
+			}
+		}
 
-	async function save_new_members() {
-		let membersArray = input_members.split('\n');
-		membersToAdd = membersArray
-			.filter((x) => {
-				return x.trim() !== '';
-			})
-			.map((x) => {
-				x = x.trim();
-				if (x !== '') {
-					let tmp = x.split(':');
-					return { email: tmp[0], displayName: tmp[1] ?? '', status: 'Waiting' };
-				}
-			});
+		in_progress = false;
 	}
 
 	let generatedJoinCode = '';
@@ -154,7 +160,11 @@
 	let joinorgwithcode = '';
 
 	async function generateJoinCode() {
-		let res = await api.post('tnt/joincode/new', {}, user.sessionToken);
+		let res = await api.post(
+			'tnt/joincode/new',
+			{ password: password_for_admin },
+			user.sessionToken
+		);
 		if (res.error) {
 			setFadeMessage(res.message);
 		} else if (res.joincode) {
@@ -167,7 +177,7 @@
 	async function setUserDefinedJoinCode() {
 		let res = await api.post(
 			'tnt/joincode/save',
-			{ joincode: userDefinedJoinCode },
+			{ joincode: userDefinedJoinCode, password: password_for_admin },
 			user.sessionToken
 		);
 		if (res.error) {
@@ -296,7 +306,16 @@
 	async function sendInvitation() {
 		let emails = invitation.split(/[ ;,]/).filter((x) => x.length > 0);
 		console.log(emails);
-		await api.post('tnt/send/invitation', { ems: emails.join(':') }, user.sessionToken);
+		let res = await api.post(
+			'tnt/send/invitation',
+			{ ems: emails.join(':'), password: password_for_admin },
+			user.sessionToken
+		);
+		if (res.error) {
+			setFadeMessage(res.message);
+		} else {
+			refreshMembers();
+		}
 	}
 </script>
 
@@ -400,8 +419,16 @@
 		</TabPane>
 		<TabPane tabId="org" tab="Org" active={whichTab && whichTab['setting'] === 'org'}>
 			<Card class="mt-3">
-				<CardHeader><CardTitle>My Orgniazation</CardTitle></CardHeader>
+				<CardHeader><CardTitle>My Orgnization</CardTitle></CardHeader>
 				<CardBody>
+					<InputGroup>
+						<InputGroupText>Admin Password:</InputGroupText>
+						<Input
+							type="password"
+							bind:value={password_for_admin}
+							placeholder="Confirm with your password"
+						/>
+					</InputGroup>
 					<InputGroup>
 						<InputGroupText>Set Org Name to:</InputGroupText>
 						<Input bind:value={orgname} placeholder="Orgniazation name" />
@@ -409,6 +436,18 @@
 							on:click={(e) => {
 								e.preventDefault();
 								setMyTenantName();
+							}}
+						>
+							Set
+						</Button>
+					</InputGroup>
+					<InputGroup>
+						<InputGroupText>Set Org theme to:</InputGroupText>
+						<Input bind:value={orgtheme} placeholder="Your customized theme CSS url" />
+						<Button
+							on:click={(e) => {
+								e.preventDefault();
+								setMyTenantTheme();
 							}}
 						>
 							Set
