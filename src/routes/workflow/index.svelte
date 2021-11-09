@@ -13,26 +13,13 @@
 	import { onMount } from 'svelte';
 	import RemoteTable from './RemoteTable.svelte';
 	import ExtraFilter from '$lib/form/ExtraFilter.svelte';
-	import type { User, Workflow, Config } from '$lib/types';
-	import { goto } from '$app/navigation';
-	import * as api from '$lib/api';
-	import {
-		Container,
-		Row,
-		Col,
-		Icon,
-		Button,
-		Dropdown,
-		DropdownItem,
-		DropdownMenu,
-		DropdownToggle,
-		FormGroup,
-		Label,
-		Input,
-		Nav,
-		NavLink
-	} from 'sveltestrap';
-	import { enhance } from '$lib/form';
+	import type { User } from '$lib/types';
+	import { Fade, Card, Container, Row, Col } from 'sveltestrap';
+	import { get } from 'svelte/store';
+	import type { Perm, WhichTab } from '$lib/types';
+	import { permStore, whichTabStore } from '$lib/empstores';
+	import { PermControl } from '$lib/permissionControl';
+	import Parser from '$lib/parser';
 	export let menu_has_form = false;
 	export let user: User;
 	export let form_status = { create: false, search: false, sort: false, import: false };
@@ -82,6 +69,21 @@
 	function filterStatusChanged(event) {
 		reload(event.detail);
 	}
+	let perm: Perm = get(permStore);
+	let perms: string = null;
+	try {
+		perms = perm ? JSON.parse(Parser.base64ToCode(perm.perm64)) : [];
+	} catch (err) {}
+
+	let fade_message = '';
+	let fade_timer: any;
+	function setFadeMessage(message: string, time = 2000) {
+		fade_message = message;
+		if (fade_timer) clearTimeout(fade_timer);
+		fade_timer = setTimeout(() => {
+			fade_message = '';
+		}, time);
+	}
 </script>
 
 <Container>
@@ -111,7 +113,7 @@
 	/>
 	<Row class="mt-3">
 		<Col>
-			<RemoteTable endpoint="workflow/search" {token} bind:this={remoteTable} />
+			<RemoteTable endpoint="workflow/search" {token} {user} {perms} bind:this={remoteTable} />
 		</Col>
 	</Row>
 </Container>

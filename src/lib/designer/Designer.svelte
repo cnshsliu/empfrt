@@ -24,7 +24,8 @@
 		ModalFooter,
 		ModalHeader,
 		ListGroup,
-		ListGroupItem
+		ListGroupItem,
+		Icon
 	} from 'sveltestrap';
 	import type { KvarInput, NodeInfo } from '$lib/types';
 
@@ -170,6 +171,10 @@
 	export function sayHello() {
 		console.log('Hello, I am Designer');
 	}
+	const showDesignerHelp = function () {
+		return;
+	};
+
 	const showHelp = function (hid) {
 		if (hid) {
 			helpId = hid.toUpperCase();

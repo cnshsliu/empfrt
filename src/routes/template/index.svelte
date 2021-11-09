@@ -109,7 +109,6 @@
 
 <Styles />
 
-{JSON.stringify(perms)}
 <Container>
 	<div class="d-flex">
 		<div class="flex-shrink-0">

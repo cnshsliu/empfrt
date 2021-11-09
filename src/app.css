@@ -17,8 +17,9 @@
 }
 
 body {
-	min-height: 100vh;
 	margin: 0;
+	padding: 0;
+	min-height: 100vh;
 	background-color: var(--primary-color);
 	background: linear-gradient(
 		180deg,
@@ -26,6 +27,8 @@ body {
 		var(--secondary-color) 10.45%,
 		var(--tertiary-color) 41.35%
 	);
+	background-repeat: no-repeat;
+	background-size: cover;
 }
 
 body::before {
@@ -128,11 +131,6 @@ html {
 /* Optional: show position indicator in red */
 ::-webkit-scrollbar-thumb {
 	background: #e50000;
-}
-
-body {
-	margin: 0;
-	padding: 0;
 }
 
 .index_body {
@@ -637,9 +635,10 @@ input::placeholder {
 	z-index: 10000000;
 }
 
-#designer_topMenu {
+#designer-topMenu {
 	position: absolute;
 	z-index: 1000;
+	left: 70px;
 }
 .whiteback {
 	background-color: #ffffffff;
@@ -2563,6 +2562,7 @@ table.quick-help-table td:first-of-type {
 	font-size: 0.5rem;
 }
 .kfk-template-id,
+.kfk-workflow-id,
 .kfk-team-id {
 	font-size: 24px;
 	text-decoration: none;
@@ -2654,5 +2654,17 @@ table.quick-help-table td:first-of-type {
 	background-position: center; /* Center the image */
 	background-repeat: no-repeat; /* Do not repeat the image */
 	background-size: cover;
-	background-image: url('/static/svelte-welcome.png');
+	background-image: url('/svelte-welcome.png');
+}
+.kfk-odd {
+	background-color: #f7f7f7;
+}
+
+.kfk-me {
+	position: absolute;
+	z-index: 1000;
+	right: 5px;
+	bottom: 5px;
+	font-weight: 400;
+	color: rgba(0, 0, 0, 0.5);
 }

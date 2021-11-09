@@ -111,21 +111,23 @@
 			<tr
 				transition:scale|local={{ start: 0.7 }}
 				animate:flip={{ duration: 200 }}
-				class:odd={index % 2 !== 0}
-				class:even={index % 2 === 0}
+				class:kfk-odd={index % 2 !== 0}
+				class:kfk-even={index % 2 === 0}
+				class:tnt-odd={index % 2 !== 0}
+				class:tnt-even={index % 2 === 0}
 			>
 				<td data-label="Name">
-					<a class="preview-link kfk-template-id" href="/team/@{row.teamid}">
+					<a class="preview-link kfk-team-id tnt-team-id" href="/team/@{row.teamid}">
 						{row.teamid}
 					</a>
 				</td>
 				<td data-label="Author">{row.author}</td>
 				<td data-label="Updated at">{moment(row.updatedAt).format('LLLL')}</td>
 				<td>
-					<Dropdown>
-						<DropdownToggle caret color="notexist" class="btn-sm">Actions</DropdownToggle>
-						<DropdownMenu>
-							{#if perms && PermControl(perms, user.email, 'team', row, 'delete')}
+					{#if perms && PermControl(perms, user.email, 'team', row, 'delete')}
+						<Dropdown>
+							<DropdownToggle caret color="notexist" class="btn-sm">Actions</DropdownToggle>
+							<DropdownMenu>
 								<DropdownItem>
 									<a
 										href={'#'}
@@ -135,9 +137,9 @@
 										Delete this team
 									</a>
 								</DropdownItem>
-							{/if}
-						</DropdownMenu>
-					</Dropdown>
+							</DropdownMenu>
+						</Dropdown>
+					{/if}
 				</td>
 			</tr>
 		{/each}

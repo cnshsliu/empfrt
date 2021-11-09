@@ -36,7 +36,7 @@
 	}
 </script>
 
-{#if $session.user.tenant.css}
+{#if $session.user && $session.user.tenant.css}
 	<link href={$session.user.tenant.css} rel="stylesheet" type="text/css" />
 {/if}
 <Styles />
@@ -44,7 +44,7 @@
 	<NavbarBrand href="/">
 		<Row>
 			<Col><div class="kfk-org-logo org-logo" /></Col>
-			<Col class="d-flex">{$session.user.tenant.name}</Col>
+			<Col class="d-flex">{$session.user ? $session.user.tenant.name : 'HyperFlow'}</Col>
 		</Row>
 	</NavbarBrand>
 	<NavbarToggler on:click={() => (isMenuOpen = !isMenuOpen)} />
@@ -81,7 +81,7 @@
 					<DropdownItem divider />
 					<DropdownItem
 						on:click={(e) => {
-							goto('settings');
+							goto('/settings');
 						}}
 					>
 						<Icon name="gear" />&nbsp;Settings
@@ -109,6 +109,8 @@
 		{/if}
 	</Nav>
 </Navbar>
+
+<div class="kfk-me">{$session.user && $session.user.username}</div>
 
 <style>
 </style>

@@ -608,6 +608,7 @@ class KFKclass {
 		const that = this;
 		that.JS1.scrollLeft(pos.x);
 		that.JS1.scrollTop(pos.y);
+		console.log('scrollToPos', pos);
 	}
 
 	//Following solution to prevetn scrolling after focus  cause a problem of juqery
@@ -4696,6 +4697,7 @@ toggleOverview (jc3MousePos) {
 			$('#overallbackground').removeClass('grid1');
 			//focusOnC3会导致C3居中
 			that.focusOnC3();
+			//scrollToLastPosition in loadTemplateDoc
 			that.scrollToLastPosition(that.tplid);
 			that.C3.dispatchEvent(that.refreshC3Event);
 
@@ -4771,6 +4773,7 @@ toggleOverview (jc3MousePos) {
 
 			//focusOnC3会导致C3居中
 			that.focusOnC3();
+			//scrollToLastPosition in loadWorkflowDoc
 			that.scrollToLastPosition(that.wfid);
 			that.C3.dispatchEvent(that.refreshC3Event);
 		} catch (err) {
@@ -4801,18 +4804,27 @@ toggleOverview (jc3MousePos) {
 		}
 	}
 
+	scrollToFirstPage() {
+		const that = this;
+		console.log('scrollToFirstPage');
+		that.scrollToPos({
+			x: that.LeftB,
+			y: that.TopB
+		});
+	}
+
 	initLeftRightPanelEventHandler() {
 		$('#leftPanel').on('click', function (evt) {
 			evt.stopPropagation();
 		});
-		//topPropgation will stop click on C1 and C3, or else, C3 will jump after move mouse from designer_topMenu to C1
-		$('#designer_topMenu').on('click', function (evt) {
+		//topPropgation will stop click on C1 and C3, or else, C3 will jump after move mouse from designer-topMenu to C1
+		$('#designer-topMenu').on('click', function (evt) {
 			evt.stopPropagation();
 		});
 		$('#leftPanel').on('mousedown', function (evt) {
 			evt.stopPropagation();
 		});
-		$('#designer_topMenu').on('mousedown', function (evt) {
+		$('#designer-topMenu').on('mousedown', function (evt) {
 			evt.stopPropagation();
 		});
 	}
@@ -5150,6 +5162,9 @@ toggleOverview (jc3MousePos) {
 				case 'Delete':
 					that.deleteObjects(evt, false);
 					break;
+				case 'h':
+					that.scrollToFirstPage();
+					break;
 				default:
 					/* console.log('got key', evt.key); */
 					break;
@@ -5439,6 +5454,7 @@ toggleOverview (jc3MousePos) {
 		if (that.noCopyPaste) {
 			that.noCopyPaste = false;
 		}
+		that.scrollToFirstPage();
 	}
 
 	dataURLtoFile(dataurl: string, filename: string) {
@@ -6458,7 +6474,6 @@ uploadFileToQcloudCOS (file) {
 		console.log('Hello, I am KFK');
 	}
 }
-
 const KFK = new KFKclass();
 
 document.onpaste = KFK.onPaste;

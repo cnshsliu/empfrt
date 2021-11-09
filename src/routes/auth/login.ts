@@ -12,7 +12,6 @@ export async function post(request) {
 	if (ret.error) {
 		console.error('auth/login', ret);
 	}
-	let headers = {};
 	if (ret.user) {
 		request.locals.user = Parser.codeToBase64(JSON.stringify(ret.user));
 	}

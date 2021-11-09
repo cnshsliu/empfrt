@@ -21,22 +21,7 @@
 	import { PermControl } from '$lib/permissionControl';
 	import Parser from '$lib/parser';
 	import * as api from '$lib/api';
-	import {
-		Container,
-		Row,
-		Col,
-		Icon,
-		Button,
-		Dropdown,
-		DropdownItem,
-		DropdownMenu,
-		DropdownToggle,
-		FormGroup,
-		Label,
-		Input,
-		Nav,
-		NavLink
-	} from 'sveltestrap';
+	import { Container, Row, Col, Icon, Button, Fade, Card } from 'sveltestrap';
 
 	import type { User, Team, Config } from '$lib/types';
 	import { enhance } from '$lib/form';
@@ -247,3 +232,8 @@
 		</Col>
 	</Row>
 </Container>
+<Fade isOpen={fade_message != ''} class="kfk-fade">
+	<Card body>
+		{fade_message}
+	</Card>
+</Fade>

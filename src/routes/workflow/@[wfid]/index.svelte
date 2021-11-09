@@ -31,15 +31,6 @@
 	import type { User, Template, Workflow } from '$lib/types';
 	import { session } from '$app/stores';
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
-	import {
-		Card,
-		CardBody,
-		CardFooter,
-		CardHeader,
-		CardSubtitle,
-		CardText,
-		CardTitle
-	} from 'sveltestrap';
 	import jQuery from 'jquery';
 	import { goto } from '$app/navigation';
 	import { title } from '$lib/title';
@@ -47,7 +38,11 @@
 	import * as api from '$lib/api';
 	import { Container, Row, Col, Nav, NavLink } from 'sveltestrap';
 	import { Icon, Button, Modal, ModalBody, ModalFooter, ModalHeader, Styles } from 'sveltestrap';
-	import { enhance } from '$lib/form';
+	import { get } from 'svelte/store';
+	import type { Perm, WhichTab } from '$lib/types';
+	import { permStore, whichTabStore } from '$lib/empstores';
+	import { PermControl } from '$lib/permissionControl';
+	import Parser from '$lib/parser';
 	export let workflow: Workflow;
 	export let wfid: string;
 
@@ -83,6 +78,11 @@
 			workflow.status = ret.status;
 		}, 1);
 	};
+	let perm: Perm = get(permStore);
+	let perms: string = null;
+	try {
+		perms = perm ? JSON.parse(Parser.base64ToCode(perm.perm64)) : [];
+	} catch (err) {}
 </script>
 
 <Styles />
@@ -90,7 +90,7 @@
 <svelte:head>
 	<title>{workflow.wftitle} • Workflow</title>
 </svelte:head>
-<div id="designer_topMenu">
+<div id="designer-topMenu">
 	<Row class="mt-1 d-flex justify-content-center">
 		<Col class="d-flex justify-content-center">
 			<Nav>
@@ -103,51 +103,78 @@
 					<Icon name="list-check" />
 					{'Works'}
 				</NavLink>
-				{#if workflow.status === 'ST_RUN'}
-					<NavLink
-						class="kfk-link"
-						on:click={() => {
-							opWorkflow(workflow.wfid, 'pause');
-						}}
-					>
-						<Icon name="pause-btn" />
-						{'PAUSE'}
-					</NavLink>
-				{/if}
-				{#if workflow.status === 'ST_PAUSE'}
-					<NavLink
-						class="kfk-link"
-						on:click={() => {
-							opWorkflow(workflow.wfid, 'resume');
-						}}
-					>
-						<Icon name="arrow-counterclockwise" />
-						{'RESUME'}
-					</NavLink>
-				{/if}
-				{#if ['ST_RUN', 'ST_PAUSE'].indexOf(workflow.status) > -1}
-					<NavLink
-						class="kfk-link"
-						on:click={() => {
-							opWorkflow(workflow.wfid, 'stop');
-						}}
-					>
-						<Icon name="slash-square" />
-						{'STOP'}
-					</NavLink>
-				{/if}
-				{#if ['ST_RUN', 'ST_PAUSE', 'ST_STOP'].indexOf(workflow.status) > -1}
-					<NavLink
-						class="kfk-link"
-						on:click={(e) => {
-							e.preventDefault();
-							opWorkflow(workflow.wfid, 'restart');
-							goto('/workflow');
-						}}
-					>
-						<Icon name="caret-right-square" />
-						{'RESTART'}
-					</NavLink>
+				{#if PermControl(perms, user.email, 'workflow', workflow, 'update')}
+					{#if workflow.status === 'ST_RUN'}
+						<NavLink
+							class="kfk-link"
+							on:click={() => {
+								opWorkflow(workflow.wfid, 'pause');
+							}}
+						>
+							<Icon name="pause-btn" />
+							{'PAUSE'}
+						</NavLink>
+					{/if}
+					{#if workflow.status === 'ST_PAUSE'}
+						<NavLink
+							class="kfk-link"
+							on:click={() => {
+								opWorkflow(workflow.wfid, 'resume');
+							}}
+						>
+							<Icon name="arrow-counterclockwise" />
+							{'RESUME'}
+						</NavLink>
+					{/if}
+					{#if ['ST_RUN', 'ST_PAUSE'].indexOf(workflow.status) > -1}
+						<NavLink
+							class="kfk-link"
+							on:click={() => {
+								opWorkflow(workflow.wfid, 'stop');
+							}}
+						>
+							<Icon name="slash-square" />
+							{'STOP'}
+						</NavLink>
+					{/if}
+					{#if ['ST_RUN', 'ST_PAUSE', 'ST_STOP'].indexOf(workflow.status) > -1}
+						<NavLink
+							class="kfk-link"
+							on:click={(e) => {
+								e.preventDefault();
+								opWorkflow(workflow.wfid, 'restart');
+								goto('/workflow');
+							}}
+						>
+							<Icon name="caret-right-square" />
+							{'RESTART'}
+						</NavLink>
+					{/if}
+				{:else}
+					{#if workflow.status === 'ST_RUN'}
+						<NavLink class="kfk-link" disabled>
+							<Icon name="pause-btn" />
+							{'PAUSE'}
+						</NavLink>
+					{/if}
+					{#if workflow.status === 'ST_PAUSE'}
+						<NavLink class="kfk-link" disabled>
+							<Icon name="arrow-counterclockwise" />
+							{'RESUME'}
+						</NavLink>
+					{/if}
+					{#if ['ST_RUN', 'ST_PAUSE'].indexOf(workflow.status) > -1}
+						<NavLink class="kfk-link" disabled>
+							<Icon name="slash-square" />
+							{'STOP'}
+						</NavLink>
+					{/if}
+					{#if ['ST_RUN', 'ST_PAUSE', 'ST_STOP'].indexOf(workflow.status) > -1}
+						<NavLink class="kfk-link" disabled>
+							<Icon name="caret-right-square" />
+							{'RESTART'}
+						</NavLink>
+					{/if}
 				{/if}
 			</Nav>
 		</Col>

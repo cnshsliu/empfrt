@@ -32,6 +32,7 @@ export interface Template {
 	doc: string;
 	createdAt: string;
 	updatedAt: string;
+	ins: boolean;
 }
 
 export interface Workflow {
@@ -159,4 +160,12 @@ export interface WorkStatus {
 }
 export interface Perm {
 	perm64: string;
+}
+
+export interface EmpResponse {
+	error?: Record;
+	errMsg?: string;
+	user?: Record;
+	perm?: string;
+	message?: string;
 }

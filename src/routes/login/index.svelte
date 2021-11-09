@@ -51,8 +51,6 @@
 		} else {
 			setFadeMessage('');
 
-			localStorage;
-
 			if (response.user) {
 				$session.user = response.user;
 				goto('/');
@@ -130,12 +128,10 @@
 				<svelte:component this={Countdown} bind:this={theCountdown} bind:resendCountdown />
 			{/if}
 		</Col>
-		<Col>
-			<Fade isOpen={fade_message != ''}>
-				<Card body>
-					{fade_message}
-				</Card>
-			</Fade>
-		</Col>
 	</Row>
 </Container>
+<Fade isOpen={fade_message != ''} class="kfk-fade">
+	<Card body>
+		{fade_message}
+	</Card>
+</Fade>

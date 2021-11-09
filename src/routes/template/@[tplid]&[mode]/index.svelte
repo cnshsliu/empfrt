@@ -34,6 +34,11 @@
 	import type { User, Template, Team } from '$lib/types';
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
 	import jQuery from 'jquery';
+	import { get } from 'svelte/store';
+	import type { Perm } from '$lib/types';
+	import { permStore } from '$lib/empstores';
+	import { PermControl } from '$lib/permissionControl';
+	import Parser from '$lib/parser';
 	import { goto } from '$app/navigation';
 	import { session } from '$app/stores';
 	import { title } from '$lib/title';
@@ -147,6 +152,22 @@
 		$title = wfid + '_instemplate';
 		return;
 	}
+
+	let perm: Perm = get(permStore);
+	let perms: string = null;
+	try {
+		perms = perm ? JSON.parse(Parser.base64ToCode(perm.perm64)) : [];
+	} catch (err) {}
+
+	let fade_message = '';
+	let fade_timer: any;
+	function setFadeMessage(message: string, time = 2000) {
+		fade_message = message;
+		if (fade_timer) clearTimeout(fade_timer);
+		fade_timer = setTimeout(() => {
+			fade_message = '';
+		}, time);
+	}
 </script>
 
 <Styles />
@@ -181,20 +202,27 @@
 		/>
 	{/if}
 {:else}
-	<div id="designer_topMenu" class={topmenu_class}>
+	<div id="designer-topMenu" class={topmenu_class}>
 		<Container>
 			<Row class="mt-1">
 				<Col class="d-flex justify-content-center">
 					<Nav>
-						<NavLink
-							class="kfk-link"
-							on:click={() => {
-								show_form('create');
-							}}
-						>
-							<Icon name="plus-circle" />
-							New
-						</NavLink>
+						{#if PermControl(perms, user.email, 'template', template, 'create')}
+							<NavLink
+								class="kfk-link"
+								on:click={() => {
+									show_form('create');
+								}}
+							>
+								<Icon name="plus-circle" />
+								New
+							</NavLink>
+						{:else}
+							<NavLink disabled>
+								<Icon name="plus-circle" />
+								New
+							</NavLink>
+						{/if}
 						<NavLink
 							class="kfk-link"
 							on:click={() => {
@@ -204,57 +232,92 @@
 							<Icon name="cloud-download" />
 							Export
 						</NavLink>
-						<NavLink
-							class="kfk-link"
-							on:click={() => {
-								show_form('copyto');
-							}}
-						>
-							<Icon name="files" />
-							Copy to
-						</NavLink>
+						{#if PermControl(perms, user.email, 'template', template, 'create')}
+							<NavLink
+								class="kfk-link"
+								on:click={() => {
+									show_form('copyto');
+								}}
+							>
+								<Icon name="files" />
+								Copy to
+							</NavLink>
+						{:else}
+							<NavLink class="kfk-link" disabled>
+								<Icon name="files" />
+								Copy to
+							</NavLink>
+						{/if}
 						{#if template.ins === false}
-							<NavLink
-								class="kfk-link"
-								on:click={() => {
-									show_form('rename');
-								}}
-							>
-								<Icon name="input-cursor-text" />
-								Rename
-							</NavLink>
-							<NavLink
-								class="kfk-link"
-								on:click={() => {
-									show_form('delete');
-								}}
-							>
-								<Icon name="trash" />
-								Delete
-							</NavLink>
-							<NavLink
-								class="kfk-link"
-								on:click={async () => {
-									hide_all_form();
-									if (readonly) {
-										await change_mode('edit');
-									} else {
-										await change_mode('read');
-									}
-								}}
-							>
-								<Icon name={readonly ? 'pen' : 'eye'} />
-								{readonly ? 'Edit it' : 'View it'}
-							</NavLink>
-							<NavLink
-								class="kfk-link"
-								on:click={() => {
-									show_form('start');
-								}}
-							>
-								<Icon name="trash" />
-								Start it
-							</NavLink>
+							{#if PermControl(perms, user.email, 'template', template, 'update')}
+								<NavLink
+									class="kfk-link"
+									on:click={() => {
+										show_form('rename');
+									}}
+								>
+									<Icon name="input-cursor-text" />
+									Rename
+								</NavLink>
+							{:else}
+								<NavLink class="kfk-link" disabled>
+									<Icon name="input-cursor-text" />
+									Rename
+								</NavLink>
+							{/if}
+							{#if PermControl(perms, user.email, 'template', template, 'delete')}
+								<NavLink
+									class="kfk-link"
+									on:click={() => {
+										show_form('delete');
+									}}
+								>
+									<Icon name="trash" />
+									Delete
+								</NavLink>
+							{:else}
+								<NavLink class="kfk-link" disabled>
+									<Icon name="trash" />
+									Delete
+								</NavLink>
+							{/if}
+							{#if PermControl(perms, user.email, 'template', template, 'update')}
+								<NavLink
+									class="kfk-link"
+									on:click={async () => {
+										hide_all_form();
+										if (readonly) {
+											await change_mode('edit');
+										} else {
+											await change_mode('read');
+										}
+									}}
+								>
+									<Icon name={readonly ? 'pen' : 'eye'} />
+									{readonly ? 'Edit it' : 'View it'}
+								</NavLink>
+							{:else}
+								<NavLink disabled>
+									<Icon name={readonly ? 'pen' : 'eye'} />
+									{readonly ? 'Edit it' : 'View it'}
+								</NavLink>
+							{/if}
+							{#if PermControl(perms, user.email, 'workflow', '', 'create')}
+								<NavLink
+									class="kfk-link"
+									on:click={() => {
+										show_form('start');
+									}}
+								>
+									<Icon name="trash" />
+									Start it
+								</NavLink>
+							{:else}
+								<NavLink disabled>
+									<Icon name="trash" />
+									Start it
+								</NavLink>
+							{/if}
 						{/if}
 					</Nav>
 				</Col>

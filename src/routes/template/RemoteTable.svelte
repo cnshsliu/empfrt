@@ -127,11 +127,16 @@
 			<tr
 				transition:scale|local={{ start: 0.7 }}
 				animate:flip={{ duration: 200 }}
-				class:odd={index % 2 !== 0}
-				class:even={index % 2 === 0}
+				class:kfk-odd={index % 2 !== 0}
+				class:kfk-even={index % 2 === 0}
+				class:tnt-odd={index % 2 !== 0}
+				class:tnt-even={index % 2 === 0}
 			>
 				<td data-label="Name">
-					<a class="preview-link kfk-template-id" href="/template/@{row.tplid}&read">
+					<a
+						class="preview-link kfk-template-id tnt-template-id"
+						href="/template/@{row.tplid}&read"
+					>
 						{row.tplid}
 					</a>
 				</td>
@@ -192,3 +197,5 @@
 		/>
 	</div>
 </Table>
+{user}
+{perms}

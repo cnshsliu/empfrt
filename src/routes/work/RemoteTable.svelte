@@ -100,7 +100,12 @@
 	</thead>
 	<tbody>
 		{#each rows2 as row, index (row)}
-			<tr class:odd={index % 2 !== 0} class:even={index % 2 === 0}>
+			<tr
+				class:kfk-odd={index % 2 !== 0}
+				class:kfk-even={index % 2 === 0}
+				class:tnt-odd={index % 2 !== 0}
+				class:tnt-even={index % 2 === 0}
+			>
 				<td data-label="Title">
 					<a
 						class="preview-link  kfk-link"
@@ -147,9 +152,3 @@
 		/>
 	</div>
 </Table>
-
-<style>
-	.odd {
-		background-color: #f7f7f7;
-	}
-</style>

@@ -12,14 +12,10 @@
 <tr
 	on:click={onClick}
 	class={$$props.class}
-	class:odd={index % 2 !== 0}
-	class:even={index % 2 === 0}
+	class:kfk-odd={index % 2 !== 0}
+	class:kfk-even={index % 2 === 0}
+	class:tnt-odd={index % 2 !== 0}
+	class:tnt-even={index % 2 === 0}
 >
 	<slot />
 </tr>
-
-<style>
-	.odd {
-		background-color: #f7f7f7;
-	}
-</style>

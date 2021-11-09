@@ -16,6 +16,8 @@ export function respond(body) {
 	authStore.set({ jwt: jwtValue });
 	let cookieString = `jwt=${jwtValue}; Path=/; HttpOnly`;
 
+	console.log('Response with headers set-cookie');
+
 	return {
 		headers: {
 			'set-cookie': cookieString

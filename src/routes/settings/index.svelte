@@ -27,8 +27,8 @@
 <script lang="ts">
 	import { session } from '$app/stores';
 	import { get } from 'svelte/store';
-	import type { WhichTab } from '$lib/types';
-	import { whichTabStore } from '$lib/empstores';
+	import type { EmpResponse, WhichTab } from '$lib/types';
+	import { whichTabStore, permStore } from '$lib/empstores';
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import type { User } from '$lib/types';
@@ -88,20 +88,21 @@
 		}, time);
 	}
 
-	async function save() {
+	async function savePersonel() {
 		in_progress = true;
 
-		let ret = await api.post(
-			'account/profile/update',
-			{ email: user.email, username: user.username, password: user.password },
-			user.sessionToken
-		);
-		if (ret.error) {
-			setFadeMessage(ret.message);
+		const response = (await post('auth/save', {
+			email: user.email,
+			username: user.username,
+			password: user.password
+		})) as unknown as EmpResponse;
+		if (response.error) {
+			setFadeMessage(response.message);
 		} else {
 			//eslint-disable-next-line
-			if (ret.user) {
-				$session.user = ret.user;
+			if (response.user) {
+				$session.user = response.user;
+				permStore.set({ perm64: response.perm });
 				setFadeMessage('修改用户信息成功');
 			} else {
 				setFadeMessage('错误');
@@ -110,6 +111,7 @@
 
 		in_progress = false;
 	}
+
 	async function setMyTenantName() {
 		in_progress = true;
 
@@ -146,7 +148,12 @@
 			//eslint-disable-next-line
 			if (ret.css) {
 				setFadeMessage('Orgniazation theme is set succesfully');
-				$session.user.tenant.css = ret.css;
+				const response = (await post(`auth/refresh`, {})) as unknown as EmpResponse;
+
+				if (response.user) {
+					$session.user = response.user;
+					permStore.set({ perm64: response.perm });
+				}
 			} else {
 				setFadeMessage('Error');
 			}
@@ -245,6 +252,7 @@
 				orgMembers.members[i].checked = false;
 			}
 		}
+		console.log(orgMembers.members);
 	}
 
 	let whichTab: WhichTab = get(whichTabStore);
@@ -257,12 +265,10 @@
 		whichTab = get(whichTabStore);
 		whichTab['setting'] = tabId;
 		whichTabStore.set(whichTab);
-		console.log(get(whichTabStore));
 	}
 
 	onMount(() => {
 		refreshMyOrg();
-		refreshMembers();
 	});
 
 	async function removeSelectedMembers() {
@@ -279,6 +285,7 @@
 		if (res.error) {
 			setFadeMessage(res.message);
 		} else {
+			console.log('removeSelectedMembers refreshMembers');
 			refreshMembers();
 		}
 	}
@@ -297,6 +304,7 @@
 		if (res.error) {
 			setFadeMessage(res.message);
 		} else {
+			console.log('setSelectedGroup refreshMembers');
 			refreshMembers();
 		}
 	}
@@ -314,6 +322,7 @@
 		if (res.error) {
 			setFadeMessage(res.message);
 		} else {
+			console.log('show Invitation refreshMembers');
 			refreshMembers();
 		}
 	}
@@ -334,7 +343,7 @@
 			active={!whichTab || whichTab['setting'] === 'personal'}
 		>
 			<h1 class="text-xs-center">Personel</h1>
-			<form on:submit|preventDefault={save}>
+			<form on:submit|preventDefault={savePersonel}>
 				<Container>
 					<Row cols="2">
 						<Col>
@@ -381,14 +390,16 @@
 								}}
 							/>
 						</Col>
+					</Row>
+					<Row>
 						<Col>
-							<button
-								class="btn btn-lg  pull-xs-right"
+							<Button
+								class="w-100 btn btn-lg  pull-xs-right"
 								type="submit"
 								disabled={in_progress || userInfoNotChange}
 							>
 								Update Settings
-							</button>
+							</Button>
 						</Col>
 					</Row>
 				</Container>
@@ -418,43 +429,55 @@
 			</Container>
 		</TabPane>
 		<TabPane tabId="org" tab="Org" active={whichTab && whichTab['setting'] === 'org'}>
-			<Card class="mt-3">
-				<CardHeader><CardTitle>My Orgnization</CardTitle></CardHeader>
-				<CardBody>
-					<InputGroup>
-						<InputGroupText>Admin Password:</InputGroupText>
-						<Input
-							type="password"
-							bind:value={password_for_admin}
-							placeholder="Confirm with your password"
-						/>
-					</InputGroup>
-					<InputGroup>
-						<InputGroupText>Set Org Name to:</InputGroupText>
-						<Input bind:value={orgname} placeholder="Orgniazation name" />
-						<Button
-							on:click={(e) => {
-								e.preventDefault();
-								setMyTenantName();
-							}}
-						>
-							Set
-						</Button>
-					</InputGroup>
-					<InputGroup>
-						<InputGroupText>Set Org theme to:</InputGroupText>
-						<Input bind:value={orgtheme} placeholder="Your customized theme CSS url" />
-						<Button
-							on:click={(e) => {
-								e.preventDefault();
-								setMyTenantTheme();
-							}}
-						>
-							Set
-						</Button>
-					</InputGroup>
-				</CardBody>
-			</Card>
+			Administraotr: {myorg.owner === user.email ? 'Me' : myorg.owner}
+			<br />
+			My Role: {user.group}
+			{#if myorg.adminorg}
+				<Card class="mt-3">
+					<CardHeader><CardTitle>My Orgnization</CardTitle></CardHeader>
+					<CardBody>
+						<InputGroup>
+							<InputGroupText>Admin Password:</InputGroupText>
+							<Input
+								type="password"
+								bind:value={password_for_admin}
+								placeholder="Confirm with your password"
+							/>
+						</InputGroup>
+						<InputGroup>
+							<InputGroupText>Set Org Name to:</InputGroupText>
+							<Input bind:value={orgname} placeholder="Orgniazation name" />
+							<Button
+								on:click={(e) => {
+									e.preventDefault();
+									setMyTenantName();
+								}}
+							>
+								Set
+							</Button>
+						</InputGroup>
+						<InputGroup>
+							<InputGroupText>Set Org theme to:</InputGroupText>
+							<Input bind:value={orgtheme} placeholder="Your customized theme CSS url" />
+							<Button
+								on:click={(e) => {
+									e.preventDefault();
+									setMyTenantTheme();
+								}}
+							>
+								Set
+							</Button>
+						</InputGroup>
+					</CardBody>
+				</Card>
+			{:else}
+				<Card class="mt-3">
+					<CardHeader><CardTitle>My Orgnization</CardTitle></CardHeader>
+					<CardBody>
+						{orgname}
+					</CardBody>
+				</Card>
+			{/if}
 			{#if myorg.adminorg}
 				<Card class="mt-5">
 					<CardHeader><CardTitle>Joincode</CardTitle></CardHeader>
@@ -560,14 +583,16 @@
 						{/if}
 					</CardBody>
 				</Card>
-			{:else}
-				This orgnization is under PRIVATE mode,
 			{/if}
 		</TabPane>
 		<TabPane tabId="members" tab="Members" active={whichTab && whichTab['setting'] === 'members'}>
 			<h1 class="text-xs-center">Members</h1>
 			{#if myorg.adminorg === false}
-				This is a PRIVTATE orgnization, the only member is youself.
+				{#if myorg.owner === user.email}
+					This is a PRIVTATE orgnization, the only member is youself.
+				{:else}
+					This is an orgnization, member list is available
+				{/if}
 			{:else if orgMembers && orgMembers.members && orgMembers.members.length > 0}
 				<Container>
 					<Row cols="1" />
@@ -583,8 +608,10 @@
 									<tr
 										transition:scale|local={{ start: 0.7 }}
 										animate:flip={{ duration: 200 }}
-										class:odd={index % 2 !== 0}
-										class:even={index % 2 === 0}
+										class:kfk-odd={index % 2 !== 0}
+										class:kfk-even={index % 2 === 0}
+										class:tnt-odd={index % 2 !== 0}
+										class:tnt-even={index % 2 === 0}
 									>
 										<td data-label="Email">
 											{member.email}
@@ -647,9 +674,3 @@
 		{fade_message}
 	</Card>
 </Fade>
-
-<style>
-	.odd {
-		background-color: #f7f7f7;
-	}
-</style>
