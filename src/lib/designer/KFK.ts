@@ -5162,7 +5162,7 @@ toggleOverview (jc3MousePos) {
 				case 'Delete':
 					that.deleteObjects(evt, false);
 					break;
-				case 'h':
+				case 'r':
 					that.scrollToFirstPage();
 					break;
 				default:
