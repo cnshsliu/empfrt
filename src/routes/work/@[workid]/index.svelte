@@ -3,7 +3,11 @@
 	import 'moment/locale/zh-cn';
 	export const ssr = false;
 	export async function load({ page, fetch, session }) {
-		const workid = page.params.workid;
+		let workid = page.params.workid;
+		let iframeMode = false;
+		if (page.query.has('iframe')) {
+			iframeMode = true;
+		}
 		const res = await fetch(`/work/@${workid}.json`);
 		const res_html = await fetch(`/work/@${workid}/html.json`);
 
@@ -13,6 +17,7 @@
 		return {
 			props: {
 				work: theWork,
+				iframeMode: iframeMode,
 				work_html: theHtml.html,
 				user: session.user
 			}
@@ -85,12 +90,11 @@ let WORKITEM_HTML = await axios.post(
 	let html_example_svelte = `<p>{@html WORKITEM_HTML}</p>`;
 	let html_example_jquery = `<p>{@html WORKITEM_HTML}</p>`;
 	export let work_html = 'to be implemented';
-	const iframe_src = `${EMP_SERVER}/work/@${work.workid}/iframe`;
+	const iframe_src = `${EMP_SERVER}/work/@${work.workid}?iframe`;
 	const iframe_html_code = `<iframe title="hyperflow_work_${work.workid}"
 	src="${iframe_src}"></iframe>`;
 
-	console.log('Mode=', mode);
-	let iframe = false;
+	export let iframeMode;
 </script>
 
 <Container>
@@ -104,10 +108,10 @@ let WORKITEM_HTML = await axios.post(
 	</div>
 </Container>
 <Container>
-	{#if ClientPermControl(user.perms, user.email, '*', '', 'admin')}
+	{#if ClientPermControl(user.perms, user.email, '*', '', 'admin') && iframeMode === false}
 		<TabContent on:tab={(e) => (currentTab = '' + e.detail)}>
 			<TabPane tabId="work" tab="Work" active>
-				<WorkPage {work} {user} {iframe} />
+				<WorkPage {work} {user} {iframeMode} />
 			</TabPane>
 			<TabPane tabId="json" tab="JSON">
 				<Row class="mt-3">
@@ -212,6 +216,6 @@ let WORKITEM_HTML = await axios.post(
 			</TabPane>
 		</TabContent>
 	{:else}
-		<WorkPage {work} {user} {iframe} />
+		<WorkPage {work} {user} {iframeMode} />
 	{/if}
 </Container>

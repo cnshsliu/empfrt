@@ -1,8 +1,14 @@
 <script context="module" lang="ts">
 	export async function load({ page, fetch, session }) {
+		let iframeMode = false;
+		if (page.query.has('iframe')) {
+			iframeMode = true;
+		}
 		return {
 			props: {
-				user: session.user
+				user: session.user,
+				iframeMode: iframeMode,
+				assigners: ['582573936@qq.com', 'liuzijin@gmail.com']
 			}
 		};
 	}
@@ -26,6 +32,8 @@
 	import { WorkStatusStore } from '$lib/empStores';
 
 	export let user: User;
+	export let iframeMode;
+	export let assigners;
 	export const lastSearchCondition: string = '';
 	$title = 'HyperFlow';
 	$: token = user.sessionToken;
@@ -118,6 +126,8 @@
 		bind:this={theExtraFilter}
 		bind:filter_status
 		bind:filter_doer
+		bind:user
+		bind:assigners
 		fields="{['doer', 'statuses']},"
 		object_type="work items"
 		statuses_label="Work status:"
@@ -133,6 +143,7 @@
 			<RemoteTable
 				endpoint="work/list"
 				{token}
+				{iframeMode}
 				{input_search}
 				{payload_extra}
 				bind:this={remoteTable}

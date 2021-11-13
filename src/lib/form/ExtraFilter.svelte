@@ -1,11 +1,23 @@
 <svelte:options accessors />
 
-<script lang="ts" .>
-	import { Container, Row, InputGroup, InputGroupText, Col, Button, Input } from 'sveltestrap';
-	import type { radioOption } from '$lib/types';
+<script lang="ts">
+	import {
+		Container,
+		Row,
+		InputGroup,
+		InputGroupText,
+		Col,
+		Button,
+		Input,
+		FormGroup,
+		Label
+	} from 'sveltestrap';
+	import type { User, radioOption } from '$lib/types';
 	import { createEventDispatcher } from 'svelte';
 	export let object_type: string;
 	export let filter_doer: string;
+	export let user: User;
+	export let assigners;
 	export let filter_status: string;
 	export let statuses_label: string;
 	export let fields: string[] = ['statuses'];
@@ -62,18 +74,32 @@
 	</Container>
 {/if}
 {#if fields.indexOf('doer') > -1}
-	<Row class="mt-3">
-		<Col>
-			<InputGroup class="kfk-input-template-name d-flex">
-				<InputGroupText>List workitems assigned to</InputGroupText>
-				<input
-					class="flex-fill"
-					name="tplid"
-					bind:value={filter_doer}
-					aria-label="User Email"
-					placeholder="Input user email to query his/her workitems"
-				/>
-			</InputGroup>
-		</Col>
-	</Row>
+	{#if user.group === 'ADMIN'}
+		<Row class="mt-3">
+			<Col>
+				<InputGroup class="kfk-input-template-name d-flex">
+					<InputGroupText>List workitems assigned to</InputGroupText>
+					<input
+						class="flex-fill"
+						name="tplid"
+						bind:value={filter_doer}
+						aria-label="User Email"
+						placeholder="Input user email to query his/her workitems"
+					/>
+				</InputGroup>
+			</Col>
+		</Row>
+	{:else if assigners.length > 0}
+		Select assgigned from
+		{assigners}
+		Select
+		<InputGroup>
+			<InputGroupText>Select assignment from:</InputGroupText>
+			<Input type="select" name="select" id="exampleSelect" bind:value={filter_doer}>
+				{#each assigners as asgn, index (asgn)}
+					<option>{asgn} {index}</option>
+				{/each}
+			</Input>
+		</InputGroup>
+	{/if}
 {/if}

@@ -42,13 +42,22 @@
 	<link href={$session.user.tenant.css} rel="stylesheet" type="text/css" />
 {/if}
 <Styles />
-{#if $page.path.indexOf('iframe') < 0}
+{#if $page.query.has('iframe') === false}
 	<Navbar class="light px-5 kfknavbar" light expand="md">
 		<NavbarBrand href="/">
-			<Row>
-				<Col><div class="kfk-org-logo org-logo" /></Col>
-				<Col class="d-flex">{$session.user ? $session.user.tenant.name : 'HyperFlow'}</Col>
-			</Row>
+			<Container>
+				<Row cols="2" class="d-flex w-100">
+					<Col class="kfk-org-logo org-logo" />
+					<Col>
+						<Col>
+							{$session.user ? $session.user.tenant.name : 'HyperFlow'}
+						</Col>
+						<Col>
+							<span class="kfk-me">{$session.user && $session.user.username}</span>
+						</Col>
+					</Col>
+				</Row>
+			</Container>
 		</NavbarBrand>
 		<NavbarToggler on:click={() => (isMenuOpen = !isMenuOpen)} />
 		<Nav class="ms-auto" navbar>
@@ -112,6 +121,4 @@
 			{/if}
 		</Nav>
 	</Navbar>
-
-	<div class="kfk-me">{$session.user && $session.user.username}</div>
 {/if}

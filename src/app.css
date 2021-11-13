@@ -2649,8 +2649,8 @@ table.quick-help-table td:first-of-type {
 	max-width: 400px;
 }
 .kfk-org-logo {
-	width: 48px;
-	height: 48px;
+	width: 64px;
+	height: 64px;
 	border-radius: 10px;
 	background-position: center; /* Center the image */
 	background-repeat: no-repeat; /* Do not repeat the image */
@@ -2662,12 +2662,7 @@ table.quick-help-table td:first-of-type {
 }
 
 .kfk-me {
-	position: absolute;
-	z-index: 1000;
-	right: 5px;
-	bottom: 5px;
-	font-weight: 400;
-	color: rgba(0, 0, 0);
+	font-size: 8px;
 }
 .kfk-workflow-info {
 	position: absolute;

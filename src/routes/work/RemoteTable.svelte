@@ -11,6 +11,7 @@
 	import { getData } from '$lib/pagination/Server.js';
 
 	export let token;
+	export let iframeMode;
 	export let endpoint;
 	export let payload_extra;
 	let rows = [];
@@ -73,11 +74,16 @@
 		await load(page);
 	}
 	function gotoWorkitem(work: Work) {
-		goto(`/work/@${work.workid}`, { replaceState: false });
+		goto(iframeMode ? `/work/@${work.workid}?iframe` : `/work/@${work.workid}`, {
+			replaceState: false
+		});
+	}
+	function gotoWorkflow(wfid: string) {
+		goto(iframeMode ? `/workflow/@${wfid}?iframe` : `/workflow/@${wfid}`, { replaceState: false });
 	}
 </script>
 
-<Table {loading} {rows} {pageIndex} {pageSize} let:rows={rows2}>
+<Table hover {loading} {rows} {pageIndex} {pageSize} let:rows={rows2}>
 	<div slot="top">
 		<Search on:search={onSearch} text={input_search} />
 	</div>
@@ -110,7 +116,8 @@
 					<a
 						class="preview-link  kfk-link"
 						href={'#'}
-						on:click|preventDefault={() => {
+						on:click|preventDefault={(e) => {
+							e.preventDefault();
 							gotoWorkitem(row);
 						}}
 					>
@@ -121,8 +128,9 @@
 						<a
 							class="kfk-link"
 							href={'#'}
-							on:click={() => {
-								goto(`/workflow/@${row.wfid}`);
+							on:click={(e) => {
+								e.preventDefault();
+								gotoWorkflow(row.wfid);
 							}}
 						>
 							{row.wftitle}
