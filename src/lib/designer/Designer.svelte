@@ -3,6 +3,7 @@
 <script lang="ts">
 	import jQuery from 'jquery';
 	import Parser from '$lib/parser';
+	import { Status } from '$lib/status';
 	import * as api from '$lib/api';
 	import { session } from '$app/stores';
 	import type { Template, Workflow, KFKclass } from '$lib/types';
@@ -13,6 +14,8 @@
 	import Sub from '$lib/designer/prop/Sub.svelte';
 	import Connect from '$lib/designer/prop/Connect.svelte';
 	import KFK from '$lib/designer/KFK';
+	import { scale } from 'svelte/transition';
+	import { flip } from 'svelte/animate';
 	import { onMount, onDestroy } from 'svelte';
 	import {
 		Container,
@@ -197,7 +200,7 @@
 	</div>
 </div>
 <div id="leftPanel" class="bg-white padlayout spaceToHide noshow">
-	<ListGroup>
+	<ListGroup class="mt-3">
 		<ListGroupItem
 			class="d-flex align-items-center toolbox {currentMode === 'POINTER' ? 'active' : ''}"
 			on:click={(event) => designerSetMode('POINTER', event)}
@@ -281,6 +284,15 @@
 	</ListGroup>
 </div>
 <!-- div id="minimap" class="padlayout spaceToHide" / -->
+{#if workflow}
+	<div class="kfk-workflow-info">
+		<span class="kfk-wf-info-value">{workflow.wftitle}</span>
+		<span class="kfk-wf-info-title">/</span>
+		<span class="kfk-wf-info-value">{Status[workflow.status]}</span>
+		<span class="kfk-wf-info-title">/</span>
+		<span class="kfk-wf-info-value">{workflow.starter}</span>
+	</div>
+{/if}
 <Modal isOpen={openModal} {toggle} size={modalSize}>
 	<ModalHeader {toggle}>{nodeInfo.nodeProps.label}</ModalHeader>
 	<ModalBody>

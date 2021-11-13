@@ -3,12 +3,10 @@
 		const { user } = session;
 		if (!user) {
 			console.log('work/__layout redirect to login', session);
-			/*
 			return {
 				status: 302,
 				redirect: '/login'
 			};
-			 */
 		}
 		return {
 			props: {
@@ -23,7 +21,7 @@
 </script>
 
 <svelte:head>
-	<title>{user.username} • Teams</title>
+	<title>{user.username} • Works</title>
 </svelte:head>
 
 <slot />

@@ -28,11 +28,7 @@
 	import { Container, Row, Col, Nav, Icon, NavItem, NavLink } from 'sveltestrap';
 	import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'sveltestrap';
 	import { enhance } from '$lib/form';
-	import { get } from 'svelte/store';
-	import type { Perm } from '$lib/types';
-	import { permStore } from '$lib/empstores';
-	import { PermControl } from '$lib/permissionControl';
-	import Parser from '$lib/parser';
+	import { ClientPermControl } from '$lib/clientperm';
 	export let team: Team;
 	export let mouseover_objid: string = '';
 
@@ -63,12 +59,6 @@
 	export let export_to_filename = team.teamid;
 	export let errmsg = '';
 	export let user: User;
-
-	let perm: Perm = get(permStore);
-	let perms: string = null;
-	try {
-		perms = perm ? JSON.parse(Parser.base64ToCode(perm.perm64)) : [];
-	} catch (err) {}
 
 	let fade_message = '';
 	let fade_timer: any;
@@ -225,7 +215,7 @@
 				{#if errmsg !== ''}{errmsg}{/if}
 			</div>
 		</TabPane>
-		{#if PermControl(perms, user.email, 'team', team, 'update')}
+		{#if ClientPermControl(user.perms, user.email, 'team', team, 'update')}
 			<TabPane tabId="rename">
 				<span slot="tab">
 					<Icon name="input-cursor-text" />
@@ -326,7 +316,7 @@
 				</form>
 			</div>
 		</TabPane>
-		{#if PermControl(perms, user.email, 'team', team, 'delete')}
+		{#if ClientPermControl(user.perms, user.email, 'team', team, 'delete')}
 			<TabPane tabId="delete">
 				<span slot="tab">
 					<Icon name="trash" />
@@ -342,7 +332,7 @@
 	</TabContent>
 </Container>
 <Container class="mt-3">
-	{#if PermControl(perms, user.email, 'team', team, 'update')}
+	{#if ClientPermControl(user.perms, user.email, 'team', team, 'update')}
 		<Row>
 			<Col>
 				<form
@@ -401,15 +391,7 @@
 						on:focus={() => setMouseFocus()}
 						on:mouseover={() => setMouseOverObjid(aRole)}
 					>
-						<RolePreview
-							{team}
-							{user}
-							{perms}
-							{aRole}
-							{mouseover_objid}
-							{deleteRole}
-							{refreshTeam}
-						/>
+						<RolePreview {team} {user} {aRole} {mouseover_objid} {deleteRole} {refreshTeam} />
 					</div>
 				{/each}
 			{/if}

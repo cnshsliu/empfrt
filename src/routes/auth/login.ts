@@ -15,5 +15,8 @@ export async function post(request) {
 	if (ret.user) {
 		request.locals.user = Parser.codeToBase64(JSON.stringify(ret.user));
 	}
+	if (ret.perm) {
+		request.locals.perm = ret.perm;
+	}
 	return respond(ret);
 }

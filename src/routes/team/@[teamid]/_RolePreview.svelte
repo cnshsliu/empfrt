@@ -6,7 +6,7 @@
 	import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Badge } from 'sveltestrap';
 	import { enhance, enhanceAddOneRoleMember } from '$lib/form';
 	import type { Perm } from '$lib/types';
-	import { PermControl } from '$lib/permissionControl';
+	import { ClientPermControl } from '$lib/clientperm';
 	import Parser from '$lib/parser';
 	export let team: Team;
 	export let aRole: string;
@@ -48,7 +48,7 @@
 				</span>
 			</div>
 		</Col>
-		{#if PermControl(perms, user.email, 'team', team, 'update')}
+		{#if ClientPermControl(perms, user.email, 'team', team, 'update')}
 			<Col xs="4" class="d-flex justify-content-end">
 				{#if mouseover_objid === aRole}
 					<a class="btn btn-sm" href={'#'} on:click|preventDefault={() => show_form(aRole, 'add')}>
@@ -76,7 +76,7 @@
 			</Col>
 		{/if}
 	</Row>
-	{#if PermControl(perms, user.email, 'team', team, 'update')}
+	{#if ClientPermControl(perms, user.email, 'team', team, 'update')}
 		<Row>
 			<Col xs="12">
 				{#if form_id === `add_${aRole}`}
@@ -150,7 +150,7 @@
 					{#each team.tmap[aRole] as aMember (aMember.uid)}
 						<Badge pill color="info" class="kfk-role-member-tag">
 							{aMember.dname} &lt;{aMember.uid}&gt;
-							{#if PermControl(perms, user.email, 'team', team, 'update')}
+							{#if ClientPermControl(perms, user.email, 'team', team, 'update')}
 								<a
 									href={'#'}
 									on:click|preventDefault={() => {

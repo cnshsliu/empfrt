@@ -16,9 +16,9 @@
 	import { API_SERVER } from '$lib/Env';
 	import RemoteTable from './RemoteTable.svelte';
 	import { get } from 'svelte/store';
-	import type { Perm, WhichTab } from '$lib/types';
-	import { permStore, whichTabStore } from '$lib/empstores';
-	import { PermControl } from '$lib/permissionControl';
+	import type { WhichTab } from '$lib/types';
+	import { whichTabStore } from '$lib/empstores';
+	import { ClientPermControl } from '$lib/clientperm';
 	import Parser from '$lib/parser';
 	import * as api from '$lib/api';
 	import { Container, Row, Col, Icon, Button, Fade, Card } from 'sveltestrap';
@@ -74,7 +74,7 @@
 
 	function upload(e) {
 		e.preventDefault();
-		if (PermControl(perms, user.email, 'team', '', 'create') === false) {
+		if (ClientPermControl(user.perms, user.email, 'team', '', 'create') === false) {
 			setFadeMessage("You don't have create team permission");
 			return;
 		}
@@ -100,15 +100,11 @@
 	let whichTab: WhichTab = get(whichTabStore);
 	async function showTab(tabId) {
 		whichTab = get(whichTabStore);
-		whichTab['team'] = tabId;
-		whichTabStore.set(whichTab);
+		if (whichTab) {
+			whichTab['team'] = tabId;
+			whichTabStore.set(whichTab);
+		}
 	}
-
-	let perm: Perm = get(permStore);
-	let perms: string = null;
-	try {
-		perms = perm ? JSON.parse(Parser.base64ToCode(perm.perm64)) : [];
-	} catch (err) {}
 
 	let fade_message = '';
 	let fade_timer: any;
@@ -158,7 +154,7 @@
 				method="post"
 				use:enhance={{
 					preCheck: () => {
-						return PermControl(perms, user.email, 'team', '', 'create');
+						return ClientPermControl(user.perms, user.email, 'team', '', 'create');
 					},
 					token: user.sessionToken,
 					result: async (res, form) => {
@@ -228,7 +224,7 @@
 <Container class="mt-3">
 	<Row class="mt-3">
 		<Col>
-			<RemoteTable endpoint="team/search" {token} {user} {perms} bind:this={remoteTable} />
+			<RemoteTable endpoint="team/search" {token} {user} bind:this={remoteTable} />
 		</Col>
 	</Row>
 </Container>

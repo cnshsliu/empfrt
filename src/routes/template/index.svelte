@@ -22,9 +22,9 @@
 	import RemoteTable from './RemoteTable.svelte';
 	import ErrorProcessor from '$lib/errorProcessor';
 	import { get } from 'svelte/store';
-	import type { Perm, WhichTab } from '$lib/types';
-	import { whichTabStore, permStore } from '$lib/empstores';
-	import { PermControl } from '$lib/permissionControl';
+	import type { WhichTab } from '$lib/types';
+	import { whichTabStore } from '$lib/empstores';
+	import { ClientPermControl } from '$lib/clientperm';
 	import { TabContent, Fade, Card, TabPane } from 'sveltestrap';
 	import type { User } from '$lib/types';
 	import { session } from '$app/stores';
@@ -60,7 +60,7 @@
 
 	function upload(e) {
 		e.preventDefault();
-		if (PermControl(perms, user.email, 'template', '', 'create') === false) {
+		if (ClientPermControl(user.perms, user.email, 'template', '', 'create') === false) {
 			setFadeMessage("You don't have upload permission");
 			return;
 		}
@@ -87,14 +87,11 @@
 	let whichTab: WhichTab = get(whichTabStore);
 	async function showTab(tabId) {
 		whichTab = get(whichTabStore);
-		whichTab['template'] = tabId;
-		whichTabStore.set(whichTab);
+		if (whichTab) {
+			whichTab['template'] = tabId;
+			whichTabStore.set(whichTab);
+		}
 	}
-	let perm: Perm = get(permStore);
-	let perms: string = null;
-	try {
-		perms = perm ? JSON.parse(Parser.base64ToCode(perm.perm64)) : [];
-	} catch (err) {}
 
 	let fade_message = '';
 	let fade_timer: any;
@@ -131,7 +128,7 @@
 			</span>
 			<div class="mx-3">A template describe how a workflow sould run</div>
 		</TabPane>
-		{#if perms && PermControl(perms, user.email, 'template', '', 'create')}
+		{#if user.perms && ClientPermControl(user.perms, user.email, 'template', '', 'create')}
 			<TabPane tabId="create" active={whichTab && whichTab['template'] === 'create'}>
 				<span slot="tab">
 					<Icon name="plus-circle" />
@@ -143,7 +140,7 @@
 					method="post"
 					use:enhance={{
 						preCheck: () => {
-							return PermControl(perms, user.email, 'template', '', 'create');
+							return ClientPermControl(user.perms, user.email, 'template', '', 'create');
 						},
 						token: user.sessionToken,
 						result: async (res, form) => {
@@ -214,7 +211,7 @@
 <Container class="mt-3">
 	<Row class="mt-3">
 		<Col>
-			<RemoteTable endpoint="template/search" {token} {user} {perms} bind:this={remoteTable} />
+			<RemoteTable endpoint="template/search" {token} {user} bind:this={remoteTable} />
 		</Col>
 	</Row>
 </Container>

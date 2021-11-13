@@ -28,7 +28,7 @@
 	import { session } from '$app/stores';
 	import { get } from 'svelte/store';
 	import type { EmpResponse, WhichTab } from '$lib/types';
-	import { whichTabStore, permStore } from '$lib/empstores';
+	import { whichTabStore } from '$lib/empstores';
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import type { User } from '$lib/types';
@@ -102,7 +102,6 @@
 			//eslint-disable-next-line
 			if (response.user) {
 				$session.user = response.user;
-				permStore.set({ perm64: response.perm });
 				setFadeMessage('修改用户信息成功');
 			} else {
 				setFadeMessage('错误');
@@ -152,7 +151,6 @@
 
 				if (response.user) {
 					$session.user = response.user;
-					permStore.set({ perm64: response.perm });
 				}
 			} else {
 				setFadeMessage('Error');
@@ -263,8 +261,10 @@
 			refreshMembers();
 		}
 		whichTab = get(whichTabStore);
-		whichTab['setting'] = tabId;
-		whichTabStore.set(whichTab);
+		if (whichTab) {
+			whichTab['setting'] = tabId;
+			whichTabStore.set(whichTab);
+		}
 	}
 
 	onMount(() => {
@@ -425,6 +425,7 @@
 							</Button>
 						</InputGroup>
 					</Col>
+					<Col class="p-3">My Group: {user.group}</Col>
 				</Row>
 			</Container>
 		</TabPane>

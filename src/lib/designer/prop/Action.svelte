@@ -20,17 +20,20 @@
 	export let readonly;
 	let helpShowing = false;
 
-	let doerCode = Parser.base64ToCode(nodeInfo.nodeProps.ACTION.doer);
-	let doerJSON = JSON.parse(doerCode);
-	console.log(doerJSON);
 	let doerHTML = '';
-	if (Array.isArray(doerJSON)) {
-		for (let i = 0; i < doerJSON.length; i++) {
-			if (i > 0) doerHTML += '; ';
-			doerHTML = doerJSON[i].uid;
+	console.log(nodeInfo.nodeProps.ACTION.doer);
+	if (nodeInfo.nodeProps.ACTION.doer) {
+		let doerCode = Parser.base64ToCode(nodeInfo.nodeProps.ACTION.doer);
+		let doerJSON = JSON.parse(doerCode);
+		console.log(doerJSON);
+		if (Array.isArray(doerJSON)) {
+			for (let i = 0; i < doerJSON.length; i++) {
+				if (i > 0) doerHTML += '; ';
+				doerHTML = doerJSON[i].uid;
+			}
+		} else {
+			doerHTML = doerJSON;
 		}
-	} else {
-		doerHTML = doerJSON;
 	}
 </script>
 
@@ -66,9 +69,9 @@
 				</InputGroup>
 			</Col>
 		{/if}
-		{#if nodeInfo.nodeProps.ACTION.doer !== ''}
+		{#if nodeInfo.nodeProps.ACTION.doer}
 			<Col class="mb-2">
-				{doerHTML}
+				Who: {doerHTML}
 			</Col>
 		{/if}
 		<Col>

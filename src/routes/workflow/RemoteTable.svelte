@@ -10,12 +10,11 @@
 	import { goto } from '$app/navigation';
 	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, NavLink, Icon } from 'sveltestrap';
 	import { getData } from '$lib/pagination/Server.js';
-	import { PermControl } from '$lib/permissionControl';
+	import { ClientPermControl } from '$lib/clientperm';
 
 	export let token;
 	export let payload_extra;
 	export let endpoint;
-	export let perms;
 	export let user;
 	let rows: Workflow[] = [] as Workflow[];
 	let page = 0; //first page
@@ -200,7 +199,7 @@
 									<Icon name="list-check" /> All Works
 								</a>
 							</DropdownItem>
-							{#if PermControl(perms, user.email, 'workflow', row, 'update')}
+							{#if ClientPermControl(user.perms, user.email, 'workflow', row, 'update')}
 								{#if row.status === 'ST_RUN'}
 									<DropdownItem>
 										<NavLink on:click={() => opWorkflow(row, 'pause')}>
@@ -260,7 +259,7 @@
 								{/if}
 							{/if}
 							<DropdownItem>
-								{#if PermControl(perms, user.email, 'workflow', '', 'create')}
+								{#if ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
 									<NavLink on:click={() => opWorkflow(row, 'startAnother')}>
 										<Icon name="caret-right-fill" />
 										Start Another
@@ -285,7 +284,7 @@
 								</NavLink>
 							</DropdownItem>
 							<DropdownItem>
-								{#if PermControl(perms, user.email, 'workflow', row, 'delete')}
+								{#if ClientPermControl(user.perms, user.email, 'workflow', row, 'delete')}
 									<NavLink on:click={() => opWorkflow(row, 'destroy')}>
 										<Icon name="trash" />
 										Delete this workflow
@@ -313,5 +312,3 @@
 		/>
 	</div>
 </Table>
-{user}
-{perms}

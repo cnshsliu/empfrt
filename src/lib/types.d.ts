@@ -22,6 +22,7 @@ export interface User {
 		input_search?: string;
 		filter_status?: string;
 	};
+	perms: unknown;
 }
 
 export interface Template {
@@ -158,10 +159,6 @@ export interface WhichTab {
 export interface WorkStatus {
 	status: string;
 }
-export interface Perm {
-	perm64: string;
-}
-
 export interface EmpResponse {
 	error?: Record;
 	errMsg?: string;

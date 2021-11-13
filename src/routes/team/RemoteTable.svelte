@@ -12,13 +12,12 @@
 	import { goto } from '$app/navigation';
 	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Icon } from 'sveltestrap';
 	import { getData } from '$lib/pagination/Server.js';
-	import { PermControl } from '$lib/permissionControl';
+	import { ClientPermControl } from '$lib/clientperm';
 
 	export let token;
 	export let endpoint;
 	export let rows = [];
 	export let user;
-	export let perms;
 	let page = 0; //first page
 	let pageIndex = 0; //first row
 	let pageSize = 10; //optional, 10 by default
@@ -124,7 +123,7 @@
 				<td data-label="Author">{row.author}</td>
 				<td data-label="Updated at">{moment(row.updatedAt).format('LLLL')}</td>
 				<td>
-					{#if perms && PermControl(perms, user.email, 'team', row, 'delete')}
+					{#if user.perms && ClientPermControl(user.perms, user.email, 'team', row, 'delete')}
 						<Dropdown>
 							<DropdownToggle caret color="notexist" class="btn-sm">Actions</DropdownToggle>
 							<DropdownMenu>

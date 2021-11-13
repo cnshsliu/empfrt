@@ -36,12 +36,9 @@
 	import { title } from '$lib/title';
 	import { onMount } from 'svelte';
 	import * as api from '$lib/api';
-	import { Container, Row, Col, Nav, NavLink } from 'sveltestrap';
-	import { Icon, Button, Modal, ModalBody, ModalFooter, ModalHeader, Styles } from 'sveltestrap';
-	import { get } from 'svelte/store';
-	import type { Perm, WhichTab } from '$lib/types';
-	import { permStore, whichTabStore } from '$lib/empstores';
-	import { PermControl } from '$lib/permissionControl';
+	import { Row, Col, Nav, NavLink } from 'sveltestrap';
+	import { Icon, Styles } from 'sveltestrap';
+	import { ClientPermControl } from '$lib/clientperm';
 	import Parser from '$lib/parser';
 	export let workflow: Workflow;
 	export let wfid: string;
@@ -78,11 +75,6 @@
 			workflow.status = ret.status;
 		}, 1);
 	};
-	let perm: Perm = get(permStore);
-	let perms: string = null;
-	try {
-		perms = perm ? JSON.parse(Parser.base64ToCode(perm.perm64)) : [];
-	} catch (err) {}
 </script>
 
 <Styles />
@@ -103,7 +95,7 @@
 					<Icon name="list-check" />
 					{'Works'}
 				</NavLink>
-				{#if PermControl(perms, user.email, 'workflow', workflow, 'update')}
+				{#if ClientPermControl(user.perms, user.email, 'workflow', workflow, 'update')}
 					{#if workflow.status === 'ST_RUN'}
 						<NavLink
 							class="kfk-link"

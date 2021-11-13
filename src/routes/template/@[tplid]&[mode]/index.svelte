@@ -35,9 +35,7 @@
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
 	import jQuery from 'jquery';
 	import { get } from 'svelte/store';
-	import type { Perm } from '$lib/types';
-	import { permStore } from '$lib/empstores';
-	import { PermControl } from '$lib/permissionControl';
+	import { ClientPermControl } from '$lib/clientperm';
 	import Parser from '$lib/parser';
 	import { goto } from '$app/navigation';
 	import { session } from '$app/stores';
@@ -153,12 +151,6 @@
 		return;
 	}
 
-	let perm: Perm = get(permStore);
-	let perms: string = null;
-	try {
-		perms = perm ? JSON.parse(Parser.base64ToCode(perm.perm64)) : [];
-	} catch (err) {}
-
 	let fade_message = '';
 	let fade_timer: any;
 	function setFadeMessage(message: string, time = 2000) {
@@ -203,185 +195,165 @@
 	{/if}
 {:else}
 	<div id="designer-topMenu" class={topmenu_class}>
-		<Container>
-			<Row class="mt-1">
-				<Col class="d-flex justify-content-center">
-					<Nav>
-						{#if PermControl(perms, user.email, 'template', template, 'create')}
-							<NavLink
-								class="kfk-link"
-								on:click={() => {
-									show_form('create');
-								}}
-							>
-								<Icon name="plus-circle" />
-								New
-							</NavLink>
-						{:else}
-							<NavLink disabled>
-								<Icon name="plus-circle" />
-								New
-							</NavLink>
-						{/if}
+		<Row class="mt-1 d-flex justify-content-center">
+			<Col class="d-flex justify-content-center">
+				<Nav>
+					{#if ClientPermControl(user.perms, user.email, 'template', template, 'create')}
 						<NavLink
 							class="kfk-link"
 							on:click={() => {
-								show_form('export');
+								show_form('create');
 							}}
 						>
-							<Icon name="cloud-download" />
-							Export
+							<Icon name="plus-circle" />
+							New
 						</NavLink>
-						{#if PermControl(perms, user.email, 'template', template, 'create')}
+					{:else}
+						<NavLink disabled>
+							<Icon name="plus-circle" />
+							New
+						</NavLink>
+					{/if}
+					<NavLink
+						class="kfk-link"
+						on:click={() => {
+							show_form('export');
+						}}
+					>
+						<Icon name="cloud-download" />
+						Export
+					</NavLink>
+					{#if ClientPermControl(user.perms, user.email, 'template', template, 'create')}
+						<NavLink
+							class="kfk-link"
+							on:click={() => {
+								show_form('copyto');
+							}}
+						>
+							<Icon name="files" />
+							Copy to
+						</NavLink>
+					{:else}
+						<NavLink class="kfk-link" disabled>
+							<Icon name="files" />
+							Copy to
+						</NavLink>
+					{/if}
+					{#if template.ins === false}
+						{#if ClientPermControl(user.perms, user.email, 'template', template, 'update')}
 							<NavLink
 								class="kfk-link"
 								on:click={() => {
-									show_form('copyto');
+									show_form('rename');
 								}}
 							>
-								<Icon name="files" />
-								Copy to
+								<Icon name="input-cursor-text" />
+								Rename
 							</NavLink>
 						{:else}
 							<NavLink class="kfk-link" disabled>
-								<Icon name="files" />
-								Copy to
+								<Icon name="input-cursor-text" />
+								Rename
 							</NavLink>
 						{/if}
-						{#if template.ins === false}
-							{#if PermControl(perms, user.email, 'template', template, 'update')}
-								<NavLink
-									class="kfk-link"
-									on:click={() => {
-										show_form('rename');
-									}}
-								>
-									<Icon name="input-cursor-text" />
-									Rename
-								</NavLink>
-							{:else}
-								<NavLink class="kfk-link" disabled>
-									<Icon name="input-cursor-text" />
-									Rename
-								</NavLink>
-							{/if}
-							{#if PermControl(perms, user.email, 'template', template, 'delete')}
-								<NavLink
-									class="kfk-link"
-									on:click={() => {
-										show_form('delete');
-									}}
-								>
-									<Icon name="trash" />
-									Delete
-								</NavLink>
-							{:else}
-								<NavLink class="kfk-link" disabled>
-									<Icon name="trash" />
-									Delete
-								</NavLink>
-							{/if}
-							{#if PermControl(perms, user.email, 'template', template, 'update')}
-								<NavLink
-									class="kfk-link"
-									on:click={async () => {
-										hide_all_form();
-										if (readonly) {
-											await change_mode('edit');
-										} else {
-											await change_mode('read');
-										}
-									}}
-								>
-									<Icon name={readonly ? 'pen' : 'eye'} />
-									{readonly ? 'Edit it' : 'View it'}
-								</NavLink>
-							{:else}
-								<NavLink disabled>
-									<Icon name={readonly ? 'pen' : 'eye'} />
-									{readonly ? 'Edit it' : 'View it'}
-								</NavLink>
-							{/if}
-							{#if PermControl(perms, user.email, 'workflow', '', 'create')}
-								<NavLink
-									class="kfk-link"
-									on:click={() => {
-										show_form('start');
-									}}
-								>
-									<Icon name="trash" />
-									Start it
-								</NavLink>
-							{:else}
-								<NavLink disabled>
-									<Icon name="trash" />
-									Start it
-								</NavLink>
-							{/if}
-						{/if}
-					</Nav>
-				</Col>
-			</Row>
-			<Row class="mt-2">
-				<Col>
-					{#if form_status.create}
-						<form
-							action={urls.create}
-							method="post"
-							use:enhance={{
-								token: user.sessionToken,
-								result: async (res, form) => {
-									const created = await res.json();
-									console.log(created);
-									if (created.error) {
-										console.log(created.error);
-										errmsg = created.errMsg;
-										if (errmsg.indexOf('MongoError: E11000 duplicate key error') >= 0) {
-											errmsg = '同名模板已存在, 请重新录入';
-										}
-									} else {
-										template = created;
-										goto(`/template/@${template.tplid}&${tpl_mode}`, {
-											replaceState: false,
-											keepfocus: true
-										});
-										await theDesigner.loadTemplate(template, tpl_mode);
-										form_status['create'] = false;
-										form.reset();
-										errmsg = '';
-									}
-									hide_all_form();
-								}
-							}}
-						>
-							New template name:
-							<input
-								name="tplid"
-								aria-label="Create template"
-								placeholder="New template name"
-								class="kfk_input_template_name"
-								autocomplete="off"
-							/>
-							<Button type="submit" color="primary">Create</Button>
-							<Button
-								on:click={(e) => {
-									e.preventDefault();
-									hide_all_form();
+						{#if ClientPermControl(user.perms, user.email, 'template', template, 'delete')}
+							<NavLink
+								class="kfk-link"
+								on:click={() => {
+									show_form('delete');
 								}}
-								color="secondary">Cancel</Button
 							>
-							{#if errmsg !== ''}{errmsg}{/if}
-						</form>
-					{:else if form_status.export}
-						Export current template to:
+								<Icon name="trash" />
+								Delete
+							</NavLink>
+						{:else}
+							<NavLink class="kfk-link" disabled>
+								<Icon name="trash" />
+								Delete
+							</NavLink>
+						{/if}
+						{#if ClientPermControl(user.perms, user.email, 'template', template, 'update')}
+							<NavLink
+								class="kfk-link"
+								on:click={async () => {
+									hide_all_form();
+									if (readonly) {
+										await change_mode('edit');
+									} else {
+										await change_mode('read');
+									}
+								}}
+							>
+								<Icon name={readonly ? 'pen' : 'eye'} />
+								{readonly ? 'Edit it' : 'View it'}
+							</NavLink>
+						{:else}
+							<NavLink disabled>
+								<Icon name={readonly ? 'pen' : 'eye'} />
+								{readonly ? 'Edit it' : 'View it'}
+							</NavLink>
+						{/if}
+						{#if ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
+							<NavLink
+								class="kfk-link"
+								on:click={() => {
+									show_form('start');
+								}}
+							>
+								<Icon name="trash" />
+								Start it
+							</NavLink>
+						{:else}
+							<NavLink disabled>
+								<Icon name="trash" />
+								Start it
+							</NavLink>
+						{/if}
+					{/if}
+				</Nav>
+			</Col>
+		</Row>
+		<Row class="mt-2 d-flex justify-content-center">
+			<Col class="d-flex justify-content-center">
+				{#if form_status.create}
+					<form
+						action={urls.create}
+						method="post"
+						use:enhance={{
+							token: user.sessionToken,
+							result: async (res, form) => {
+								const created = await res.json();
+								console.log(created);
+								if (created.error) {
+									console.log(created.error);
+									errmsg = created.errMsg;
+									if (errmsg.indexOf('MongoError: E11000 duplicate key error') >= 0) {
+										errmsg = '同名模板已存在, 请重新录入';
+									}
+								} else {
+									template = created;
+									goto(`/template/@${template.tplid}&${tpl_mode}`, {
+										replaceState: false,
+										keepfocus: true
+									});
+									await theDesigner.loadTemplate(template, tpl_mode);
+									form_status['create'] = false;
+									form.reset();
+									errmsg = '';
+								}
+								hide_all_form();
+							}
+						}}
+					>
+						New template name:
 						<input
-							name="exorttoname"
-							placeholder="Export to file"
+							name="tplid"
+							aria-label="Create template"
+							placeholder="New template name"
 							class="kfk_input_template_name"
-							bind:value={export_to_filename}
 							autocomplete="off"
 						/>
-						<Button on:click={() => export_template()} color="primary">Export</Button>
+						<Button type="submit" color="primary">Create</Button>
 						<Button
 							on:click={(e) => {
 								e.preventDefault();
@@ -390,111 +362,118 @@
 							color="secondary">Cancel</Button
 						>
 						{#if errmsg !== ''}{errmsg}{/if}
-					{:else if form_status.rename}
-						<form
-							action={urls.rename}
-							method="post"
-							use:enhance={{
-								token: user.sessionToken,
-								result: async (res, form) => {
-									const newTemplate = await res.json();
-									console.log(newTemplate);
-									if (newTemplate.error) {
-										console.log(newTemplate.error);
-										errmsg = newTemplate.errMsg;
-										if (errmsg.indexOf('MongoError: E11000 duplicate key error') >= 0) {
-											errmsg = '同名模板已存在, 请重新录入';
-										}
-									} else {
-										template = newTemplate;
-										goto(`/template/@${template.tplid}&${tpl_mode}`, {
-											replaceState: true,
-											keepfocus: true,
-											noscroll: true
-										});
-										await theDesigner.loadTemplate(template, tpl_mode);
-										form_status['rename'] = false;
-										form.reset();
-										errmsg = '';
+					</form>
+				{:else if form_status.export}
+					Export current template to:
+					<input
+						name="exorttoname"
+						placeholder="Export to file"
+						class="kfk_input_template_name"
+						bind:value={export_to_filename}
+						autocomplete="off"
+					/>
+					<Button on:click={() => export_template()} color="primary">Export</Button>
+					<Button
+						on:click={(e) => {
+							e.preventDefault();
+							hide_all_form();
+						}}
+						color="secondary">Cancel</Button
+					>
+					{#if errmsg !== ''}{errmsg}{/if}
+				{:else if form_status.rename}
+					<form
+						action={urls.rename}
+						method="post"
+						use:enhance={{
+							token: user.sessionToken,
+							result: async (res, form) => {
+								const newTemplate = await res.json();
+								console.log(newTemplate);
+								if (newTemplate.error) {
+									console.log(newTemplate.error);
+									errmsg = newTemplate.errMsg;
+									if (errmsg.indexOf('MongoError: E11000 duplicate key error') >= 0) {
+										errmsg = '同名模板已存在, 请重新录入';
 									}
-									hide_all_form();
+								} else {
+									template = newTemplate;
+									goto(`/template/@${template.tplid}&${tpl_mode}`, {
+										replaceState: true,
+										keepfocus: true,
+										noscroll: true
+									});
+									await theDesigner.loadTemplate(template, tpl_mode);
+									form_status['rename'] = false;
+									form.reset();
+									errmsg = '';
 								}
+								hide_all_form();
+							}
+						}}
+					>
+						Rename {template.tplid} to:
+						<input
+							name="tplid"
+							placeholder="Rename: new template name"
+							class="kfk_input_template_name"
+							value={template.tplid}
+							autocomplete="off"
+						/>
+						<input type="hidden" name="fromid" value={template.tplid} />
+						<Button type="submit" color="primary">Rename</Button>
+						<Button
+							on:click={(e) => {
+								e.preventDefault();
+								hide_all_form();
 							}}
+							color="secondary">Cancel</Button
 						>
-							Rename {template.tplid} to:
-							<input
-								name="tplid"
-								placeholder="Rename: new template name"
-								class="kfk_input_template_name"
-								value={template.tplid}
-								autocomplete="off"
-							/>
-							<input type="hidden" name="fromid" value={template.tplid} />
-							<Button type="submit" color="primary">Rename</Button>
-							<Button
-								on:click={(e) => {
-									e.preventDefault();
-									hide_all_form();
-								}}
-								color="secondary">Cancel</Button
-							>
-							{#if errmsg !== ''}{errmsg}{/if}
-						</form>
-					{:else if form_status.copyto}
-						<form
-							class="new"
-							action={urls.copyto}
-							method="post"
-							use:enhance={{
-								token: user.sessionToken,
-								result: async (res, form) => {
-									const created = await res.json();
-									console.log(created);
-									if (created.error) {
-										console.log(created.error);
-										errmsg = created.errMsg;
-										if (errmsg.indexOf('MongoError: E11000 duplicate key error') >= 0) {
-											errmsg = '同名模板已存在, 请重新录入';
-										}
-									} else {
-										template = created;
-										goto(`/template/@${template.tplid}&${tpl_mode}`, {
-											replaceState: true,
-											noscroll: true,
-											keepfocus: true
-										});
-										await theDesigner.loadTemplate(template, tpl_mode);
-										form_status['copyto'] = false;
-										$title = template.tplid;
-										form.reset();
-										errmsg = '';
+						{#if errmsg !== ''}{errmsg}{/if}
+					</form>
+				{:else if form_status.copyto}
+					<form
+						class="new"
+						action={urls.copyto}
+						method="post"
+						use:enhance={{
+							token: user.sessionToken,
+							result: async (res, form) => {
+								const created = await res.json();
+								console.log(created);
+								if (created.error) {
+									console.log(created.error);
+									errmsg = created.errMsg;
+									if (errmsg.indexOf('MongoError: E11000 duplicate key error') >= 0) {
+										errmsg = '同名模板已存在, 请重新录入';
 									}
-									hide_all_form();
+								} else {
+									template = created;
+									goto(`/template/@${template.tplid}&${tpl_mode}`, {
+										replaceState: true,
+										noscroll: true,
+										keepfocus: true
+									});
+									await theDesigner.loadTemplate(template, tpl_mode);
+									form_status['copyto'] = false;
+									$title = template.tplid;
+									form.reset();
+									errmsg = '';
 								}
-							}}
-						>
-							Copy {template.tplid} to:
-							<input
-								name="tplid"
-								placeholder="New template name"
-								class="kfk_input_template_name"
-								value={template.tplid}
-								autocomplete="off"
-							/>
-							<input type="hidden" name="fromid" value={template.tplid} />
-							<Button type="submit" color="primary">Copy</Button>
-							<Button
-								on:click={(e) => {
-									e.preventDefault();
-									hide_all_form();
-								}}
-								color="secondary">Cancel</Button
-							>
-							{#if errmsg !== ''}{errmsg}{/if}
-						</form>
-					{:else if form_status.delete}
-						Delete: {template.tplid}?&nbsp;
-						<Button on:click={() => delete_template()} color="primary">Delete</Button>
+								hide_all_form();
+							}
+						}}
+					>
+						Copy {template.tplid} to:
+						<input
+							name="tplid"
+							placeholder="New template name"
+							class="kfk_input_template_name"
+							value={template.tplid}
+							autocomplete="off"
+						/>
+						<input type="hidden" name="fromid" value={template.tplid} />
+						<Button type="submit" color="primary">Copy</Button>
 						<Button
 							on:click={(e) => {
 								e.preventDefault();
@@ -505,30 +484,43 @@
 							Cancel
 						</Button>
 						{#if errmsg !== ''}{errmsg}{/if}
-					{:else if form_status.start}
-						Start: {template.tplid}?&nbsp;
-						<Button
-							on:click={() => {
-								goto(`/template/start?tplid=${template.tplid}`, { replaceState: false });
-							}}
-							color="primary"
-						>
-							Start now
-						</Button>
-						<Button
-							on:click={(e) => {
-								e.preventDefault();
-								hide_all_form();
-							}}
-							color="secondary"
-						>
-							Cancel
-						</Button>
-						{#if errmsg !== ''}{errmsg}{/if}
-					{/if}
-				</Col>
-			</Row>
-		</Container>
+					</form>
+				{:else if form_status.delete}
+					Delete: &nbsp; {template.tplid}?&nbsp;
+					<Button on:click={() => delete_template()} color="primary">Delete</Button>
+					<Button
+						on:click={(e) => {
+							e.preventDefault();
+							hide_all_form();
+						}}
+						color="secondary"
+					>
+						Cancel
+					</Button>
+					{#if errmsg !== ''}{errmsg}{/if}
+				{:else if form_status.start}
+					Start: {template.tplid}?&nbsp;
+					<Button
+						on:click={() => {
+							goto(`/template/start?tplid=${template.tplid}`, { replaceState: false });
+						}}
+						color="primary"
+					>
+						Start now
+					</Button>
+					<Button
+						on:click={(e) => {
+							e.preventDefault();
+							hide_all_form();
+						}}
+						color="secondary"
+					>
+						Cancel
+					</Button>
+					{#if errmsg !== ''}{errmsg}{/if}
+				{/if}
+			</Col>
+		</Row>
 	</div>
 	<svelte:component this={Designer} bind:this={theDesigner} {template} {tpl_mode} />
 {/if}

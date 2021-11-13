@@ -15,10 +15,7 @@
 	import ExtraFilter from '$lib/form/ExtraFilter.svelte';
 	import type { User } from '$lib/types';
 	import { Fade, Card, Container, Row, Col } from 'sveltestrap';
-	import { get } from 'svelte/store';
-	import type { Perm, WhichTab } from '$lib/types';
-	import { permStore, whichTabStore } from '$lib/empstores';
-	import { PermControl } from '$lib/permissionControl';
+	import { ClientPermControl } from '$lib/clientperm';
 	import Parser from '$lib/parser';
 	export let menu_has_form = false;
 	export let user: User;
@@ -69,11 +66,6 @@
 	function filterStatusChanged(event) {
 		reload(event.detail);
 	}
-	let perm: Perm = get(permStore);
-	let perms: string = null;
-	try {
-		perms = perm ? JSON.parse(Parser.base64ToCode(perm.perm64)) : [];
-	} catch (err) {}
 
 	let fade_message = '';
 	let fade_timer: any;
@@ -113,7 +105,7 @@
 	/>
 	<Row class="mt-3">
 		<Col>
-			<RemoteTable endpoint="workflow/search" {token} {user} {perms} bind:this={remoteTable} />
+			<RemoteTable endpoint="workflow/search" {token} {user} bind:this={remoteTable} />
 		</Col>
 	</Row>
 </Container>
