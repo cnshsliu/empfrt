@@ -20,6 +20,7 @@
 	import { createEventDispatcher, setContext } from 'svelte';
 	const dispatch = createEventDispatcher();
 
+	export let hasSearch = true;
 	export let loading = false;
 	export let page = 0;
 	export let pageIndex = 0;
@@ -64,11 +65,13 @@
 	}
 </script>
 
-<slot name="top">
-	<div class="slot-top">
-		<svelte:component this={Search} on:search={onSearch} />
-	</div>
-</slot>
+{#if hasSearch}
+	<slot name="top">
+		<div class="slot-top">
+			<svelte:component this={Search} on:search={onSearch} />
+		</div>
+	</slot>
+{/if}
 
 {#if filteredRows && visibleRows && filteredRows.length && visibleRows.length}
 	<table class={'table ' + $$props.class} class:responsive>

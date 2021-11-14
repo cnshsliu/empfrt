@@ -18,8 +18,16 @@
 		}
 		console.log(JSON.stringify(myorg));
 
+		let delegationFromMe = [];
+		try {
+			delegationFromMe = await post('/delegation/fromme');
+			for (let i = 0; i < delegationFromMe.length; i++) {
+				delegationFromMe[i].checked = false;
+			}
+		} catch (e) {}
+
 		return {
-			props: { user, myorg }
+			props: { user, myorg, delegationFromMe }
 		};
 	}
 </script>
@@ -33,6 +41,7 @@
 	import { flip } from 'svelte/animate';
 	import type { User } from '$lib/types';
 	import { onMount } from 'svelte';
+	import moment from 'moment';
 	import { post } from '$lib/utils';
 	import {
 		Container,
@@ -59,6 +68,7 @@
 
 	export let user: User;
 	export let myorg;
+	export let delegationFromMe;
 	let fade_message = '';
 	let fade_timer: any;
 	let input_members = '';
@@ -290,6 +300,19 @@
 		}
 	}
 
+	async function removeSelectedDelegation() {
+		let ids = delegationFromMe
+			.filter((x) => x.checked)
+			.map((x) => x._id)
+			.join(':');
+		let res = await api.post('undelegate', { ids: ids }, user.sessionToken);
+		if (res.error) {
+			setFadeMessage(res.message);
+		} else {
+			delegationFromMe = res;
+		}
+	}
+
 	async function setSelectedGroup() {
 		let ems = orgMembers.members
 			.filter((x) => x.email !== user.email)
@@ -324,6 +347,29 @@
 		} else {
 			console.log('show Invitation refreshMembers');
 			refreshMembers();
+		}
+	}
+
+	let new_delegation_enddate, new_delegation_begindate, new_delegation_delegatee;
+
+	async function newDelegation() {
+		console.log(new_delegation_delegatee, new_delegation_begindate, new_delegation_enddate);
+		let ret = await api.post(
+			'delegate',
+			{
+				delegatee: new_delegation_delegatee,
+				begindate: new_delegation_begindate,
+				enddate: new_delegation_enddate
+			},
+			$session.user.sessionToken
+		);
+		if (ret.error) {
+			setFadeMessage(ret.message);
+		} else if (ret.length) {
+			delegationFromMe = ret;
+			for (let i = 0; i < delegationFromMe.length; i++) {
+				delegationFromMe[i].checked = false;
+			}
 		}
 	}
 </script>
@@ -668,6 +714,92 @@
 				</Container>
 			{/if}
 		</TabPane>
+		<TabPane
+			tabId="delegation"
+			tab="Delegation"
+			active={whichTab && whichTab['setting'] === 'delegation'}
+		>
+			<Card class="mt-3">
+				<CardHeader><CardTitle>Delegate my works</CardTitle></CardHeader>
+				<CardBody>
+					<InputGroup>
+						<InputGroupText>Between</InputGroupText>
+						<Input
+							type="date"
+							bind:value={new_delegation_begindate}
+							placeholder="Confirm with your password"
+						/>
+						<InputGroupText>and</InputGroupText>
+						<Input
+							type="date"
+							bind:value={new_delegation_enddate}
+							placeholder="Confirm with your password"
+						/>
+					</InputGroup>
+					<InputGroup>
+						<InputGroupText>to</InputGroupText>
+						<Input bind:value={new_delegation_delegatee} placeholder="Delegtee's email" />
+						<Button
+							on:click={(e) => {
+								e.preventDefault();
+								newDelegation();
+							}}
+						>
+							Delegate
+						</Button>
+					</InputGroup>
+				</CardBody>
+			</Card>
+
+			<Card class="mt-3">
+				<CardHeader><CardTitle>My Delegations</CardTitle></CardHeader>
+				<CardBody>
+					<table hover class="w-100">
+						<thead>
+							<tr>
+								<th> Begin </th>
+								<th> Before </th>
+								<th> Delegate to </th>
+								<th> &nbsp; </th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each delegationFromMe as row, index (row)}
+								<tr
+									class:kfk-odd={index % 2 !== 0}
+									class:kfk-even={index % 2 === 0}
+									class:tnt-odd={index % 2 !== 0}
+									class:tnt-even={index % 2 === 0}
+								>
+									<td data-label="Begin Date">
+										{moment(row.begindate).format('LL')}
+									</td>
+									<td data-label="Before Date">
+										{moment(row.enddate).format('LL')}
+									</td>
+									<td data-label="Delegatee">
+										{row.delegatee}
+									</td>
+									<td data-label="Delegatee">
+										<Input type="checkbox" bind:checked={row.checked} />
+									</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</CardBody>
+				<CardFooter>
+					<div class="w-100 text-right">
+						<Button
+							on:click={(e) => {
+								e.preventDefault();
+								removeSelectedDelegation();
+							}}>Remove selected</Button
+						>
+					</div>
+				</CardFooter>
+			</Card>
+		</TabPane>
 	</TabContent>
 </Container>
 <Fade isOpen={fade_message != ''} class="kfk-fade">
@@ -675,3 +807,9 @@
 		{fade_message}
 	</Card>
 </Fade>
+
+<style>
+	.text-right {
+		text-align: right;
+	}
+</style>

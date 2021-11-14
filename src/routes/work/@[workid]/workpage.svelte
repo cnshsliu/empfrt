@@ -10,8 +10,12 @@
 	import type { User, Work } from '$lib/types';
 	export let work: Work;
 	export let user: User;
+	export let delegators;
 	export let iframeMode: boolean;
-	$: is_doable = work.doer === user.email && work.status === 'ST_RUN';
+	$: is_doable =
+		(work.doer === user.email ||
+			(delegators && Array.isArray(delegators) && delegators.includes(work.doer))) &&
+		work.status === 'ST_RUN';
 
 	function _sendbackWork() {
 		let payload = {
@@ -138,6 +142,7 @@
 			{#if is_doable}
 				<Container class="mt-3">
 					<input type="hidden" name="workid" value={work.workid} />
+					{work.doer === user.email ? '' : `Delegated by ${work.doer}`}
 					<Row cols="6">
 						{#if work.status === 'ST_RUN'}
 							{#if work.options.length === 0}
@@ -159,8 +164,10 @@
 										on:click={(e) => {
 											e.preventDefault();
 											_doneWork(aChoice);
-										}}>{aChoice}</Button
+										}}
 									>
+										{aChoice}
+									</Button>
 								</Col>
 							{/each}
 						{/if}
@@ -268,3 +275,7 @@
 {:else}
 	Not found
 {/if}
+{is_doable}
+{work.doer}
+{user.email}
+{delegators}

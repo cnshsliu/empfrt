@@ -1,5 +1,4 @@
 export async function post(endpoint: string, data = {}): Promise<Response> {
-	console.log('utils.post', endpoint);
 	return fetch(endpoint, {
 		method: 'POST',
 		credentials: 'include',

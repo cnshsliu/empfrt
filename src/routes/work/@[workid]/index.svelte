@@ -1,6 +1,7 @@
 <script context="module" lang="ts">
 	import moment from 'moment';
 	import 'moment/locale/zh-cn';
+	import { post } from '$lib/utils';
 	export const ssr = false;
 	export async function load({ page, fetch, session }) {
 		let workid = page.params.workid;
@@ -13,13 +14,24 @@
 
 		const theWork = await res.json();
 		const theHtml = await res_html.json();
+		let delegators = [];
+		try {
+			let delegations = await post('/delegation/today');
+			delegators = delegations.map((x) => x.delegator);
+			if (delegators.includes(session.user.email) === false) {
+				delegators.push(session.user.email);
+			}
+		} catch (e) {
+			console.error(e);
+		}
 
 		return {
 			props: {
 				work: theWork,
 				iframeMode: iframeMode,
 				work_html: theHtml.html,
-				user: session.user
+				user: session.user,
+				delegators: delegators
 			}
 		};
 	}
@@ -48,6 +60,7 @@
 	export let work: Work;
 	export let user: User;
 	export let mode: string;
+	export let delegators;
 
 	let radioGroup;
 
@@ -216,6 +229,6 @@ let WORKITEM_HTML = await axios.post(
 			</TabPane>
 		</TabContent>
 	{:else}
-		<WorkPage {work} {user} {iframeMode} />
+		<WorkPage {work} {user} {delegators} {iframeMode} />
 	{/if}
 </Container>

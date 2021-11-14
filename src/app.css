@@ -2564,6 +2564,7 @@ table.quick-help-table td:first-of-type {
 }
 .kfk-template-id,
 .kfk-workflow-id,
+.kfk-work-id,
 .kfk-team-id {
 	font-size: 24px;
 	text-decoration: none;
@@ -2658,7 +2659,7 @@ table.quick-help-table td:first-of-type {
 	background-image: url('/svelte-welcome.png');
 }
 .kfk-odd {
-	background-color: #f7f7f7;
+	background-color: rgba(255, 255, 255, 0.1);
 }
 
 .kfk-me {

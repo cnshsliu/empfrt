@@ -24,13 +24,11 @@
 	export let input_search;
 	let sorting = { dir: 'desc', key: 'lastdays' };
 
-	onMount(async () => {
-		await load(page);
-	});
+	onMount(async () => {});
 
-	async function load(_page) {
+	async function load(_page, reason) {
 		loading = true;
-		console.log('loading...', input_search);
+		console.log('loading...', reason, input_search);
 		const data = await getData(
 			endpoint,
 			token,
@@ -51,13 +49,13 @@
 	};
 
 	function onPageChange(event) {
-		load(event.detail.page);
+		load(event.detail.page, 'onPageChange');
 		page = event.detail.page;
 	}
 
 	async function onSearch(event) {
 		input_search = event.detail.text;
-		await load(page);
+		await load(page, 'onSearch');
 		page = 0;
 	}
 
@@ -66,12 +64,12 @@
 		if (detail && detail.page) page = detail.page;
 		if (detail && detail.sorting) sorting = detail.sorting;
 		if (detail && detail.payload_extra) payload_extra = detail.payload_extra;
-		await load(page);
+		await load(page, 'refresh');
 	}
 
 	async function onSort(event) {
 		sorting = { dir: event.detail.dir, key: event.detail.key };
-		await load(page);
+		await load(page, 'onSort');
 	}
 	function gotoWorkitem(work: Work) {
 		goto(iframeMode ? `/work/@${work.workid}?iframe` : `/work/@${work.workid}`, {
@@ -114,7 +112,7 @@
 			>
 				<td data-label="Title">
 					<a
-						class="preview-link  kfk-link"
+						class="preview-link   kfk-work-id tnt-work-id"
 						href={'#'}
 						on:click|preventDefault={(e) => {
 							e.preventDefault();

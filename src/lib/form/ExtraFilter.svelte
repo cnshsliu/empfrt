@@ -17,7 +17,7 @@
 	export let object_type: string;
 	export let filter_doer: string;
 	export let user: User;
-	export let assigners;
+	export let delegators;
 	export let filter_status: string;
 	export let statuses_label: string;
 	export let fields: string[] = ['statuses'];
@@ -89,15 +89,12 @@
 				</InputGroup>
 			</Col>
 		</Row>
-	{:else if assigners.length > 0}
-		Select assgigned from
-		{assigners}
-		Select
+	{:else if delegators.length > 0}
 		<InputGroup>
-			<InputGroupText>Select assignment from:</InputGroupText>
+			<InputGroupText>View works for delegator:</InputGroupText>
 			<Input type="select" name="select" id="exampleSelect" bind:value={filter_doer}>
-				{#each assigners as asgn, index (asgn)}
-					<option>{asgn} {index}</option>
+				{#each delegators as delegator, index (delegator)}
+					<option value={delegator}>{delegator}</option>
 				{/each}
 			</Input>
 		</InputGroup>

@@ -1,21 +1,29 @@
 <script context="module" lang="ts">
+	import { post } from '$lib/utils';
 	export async function load({ page, fetch, session }) {
 		let iframeMode = false;
 		if (page.query.has('iframe')) {
 			iframeMode = true;
 		}
+		let delegators = [];
+		try {
+			let delegations = await post('/delegation/today');
+			delegators = delegations.map((x) => x.delegator);
+			if (delegators.includes(session.user.email) === false) {
+				delegators.push(session.user.email);
+			}
+		} catch (e) {}
 		return {
 			props: {
 				user: session.user,
 				iframeMode: iframeMode,
-				assigners: ['582573936@qq.com', 'liuzijin@gmail.com']
+				delegators: delegators
 			}
 		};
 	}
 </script>
 
 <script lang="ts">
-	import * as api from '$lib/api';
 	import RemoteTable from './RemoteTable.svelte';
 	import ExtraFilter from '$lib/form/ExtraFilter.svelte';
 	import type { User, Work } from '$lib/types';
@@ -33,7 +41,7 @@
 
 	export let user: User;
 	export let iframeMode;
-	export let assigners;
+	export let delegators;
 	export const lastSearchCondition: string = '';
 	$title = 'HyperFlow';
 	$: token = user.sessionToken;
@@ -127,7 +135,7 @@
 		bind:filter_status
 		bind:filter_doer
 		bind:user
-		bind:assigners
+		bind:delegators
 		fields="{['doer', 'statuses']},"
 		object_type="work items"
 		statuses_label="Work status:"
