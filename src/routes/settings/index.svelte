@@ -476,7 +476,7 @@
 			</Container>
 		</TabPane>
 		<TabPane tabId="org" tab="Org" active={whichTab && whichTab['setting'] === 'org'}>
-			Administraotr: {myorg.owner === user.email ? 'Me' : myorg.owner}
+			Administrator: {myorg.owner === user.email ? 'Me' : myorg.owner}
 			<br />
 			My Role: {user.group}
 			{#if myorg.adminorg}

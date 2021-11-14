@@ -38,7 +38,7 @@
 	}
 </script>
 
-{#if $session.user && $session.user.tenant.css}
+{#if $session.user && $session.user.tenant && $session.user.tenant.css}
 	<link href={$session.user.tenant.css} rel="stylesheet" type="text/css" />
 {/if}
 <Styles />
@@ -50,10 +50,12 @@
 					<Col class="kfk-org-logo org-logo" />
 					<Col>
 						<Col>
-							{$session.user ? $session.user.tenant.name : 'HyperFlow'}
+							{$session.user && $session.user.tenant ? $session.user.tenant.name : 'HyperFlow'}
 						</Col>
 						<Col>
-							<span class="kfk-me">{$session.user && $session.user.username}</span>
+							<span class="kfk-me">
+								{$session.user && $session.user.username ? $session.user.username : ''}</span
+							>
 						</Col>
 					</Col>
 				</Row>
@@ -88,7 +90,7 @@
 						<DropdownItem>
 							{$session.user.username}
 							of<br />
-							{$session.user.tenant.name}
+							{$session.user && $session.user.tenant ? $session.user.tenant.name : ''}
 						</DropdownItem>
 						<DropdownItem divider />
 						<DropdownItem
