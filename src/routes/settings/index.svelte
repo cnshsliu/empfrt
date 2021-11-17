@@ -1,5 +1,6 @@
 <script context="module">
 	import * as api from '$lib/api';
+	import TimeZone from '$lib/Timezone';
 	export async function load({ session }) {
 		const { user } = session;
 		if (!user) {
@@ -77,6 +78,7 @@
 	let in_progress: boolean;
 	let orgname = myorg.orgname;
 	let orgtheme = myorg.css;
+	let orgtimezone = myorg.timezone;
 
 	interface membersDef {
 		email: string;
@@ -125,7 +127,7 @@
 		in_progress = true;
 
 		let ret = await api.post(
-			'tnt/name/save',
+			'tnt/set/name',
 			{ orgname: orgname, password: password_for_admin },
 			user.sessionToken
 		);
@@ -147,7 +149,7 @@
 		in_progress = true;
 
 		let ret = await api.post(
-			'tnt/theme/save',
+			'tnt/set/theme',
 			{ css: orgtheme, password: password_for_admin },
 			user.sessionToken
 		);
@@ -160,6 +162,35 @@
 				const response = (await post(`auth/refresh`, {})) as unknown as EmpResponse;
 
 				if (response.user) {
+					$session.user = response.user;
+				}
+			} else {
+				setFadeMessage('Error');
+			}
+		}
+
+		in_progress = false;
+	}
+
+	async function setMyTenantTimezone() {
+		in_progress = true;
+
+		let ret = await api.post(
+			'tnt/set/timezone',
+			{ timezone: orgtimezone, password: password_for_admin },
+			user.sessionToken
+		);
+		if (ret.error) {
+			setFadeMessage(ret.message);
+		} else {
+			//eslint-disable-next-line
+			console.log(ret);
+			if (ret.timezone) {
+				setFadeMessage('Orgniazation timezone is set succesfully');
+				const response = (await post(`auth/refresh`, {})) as unknown as EmpResponse;
+
+				if (response.user) {
+					console.log('Refresh User after Tenant TimeZone');
 					$session.user = response.user;
 				}
 			} else {
@@ -191,7 +222,7 @@
 
 	async function setUserDefinedJoinCode() {
 		let res = await api.post(
-			'tnt/joincode/save',
+			'tnt/set/joincode',
 			{ joincode: userDefinedJoinCode, password: password_for_admin },
 			user.sessionToken
 		);
@@ -372,6 +403,9 @@
 			}
 		}
 	}
+
+	let tzArray = TimeZone.getTimeZoneArray();
+	console.log(typeof tzArray);
 </script>
 
 <svelte:head>
@@ -515,13 +549,37 @@
 								Set
 							</Button>
 						</InputGroup>
+						<InputGroup>
+							<InputGroupText>Set Timezone to:</InputGroupText>
+							<Input type="select" bind:value={orgtimezone}>
+								{#each tzArray as tz, index (tz)}
+									<option value={tz.key}>{tz.name} ({tz.diff})</option>
+								{/each}
+							</Input>
+							<Button
+								on:click={(e) => {
+									e.preventDefault();
+									setMyTenantTimezone();
+								}}
+							>
+								Set
+							</Button>
+						</InputGroup>
 					</CardBody>
 				</Card>
 			{:else}
 				<Card class="mt-3">
 					<CardHeader><CardTitle>My Orgnization</CardTitle></CardHeader>
 					<CardBody>
-						{orgname}
+						<CardSubtitle>The name:</CardSubtitle>
+						<CardText>
+							{orgname}
+						</CardText>
+						<CardSubtitle>Timezone:</CardSubtitle>
+						<CardText>
+							{orgtimezone}
+							{TimeZone.getDiff(orgtimezone)}
+						</CardText>
 					</CardBody>
 				</Card>
 			{/if}

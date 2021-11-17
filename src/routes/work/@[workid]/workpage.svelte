@@ -21,7 +21,7 @@
 		let payload = {
 			wfid: work.wfid,
 			workid: work.workid,
-			doer: user.email
+			doer: work.doer
 		};
 		payload.kvars = {};
 		for (let i = 0; i < work.kvarsArr.length; i++) {
@@ -43,7 +43,7 @@
 	}
 	function _doneWork(user_choice) {
 		let payload = {
-			doer: user.email,
+			doer: work.doer,
 			workid: work.workid
 		};
 		if (user_choice) {

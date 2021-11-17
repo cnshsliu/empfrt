@@ -1,5 +1,7 @@
 <script context="module" lang="ts">
 	import { post } from '$lib/utils';
+	import lodash from 'lodash';
+	lodash;
 	export async function load({ page, fetch, session }) {
 		let iframeMode = false;
 		if (page.query.has('iframe')) {
@@ -12,6 +14,8 @@
 			if (delegators.includes(session.user.email) === false) {
 				delegators.push(session.user.email);
 			}
+			console.log(delegators);
+			delegators = lodash.uniq(delegators);
 		} catch (e) {}
 		return {
 			props: {
