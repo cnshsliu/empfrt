@@ -8,7 +8,7 @@
 
 <script>
 	import { createEventDispatcher, getContext } from 'svelte';
-	import { InputGroup, InputGroupText } from 'sveltestrap';
+	import { InputGroup, InputGroupText, Icon } from 'sveltestrap';
 
 	const dispatch = createEventDispatcher();
 	const stateContext = getContext('state');
@@ -27,7 +27,7 @@
 	export let text = '';
 
 	export let labels = {
-		placeholder: 'Search by name or title',
+		placeholder: ' by name or title',
 		...globalLabels
 	};
 
@@ -64,7 +64,7 @@
 
 <div class="search d-flex">
 	<InputGroup>
-		<InputGroupText>Search</InputGroupText>
+		<InputGroupText><Icon name="funnel" />&nbsp; Filter</InputGroupText>
 		<input
 			class="flex-fill"
 			type="search"

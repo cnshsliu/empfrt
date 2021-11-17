@@ -3,7 +3,21 @@
 	import 'moment/locale/zh-cn';
 	import * as api from '$lib/api';
 	import { goto } from '$app/navigation';
-	import { Container, Row, Col, Nav, Icon, NavItem, NavLink } from 'sveltestrap';
+	import {
+		Card,
+		CardHeader,
+		CardTitle,
+		CardBody,
+		CardSubtitle,
+		CardText,
+		Container,
+		Row,
+		Col,
+		Nav,
+		Icon,
+		NavItem,
+		NavLink
+	} from 'sveltestrap';
 	import { Form, FormGroup, FormText, Input, Label } from 'sveltestrap';
 	import { Status } from '$lib/status';
 	import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'sveltestrap';
@@ -41,6 +55,9 @@
 	function showWorkitem(workid: string) {
 		goto(iframeMode ? `/work/@${workid}?iframe` : '/work', { replaceState: true });
 	}
+	function gotoWorkflow(wfid: string) {
+		goto(iframeMode ? `/workflow/@${wfid}?iframe` : `/workflow/@${wfid}`, { replaceState: false });
+	}
 	function _doneWork(user_choice) {
 		let payload = {
 			doer: work.doer,
@@ -64,7 +81,8 @@
 			<Container class="mt-3 kfk-highlight-2">
 				<Row cols={{ lg: 3, md: 2, sm: 1 }}>
 					<Col>
-						Primary Business Object: <div class="kfk-kvar-value-display">
+						<Icon name="vinyl" />&nbsp; Primary Business Object:
+						<div class="kfk-kvar-value-display">
 							<a href={work.wf.pbo} target="_blank">{work.wf.pbo}</a>
 						</div>
 					</Col>
@@ -141,8 +159,8 @@
 					</Row>
 				</Container>
 			{/if}
-			{#if is_doable}
-				<Container class="mt-3">
+			<Container class="mt-3">
+				{#if is_doable}
 					<input type="hidden" name="workid" value={work.workid} />
 					{work.doer === user.email ? '' : `Delegated by ${work.doer}`}
 					<Row cols="6">
@@ -150,6 +168,7 @@
 							{#if work.options.length === 0}
 								<Col>
 									<Button
+										class="w-100"
 										color="primary"
 										on:click={(e) => {
 											e.preventDefault();
@@ -163,6 +182,7 @@
 							{#each work.options as aChoice}
 								<Col>
 									<Button
+										class="w-100"
 										on:click={(e) => {
 											e.preventDefault();
 											_doneWork(aChoice);
@@ -176,6 +196,7 @@
 						{#if work.returnable}
 							<Col>
 								<Button
+									class="w-100"
 									on:click={(e) => {
 										e.preventDefault();
 										_sendbackWork();
@@ -184,96 +205,129 @@
 									Sendback
 								</Button>
 							</Col>
+						{:else if work.revocable}
+							<Col>
+								<Button
+									class="w-100"
+									on:click={(e) => {
+										e.preventDefault();
+										_revokeWork();
+									}}
+								>
+									Revoke
+								</Button>
+							</Col>
 						{/if}
 					</Row>
-				</Container>
-			{:else if work.revocable}
-				<Container class="mt-3 kfk-highlight-2">
-					<Row>
-						<Col>
-							<Button
-								on:click={(e) => {
-									e.preventDefault();
-									_revokeWork();
-								}}
-							>
-								Revoke
-							</Button>
-						</Col>
-					</Row>
-				</Container>
-			{/if}
+				{/if}
+			</Container>
 		</Form>
 	</Container>
-	<Container class="mt-4"><h3>{work.wf.wftitle}</h3></Container>
-	<Container class="mt-2">
-		<Container class="mt-2 ml-5 kfk-highlight-2 ">
-			<Row cols={{ lg: 2, md: 2, sm: 1 }}>
-				<Col>Started at: {work.wf.beginat ? moment(work.wf.begingat).format('LLLL') : ''}</Col>
-				<Col>Started by: {work.wf.starter}</Col>
-				<Col>
-					{work.wf.doneat
-						? 'Completed at ' + moment(work.wf.doneat).format('LLLL')
-						: 'Still running'}
-				</Col>
-			</Row>
-		</Container>
-	</Container>
-	<Container class="mt-5">
-		<div><h3>Work Track:</h3></div>
-	</Container>
-	<Container class="mt-0 mb-5">
-		{#each work.history as entry}
-			<Container class="mt-2 kfk-highlight-2 ">
-				<Row cols={{ lg: 1, md: 1, sm: 1 }}>
-					<Col>
-						<div>
-							<a
-								class="preview-link kfk-team-id kfk-link"
-								href={'#'}
-								on:click|preventDefault={() => {
-									showWorkitem(entry.workid);
-								}}
-							>
-								<b>{entry.title}</b>
-							</a>
-							: {Status[entry.status]}
-						</div>
-					</Col>
-					{#if entry.route}
-						<Col>
-							Decision: <b> {entry.route} </b>
-						</Col>
-					{/if}
-				</Row>
-				{#if entry.kvarsArr.length > 0}
-					<Row><Col><b>Variables:</b></Col></Row>
+	<Container class="mt-4">
+		<Card>
+			<CardHeader>
+				<CardTitle>
 					<Row>
 						<Col>
-							<Container>
-								<Row cols={{ lg: 2, md: 1, sm: 1 }}>
-									{#each entry.kvarsArr as kvar}
-										<Col>
-											<div>{kvar.label}</div>
-											<div class="kfk-kvar-value-display">{kvar.value}</div>
-										</Col>
-									{/each}
-								</Row>
-							</Container>
+							<Icon name="bar-chart-steps" />
+							{work.wf.wftitle}
+						</Col>
+						<Col class="w-100">
+							<div class="w-100 text-right">
+								<NavLink
+									class="m-0 p-0 fs-6"
+									on:click={(e) => {
+										e.preventDefault();
+										gotoWorkflow(work.wfid);
+									}}><Icon name="kanban" />&nbsp;Monitor</NavLink
+								>
+							</div>
 						</Col>
 					</Row>
-				{/if}
-				<Row>
-					<Col class="d-flex align-content-end">
-						<div>
-							By: {entry.doer}
-							at: {moment(entry.doneat).format('LLLL')}
-						</div>
-					</Col>
-				</Row>
-			</Container>
-		{/each}
+				</CardTitle>
+			</CardHeader>
+			<CardBody>
+				<Container class="mt-2 ml-5 kfk-highlight-2 ">
+					<Row cols={{ lg: 2, md: 2, sm: 1 }}>
+						<Col>Started at: {work.wf.beginat ? moment(work.wf.begingat).format('LLLL') : ''}</Col>
+						<Col>Started by: {work.wf.starter}</Col>
+						<Col>
+							{work.wf.doneat
+								? 'Completed at ' + moment(work.wf.doneat).format('LLLL')
+								: 'Still running'}
+						</Col>
+					</Row>
+				</Container>
+			</CardBody>
+		</Card>
+	</Container>
+	<Container class="my-5">
+		<Card>
+			<CardHeader>
+				<CardTitle>
+					<Icon name="clock-history" />&nbsp; Work Track:
+				</CardTitle>
+			</CardHeader>
+			<CardBody>
+				{#each work.history as entry}
+					<Container class="mt-2 kfk-highlight-2 ">
+						<Row cols={{ lg: 1, md: 1, sm: 1 }}>
+							<Col>
+								<div>
+									<a
+										class="preview-link kfk-team-id kfk-link"
+										href={'#'}
+										on:click|preventDefault={() => {
+											showWorkitem(entry.workid);
+										}}
+									>
+										<b>{entry.title}</b>
+									</a>
+									: {Status[entry.status]}
+								</div>
+							</Col>
+							{#if entry.route}
+								<Col>
+									Decision: <b> {entry.route} </b>
+								</Col>
+							{/if}
+						</Row>
+						{#if entry.kvarsArr.length > 0}
+							<Row><Col><b>Variables:</b></Col></Row>
+							<Row>
+								<Col>
+									<Container>
+										<Row cols={{ lg: 2, md: 1, sm: 1 }}>
+											{#each entry.kvarsArr as kvar}
+												<Col>
+													<div>{kvar.label}</div>
+													<div class="kfk-kvar-value-display">{kvar.value}</div>
+												</Col>
+											{/each}
+										</Row>
+									</Container>
+								</Col>
+							</Row>
+						{/if}
+						<Row>
+							<Col class="d-flex align-content-end">
+								<div>
+									By: {entry.doer}
+									at: {moment(entry.doneat).format('LLLL')}
+								</div>
+							</Col>
+						</Row>
+					</Container>
+				{/each}
+			</CardBody>
+		</Card>
 	</Container>
 {:else}
 	Not found
 {/if}
+
+<style>
+	.text-right {
+		text-align: right;
+	}
+</style>

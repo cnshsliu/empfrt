@@ -2,6 +2,7 @@
 
 <script lang="ts">
 	import {
+		Icon,
 		Container,
 		Row,
 		InputGroup,
@@ -57,7 +58,7 @@
 {#if fields.indexOf('statuses') > -1}
 	<Container class="kfk-tab-menu">
 		<Row>
-			<Col xs="auto">{statuses_label}</Col>
+			<Col xs="auto"><Icon name="ui-radios-grid" />&nbsp; {statuses_label}</Col>
 			{#each statuses as status, index (status)}
 				<Col xs="auto">
 					<Input
@@ -74,11 +75,13 @@
 	</Container>
 {/if}
 {#if fields.indexOf('doer') > -1}
-	{#if user.group === 'ADMIN'}
-		<Row class="mt-3">
-			<Col>
+	<Row class="mt-1">
+		<Col>
+			{#if user.group === 'ADMIN'}
 				<InputGroup class="kfk-input-template-name d-flex">
-					<InputGroupText>List workitems assigned to</InputGroupText>
+					<InputGroupText>
+						<Icon name="person-badge" />&nbsp; List workitems assigned to
+					</InputGroupText>
 					<input
 						class="flex-fill"
 						name="tplid"
@@ -87,16 +90,18 @@
 						placeholder="Input user email to query his/her workitems"
 					/>
 				</InputGroup>
-			</Col>
-		</Row>
-	{:else if delegators.length > 0}
-		<InputGroup>
-			<InputGroupText>View works for delegator:</InputGroupText>
-			<Input type="select" name="select" id="exampleSelect" bind:value={filter_doer}>
-				{#each delegators as delegator, index (delegator)}
-					<option value={delegator}>{delegator}</option>
-				{/each}
-			</Input>
-		</InputGroup>
-	{/if}
+			{:else if delegators.length > 0}
+				<InputGroup>
+					<InputGroupText>
+						<Icon name="person-badge" />&nbsp; View works for delegator:
+					</InputGroupText>
+					<Input type="select" name="select" id="exampleSelect" bind:value={filter_doer}>
+						{#each delegators as delegator, index (delegator)}
+							<option value={delegator}>{delegator}</option>
+						{/each}
+					</Input>
+				</InputGroup>
+			{/if}
+		</Col>
+	</Row>
 {/if}

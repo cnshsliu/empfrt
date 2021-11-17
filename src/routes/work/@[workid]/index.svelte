@@ -113,9 +113,9 @@ let WORKITEM_HTML = await axios.post(
 <Container>
 	<div class="d-flex">
 		<div class="flex-shrink-0">
-			<h1>{work.title}</h1>
+			<h3>{work.title}</h3>
 		</div>
-		<div class="mx-5 align-self-center flex-grow-1">
+		<div class="mx-3 align-self-center flex-grow-1">
 			{moment(work.createdAt).toNow()}
 		</div>
 	</div>
