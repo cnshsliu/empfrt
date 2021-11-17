@@ -64,11 +64,7 @@
 			<Container class="mt-3 kfk-highlight-2">
 				<Row cols={{ lg: 3, md: 2, sm: 1 }}>
 					<Col>
-						Starter:
-						<div class="kfk-kvar-value-display">{work.wf.starter}</div>
-					</Col>
-					<Col>
-						PBO: <div class="kfk-kvar-value-display">
+						Primary Business Object: <div class="kfk-kvar-value-display">
 							<a href={work.wf.pbo} target="_blank">{work.wf.pbo}</a>
 						</div>
 					</Col>
@@ -77,13 +73,19 @@
 			<Container class="mt-3 kfk-highlight-2">
 				<Row>
 					<Col>
+						Starter:
+						<div class="kfk-kvar-value-display">{work.wf.starter}</div>
+					</Col>
+					<Col>
 						Status: {work.status}
 					</Col>
 					<Col>
-						Done by: {work.doer}
+						Owner: {work.doer}
 					</Col>
 					<Col>
-						at: {work.doneat ? moment(work.doneat).format('LLLL') : ''}
+						{#if work.doneat}
+							Complete at: {work.doneat ? moment(work.doneat).format('LLLL') : ''}
+						{/if}
 					</Col>
 					<Col />
 				</Row>
@@ -203,22 +205,22 @@
 			{/if}
 		</Form>
 	</Container>
-	<Container class="mt-4"><h3>Workflow: {work.wf.wftitle}</h3></Container>
+	<Container class="mt-4"><h3>{work.wf.wftitle}</h3></Container>
 	<Container class="mt-2">
 		<Container class="mt-2 ml-5 kfk-highlight-2 ">
 			<Row cols={{ lg: 2, md: 2, sm: 1 }}>
 				<Col>Started at: {work.wf.beginat ? moment(work.wf.begingat).format('LLLL') : ''}</Col>
 				<Col>Started by: {work.wf.starter}</Col>
-				<Col
-					>Completed at: {work.wf.doneat
-						? moment(work.wf.doneat).format('LLLL')
-						: 'Still running'}</Col
-				>
+				<Col>
+					{work.wf.doneat
+						? 'Completed at ' + moment(work.wf.doneat).format('LLLL')
+						: 'Still running'}
+				</Col>
 			</Row>
 		</Container>
 	</Container>
-	<Container class="mt-2">
-		<div><h3>Worklogs</h3></div>
+	<Container class="mt-5">
+		<div><h3>Work Track:</h3></div>
 	</Container>
 	<Container class="mt-0 mb-5">
 		{#each work.history as entry}
@@ -275,7 +277,3 @@
 {:else}
 	Not found
 {/if}
-{is_doable}
-{work.doer}
-{user.email}
-{delegators}
