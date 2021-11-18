@@ -87,7 +87,11 @@
 				<Dropdown>
 					<DropdownToggle nav caret>Me</DropdownToggle>
 					<DropdownMenu end>
-						<DropdownItem>
+						<DropdownItem
+							on:click={(e) => {
+								goto('/settings');
+							}}
+						>
 							{$session.user.username}
 							of<br />
 							{$session.user && $session.user.tenant ? $session.user.tenant.name : ''}

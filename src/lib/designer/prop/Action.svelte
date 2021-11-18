@@ -94,7 +94,6 @@
 						size="sm"
 						disabled={readonly}
 						on:click={(e) => {
-							console.log('add new variable');
 							e.preventDefault();
 							kvarsArr.push({
 								name: '',
@@ -111,24 +110,12 @@
 		</Col>
 		<Col>
 			<Container>
-				<Row cols="1">
-					{#each kvarsArr as kvar, index}
-						<Col class="mt-2">
+				{#each kvarsArr as kvar, index}
+					<div class="d-flex">
+						<div class="mt-2 flex-grow-1">
 							<InputGroup size="sm">
 								<InputGroupText>Name</InputGroupText>
 								<Input bind:value={kvar.name} disabled={readonly} />
-								{#if !readonly}
-									<Button
-										color="primary"
-										on:click={(e) => {
-											e.preventDefault();
-											kvarsArr.splice(index, 1);
-											kvarsArr = kvarsArr;
-										}}
-									>
-										-
-									</Button>
-								{/if}
 							</InputGroup>
 							<InputGroup size="sm">
 								<InputGroupText>Value</InputGroupText>
@@ -138,9 +125,109 @@
 								<InputGroupText>Label</InputGroupText>
 								<Input bind:value={kvar.label} disabled={readonly} />
 							</InputGroup>
-						</Col>
-					{/each}
-				</Row>
+						</div>
+						{#if !readonly}
+							<div class="shrink">
+								<table style="height: 100px; ">
+									<tr>
+										<td class="align-middle">
+											<table>
+												<tr>
+													<td>
+														<Button
+															class="m-0 p-0"
+															on:click={(e) => {
+																e.preventDefault();
+																kvarsArr.splice(index, 1);
+																kvarsArr = kvarsArr;
+															}}
+														>
+															<Icon name="dash" />
+														</Button>
+													</td><td>
+														<Button
+															class="m-0 p-0"
+															on:click={(e) => {
+																e.preventDefault();
+																kvarsArr.splice(index, 0, {
+																	name: '',
+																	label: '',
+																	value: ''
+																});
+																kvarsArr = kvarsArr;
+															}}
+														>
+															<Icon name="plus" />
+														</Button>
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<Button
+															class="m-0 p-0"
+															on:click={(e) => {
+																e.preventDefault();
+																if (index > 0) {
+																	kvarsArr.splice(index - 1, 0, kvarsArr.splice(index, 1)[0]);
+																	kvarsArr = kvarsArr;
+																}
+															}}
+														>
+															<Icon name="chevron-up" />
+														</Button>
+													</td><td>
+														<Button
+															class="m-0 p-0"
+															on:click={(e) => {
+																e.preventDefault();
+																if (index > 0) {
+																	kvarsArr.splice(0, 0, kvarsArr.splice(index, 1)[0]);
+																	kvarsArr = kvarsArr;
+																}
+															}}
+														>
+															<Icon name="chevron-double-up" />
+														</Button>
+													</td>
+												</tr>
+												<tr>
+													<td>
+														<Button
+															class="m-0 p-0"
+															on:click={(e) => {
+																e.preventDefault();
+																if (index < kvarsArr.length - 1) {
+																	kvarsArr.splice(index + 1, 0, kvarsArr.splice(index, 1)[0]);
+																	kvarsArr = kvarsArr;
+																}
+															}}
+														>
+															<Icon name="chevron-down" />
+														</Button>
+													</td>
+													<td>
+														<Button
+															class="m-0 p-0"
+															on:click={(e) => {
+																e.preventDefault();
+																if (index < kvarsArr.length - 1) {
+																	kvarsArr.push(kvarsArr.splice(index, 1)[0]);
+																	kvarsArr = kvarsArr;
+																}
+															}}
+														>
+															<Icon name="chevron-double-down" />
+														</Button>
+													</td>
+												</tr>
+											</table>
+										</td>
+									</tr>
+								</table>
+							</div>
+						{/if}
+					</div>
+				{/each}
 			</Container>
 		</Col>
 		<Col class="d-flex mt-3">

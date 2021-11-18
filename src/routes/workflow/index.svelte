@@ -80,9 +80,7 @@
 
 <Container>
 	<div class="d-flex">
-		<div class="flex-shrink-0">
-			<h1>Processes</h1>
-		</div>
+		<div class="flex-shrink-0 fs-3">Processes</div>
 		<div class="mx-5 align-self-center flex-grow-1">Instantiated workflow processes</div>
 	</div>
 </Container>

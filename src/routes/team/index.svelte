@@ -119,9 +119,7 @@
 
 <Container>
 	<div class="d-flex">
-		<div class="flex-shrink-0">
-			<h1>Teams</h1>
-		</div>
+		<div class="flex-shrink-0 fs-3">Teams</div>
 		<div class="mx-5 align-self-center flex-grow-1">
 			Map role definition in template to real people
 		</div>

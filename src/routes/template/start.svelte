@@ -4,8 +4,10 @@
 		const tplid = page.query.get('tplid');
 		console.log('TPLID = ', tplid);
 		const tpl_mode = 'read';
-		//const jsonUrl = `/template/@${tplid}&${tpl_mode}.json`;
-		//const res = await fetch(jsonUrl);
+		/* const jsonUrl = `/template/@${tplid}&${tpl_mode}.json`;
+		const res = await fetch(jsonUrl);
+		console.log('---------');
+		console.log(await res.json()); */
 		const res_team: SearchResult = await api.post(
 			'team/search',
 			{ limit: 1000 },
@@ -15,7 +17,6 @@
 
 		return {
 			props: {
-				//template: await res.json(),
 				tplid: tplid,
 				user: session.user,
 				teams: theTeams
@@ -27,10 +28,21 @@
 <script lang="ts">
 	import type { User, Template, Team } from '$lib/types';
 	import * as api from '$lib/api';
-	import { Container, Row, Col, Button } from 'sveltestrap';
+	import {
+		Container,
+		Row,
+		Col,
+		Button,
+		Card,
+		CardHeader,
+		CardBody,
+		CardText,
+		CardTitle
+	} from 'sveltestrap';
 	import { Form, FormGroup, FormText, Input, Label, Fade, Card } from 'sveltestrap';
 	import { Badge, DropdownItem, DropdownMenu, DropdownToggle, Dropdown } from 'sveltestrap';
 	import { enhance } from '$lib/form';
+	//export let template;
 	export let user: User;
 	export let teams: Team[];
 	export let tplid: string;
@@ -105,19 +117,22 @@
 	}
 </script>
 
-<Container>
-	<Row>
+<Container class="mt-3">
+	<Row cols="1">
 		<Col class="d-flex justify-content-center">
-			<h1 class="text-xs-center">Start Workflow</h1>
+			<span class="text-xs-center fs-3">Start Workflow</span>
+		</Col>
+		<Col class="d-flex justify-content-center">
+			<span class="text-xs-center fs-5">{tplid}</span>
 		</Col>
 	</Row>
 </Container>
-<Container>
+<Container class="mt-3 w-50">
 	<Form>
-		<Row>
+		<Row cols="1">
 			<Col>
 				<FormGroup>
-					<Label>PBO</Label>
+					<Label>Primary Business Object</Label>
 					<Input
 						type="url"
 						name="pbo"
@@ -128,7 +143,7 @@
 			</Col>
 			<Col>
 				<FormGroup>
-					<Label>Workflow Title</Label>
+					<Label>Workflow title</Label>
 					<Input
 						type="text"
 						name="wftitle"
@@ -137,14 +152,17 @@
 					/>
 				</FormGroup>
 			</Col>
-		</Row>
-		<Row>
 			<Col>
 				<FormGroup>
-					<Label>Start With Team {theTeam ? theTeam.teamid : ''}</Label>
-					<Dropdown {isOpen}>
-						<DropdownToggle tag="div" class="d-inline-block">
-							<Input on:keyup={searchTeam} bind:value={team_id_for_search} />
+					<Label>Start with team {theTeam ? theTeam.teamid : ''}</Label>
+					<Dropdown {isOpen} class="w-100">
+						<DropdownToggle tag="div" class="d-inline-block w-100">
+							<Input
+								placeholder="type team name here"
+								on:keyup={searchTeam}
+								bind:value={team_id_for_search}
+								class="w-100"
+							/>
 						</DropdownToggle>
 						<DropdownMenu>
 							{#each search_result as aTeam}
@@ -165,6 +183,7 @@
 				<FormGroup>
 					<Button
 						color="primary"
+						class="w-100"
 						on:click={(e) => {
 							e.preventDefault();
 							_startWorkflow();
@@ -180,26 +199,27 @@
 		</Card>
 	</Fade>
 	{#if theTeam}
-		<Row
-			><Col>
-				<h3>Team Roles</h3>
-			</Col>
-		</Row>
+		<div class="text-center fs-4">Team roles</div>
 		{#each roles as aRole (aRole)}
-			<Row
-				><Col>
-					<h5>{aRole}</h5>
-				</Col>
-			</Row>
-			<Row
-				><Col sm={{ size: 11, order: 2, offset: 1 }}>
-					{#each theTeam.tmap[aRole] as aMember (aMember.uid)}
-						<Badge pill color="info" class="kfk-role-member-tag">
-							{aMember.dname} &lt;{aMember.uid}&gt;
-						</Badge>
-					{/each}
-				</Col>
-			</Row>
+			<Card>
+				<CardHeader><CardTitle>{aRole}</CardTitle></CardHeader>
+				<CardBody>
+					<CardText>
+						{#each theTeam.tmap[aRole] as aMember (aMember.uid)}
+							<Badge pill color="info" class="kfk-role-member-tag">
+								{aMember.dname} &lt;{aMember.uid}&gt;
+							</Badge>
+						{/each}
+					</CardText>
+				</CardBody>
+			</Card>
 		{/each}
 	{/if}
+
+	<Card class="mt-5">
+		<CardHeader><CardTitle>Help</CardTitle></CardHeader>
+		<CardBody>
+			<CardText />
+		</CardBody>
+	</Card>
 </Container>

@@ -28,7 +28,16 @@
 <main>
 	<slot />
 </main>
-
+<div id="footer">
+	<div class="mx-5">Copyright METAtoCome 2021</div>
+</div>
 {#if $session.errors}
 	<ErrHint errors={$session.errors} />
 {/if}
+
+<style>
+	#footer {
+		margin-top: 20px;
+		background-color: red;
+	}
+</style>

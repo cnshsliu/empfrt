@@ -124,9 +124,7 @@
 
 <Container>
 	<div class="d-flex">
-		<div class="flex-shrink-0">
-			<h1>Work list</h1>
-		</div>
+		<div class="flex-shrink-0 fs-3">Work list</div>
 		<div class="mx-5 align-self-center flex-grow-1">
 			of {payload_extra.doer}
 		</div>

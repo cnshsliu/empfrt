@@ -196,6 +196,3 @@
 		/>
 	</div>
 </Table>
-<code><pre>
-{JSON.stringify(user, null, 2)}
-</pre></code>

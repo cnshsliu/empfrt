@@ -161,10 +161,10 @@
 		await theKFK.loadTemplateDoc(template, tpl_mode);
 	}
 
-	function documentEventOff() {
+	export function documentEventOff() {
 		jq(document).off();
 	}
-	function documentEventOn() {
+	export function documentEventOn() {
 		theKFK.addDocumentEventHandler(true);
 	}
 	onDestroy(async () => {

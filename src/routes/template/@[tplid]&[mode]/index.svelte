@@ -88,11 +88,13 @@
 		});
 		form_name = '';
 		errmsg = '';
+		theDesigner.documentEventOn();
 	}
 	function show_form(what: string) {
 		hide_all_form();
 		form_status[what] = true;
 		form_name = what;
+		theDesigner.documentEventOff();
 	}
 	async function change_mode(what: string) {
 		tpl_mode = what;
@@ -345,42 +347,72 @@
 							}
 						}}
 					>
-						New template name:
-						<input
-							name="tplid"
-							aria-label="Create template"
-							placeholder="New template name"
-							class="kfk_input_template_name"
-							autocomplete="off"
-						/>
-						<Button type="submit" color="primary">Create</Button>
-						<Button
-							on:click={(e) => {
-								e.preventDefault();
-								hide_all_form();
-							}}
-							color="secondary">Cancel</Button
-						>
+						<table class="form-table">
+							<tr>
+								<td> New template name: </td>
+								<td>
+									<input
+										name="tplid"
+										aria-label="Create template"
+										placeholder="New template name"
+										class="kfk_input_template_name"
+										autocomplete="off"
+									/>
+								</td>
+								<td>
+									<Button type="submit" color="primary">Create</Button>
+								</td>
+								<td>
+									<Button
+										on:click={(e) => {
+											e.preventDefault();
+											hide_all_form();
+										}}
+										color="secondary"
+									>
+										Cancel
+									</Button>
+								</td>
+							</tr>
+						</table>
 						{#if errmsg !== ''}{errmsg}{/if}
 					</form>
 				{:else if form_status.export}
-					Export current template to:
-					<input
-						name="exorttoname"
-						placeholder="Export to file"
-						class="kfk_input_template_name"
-						bind:value={export_to_filename}
-						autocomplete="off"
-					/>
-					<Button on:click={() => export_template()} color="primary">Export</Button>
-					<Button
-						on:click={(e) => {
-							e.preventDefault();
-							hide_all_form();
-						}}
-						color="secondary">Cancel</Button
-					>
-					{#if errmsg !== ''}{errmsg}{/if}
+					<form>
+						<table class="form-table">
+							<tr>
+								<td> Export current template to: </td>
+								<td>
+									<input
+										name="exorttoname"
+										placeholder="Export to file"
+										class="kfk_input_template_name"
+										bind:value={export_to_filename}
+										autocomplete="off"
+									/>
+								</td>
+								<td>
+									<Button
+										on:click={(e) => {
+											e.preventDefault();
+											export_template();
+										}}
+										color="primary">Export</Button
+									>
+								</td>
+								<td>
+									<Button
+										on:click={(e) => {
+											e.preventDefault();
+											hide_all_form();
+										}}
+										color="secondary">Cancel</Button
+									>
+								</td>
+							</tr>
+						</table>
+						{#if errmsg !== ''}{errmsg}{/if}
+					</form>
 				{:else if form_status.rename}
 					<form
 						action={urls.rename}
@@ -412,23 +444,35 @@
 							}
 						}}
 					>
-						Rename {template.tplid} to:
-						<input
-							name="tplid"
-							placeholder="Rename: new template name"
-							class="kfk_input_template_name"
-							value={template.tplid}
-							autocomplete="off"
-						/>
-						<input type="hidden" name="fromid" value={template.tplid} />
-						<Button type="submit" color="primary">Rename</Button>
-						<Button
-							on:click={(e) => {
-								e.preventDefault();
-								hide_all_form();
-							}}
-							color="secondary">Cancel</Button
-						>
+						<table class="form-table">
+							<tr>
+								<td>
+									Rename {template.tplid} to:
+								</td>
+								<td>
+									<input
+										name="tplid"
+										placeholder="Rename: new template name"
+										class="kfk_input_template_name"
+										value={template.tplid}
+										autocomplete="off"
+									/>
+									<input type="hidden" name="fromid" value={template.tplid} />
+								</td>
+								<td>
+									<Button type="submit" color="primary">Rename</Button>
+								</td>
+								<td>
+									<Button
+										on:click={(e) => {
+											e.preventDefault();
+											hide_all_form();
+										}}
+										color="secondary">Cancel</Button
+									>
+								</td>
+							</tr>
+						</table>
 						{#if errmsg !== ''}{errmsg}{/if}
 					</form>
 				{:else if form_status.copyto}
@@ -464,59 +508,91 @@
 							}
 						}}
 					>
-						Copy {template.tplid} to:
-						<input
-							name="tplid"
-							placeholder="New template name"
-							class="kfk_input_template_name"
-							value={template.tplid}
-							autocomplete="off"
-						/>
-						<input type="hidden" name="fromid" value={template.tplid} />
-						<Button type="submit" color="primary">Copy</Button>
-						<Button
-							on:click={(e) => {
-								e.preventDefault();
-								hide_all_form();
-							}}
-							color="secondary"
-						>
-							Cancel
-						</Button>
+						<table class="form-table">
+							<tr>
+								<td>
+									Copy {template.tplid} to:
+								</td>
+								<td>
+									<input
+										name="tplid"
+										placeholder="New template name"
+										class="kfk_input_template_name"
+										value={template.tplid}
+										autocomplete="off"
+									/>
+									<input type="hidden" name="fromid" value={template.tplid} />
+								</td>
+								<td>
+									<Button type="submit" color="primary">Copy</Button>
+								</td>
+								<td>
+									<Button
+										on:click={(e) => {
+											e.preventDefault();
+											hide_all_form();
+										}}
+										color="secondary"
+									>
+										Cancel
+									</Button>
+								</td>
+							</tr>
+						</table>
 						{#if errmsg !== ''}{errmsg}{/if}
 					</form>
 				{:else if form_status.delete}
-					Delete: &nbsp; {template.tplid}?&nbsp;
-					<Button on:click={() => delete_template()} color="primary">Delete</Button>
-					<Button
-						on:click={(e) => {
-							e.preventDefault();
-							hide_all_form();
-						}}
-						color="secondary"
-					>
-						Cancel
-					</Button>
+					<table class="form-table">
+						<tr>
+							<td>
+								Delete: &nbsp; {template.tplid}?&nbsp;
+							</td>
+							<td>
+								<Button on:click={() => delete_template()} color="primary">Delete</Button>
+							</td>
+							<td>
+								<Button
+									on:click={(e) => {
+										e.preventDefault();
+										hide_all_form();
+									}}
+									color="secondary"
+								>
+									Cancel
+								</Button>
+							</td>
+						</tr>
+					</table>
 					{#if errmsg !== ''}{errmsg}{/if}
 				{:else if form_status.start}
-					Start: {template.tplid}?&nbsp;
-					<Button
-						on:click={() => {
-							goto(`/template/start?tplid=${template.tplid}`, { replaceState: false });
-						}}
-						color="primary"
-					>
-						Start now
-					</Button>
-					<Button
-						on:click={(e) => {
-							e.preventDefault();
-							hide_all_form();
-						}}
-						color="secondary"
-					>
-						Cancel
-					</Button>
+					<table class="form-table">
+						<tr>
+							<td>
+								Start: {template.tplid}?&nbsp;
+							</td>
+							<td>
+								<Button
+									on:click={() => {
+										goto(`/template/start?tplid=${template.tplid}`, { replaceState: false });
+									}}
+									color="primary"
+								>
+									Start now
+								</Button>
+							</td>
+							<td>
+								<Button
+									on:click={(e) => {
+										e.preventDefault();
+										hide_all_form();
+									}}
+									color="secondary"
+								>
+									Cancel
+								</Button>
+							</td>
+						</tr>
+					</table>
 					{#if errmsg !== ''}{errmsg}{/if}
 				{/if}
 			</Col>
@@ -524,3 +600,9 @@
 	</div>
 	<svelte:component this={Designer} bind:this={theDesigner} {template} {tpl_mode} />
 {/if}
+
+<style>
+	.form-table td {
+		padding-left: 10px;
+	}
+</style>

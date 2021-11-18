@@ -108,9 +108,7 @@
 
 <Container>
 	<div class="d-flex">
-		<div class="flex-shrink-0">
-			<h1>Templates</h1>
-		</div>
+		<div class="flex-shrink-0 fs-3">Templates</div>
 		<div class="mx-5 align-self-center flex-grow-1">Defines how workflow would be running</div>
 	</div>
 </Container>
@@ -208,8 +206,8 @@
 		{/if}
 	</TabContent>
 </Container>
-<Container class="mt-3">
-	<Row class="mt-3">
+<Container class="mt-3 kfk-result-list">
+	<Row>
 		<Col>
 			<RemoteTable endpoint="template/search" {token} {user} bind:this={remoteTable} />
 		</Col>
