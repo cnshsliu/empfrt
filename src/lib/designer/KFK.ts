@@ -2124,7 +2124,7 @@ class KFKclass {
 						jqNodeDIV.css('z-index', that.originZIndex);
 						that.originZIndex = 1;
 						//节点移动后，对连接到节点上的连接线重新划线
-						await that.redrawLinkLines(jqNodeDIV, 'after moving');
+						await that.redrawLinkLines(jqNodeDIV, 'after moving', 'both');
 						that.setSelectedNodesBoundingRect();
 
 						tobeMovedNodes.push({

@@ -633,12 +633,12 @@ input::placeholder {
 	transform: translate(0%, -50%);
 	box-shadow: 0 4px 8px 0 #000000cc, 0 6px 20px 0 #000000cc;
 	border-radius: 10px;
-	z-index: 10000000;
+	z-index: 999;
 }
 
 #designer-topMenu {
 	position: absolute;
-	z-index: 1000000;
+	z-index: 999;
 	width: 100%;
 }
 .whiteback {
