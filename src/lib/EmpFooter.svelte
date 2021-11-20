@@ -1,0 +1,176 @@
+<script lang="ts">
+	import { Input, InputGroup, InputGroupText, Row, Col, Icon, Container } from 'sveltestrap';
+
+	let browserLanguage = 'en-US';
+	export let user;
+</script>
+
+<div class="container emp-footer">
+	<div class="row m-3">
+		<div class="col-sm-6">
+			<Container class="mt-3">
+				<div><i class="fab fa-pagelines fs-3 me-3" />METAtoCome</div>
+				<div class="fs-6">Neural system for your organiation</div>
+				<Row class="mt-3">
+					<Col class="text-info">
+						<i class="fab fa-twitter fa-2x" />
+						<i class="fab fa-github fa-2x" />
+						<i class="fab fa-discord fa-2x" />
+					</Col>
+				</Row>
+				<div class="mt-3">
+					<InputGroup>
+						<InputGroupText>
+							<i class="fas fa-language" />
+						</InputGroupText>
+						<Input
+							type="select"
+							bind:value={browserLanguage}
+							name="select"
+							style="max-width:200px;"
+						>
+							<option value="null">Select-</option>
+							<option value="en-US">English</option>
+							<!--option value="zh-CN">中文</option -->
+						</Input>
+					</InputGroup>
+				</div>
+			</Container>
+		</div>
+		<div class="col-sm-6">
+			<Row>
+				<Col class="col-sm">
+					<Container class="mt-3">
+						<Row cols="1">
+							<Col>
+								<a
+									sveltekit:prefetch
+									class="fs-5 text-info text-decoration-none"
+									href="/docs/about"
+								>
+									PLATFORM
+								</a>
+							</Col>
+							<Col>
+								<a sveltekit:prefetch class="color-link text-decoration-none" href="/docs/about">
+									Explainer Video
+								</a>
+							</Col>
+							<Col>
+								<a sveltekit:prefetch class="color-link text-decoration-none" href="/docs/about">
+									How it works
+								</a>
+							</Col>
+							<Col>
+								<a sveltekit:prefetch class="color-link text-decoration-none" href="/docs/about">
+									Use cases
+								</a>
+							</Col>
+							<Col>
+								<a sveltekit:prefetch class="color-link text-decoration-none" href="/docs/about">
+									Sign up
+								</a>
+							</Col>
+							<Col>
+								<a sveltekit:prefetch class="color-link text-decoration-none" href="/docs/about">
+									Log in
+								</a>
+							</Col>
+						</Row>
+					</Container>
+				</Col>
+				<Col class="col-sm">
+					<Container class="mt-3">
+						<Row cols="1">
+							<Col>
+								<a
+									sveltekit:prefetch
+									class="fs-5 text-info text-decoration-none"
+									href="/docs/about"
+								>
+									DEVELOPER
+								</a>
+							</Col>
+							<Col>
+								<a sveltekit:prefetch class="color-link text-decoration-none" href="/docs/about">
+									Quick Start
+								</a>
+							</Col>
+							<Col>
+								<a sveltekit:prefetch class="color-link text-decoration-none" href="/docs/about">
+									Examples
+								</a>
+							</Col>
+							<Col>
+								<a sveltekit:prefetch class="color-link text-decoration-none" href="/docs/about">
+									Docs & Help
+								</a>
+							</Col>
+							<Col>
+								<a sveltekit:prefetch class="color-link text-decoration-none" href="/docs/about">
+									Discord
+								</a>
+							</Col>
+							<Col>
+								<a sveltekit:prefetch class="color-link text-decoration-none" href="/docs/about">
+									SDKs
+								</a>
+							</Col>
+							<Col>
+								<a sveltekit:prefetch class="color-link text-decoration-none" href="/docs/about">
+									Open Source
+								</a>
+							</Col>
+							<Col>
+								<a sveltekit:prefetch class="color-link text-decoration-none" href="/docs/about">
+									I18N
+								</a>
+							</Col>
+						</Row>
+					</Container>
+				</Col>
+				<Col class="col-sm">
+					<Container class="mt-3">
+						<Row cols="1">
+							<Col>
+								<a
+									sveltekit:prefetch
+									class="fs-5 text-info text-decoration-none"
+									href="/docs/about"
+								>
+									DEPLOYMENT
+								</a>
+							</Col>
+							<Col>
+								<a sveltekit:prefetch class="color-link text-decoration-none" href="/docs/about">
+									PaaS
+								</a>
+							</Col>
+							<Col>
+								<a sveltekit:prefetch class="color-link text-decoration-none" href="/docs/about">
+									Private Install
+								</a>
+							</Col>
+							<Col>
+								<a sveltekit:prefetch class="color-link text-decoration-none" href="/docs/about">
+									Open Source
+								</a>
+							</Col>
+						</Row>
+					</Container>
+				</Col>
+			</Row>
+		</div>
+	</div>
+</div>
+
+<style>
+	.color-link {
+		color: rgba(0, 0, 0, 0.8);
+	}
+	.emp-footer {
+		margin-top: 100px;
+		background-color: rgba(0, 0, 255, 0.05);
+		min-height: 400px;
+	}
+</style>

@@ -991,7 +991,11 @@ class KFKclass {
 			ret.SCRIPT.runmode = jqDIV.attr('runmode') ? jqDIV.attr('runmode') : 'SYNC';
 			ret.SCRIPT.label = BlankToDefault(jqDIV.find('p').first().text(), 'Script').trim();
 			ret.label = ret.SCRIPT.label;
-			let str = BlankToDefault(jqDIV.find('code').first().text(), '').trim();
+			let defaultScript = that.codeToBase64(
+				`// read Hyperflow Developer's Guide for details
+ret='DEFAULT'; `
+			);
+			let str = BlankToDefault(jqDIV.find('code').first().text(), defaultScript).trim();
 			str = that.base64ToCode(str);
 			ret.SCRIPT.code = str;
 		} else if (jqDIV.hasClass('INFORM')) {
@@ -2446,7 +2450,6 @@ toggleOverview (jc3MousePos) {
     that.restoreDIVsWithStatus([
       "#containerbkg",
       "#minimap",
-      "#toplogo",
       "#docHeaderInfo",
       "#rtcontrol",
       "#leftPanel",
@@ -2475,7 +2478,6 @@ toggleOverview (jc3MousePos) {
     that.hideDIVsWithStatus([
       "#containerbkg",
       "#minimap",
-      "#toplogo",
       "#docHeaderInfo",
       "#rtcontrol",
       "#leftPanel",

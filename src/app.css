@@ -140,22 +140,6 @@ input::placeholder {
 	margin-top: 50px;
 }
 
-.toplogo {
-	position: absolute;
-	top: 15px;
-	left: 15px;
-	padding-right: 10px;
-	cursor: pointer;
-}
-
-#top {
-	position: absolute;
-	top: 5px;
-	left: 120px;
-	width: 100%;
-	padding-right: 10px;
-}
-
 #leftPanel {
 	position: absolute;
 	top: 50%;
@@ -272,19 +256,6 @@ input::placeholder {
 	position: absolute;
 	top: 5px;
 	left: calc(100vw - 365px);
-}
-
-.logo {
-	height: 60px;
-}
-
-.logo-mobile {
-	height: 30px;
-}
-
-.cocologo {
-	width: 36px;
-	height: 36px;
 }
 
 #large-container {
@@ -2179,7 +2150,7 @@ table.quick-help-table td:first-of-type {
 	background-position: center; /* Center the image */
 	background-repeat: no-repeat; /* Do not repeat the image */
 	background-size: cover;
-	background-image: url('/svelte-welcome.png');
+	background-image: url('/metatocome.png');
 }
 .kfk-odd {
 	background-color: rgba(255, 255, 255, 0.1);

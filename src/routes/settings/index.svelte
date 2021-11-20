@@ -104,11 +104,14 @@
 	async function savePersonel() {
 		in_progress = true;
 
-		const response = (await post('auth/save', {
+		let payload = {
 			email: user.email,
-			//username: user.username,
+			avatar: user.avatar,
+			username: user.username,
 			password: user.password
-		})) as unknown as EmpResponse;
+		};
+		console.log(payload);
+		const response = (await post('auth/save', payload)) as unknown as EmpResponse;
 		if (response.error) {
 			setFadeMessage(response.message);
 		} else {

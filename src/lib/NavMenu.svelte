@@ -2,6 +2,7 @@
 	import { page, session } from '$app/stores';
 	import { title } from '$lib/title';
 	import {
+		Button,
 		Row,
 		Col,
 		Icon,
@@ -36,34 +37,27 @@
 		// causes the `load` function to run again
 		$session.user = null;
 	}
+
+	let user = $session.user;
 </script>
 
-{#if $session.user && $session.user.tenant && $session.user.tenant.css}
-	<link href={$session.user.tenant.css} rel="stylesheet" type="text/css" />
+{#if user && user.tenant && user.tenant.css}
+	<link href={user.tenant.css} rel="stylesheet" type="text/css" />
 {/if}
 <Styles />
 {#if $page.query.has('iframe') === false}
 	<Navbar class="light px-5 kfknavbar" light expand="md">
 		<NavbarBrand href="/">
 			<Container>
-				<Row cols="2" class="d-flex w-100">
+				<Row cols="2" class="d-flex w-100 align-items-center">
 					<Col class="kfk-org-logo org-logo" />
-					<Col>
-						<Col>
-							{$session.user && $session.user.tenant ? $session.user.tenant.name : 'HyperFlow'}
-						</Col>
-						<Col>
-							<span class="kfk-me">
-								{$session.user && $session.user.username ? $session.user.username : ''}</span
-							>
-						</Col>
-					</Col>
+					<Col>Metatocome</Col>
 				</Row>
 			</Container>
 		</NavbarBrand>
 		<NavbarToggler on:click={() => (isMenuOpen = !isMenuOpen)} />
 		<Nav class="ms-auto" navbar>
-			{#if $session.user}
+			{#if user}
 				<NavItem>
 					<NavLink rel="prefetch" href="/template" active={$page.path === '/template'}>
 						<Icon name="code-square" />&nbsp;Template
@@ -85,27 +79,54 @@
 					</NavLink>
 				</NavItem>
 				<Dropdown>
-					<DropdownToggle nav caret>Me</DropdownToggle>
+					{#if user && user.avatar}
+						<DropdownToggle nav>
+							<img src={user.avatar} class="kfk-avatar-small img-thumbnail" alt={user.username} />
+						</DropdownToggle>
+					{:else}
+						<DropdownToggle nav>
+							<div class="kfk-avatar-letter-small">
+								{user ? user.username : 'ME'}
+							</div>
+						</DropdownToggle>
+					{/if}
 					<DropdownMenu end>
-						<DropdownItem
-							on:click={(e) => {
-								goto('/settings');
-							}}
-						>
-							{$session.user.username}
-							of<br />
-							{$session.user && $session.user.tenant ? $session.user.tenant.name : ''}
-						</DropdownItem>
+						<Container style="width:300px; text-align:center;">
+							<Row cols="1">
+								<Col>
+									{#if user}
+										{#if user.avatar}
+											<img
+												src={user.avatar}
+												class="kfk-avatar-middle  img-thumbnail"
+												alt={user.username}
+											/>
+										{:else}
+											<div class="kfk-avatar-letter-middle">
+												{user.username}
+											</div>
+										{/if}
+									{:else}
+										<div class="kfk-avatar-letter-middle img-thumbnail">ME</div>
+									{/if}
+								</Col>
+								<Col class="fw-bold mt-2">{user ? user.username : ''}</Col>
+								<Col>{user && user.tenant ? user.tenant.name : ''}</Col>
+								<Col class="mt-3">
+									<Button
+										on:click={(e) => {
+											goto('/settings');
+										}}
+									>
+										Manage your account
+									</Button>
+								</Col>
+							</Row>
+						</Container>
 						<DropdownItem divider />
-						<DropdownItem
-							on:click={(e) => {
-								goto('/settings');
-							}}
-						>
-							<Icon name="gear" />&nbsp;Settings
+						<DropdownItem class="text-center" on:click={logout}>
+							<Icon name="door-open" /> Logout
 						</DropdownItem>
-						<DropdownItem divider />
-						<DropdownItem on:click={logout}><Icon name="door-open" />Logout</DropdownItem>
 					</DropdownMenu>
 				</Dropdown>
 			{:else}
@@ -128,3 +149,15 @@
 		</Nav>
 	</Navbar>
 {/if}
+
+<style>
+	.kfk-avatar-small {
+		width: 32px;
+		height: 32px;
+		border-radius: 16px;
+	}
+	.kfk-avatar-middle {
+		width: 80px;
+		height: 80px;
+	}
+</style>
