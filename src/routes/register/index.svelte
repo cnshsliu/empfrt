@@ -54,7 +54,7 @@
 	<title>Sign up • HyperFlow</title>
 </svelte:head>
 
-<Container class="kfk-login-container">
+<Container style="max-width: 400px;">
 	<Row cols="1">
 		<Col>
 			<h1 class="text-center">Sign up</h1>

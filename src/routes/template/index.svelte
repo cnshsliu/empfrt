@@ -19,9 +19,11 @@
 <script lang="ts">
 	import { API_SERVER } from '$lib/Env';
 	import Parser from '$lib/parser';
+	import { onMount } from 'svelte';
 	import RemoteTable from './RemoteTable.svelte';
 	import ErrorProcessor from '$lib/errorProcessor';
 	import { get } from 'svelte/store';
+	import { goto } from '$app/navigation';
 	import type { WhichTab } from '$lib/types';
 	import { whichTabStore } from '$lib/empstores';
 	import { ClientPermControl } from '$lib/clientperm';
@@ -102,6 +104,12 @@
 			fade_message = '';
 		}, time);
 	}
+	let recentTemplates = [];
+	onMount(() => {
+		if (localStorage) {
+			recentTemplates = JSON.parse(localStorage.getItem('recentTemplates') ?? JSON.stringify([]));
+		}
+	});
 </script>
 
 <Styles />
@@ -205,6 +213,20 @@
 			</TabPane>
 		{/if}
 	</TabContent>
+</Container>
+<Container class="mt-2">
+	<span>Recent started:</span>
+	{#each recentTemplates as aTplid, index (aTplid)}
+		<Button
+			class="mx-1 badge bg-info text-dark"
+			on:click={(e) => {
+				e.preventDefault();
+				goto(`template/start?tplid=${aTplid}`, { replaceState: false });
+			}}
+		>
+			{aTplid}
+		</Button>
+	{/each}
 </Container>
 <Container class="mt-3 kfk-result-list">
 	<Row>

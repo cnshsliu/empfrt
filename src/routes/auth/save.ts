@@ -17,7 +17,7 @@ export async function post(request) {
 			email: request.body.email,
 			username: request.body.username,
 			password: request.body.password,
-			avatar: request.body.avatar || undefined
+			avatar: request.body.avatar
 		},
 		token
 	);

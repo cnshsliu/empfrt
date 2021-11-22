@@ -8,11 +8,11 @@
 		const res = await fetch(jsonUrl);
 		console.log('---------');
 		console.log(await res.json()); */
-		const res_team: SearchResult = await api.post(
+		const res_team: SearchResult = (await api.post(
 			'team/search',
 			{ limit: 1000 },
 			session.user.sessionToken
-		);
+		)) as unknown as SearchResult;
 		const theTeams = res_team.objs;
 
 		return {
@@ -26,7 +26,9 @@
 </script>
 
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import type { User, Template, Team } from '$lib/types';
+	import { browser, dev } from '$app/env';
 	import * as api from '$lib/api';
 	import {
 		Container,
@@ -37,11 +39,15 @@
 		CardHeader,
 		CardBody,
 		CardText,
-		CardTitle
+		CardTitle,
+		Form,
+		FormGroup,
+		FormText,
+		Input,
+		Label,
+		Fade
 	} from 'sveltestrap';
-	import { Form, FormGroup, FormText, Input, Label, Fade, Card } from 'sveltestrap';
 	import { Badge, DropdownItem, DropdownMenu, DropdownToggle, Dropdown } from 'sveltestrap';
-	import { enhance } from '$lib/form';
 	//export let template;
 	export let user: User;
 	export let teams: Team[];
@@ -59,22 +65,20 @@
 	$title = 'HyperFlow';
 	let search_result = [];
 	let theTeam: Team;
-	let theMap = [];
 
-	function pickTeam(teamId: string) {
+	const pickTeam = function (teamId: string) {
 		team_id_for_search = teamId;
 		theTeam = null;
+		saveOneRecentTeam(teamId);
 		for (let i = 0; i < teams.length; i++) {
 			if (teams[i].teamid === teamId) {
 				theTeam = teams[i];
 				roles = typeof theTeam.tmap === 'undefined' ? [] : Object.keys(theTeam.tmap);
-				console.log(theTeam);
-				console.log(roles);
 			}
 		}
 		isOpen = false;
-	}
-	function searchTeam() {
+	};
+	const searchTeam = function () {
 		search_result.splice(0, search_result.length);
 		console.log(team_id_for_search, teams.length);
 		for (let i = 0; i < teams.length; i++) {
@@ -91,9 +95,10 @@
 		} else {
 			isOpen = false;
 		}
-	}
+	};
 
-	async function _startWorkflow() {
+	const _startWorkflow = async function () {
+		saveOneRecentTemplate(tplid);
 		let teamid = theTeam ? theTeam.teamid : '';
 		const res = await api.post(
 			'workflow/start',
@@ -114,7 +119,43 @@
 		timeoutID = setTimeout(() => {
 			fade_message = '';
 		}, 3000);
-	}
+	};
+
+	let recentTemplates = [];
+	let recentTeams = [];
+	onMount(() => {
+		if (localStorage) {
+			recentTemplates = JSON.parse(localStorage.getItem('recentTemplates') ?? JSON.stringify([]));
+			recentTeams = JSON.parse(localStorage.getItem('recentTeams') ?? JSON.stringify([]));
+
+			console.log('recentTemplates:>>', recentTemplates, '<<');
+			console.log('recentTeams>>', recentTeams, '<<');
+		}
+	});
+	const saveOneRecentTeam = function (team) {
+		let tmp = recentTeams.indexOf(team);
+		if (tmp > -1) {
+			recentTeams.splice(tmp, 1);
+		}
+		recentTeams.unshift(team);
+		if (recentTeams.length > 10) {
+			recentTeams.splice(10);
+		}
+		localStorage.setItem('recentTeams', JSON.stringify(recentTeams));
+		recentTeams = recentTeams;
+	};
+	const saveOneRecentTemplate = function (tplid) {
+		let tmp = recentTemplates.indexOf(tplid);
+		if (tmp > -1) {
+			recentTemplates.splice(tmp, 1);
+		}
+		recentTemplates.unshift(tplid);
+		if (recentTemplates.length > 10) {
+			recentTemplates.splice(10);
+		}
+		localStorage.setItem('recentTemplates', JSON.stringify(recentTemplates));
+		recentTemplates = recentTemplates;
+	};
 </script>
 
 <Container class="mt-3">
@@ -123,7 +164,11 @@
 			<span class="text-xs-center fs-3">Start Workflow</span>
 		</Col>
 		<Col class="d-flex justify-content-center">
-			<span class="text-xs-center fs-5">{tplid}</span>
+			<span class="text-xs-center fs-5">
+				<a class="preview-link kfk-template-id tnt-template-id" href="/template/@{tplid}&read">
+					{tplid}
+				</a>
+			</span>
 		</Col>
 	</Row>
 </Container>
@@ -177,9 +222,23 @@
 							{/each}
 						</DropdownMenu>
 					</Dropdown>
+					<span>Recent used team:</span>
+					{#each recentTeams as ateam, index (ateam)}
+						<Button
+							class="mx-1 badge bg-info text-dark"
+							on:click={(e) => {
+								e.preventDefault();
+								console.log(ateam);
+								team_id_for_search = ateam;
+								pickTeam(ateam);
+							}}
+						>
+							{ateam}
+						</Button>
+					{/each}
 				</FormGroup>
 			</Col>
-			<Col>
+			<Col style="margin-top: 20px;">
 				<FormGroup>
 					<Button
 						color="primary"
@@ -199,7 +258,7 @@
 		</Card>
 	</Fade>
 	{#if theTeam}
-		<div class="text-center fs-4">Team roles</div>
+		<div class="text-center fs-4">Team {theTeam.teamid}</div>
 		{#each roles as aRole (aRole)}
 			<Card>
 				<CardHeader><CardTitle>{aRole}</CardTitle></CardHeader>
@@ -215,11 +274,4 @@
 			</Card>
 		{/each}
 	{/if}
-
-	<Card class="mt-5">
-		<CardHeader><CardTitle>Help</CardTitle></CardHeader>
-		<CardBody>
-			<CardText />
-		</CardBody>
-	</Card>
 </Container>

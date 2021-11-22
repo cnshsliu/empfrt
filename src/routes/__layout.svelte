@@ -1,7 +1,7 @@
 <script context="module" lang="ts">
 	export async function load({ page, session }) {
 		const { user } = session;
-		if (/^\/admin\/(.*)/.test(page.path) && !user) {
+		if (/^\/settings\/(.*)/.test(page.path) && !user) {
 			return { redirect: '/', status: 302 };
 		}
 		return {

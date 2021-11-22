@@ -2001,7 +2001,7 @@ ret='DEFAULT'; `
 		} else return null;
 	}
 
-	async setNodeEventHandler(jqNodeDIV: myJQuery, callback?: any) {
+	async setNodeEventHandler(jqNodeDIV: myJQuery, callback?: any, setDrag = true) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		//drag node
@@ -2011,143 +2011,145 @@ ret='DEFAULT'; `
 				y: 0
 			};
 			jqNodeDIV.off('mouseover mouseout');
-			jqNodeDIV.on('mouseover', () => {
-				that.driveNodeBalls(jqNodeDIV);
+			jqNodeDIV.on('mouseover', async () => {
+				await that.driveNodeBalls(jqNodeDIV);
 			});
 			jqNodeDIV.on('mouseout', async () => {
 				await that.stopNodeBalls();
 			});
-			jqNodeDIV.draggable({
-				scroll: true,
-				containment: 'parent',
-				// eslint-disable-next-line @typescript-eslint/no-unused-vars
-				start: (evt: MouseEvent, _ui: any) => {
-					that.stopNodeBalls();
-					click.x = evt.clientX;
-					click.y = evt.clientY;
-					that.fromJQ = jqNodeDIV.clone();
-					evt.stopImmediatePropagation();
-					evt.stopPropagation();
-					that.originZIndex = that.getZIndex(jqNodeDIV);
-					jqNodeDIV.css('z-index', '99999');
-					that.dragging = true;
-					that.positionBeforeDrag = {
-						x: that.divLeft(jqNodeDIV),
-						y: that.divTop(jqNodeDIV)
-					};
-				},
-				drag: (
-					evt: MouseEvent,
-					ui: { originalPosition: any; position: { left: number; top: number } }
-				) => {
-					const original = ui.originalPosition;
-
-					// jQuery will simply use the same object we alter here
-					ui.position = {
-						left: (evt.clientX - click.x + original.left) / that.scaleRatio,
-						top: (evt.clientY - click.y + original.top) / that.scaleRatio
-					};
-				},
-				stop: async (evt: MouseEvent) => {
-					that.dragging = false;
-					await that.stopNodeBalls();
-
-					//如果做了这个标记，则不再做U操作，否则，节点又会被同步回来
-					/*
-					if (jqNodeDIV.shouldBeDeleted === true) {
-						return;
-					}
-					*/
-					if (that.updateable(jqNodeDIV) === false) {
-						console.log('upateable === false');
-						return;
-					}
-					if (that.APP.model.viewConfig.snap) {
-						const newPos = that.DivStyler.snapToGrid(jqNodeDIV);
-						that.DivStyler.moveDivTo(jqNodeDIV, newPos.x, newPos.y);
-					}
-					if (that.AdvOps.existsInGroup(that.selectedDIVs, jqNodeDIV) === false) {
-						that.cancelAlreadySelected();
-					}
-					that.startTrx();
-					try {
-						const deltaOfDragging = {
-							x: that.divLeft(jqNodeDIV) - that.positionBeforeDrag.x,
-							y: that.divTop(jqNodeDIV) - that.positionBeforeDrag.y
+			if (setDrag) {
+				jqNodeDIV.draggable({
+					scroll: true,
+					containment: 'parent',
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars
+					start: (evt: MouseEvent, _ui: any) => {
+						that.stopNodeBalls();
+						click.x = evt.clientX;
+						click.y = evt.clientY;
+						that.fromJQ = jqNodeDIV.clone();
+						evt.stopImmediatePropagation();
+						evt.stopPropagation();
+						that.originZIndex = that.getZIndex(jqNodeDIV);
+						jqNodeDIV.css('z-index', '99999');
+						that.dragging = true;
+						that.positionBeforeDrag = {
+							x: that.divLeft(jqNodeDIV),
+							y: that.divTop(jqNodeDIV)
 						};
+					},
+					drag: (
+						evt: MouseEvent,
+						ui: { originalPosition: any; position: { left: number; top: number } }
+					) => {
+						const original = ui.originalPosition;
 
-						const tobeMovedNodes = [];
-						//如果按住了shiftkey, 则只移动当前node, 不移动其他被选定Node
-						//move nodes, move divs, drag divs end, end drag divs
-						// dragend drag end
-						if (!evt.shiftKey) {
-							//拖动其它被同时选中的对象
-							that.shouldMovedInParalles = [];
-							const treeMap = new Map();
-							for (let i = 0; i < that.selectedDIVs.length; i++) {
-								if (that.selectedDIVs[i].attr('id') !== jqNodeDIV.attr('id')) {
-									that.shouldMovedInParalles.push(that.selectedDIVs[i]);
-								}
-							}
+						// jQuery will simply use the same object we alter here
+						ui.position = {
+							left: (evt.clientX - click.x + original.left) / that.scaleRatio,
+							top: (evt.clientY - click.y + original.top) / that.scaleRatio
+						};
+					},
+					stop: async (evt: MouseEvent) => {
+						that.dragging = false;
+						await that.stopNodeBalls();
 
-							for (let i = 0; i < that.selectedDIVs.length; i++) {
-								await that.AdvOps.getDescendants(
-									that.selectedDIVs[i],
-									that.selectedDIVs[i],
-									that.shouldMovedInParalles,
-									treeMap
-								);
-							}
+						//如果做了这个标记，则不再做U操作，否则，节点又会被同步回来
+						/*
+						if (jqNodeDIV.shouldBeDeleted === true) {
+							return;
+						}
+						*/
+						if (that.updateable(jqNodeDIV) === false) {
+							console.log('upateable === false');
+							return;
+						}
+						if (that.APP.model.viewConfig.snap) {
+							const newPos = that.DivStyler.snapToGrid(jqNodeDIV);
+							that.DivStyler.moveDivTo(jqNodeDIV, newPos.x, newPos.y);
+						}
+						if (that.AdvOps.existsInGroup(that.selectedDIVs, jqNodeDIV) === false) {
+							that.cancelAlreadySelected();
+						}
+						that.startTrx();
+						try {
+							const deltaOfDragging = {
+								x: that.divLeft(jqNodeDIV) - that.positionBeforeDrag.x,
+								y: that.divTop(jqNodeDIV) - that.positionBeforeDrag.y
+							};
 
-							if (that.shouldMovedInParalles.length > 0) {
-								that.debug('others should be moved');
-								//要移动的个数是被选中的全部
-								for (let i = 0; i < that.shouldMovedInParalles.length; i++) {
-									//虽然这出跳过了被拖动的节点，但在后面这个节点一样要被移动
-									//因此，所有被移动的节点数量就是所有被选中的节点数量
-									if (that.updateable(that.shouldMovedInParalles[i])) {
-										const tmp = that.shouldMovedInParalles[i].clone();
-										that.DivStyler.moveDivByDelta(
-											that.shouldMovedInParalles[i],
-											deltaOfDragging.x,
-											deltaOfDragging.y
-										);
-										tobeMovedNodes.push({
-											from: tmp,
-											to: that.shouldMovedInParalles[i]
-										});
+							const tobeMovedNodes = [];
+							//如果按住了shiftkey, 则只移动当前node, 不移动其他被选定Node
+							//move nodes, move divs, drag divs end, end drag divs
+							// dragend drag end
+							if (!evt.shiftKey) {
+								//拖动其它被同时选中的对象
+								that.shouldMovedInParalles = [];
+								const treeMap = new Map();
+								for (let i = 0; i < that.selectedDIVs.length; i++) {
+									if (that.selectedDIVs[i].attr('id') !== jqNodeDIV.attr('id')) {
+										that.shouldMovedInParalles.push(that.selectedDIVs[i]);
 									}
 								}
-								for (let i = 0; i < that.shouldMovedInParalles.length; i++) {
-									await that.redrawLinkLines(that.shouldMovedInParalles[i], 'codrag', 'both');
+
+								for (let i = 0; i < that.selectedDIVs.length; i++) {
+									await that.AdvOps.getDescendants(
+										that.selectedDIVs[i],
+										that.selectedDIVs[i],
+										that.shouldMovedInParalles,
+										treeMap
+									);
+								}
+
+								if (that.shouldMovedInParalles.length > 0) {
+									that.debug('others should be moved');
+									//要移动的个数是被选中的全部
+									for (let i = 0; i < that.shouldMovedInParalles.length; i++) {
+										//虽然这出跳过了被拖动的节点，但在后面这个节点一样要被移动
+										//因此，所有被移动的节点数量就是所有被选中的节点数量
+										if (that.updateable(that.shouldMovedInParalles[i])) {
+											const tmp = that.shouldMovedInParalles[i].clone();
+											that.DivStyler.moveDivByDelta(
+												that.shouldMovedInParalles[i],
+												deltaOfDragging.x,
+												deltaOfDragging.y
+											);
+											tobeMovedNodes.push({
+												from: tmp,
+												to: that.shouldMovedInParalles[i]
+											});
+										}
+									}
+									for (let i = 0; i < that.shouldMovedInParalles.length; i++) {
+										await that.redrawLinkLines(that.shouldMovedInParalles[i], 'codrag', 'both');
+									}
 								}
 							}
+
+							that.afterDragging = true;
+							jqNodeDIV.css('z-index', that.originZIndex);
+							that.originZIndex = 1;
+							//节点移动后，对连接到节点上的连接线重新划线
+							await that.redrawLinkLines(jqNodeDIV, 'after moving', 'both');
+							that.setSelectedNodesBoundingRect();
+
+							tobeMovedNodes.push({
+								from: that.fromJQ,
+								to: jqNodeDIV
+							});
+						} finally {
+							console.log('END DRAG TRX');
+							that.yarkOpHistory({
+								obj: 'node',
+								from: that.fromJQ.clone(),
+								to: jqNodeDIV.clone()
+							});
+							that.onChange('Dragged');
+							that.focusOnNode(jqNodeDIV);
+							that.endTrx();
 						}
-
-						that.afterDragging = true;
-						jqNodeDIV.css('z-index', that.originZIndex);
-						that.originZIndex = 1;
-						//节点移动后，对连接到节点上的连接线重新划线
-						await that.redrawLinkLines(jqNodeDIV, 'after moving', 'both');
-						that.setSelectedNodesBoundingRect();
-
-						tobeMovedNodes.push({
-							from: that.fromJQ,
-							to: jqNodeDIV
-						});
-					} finally {
-						console.log('END DRAG TRX');
-						that.yarkOpHistory({
-							obj: 'node',
-							from: that.fromJQ.clone(),
-							to: jqNodeDIV.clone()
-						});
-						that.onChange('Dragged');
-						that.focusOnNode(jqNodeDIV);
-						that.endTrx();
 					}
-				}
-			});
+				});
+			}
 		} catch (error) {
 			console.error(error);
 		}
@@ -3426,7 +3428,7 @@ toggleOverview (jc3MousePos) {
 		await that.startNodeEditing(jqNodeDIV, false);
 	}
 
-	driveNodeBalls(jqNodeDIV: myJQuery) {
+	async driveNodeBalls(jqNodeDIV: myJQuery) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		//The link lines start from jqNodeDIV;
@@ -3456,7 +3458,7 @@ toggleOverview (jc3MousePos) {
 			const svgConnect = that.svgDraw.findOne(connectSelector);
 			const lengthOfConnectorLine = svgConnect.length();
 			const runner_duration = 1500;
-			const runner = that.tmpBalls[index].animate({ duration: runner_duration, when: 'now' });
+			const runner = await that.tmpBalls[index].animate({ duration: runner_duration, when: 'now' });
 			runner.ease('>');
 			runner
 				.during(function (pos: number) {
@@ -4739,10 +4741,11 @@ toggleOverview (jc3MousePos) {
 			nodes.addClass('kfknode');
 			await that.JC3.append(nodes);
 			const guiNodes = that.JC3.find('.node');
+			let setDrag = false;
 			for (let i = 0; i < guiNodes.length; i++) {
 				const jqNode = $(guiNodes[i]);
-				await that.setNodeEventHandler(jqNode);
-				jqNode.draggable('disable');
+				await that.setNodeEventHandler(jqNode, null, setDrag);
+				//jqNode.draggable('disable');
 				await that.redrawLinkLines(jqNode, 'loadDoc');
 			}
 

@@ -471,88 +471,7 @@ svg path {
 	box-shadow: inset 0px 0px 5px 2px #8e8eff;
 }
 
-.waitinglogo {
-	width: 100%;
-	height: 100px;
-	background-color: transparent;
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	margin: auto;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	z-index: 999999999;
-}
-
-.waitinglogo .logo {
-	width: 64px;
-	height: 64px;
-	animation: jelloround 3s;
-	animation-iteration-count: infinite;
-	border-radius: 5px;
-}
-
-@keyframes jelloround {
-	0% {
-		transform: rotate(0deg);
-	}
-
-	100% {
-		transform: rotate(360deg);
-	}
-}
-
-.present-mask {
-	position: absolute;
-	top: 0px;
-	left: 0px;
-	z-index: 999999998;
-	width: 100%;
-	height: 100%;
-}
-
-.black-mask {
-	background-color: #000000;
-}
-
-.white-mask {
-	background-color: #ffffff;
-}
-
-.reconnect-mask {
-	position: absolute;
-	top: 0px;
-	left: 0px;
-	z-index: 999999998;
-	width: 100%;
-	height: 100%;
-	background-color: #0000004d;
-}
-
-.reconnect-msg {
-	display: flex;
-	position: absolute;
-	width: 100%;
-	height: 40px;
-	left: 0px;
-	bottom: 200px;
-}
-
-.reconnect-mask p {
-	margin: auto;
-	text-align: center;
-	background-color: cyan;
-}
-
 .padlayout {
-	z-index: 999;
-}
-
-.padlogo {
 	z-index: 999;
 }
 
@@ -2140,16 +2059,13 @@ table.quick-help-table td:first-of-type {
 	box-shadow: 0px 0px 5px rgba(20, 20, 20, 0.5);
 	min-height: 66px;
 }
-.kfk-login-container {
-	max-width: 400px;
-}
 .kfk-org-logo {
 	width: 64px;
 	height: 64px;
-	border-radius: 10px;
+	border-radius: 2px;
 	background-position: center; /* Center the image */
 	background-repeat: no-repeat; /* Do not repeat the image */
-	background-size: cover;
+	background-size: contain;
 	background-image: url('/metatocome.png');
 }
 .kfk-odd {

@@ -1,13 +1,22 @@
+<script context="module" lang="ts">
+	export async function load({ page, session }) {
+		const { user } = session;
+		return {
+			props: {
+				user
+			}
+		};
+	}
+</script>
+
 <script lang="ts">
 	import { page, session } from '$app/stores';
-	import { title } from '$lib/title';
 	import {
 		Button,
 		Row,
 		Col,
 		Icon,
 		Styles,
-		Collapse,
 		Navbar,
 		NavbarToggler,
 		NavbarBrand,
@@ -38,11 +47,12 @@
 		$session.user = null;
 	}
 
-	let user = $session.user;
+	export let user;
+	user = $session.user;
 </script>
 
-{#if user && user.tenant && user.tenant.css}
-	<link href={user.tenant.css} rel="stylesheet" type="text/css" />
+{#if $session.user && $session.user.tenant && $session.user.tenant.css}
+	<link href={$session.user.tenant.css} rel="stylesheet" type="text/css" />
 {/if}
 <Styles />
 {#if $page.query.has('iframe') === false}
@@ -50,14 +60,16 @@
 		<NavbarBrand href="/">
 			<Container>
 				<Row cols="2" class="d-flex w-100 align-items-center">
-					<Col class="kfk-org-logo org-logo" />
-					<Col>Metatocome</Col>
+					<Col>
+						<div class="kfk-org-logo org-logo" />
+					</Col>
+					<Col>{$session.user ? $session.user.username : 'Metatocome'}</Col>
 				</Row>
 			</Container>
 		</NavbarBrand>
 		<NavbarToggler on:click={() => (isMenuOpen = !isMenuOpen)} />
 		<Nav class="ms-auto" navbar>
-			{#if user}
+			{#if $session.user}
 				<NavItem>
 					<NavLink rel="prefetch" href="/template" active={$page.path === '/template'}>
 						<Icon name="code-square" />&nbsp;Template
@@ -79,39 +91,47 @@
 					</NavLink>
 				</NavItem>
 				<Dropdown>
-					{#if user && user.avatar}
+					{#if $session.user && $session.user.avatar}
 						<DropdownToggle nav>
-							<img src={user.avatar} class="kfk-avatar-small img-thumbnail" alt={user.username} />
+							<img
+								src={$session.user.avatar}
+								class="kfk-avatar-small img-thumbnail"
+								alt={$session.user.username}
+							/>
 						</DropdownToggle>
 					{:else}
 						<DropdownToggle nav>
 							<div class="kfk-avatar-letter-small">
-								{user ? user.username : 'ME'}
+								{$session.user ? $session.user.username : 'ME'}
 							</div>
 						</DropdownToggle>
 					{/if}
 					<DropdownMenu end>
 						<Container style="width:300px; text-align:center;">
 							<Row cols="1">
-								<Col>
-									{#if user}
-										{#if user.avatar}
+								<Col style="text-align:center;">
+									{#if $session.user}
+										{#if $session.user.avatar}
 											<img
-												src={user.avatar}
+												src={$session.user.avatar}
 												class="kfk-avatar-middle  img-thumbnail"
-												alt={user.username}
+												alt={$session.user.username}
 											/>
 										{:else}
-											<div class="kfk-avatar-letter-middle">
-												{user.username}
+											<div class="w-100 d-flex justify-content-center">
+												<div class="kfk-avatar-letter-middle img-thumbnail">
+													{$session.user.username}
+												</div>
 											</div>
 										{/if}
 									{:else}
-										<div class="kfk-avatar-letter-middle img-thumbnail">ME</div>
+										<div class="w-100 d-flex justify-content-center">
+											<div class="kfk-avatar-letter-middle img-thumbnail">ME</div>
+										</div>
 									{/if}
 								</Col>
-								<Col class="fw-bold mt-2">{user ? user.username : ''}</Col>
-								<Col>{user && user.tenant ? user.tenant.name : ''}</Col>
+								<Col class="fw-bold mt-2">{$session.user ? $session.user.username : ''}</Col>
+								<Col>{$session.user && $session.user.tenant ? $session.user.tenant.name : ''}</Col>
 								<Col class="mt-3">
 									<Button
 										on:click={(e) => {
@@ -159,5 +179,23 @@
 	.kfk-avatar-middle {
 		width: 80px;
 		height: 80px;
+	}
+	.kfk-avatar-letter-small {
+		width: 32px;
+		height: 32px;
+		border-radius: 16px;
+		background-color: rgba(0, 0, 255, 0.05);
+		font-size: 24px;
+		font-weight: bolder;
+		overflow: hidden;
+	}
+	.kfk-avatar-letter-middle {
+		width: 80px;
+		height: 80px;
+		background-color: rgba(0, 0, 255, 0.05);
+		font-size: 36px;
+		font-weight: bolder;
+		overflow: hidden;
+		text-align: cetner;
 	}
 </style>

@@ -9,7 +9,7 @@
 	<div class="row m-3">
 		<div class="col-sm-6">
 			<Container class="mt-3">
-				<div><i class="fab fa-pagelines fs-3 me-3" />METAtoCome</div>
+				<div><img src="/metatocome.png" style="width:64px; height: 48px;" /></div>
 				<div class="fs-6">Neural system for your organiation</div>
 				<Row class="mt-3">
 					<Col class="text-info">
