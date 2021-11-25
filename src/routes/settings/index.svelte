@@ -511,6 +511,95 @@
 				</Row>
 			</Container>
 		</TabPane>
+		<TabPane
+			tabId="delegation"
+			tab="Delegation"
+			active={whichTab && whichTab['setting'] === 'delegation'}
+		>
+			<Container class="mt-3">
+				<div class="w-100 text-center fs-3">Delegation</div>
+				<Card class="mt-3">
+					<CardHeader><CardTitle>Delegate my works to</CardTitle></CardHeader>
+					<CardBody>
+						<InputGroup class="mb-1">
+							<InputGroupText>Between</InputGroupText>
+							<Input
+								type="date"
+								bind:value={new_delegation_begindate}
+								placeholder="Confirm with your password"
+							/>
+							<InputGroupText>and</InputGroupText>
+							<Input
+								type="date"
+								bind:value={new_delegation_enddate}
+								placeholder="Confirm with your password"
+							/>
+						</InputGroup>
+						<InputGroup class="mb-1">
+							<InputGroupText>to</InputGroupText>
+							<Input bind:value={new_delegation_delegatee} placeholder="Delegtee's email" />
+							<Button
+								on:click={(e) => {
+									e.preventDefault();
+									newDelegation();
+								}}
+							>
+								Delegate
+							</Button>
+						</InputGroup>
+					</CardBody>
+				</Card>
+
+				<Card class="mt-3">
+					<CardHeader><CardTitle>Delegations to me</CardTitle></CardHeader>
+					<CardBody>
+						<table hover class="w-100">
+							<thead>
+								<tr>
+									<th> Begin </th>
+									<th> Before </th>
+									<th> Delegate to </th>
+									<th> &nbsp; </th>
+								</tr>
+							</thead>
+							<tbody>
+								{#each delegationFromMe as row, index (row)}
+									<tr
+										class:kfk-odd={index % 2 !== 0}
+										class:kfk-even={index % 2 === 0}
+										class:tnt-odd={index % 2 !== 0}
+										class:tnt-even={index % 2 === 0}
+									>
+										<td data-label="Begin Date">
+											{moment(row.begindate).format('LL')}
+										</td>
+										<td data-label="Before Date">
+											{moment(row.enddate).format('LL')}
+										</td>
+										<td data-label="Delegatee">
+											{row.delegatee}
+										</td>
+										<td data-label="Delegatee">
+											<Input type="checkbox" bind:checked={row.checked} />
+										</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</CardBody>
+					<CardFooter>
+						<div class="w-100 text-right">
+							<Button
+								on:click={(e) => {
+									e.preventDefault();
+									removeSelectedDelegation();
+								}}>Remove selected</Button
+							>
+						</div>
+					</CardFooter>
+				</Card>
+			</Container>
+		</TabPane>
 		<TabPane tabId="org" tab="Org" active={whichTab && whichTab['setting'] === 'org'}>
 			<Container class="mt-3 mb-3">
 				<div class="w-100 text-center fs-3">{orgname}</div>
@@ -781,95 +870,6 @@
 						</InputGroup>
 					</Col>
 				{/if}
-			</Container>
-		</TabPane>
-		<TabPane
-			tabId="delegation"
-			tab="Delegation"
-			active={whichTab && whichTab['setting'] === 'delegation'}
-		>
-			<Container class="mt-3">
-				<div class="w-100 text-center fs-3">Delegation</div>
-				<Card class="mt-3">
-					<CardHeader><CardTitle>Delegate my works to</CardTitle></CardHeader>
-					<CardBody>
-						<InputGroup class="mb-1">
-							<InputGroupText>Between</InputGroupText>
-							<Input
-								type="date"
-								bind:value={new_delegation_begindate}
-								placeholder="Confirm with your password"
-							/>
-							<InputGroupText>and</InputGroupText>
-							<Input
-								type="date"
-								bind:value={new_delegation_enddate}
-								placeholder="Confirm with your password"
-							/>
-						</InputGroup>
-						<InputGroup class="mb-1">
-							<InputGroupText>to</InputGroupText>
-							<Input bind:value={new_delegation_delegatee} placeholder="Delegtee's email" />
-							<Button
-								on:click={(e) => {
-									e.preventDefault();
-									newDelegation();
-								}}
-							>
-								Delegate
-							</Button>
-						</InputGroup>
-					</CardBody>
-				</Card>
-
-				<Card class="mt-3">
-					<CardHeader><CardTitle>Delegations to me</CardTitle></CardHeader>
-					<CardBody>
-						<table hover class="w-100">
-							<thead>
-								<tr>
-									<th> Begin </th>
-									<th> Before </th>
-									<th> Delegate to </th>
-									<th> &nbsp; </th>
-								</tr>
-							</thead>
-							<tbody>
-								{#each delegationFromMe as row, index (row)}
-									<tr
-										class:kfk-odd={index % 2 !== 0}
-										class:kfk-even={index % 2 === 0}
-										class:tnt-odd={index % 2 !== 0}
-										class:tnt-even={index % 2 === 0}
-									>
-										<td data-label="Begin Date">
-											{moment(row.begindate).format('LL')}
-										</td>
-										<td data-label="Before Date">
-											{moment(row.enddate).format('LL')}
-										</td>
-										<td data-label="Delegatee">
-											{row.delegatee}
-										</td>
-										<td data-label="Delegatee">
-											<Input type="checkbox" bind:checked={row.checked} />
-										</td>
-									</tr>
-								{/each}
-							</tbody>
-						</table>
-					</CardBody>
-					<CardFooter>
-						<div class="w-100 text-right">
-							<Button
-								on:click={(e) => {
-									e.preventDefault();
-									removeSelectedDelegation();
-								}}>Remove selected</Button
-							>
-						</div>
-					</CardFooter>
-				</Card>
 			</Container>
 		</TabPane>
 	</TabContent>
