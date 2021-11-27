@@ -30,7 +30,7 @@
 	import { TabContent, Fade, Card, TabPane } from 'sveltestrap';
 	import type { User } from '$lib/types';
 	import { session } from '$app/stores';
-	import { Container, Row, Col, Styles, Icon, Button, Nav, NavLink } from 'sveltestrap';
+	import { Container, Row, Col, Icon, Button, Nav, NavLink } from 'sveltestrap';
 	import { enhance } from '$lib/form';
 	export let menu_has_form = false;
 	export let user: User;
@@ -111,8 +111,6 @@
 		}
 	});
 </script>
-
-<Styles />
 
 <Container>
 	<div class="d-flex">

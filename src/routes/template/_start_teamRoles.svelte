@@ -1,12 +1,10 @@
 <script lang="ts">
 	import type { Team } from '$lib/types';
-	import { Container, Row, Col, Icon, Styles } from 'sveltestrap';
+	import { Container, Row, Col, Icon } from 'sveltestrap';
 	import { Badge } from 'sveltestrap';
 	export let theTeam: Team;
 	$: number = JSON.stringify(theTeam.tmap);
 </script>
-
-<Styles />
 
 <Container>
 	---{number}---

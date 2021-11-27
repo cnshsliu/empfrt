@@ -15,7 +15,12 @@
 	import { Card, CardBody, CardText, CardTitle } from 'sveltestrap';
 </script>
 
-<div class="content">
+<div id="quickstart" class="fs-4">
+	Integerate both human works and computer system tasks with <br />Metatocome, <br />a
+	Hyper-automation Platform as a Service. <br /> Complicated workflow system can be built with any
+	modern language you like,<br />such as Javascript, Java, Python, C# etc.
+</div>
+<div id="introduction" class="content">
 	<h1>Playaround with Metatocome SaaS</h1>
 
 	<p>
@@ -37,19 +42,21 @@
 		to the template's END node.
 	</p>
 
-	<p>
-		Besides administration tools for administators, Metatocme also provides Out-of-the-box <a
-			href="/work"
-		>
-			worklist and work form
-		</a> user interface for normal end-users to check their worklist and do their assigned works. Evern
-		so, enterprise developers may find it is necessary to provide end-users their own applications which
-		take Metatocome as the core automation engine in their organizaiton. Compared with a human's body
-		which has complicated functionality and sensing organs and cells which are all connected with human's
-		nervous system, an organization also has complicated functionalities, systems, applicaitons, departments
-		and people, Metatocome acts as the neural system of organization to linkup all these parts, dispatch
-		right task to the right participant at the right time.
-	</p>
+	<div class="bd-callout bd-callout-info">
+		<p>
+			Besides administration tools for administators, Metatocme also provides Out-of-the-box <a
+				href="/work"
+			>
+				worklist and work form
+			</a> user interface for normal end-users to check their worklist and do their assigned works. Evern
+			so, enterprise developers may find it is necessary to provide end-users their own applications
+			which take Metatocome as the core automation engine in their organizaiton. Compared with a human's
+			body which has complicated functionality and sensing organs and cells which are all connected with
+			human's nervous system, an organization also has complicated functionalities, systems, applicaitons,
+			departments and people, Metatocome acts as the neural system of organization to linkup all these
+			parts, dispatch right task to the right participant at the right time.
+		</p>
+	</div>
 
 	<p>
 		Metatocome provides restful APIs and SDKs for developers. There used to be backend developers'

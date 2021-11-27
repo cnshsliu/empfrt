@@ -1953,14 +1953,7 @@ table.quick-help-table td:first-of-type {
 }
 
 .kfknavbar {
-	z-index: 1000;
 	background-color: #ffffff4c;
-}
-.kfknavbar .navbar-nav {
-	flex-direction: row;
-}
-.kfknavbar .nav-item {
-	padding-left: 1rem;
 }
 .kfk-input-template-name,
 .kfk-input-team-name {
@@ -2098,4 +2091,19 @@ table.quick-help-table td:first-of-type {
 	margin-top: 10px;
 	border-radius: 5px;
 	background-color: rgba(255, 255, 255, 0.3);
+}
+.bd-callout-info {
+	border-left-color: #5bc0de;
+}
+.bd-callout {
+	padding: 1.25rem;
+	margin-top: 1.25rem;
+	margin-bottom: 1.25rem;
+	border: 1px solid #e9ecef;
+	border-left-width: 0.25rem;
+	border-radius: 0.25rem;
+}
+.bd-masthead {
+	padding: 3rem 0;
+	background: linear-gradient(165deg, #f7f5fb 50%, #fff 50%);
 }

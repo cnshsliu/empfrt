@@ -37,7 +37,7 @@
 	import { onMount } from 'svelte';
 	import * as api from '$lib/api';
 	import { Row, Col, Nav, NavLink } from 'sveltestrap';
-	import { Icon, Styles } from 'sveltestrap';
+	import { Icon } from 'sveltestrap';
 	import { ClientPermControl } from '$lib/clientperm';
 	import Parser from '$lib/parser';
 	export let workflow: Workflow;
@@ -76,8 +76,6 @@
 		}, 1);
 	};
 </script>
-
-<Styles />
 
 <svelte:head>
 	<title>{workflow.wftitle} • Workflow</title>

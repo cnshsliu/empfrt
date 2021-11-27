@@ -1,13 +1,11 @@
 <script lang="ts">
 	import type { Team } from '$lib/types';
-	import { Row, Col, Icon, Styles } from 'sveltestrap';
+	import { Row, Col, Icon } from 'sveltestrap';
 	import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'sveltestrap';
 	export let team: Team;
 	export let mouseover_objid: string;
 	export let deleteTeam: { (arg: string): void };
 </script>
-
-<Styles />
 
 <Row class={mouseover_objid === team.teamid ? 'kfk-highlight-2' : ''}>
 	<Col xs="8">

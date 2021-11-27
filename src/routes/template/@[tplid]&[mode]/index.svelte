@@ -43,7 +43,7 @@
 	import { onMount } from 'svelte';
 	import * as api from '$lib/api';
 	import { Container, Row, Col, Nav, NavLink } from 'sveltestrap';
-	import { Icon, Button, Modal, ModalBody, ModalFooter, ModalHeader, Styles } from 'sveltestrap';
+	import { Icon, Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'sveltestrap';
 	import { enhance } from '$lib/form';
 	export let tplid;
 	export let template: Template;
@@ -163,8 +163,6 @@
 		}, time);
 	}
 </script>
-
-<Styles />
 
 <svelte:head>
 	<title>{template.tplid} • Template</title>

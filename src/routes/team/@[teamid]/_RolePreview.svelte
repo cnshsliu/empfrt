@@ -2,7 +2,7 @@
 	import { API_SERVER } from '$lib/Env';
 	import * as api from '$lib/api';
 	import type { User, Team, TmapEntry } from '$lib/types';
-	import { Container, Row, Col, Icon, Styles } from 'sveltestrap';
+	import { Container, Row, Col, Icon } from 'sveltestrap';
 	import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Badge } from 'sveltestrap';
 	import { enhance, enhanceAddOneRoleMember } from '$lib/form';
 	import type { Perm } from '$lib/types';
@@ -36,8 +36,6 @@
 		role_copy: `${API_SERVER}/team/role/copy`
 	};
 </script>
-
-<Styles />
 
 <Container class={mouseover_objid === aRole ? 'kfk-highlight-2' : ''}>
 	<Row>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Container, Row, Col, Styles, NavLink } from 'sveltestrap';
+	import { Container, Row, Col, NavLink } from 'sveltestrap';
 	import moment from 'moment';
 	import type { Work } from '$lib/types';
 	import { goto } from '$app/navigation';
@@ -10,8 +10,6 @@
 		goto(`/work/@${work.workid}`, { replaceState: false });
 	}
 </script>
-
-<Styles />
 
 <Container class={mouseover_objid === work._id ? 'kfk-highlight-2' : ''}>
 	<Row>

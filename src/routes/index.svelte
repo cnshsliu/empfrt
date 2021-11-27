@@ -1,4 +1,5 @@
 <script context="module" lang="ts">
+	export const ssr = false;
 	export async function load({ session }) {
 		return {
 			props: {
@@ -12,24 +13,7 @@
 	import { whichTabStore } from '$lib/empstores';
 	import { get } from 'svelte/store';
 	import { title } from '$lib/title';
-	import type { EmpResponse, WhichTab } from '$lib/types';
-	import DocQuickStart from './docs/_Quickstart.svelte';
-	import DocIntroduction from './docs/_Introduction.svelte';
-	import {
-		Container,
-		Row,
-		Col,
-		Card,
-		CardHeader,
-		CardTitle,
-		CardBody,
-		CardText,
-		TabContent,
-		TabPane,
-		CardFooter,
-		CardSubtitle,
-		Input
-	} from 'sveltestrap';
+	import type { WhichTab } from '$lib/types';
 	$title = 'HyperFlow';
 	export let user;
 	let tplid;
@@ -54,47 +38,270 @@
 <svelte:head>
 	<title>Home</title>
 </svelte:head>
+<main>
+	<div class="bd-masthead mb-3" id="content">
+		<div class="container px-4 px-md-3">
+			<div class="row align-items-lg-center">
+				<div class="col-8 mx-auto col-md-4 order-md-2 col-lg-5">
+					<img
+						alt="mtc"
+						src="/metatocome.png"
+						width="600"
+						height="533"
+						class="img-fluid mb-3 mb-md-0"
+					/>
+				</div>
+				<div class="col-md-8 order-md-1 col-lg-7 text-center text-md-start">
+					<h1 class="mb-3">Develop advanced Hyper-Automation applications with Metatocome</h1>
+					<p class="lead mb-4">
+						Metatocome is a Hyper-Automation engine online service which can be used to automate
+						everything in an organization that can be automated. Developers can build advanced
+						wokflow based applications that dispatch tasks to both human and computer systems with
+						any modern computer languages.
+					</p>
 
-<Container class="mt-3 text-center">
-	<Row cols="1">
-		<Col>
-			<div class="fs-4">
-				Integerate both human works and computer system tasks with <br />Metatocome, <br />a
-				Hyper-automation Platform as a Service. <br /> Complicated workflow system can be built with
-				any modern language you like,<br />such as Javascript, Java, Python, C# etc.
+					<div class="d-flex flex-column flex-md-row">
+						<a
+							href="/docs/5.1/getting-started/introduction/"
+							class="btn btn-lg btn-bd-primary mb-3 me-md-3"
+						>
+							Get started
+						</a>
+						{#if user}
+							<a href="/register" class="btn btn-lg btn-outline-secondary mb-3">
+								Design a template
+							</a>
+						{:else}
+							<a href="/register" class="btn btn-lg btn-outline-secondary mb-3"> Sign up </a>
+						{/if}
+					</div>
+				</div>
 			</div>
-		</Col>
-	</Row>
-</Container>
-<Container class="mt-5">
-	<TabContent
-		on:tab={(e) => {
-			showTab(e.detail);
-		}}
-	>
-		<TabPane
-			tabId="introduction"
-			tab="Introduction"
-			active={!whichTab || whichTab['home'] === 'introduction'}
-		>
-			<DocIntroduction />
-		</TabPane>
-		<TabPane
-			tabId="quickstart"
-			tab="Quick Start"
-			active={!whichTab || whichTab['home'] === 'quickstart'}
-		>
-			<DocQuickStart />
-		</TabPane>
-		<TabPane
-			tabId="devguide"
-			tab="Application Developer Guide"
-			active={!whichTab || whichTab['home'] === 'devguide'}
-		>
-			<h2>Quick start</h2>
-		</TabPane>
-		<TabPane tabId="sdk" tab="SDK" active={!whichTab || whichTab['home'] === 'sdk'}>
-			<h2>Quick start</h2>
-		</TabPane>
-	</TabContent>
-</Container>
+		</div>
+	</div>
+
+	<div class="container masthead-followup px-4 px-md-3">
+		<section class="row mt-5 pb-md-4 align-items-stretch">
+			<div class="col-12 col-md-6 col-lg-3 pb-3">
+				<div class="card h-100">
+					<div class="card-body">
+						<h5 class="card-title">Engine</h5>
+						<!-- h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6 -->
+						<p class="card-text">
+							Metatocome's core component is an advanced Workflow Engine running in the cloud.
+							Developers can design, run, monitor workflow processes on this site, or develop fully
+							customized UIs with the support of Metatocome APIs.
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 col-md-6 col-lg-3 pb-3 ps-md-3">
+				<div class="card h-100">
+					<div class="card-body">
+						<h5 class="card-title">Hyper</h5>
+						<!-- h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6 -->
+						<p class="card-text">
+							Metatocome can automate the process of any sort of entities, no matter they are human
+							or computer system, from a integrated enterprise perspective. these entities take the
+							role of "workers", Staff get their work instructions from worklist, system provide API
+							endpoints Metatocome engine will call.
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 col-md-6 col-lg-3 pb-3 ps-md-3">
+				<div class="card h-100">
+					<div class="card-body">
+						<h5 class="card-title">Easy</h5>
+						<!-- h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6 -->
+						<p class="card-text">
+							Integrate workflow into your application, web-based, iOS or Android APP, with SDK of
+							any modern computer language.
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 col-md-6 col-lg-3 pb-3 ps-md-3">
+				<div class="card h-100">
+					<div class="card-body">
+						<h5 class="card-title">Secure</h5>
+						<!-- h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6 -->
+						<p class="card-text">
+							Metatocome take the role of a pure collaboration engine running separatedly from other
+							systems, and has separated authentication, and access control from enterprise's
+							internal IT system. Metatocome use resource URI to refer to any internal or external
+							IT resources.
+						</p>
+					</div>
+				</div>
+			</div>
+		</section>
+		<section class="row mt-5 pb-md-4 align-items-center">
+			<div class="col-md-5">
+				<div class="masthead-followup-icon d-inline-block mb-2 text-white bg-success">
+					<i class="mx-2 bi-code" style="font-size: 2rem;" />
+				</div>
+				<span class="display-5 fw-normal ms-3">Start from Demo</span>
+				<p class="lead fw-normal">
+					Clone Metatocome demo client application, use it as boilerplate of your own project or
+					just play around with it.
+				</p>
+				<a class="btn btn-lg btn-outline-primary mb-3" href="/docs/5.1/getting-started/download/">
+					Read more about Demo
+				</a>
+				<a class="btn btn-lg btn-outline-primary mb-3" href="/docs/5.1/getting-started/download/">
+					Introduction
+				</a>
+				<a class="btn btn-lg btn-outline-primary mb-3" href="/docs/5.1/getting-started/download/">
+					Architecure
+				</a>
+				<a class="btn btn-lg btn-outline-primary mb-3" href="/docs/5.1/getting-started/download/">
+					Install via npm
+				</a>
+			</div>
+			<div class="col-md-7 ps-md-5">
+				<div class="highlight">
+					<pre
+						tabindex="0"
+						class="chroma">
+						<code class="language-sh" data-lang="sh">
+							git clone https://github.com/liukehong/metatocomeapp
+					</code></pre>
+				</div>
+			</div>
+		</section>
+
+		<section class="row mt-5 pb-md-4 align-items-center">
+			<div class="col-12">
+				<div class="masthead-followup-icon d-inline-block mb-2 text-white bg-primary">
+					<i class="mx-2 bi-info-square-fill" style="font-size: 2rem;" />
+				</div>
+				<span class="display-5 fw-normal ms-3"> Help & Docs </span>
+				<p class="lead fw-normal">
+					Documents for developers, administrators, or users are ready in our libraries. Sometimes,
+					you may find our Discord room is helpful.
+				</p>
+				<a href="https://icons.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">
+					Quick start
+				</a>
+				<a href="https://icons.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">
+					More docs
+				</a>
+				<a href="https://icons.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">
+					Discord room
+				</a>
+			</div>
+		</section>
+
+		<section class="row mt-5 pb-md-4 align-items-stretch">
+			<div class="col-12 text-center fs-1">Price Tiers</div>
+			<div class="col-12 col-md-6 col-lg-3 pb-3">
+				<div class="card h-100">
+					<div class="card-body">
+						<h5 class="card-title">Free Tier</h5>
+						<div class="card-subtitle mb-2 text-primary">
+							<span class="fs-6">$</span>
+							<span class="fs-3">0</span>
+							<span class="fs-6">/Month</span>
+						</div>
+						<p class="mt-5">for small team</p>
+						<p class="fs-4">&lt;5 users</p>
+						<p class="fs-4">&lt;200 tasks/month</p>
+						<a href="https://icons.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">
+							Start Free
+						</a>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 col-md-6 col-lg-3 pb-3">
+				<div class="card h-100">
+					<div class="card-body">
+						<h5 class="card-title">Tier 1</h5>
+						<div class="card-subtitle mb-2 text-primary">
+							<span class="fs-6">$</span>
+							<span class="fs-3">1000</span>
+							<span class="fs-6">/Month</span>
+						</div>
+						<p class="mt-5">for small team</p>
+						<p class="fs-4">&lt;5 users</p>
+						<p class="fs-4">&lt;200 tasks/month</p>
+						<a href="https://icons.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">
+							Start Free
+						</a>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 col-md-6 col-lg-3 pb-3">
+				<div class="card h-100">
+					<div class="card-body">
+						<h5 class="card-title">Tier 2</h5>
+						<div class="card-subtitle mb-2 text-primary">
+							<span class="fs-6">$</span>
+							<span class="fs-3">2000</span>
+							<span class="fs-6">/Month</span>
+						</div>
+						<p class="mt-5">for small team</p>
+						<p class="fs-4">&lt;5 users</p>
+						<p class="fs-4">&lt;200 tasks/month</p>
+						<a href="https://icons.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">
+							Start Free
+						</a>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 col-md-6 col-lg-3 pb-3">
+				<div class="card h-100">
+					<div class="card-body">
+						<h5 class="card-title">Tier 3</h5>
+						<div class="card-subtitle mb-2 text-primary">
+							<span class="fs-6">$</span>
+							<span class="fs-3">10000</span>
+							<span class="fs-6">/Year</span>
+						</div>
+						<p class="mt-5">for small team</p>
+						<p class="fs-4">&lt;5 users</p>
+						<p class="fs-4">&lt;200 tasks/month</p>
+						<a href="https://icons.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">
+							Start Free
+						</a>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 pb-3">
+				<div class="card h-100">
+					<div class="card-body">
+						<h5 class="card-title">Private Deployment</h5>
+						<p>
+							We could deploy Metatocome full stack to your own server, no matter it's on cloud or
+							on premise
+						</p>
+						<a href="https://icons.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">
+							Contact us for details
+						</a>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="row my-5 pb-md-4 align-items-center">
+			<div class="col-12">
+				<div class="d-inline-block mb-2 text-white bg-info">
+					<i class="bi-piggy-bank mx-2" style="font-size: 2rem;" />
+				</div>
+				<span class="display-5 fw-normal ms-3"> Referral Program </span>
+				<p class="lead fw-normal">
+					Join our referral program to get 10% of paied tier subscription for 3 years, or 5% of
+					private deployment order you refer to us.
+				</p>
+				<p>
+					Send your referrer code to your known friends, once they register their account on
+					metatocome.com, they could provid your referrer code to us, within 3 years, at the end of
+					the subsription, we will reward 10% of the subscripiton order value to you.
+				</p>
+				<a href="https://themes.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">
+					Get your referrer code
+				</a>
+			</div>
+		</section>
+	</div>
+</main>

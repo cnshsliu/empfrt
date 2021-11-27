@@ -1,4 +1,5 @@
 <script context="module" lang="ts">
+	export const ssr = false;
 	export async function load({ page, session }) {
 		const { user } = session;
 		if (/^\/settings\/(.*)/.test(page.path) && !user) {
@@ -14,6 +15,7 @@
 </script>
 
 <script lang="ts">
+	import * as bootstrap from 'bootstrap';
 	import { navigating, session } from '$app/stores';
 	import NavMenu from '$lib/NavMenu.svelte';
 	import EmpFooter from '$lib/EmpFooter.svelte';
@@ -21,6 +23,10 @@
 	import PreloadingIndicator from '$lib/PreloadingIndicator.svelte';
 	import { DEPLOY_MODE } from '$lib/Env';
 	import('jquery-ui-dist/jquery-ui.min.css');
+	if (DEPLOY_MODE === 'private') {
+		import('bootstrap/dist/css/bootstrap.min.css');
+		import('bootstrap-icons/font/bootstrap-icons.css');
+	}
 	import('$lib/../app.css');
 	export let user;
 	export let page;
@@ -28,7 +34,6 @@
 
 <svelte:head>
 	{#if DEPLOY_MODE === 'private'}
-		<link rel="stylesheet" href="/css/bootstrap.min.css" />
 		<script src="/js/fontawesome.js"></script>
 	{:else}
 		<link
@@ -36,6 +41,10 @@
 			rel="stylesheet"
 			integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
 			crossorigin="anonymous"
+		/>
+		<link
+			rel="stylesheet"
+			href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css"
 		/>
 		<script src="https://kit.fontawesome.com/a94dcd5b4d.js" crossorigin="anonymous"></script>
 	{/if}
