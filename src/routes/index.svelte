@@ -69,7 +69,7 @@
 						</a>
 						{#if user}
 							<a href="/register" class="btn btn-lg btn-outline-secondary mb-3">
-								Design a template
+								See it works now.
 							</a>
 						{:else}
 							<a href="/register" class="btn btn-lg btn-outline-secondary mb-3"> Sign up </a>
@@ -137,29 +137,20 @@
 			</div>
 		</section>
 		<section class="row mt-5 pb-md-4 align-items-center">
-			<div class="col-md-5">
+			<div class="col-md-6">
 				<div class="masthead-followup-icon d-inline-block mb-2 text-white bg-success">
 					<i class="mx-2 bi-code" style="font-size: 2rem;" />
 				</div>
-				<span class="display-5 fw-normal ms-3">Start from Demo</span>
+				<span class="display-5 fw-normal ms-3">Demo Project</span>
 				<p class="lead fw-normal">
 					Clone Metatocome demo client application, use it as boilerplate of your own project or
 					just play around with it.
 				</p>
 				<a class="btn btn-lg btn-outline-primary mb-3" href="/docs/5.1/getting-started/download/">
-					Read more about Demo
-				</a>
-				<a class="btn btn-lg btn-outline-primary mb-3" href="/docs/5.1/getting-started/download/">
-					Introduction
-				</a>
-				<a class="btn btn-lg btn-outline-primary mb-3" href="/docs/5.1/getting-started/download/">
-					Architecure
-				</a>
-				<a class="btn btn-lg btn-outline-primary mb-3" href="/docs/5.1/getting-started/download/">
-					Install via npm
+					Read more about demo application
 				</a>
 			</div>
-			<div class="col-md-7 ps-md-5">
+			<div class="col-md-6 ps-md-5">
 				<div class="highlight">
 					<pre
 						tabindex="0"
@@ -296,7 +287,11 @@
 				<p>
 					Send your referrer code to your known friends, once they register their account on
 					metatocome.com, they could provid your referrer code to us, within 3 years, at the end of
-					the subsription, we will reward 10% of the subscripiton order value to you.
+					each subscription period, we will reward 10% of the subscription order value to you.
+				</p>
+				<p>
+					If it's a private deployment, you will get your 5% order value reward right after the
+					client pay.
 				</p>
 				<a href="https://themes.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">
 					Get your referrer code
