@@ -20,6 +20,7 @@
 	} from 'sveltestrap';
 	import { Form, FormGroup, FormText, Input, Label } from 'sveltestrap';
 	import { Status } from '$lib/status';
+	import MarkdownInstruction from '$lib/MDInstruction.svelte';
 	import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'sveltestrap';
 	import type { User, Work } from '$lib/types';
 	export let work: Work;
@@ -73,6 +74,30 @@
 		api.post('work/do', payload, user.sessionToken);
 		goto(iframeMode ? '/work?iframe' : '/work');
 	}
+	import { onMount } from 'svelte';
+	const setInstructionHeight = (height) => {
+		document.getElementById('workInstruction').height = height;
+	};
+	onMount(() => {
+		/*
+		setInstructionHeight(500);
+		window.addEventListener(
+			'message',
+			function (event) {
+				console.log(event.origin + 'msg:' + event.data);
+				let iframe = document.getElementById('workInstruction');
+				var iframeWin = iframe.contentWindow || iframe.contentDocument.parentWindow;
+				if (iframeWin.document.body) {
+					iframe.height = iframeWin.document.body.scrollHeight;
+					console.log('set iframe height to', iframe.height);
+				} else {
+					console.log('iframeWin.document.body is undefined');
+				}
+			},
+			false
+		);
+*/
+	});
 </script>
 
 {#if work && work.workid}
@@ -109,19 +134,11 @@
 				</Row>
 			</Container>
 			<Container class="mt-3 kfk-highlight-2">
-				Workflow Data:
-				<Row cols={{ lg: 3, md: 2, sm: 1 }}>
-					{#each work.wf.kvarsArr as kvar, i}
-						{#if kvar.break}
-							<div class="w-100" />
-						{/if}
-						<Col>
-							<div>{kvar.label}</div>
-							<div class="kfk-kvar-value-display">{kvar.value}</div>
-						</Col>
-					{/each}
-				</Row>
+				<MarkdownInstruction {user} {work} />
 			</Container>
+			<!--- div class="w-100">
+				<iframe id="workInstruction" src="/work/instruct" title="YouTube video" width="100%" />
+			</div -->
 			{#if is_doable && work.kvarsArr.length > 0}
 				<Container class="mt-3 kfk-highlight-2">
 					Node Input:
@@ -222,6 +239,20 @@
 				{/if}
 			</Container>
 		</Form>
+	</Container>
+	<Container class="mt-3 kfk-highlight-2">
+		Workflow Data:
+		<Row cols={{ lg: 3, md: 2, sm: 1 }}>
+			{#each work.wf.kvarsArr as kvar, i}
+				{#if kvar.break}
+					<div class="w-100" />
+				{/if}
+				<Col>
+					<div>{kvar.label}</div>
+					<div class="kfk-kvar-value-display">{kvar.value}</div>
+				</Col>
+			{/each}
+		</Row>
 	</Container>
 	<Container class="mt-4">
 		<Card>

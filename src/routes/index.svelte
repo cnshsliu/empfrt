@@ -68,7 +68,7 @@
 							Get started
 						</a>
 						{#if user}
-							<a href="/register" class="btn btn-lg btn-outline-secondary mb-3">
+							<a href="/seeitwork" class="btn btn-lg btn-outline-secondary mb-3">
 								See it works now.
 							</a>
 						{:else}
@@ -85,7 +85,10 @@
 			<div class="col-12 col-md-6 col-lg-3 pb-3">
 				<div class="card h-100">
 					<div class="card-body">
-						<h5 class="card-title">Engine</h5>
+						<h5 class="card-title text-primary text-opacity-75">
+							<i class="fs-1 bi-cpu" /> <span class="fs-1">E</span>ngine
+						</h5>
+						<hr />
 						<!-- h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6 -->
 						<p class="card-text">
 							Metatocome's core component is an advanced Workflow Engine running in the cloud.
@@ -98,7 +101,10 @@
 			<div class="col-12 col-md-6 col-lg-3 pb-3 ps-md-3">
 				<div class="card h-100">
 					<div class="card-body">
-						<h5 class="card-title">Hyper</h5>
+						<h5 class="card-title text-primary text-opacity-75">
+							<i class="fs-1 bi-diamond-half" /> <span class="fs-1">H</span>yper
+						</h5>
+						<hr />
 						<!-- h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6 -->
 						<p class="card-text">
 							Metatocome can automate the process of any sort of entities, no matter they are human
@@ -112,7 +118,10 @@
 			<div class="col-12 col-md-6 col-lg-3 pb-3 ps-md-3">
 				<div class="card h-100">
 					<div class="card-body">
-						<h5 class="card-title">Easy</h5>
+						<h5 class="card-title text-primary text-opacity-75">
+							<i class="fs-1 bi-emoji-sunglasses" /> <span class="fs-1">E</span>asy
+						</h5>
+						<hr />
 						<!-- h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6 -->
 						<p class="card-text">
 							Integrate workflow into your application, web-based, iOS or Android APP, with SDK of
@@ -124,7 +133,10 @@
 			<div class="col-12 col-md-6 col-lg-3 pb-3 ps-md-3">
 				<div class="card h-100">
 					<div class="card-body">
-						<h5 class="card-title">Secure</h5>
+						<h5 class="card-title text-primary text-opacity-75">
+							<i class="fs-1 bi bi-file-earmark-lock" /> <span class="fs-1">S</span>ecure
+						</h5>
+						<hr />
 						<!-- h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6 -->
 						<p class="card-text">
 							Metatocome take the role of a pure collaboration engine running separatedly from other
@@ -195,9 +207,11 @@
 							<span class="fs-3">0</span>
 							<span class="fs-6">/Month</span>
 						</div>
-						<p class="mt-5">for small team</p>
+						<div class="fs-6">forever</div>
+						<hr />
+						<p class="fs-6 mt-3">for small team</p>
 						<p class="fs-4">&lt;5 users</p>
-						<p class="fs-4">&lt;200 tasks/month</p>
+						<p class="fs-4">&lt;1000 tasks/month</p>
 						<a href="https://icons.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">
 							Start Free
 						</a>
@@ -213,7 +227,9 @@
 							<span class="fs-3">1000</span>
 							<span class="fs-6">/Month</span>
 						</div>
-						<p class="mt-5">for small team</p>
+						<div class="fs-6">for now</div>
+						<hr />
+						<p class="fs-6 mt-3">for small team</p>
 						<p class="fs-4">&lt;5 users</p>
 						<p class="fs-4">&lt;200 tasks/month</p>
 						<a href="https://icons.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">
@@ -231,7 +247,9 @@
 							<span class="fs-3">2000</span>
 							<span class="fs-6">/Month</span>
 						</div>
-						<p class="mt-5">for small team</p>
+						<div class="fs-6">for now</div>
+						<hr />
+						<p class="fs-6 mt-3">for small team</p>
 						<p class="fs-4">&lt;5 users</p>
 						<p class="fs-4">&lt;200 tasks/month</p>
 						<a href="https://icons.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">
@@ -249,7 +267,9 @@
 							<span class="fs-3">10000</span>
 							<span class="fs-6">/Year</span>
 						</div>
-						<p class="mt-5">for small team</p>
+						<div class="fs-6">for now</div>
+						<hr />
+						<p class="fs-6 mt-3">for small team</p>
 						<p class="fs-4">&lt;5 users</p>
 						<p class="fs-4">&lt;200 tasks/month</p>
 						<a href="https://icons.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">

@@ -949,7 +949,16 @@ class KFKclass {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		const ret = {
-			ACTION: { id: '', role: '', label: '', kvars: '', katts: '', byall: true, doer: '' },
+			ACTION: {
+				id: '',
+				role: '',
+				label: '',
+				kvars: '',
+				katts: '',
+				byall: true,
+				doer: '',
+				instruct: ''
+			},
 			SCRIPT: { id: '', label: '', code: '', runmode: 'ASYNC' },
 			INFORM: { id: '', label: '', role: '', subject: '', content: '' },
 			TIMER: { id: '', label: '', code: '' },
@@ -977,6 +986,7 @@ class KFKclass {
 			kattsString = that.base64ToCode(kattsString);
 			ret.ACTION.katts = kattsString;
 			ret.ACTION.byall = jqDIV.hasClass('BYALL');
+			ret.ACTION.instruct = that.base64ToCode(BlankToDefault(jqDIV.find('.instruct').text(), ''));
 
 			if (that.workflow) {
 				let theWork = jqDIV.find('.work').first();
@@ -1033,14 +1043,19 @@ ret='DEFAULT'; `
 			jqDIV.attr('role', propJSON.role.trim());
 			const kvars_json = Parser.arrayToKvars(props.kvarsArr);
 			const kvars_string = JSON.stringify(kvars_json);
-			console.log('ACTION:', kvars_string);
 			const codeInBase64 = Parser.codeToBase64(kvars_string);
 			let kvarsChildren = jqDIV.find('.kvars');
-			console.log('kvars children number:', kvarsChildren.length);
 			if (kvarsChildren.length === 0) {
 				jqDIV.append('<div class="kvars">' + codeInBase64 + '</div>');
 			} else {
 				jqDIV.find('.kvars').first().prop('innerText', codeInBase64);
+			}
+			const instructInBase64 = Parser.codeToBase64(propJSON.instruct);
+			let instructChildren = jqDIV.find('.instruct');
+			if (instructChildren.length === 0) {
+				jqDIV.append('<div class="instruct">' + instructInBase64 + '</div>');
+			} else {
+				jqDIV.find('.instruct').first().prop('innerText', instructInBase64);
 			}
 			if (propJSON.byall) {
 				jqDIV.addClass('BYALL');

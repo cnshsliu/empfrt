@@ -135,6 +135,7 @@ export interface NodePropJSON {
 	label: string;
 	sub: string;
 	byall: boolean;
+	instruct: string;
 }
 
 export interface SearchResult {

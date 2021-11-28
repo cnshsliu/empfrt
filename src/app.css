@@ -1856,7 +1856,11 @@ table.quick-help-table td:first-of-type {
 .node.INFORM subject,
 .node.INFORM content,
 .node.ACTION .kvars,
-.node.ACTION .katts {
+.node.ACTION .katts,
+.node.ACTION .instruct {
+	display: none;
+}
+div.work {
 	display: none;
 }
 .input_error {

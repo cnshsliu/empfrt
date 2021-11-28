@@ -1,0 +1,2 @@
+Instruct Layout
+<slot />

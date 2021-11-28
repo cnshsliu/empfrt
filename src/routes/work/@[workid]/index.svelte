@@ -13,6 +13,7 @@
 		const res_html = await fetch(`/work/@${workid}/html.json`);
 
 		const theWork = await res.json();
+		console.log(theWork);
 		const theHtml = await res_html.json();
 		let delegators = [];
 		try {
