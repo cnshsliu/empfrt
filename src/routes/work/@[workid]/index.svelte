@@ -1,6 +1,6 @@
 <script context="module" lang="ts">
 	import moment from 'moment';
-	import 'moment/locale/zh-cn';
+	import 'moment/locale/zh-cn.js';
 	import { post } from '$lib/utils';
 	export const ssr = false;
 	export async function load({ page, fetch, session }) {

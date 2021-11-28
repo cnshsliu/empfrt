@@ -1,6 +1,6 @@
 <script lang="ts">
 	import moment from 'moment';
-	import 'moment/locale/zh-cn';
+	import 'moment/locale/zh-cn.js';
 	import * as api from '$lib/api';
 	import { goto } from '$app/navigation';
 	import {
