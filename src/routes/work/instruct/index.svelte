@@ -52,10 +52,3 @@
 {work && work.name}
 
 <div style="height:10px;" />
-
-<style>
-	body {
-		margin: 0;
-		padding: 0;
-	}
-</style>

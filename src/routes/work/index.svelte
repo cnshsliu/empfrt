@@ -1,7 +1,6 @@
 <script context="module" lang="ts">
 	import { post } from '$lib/utils';
 	import lodash from 'lodash';
-	lodash;
 	export async function load({ page, fetch, session }) {
 		let iframeMode = false;
 		if (page.query.has('iframe')) {
@@ -14,7 +13,6 @@
 			if (delegators.includes(session.user.email) === false) {
 				delegators.push(session.user.email);
 			}
-			console.log(delegators);
 			delegators = lodash.uniq(delegators);
 		} catch (e) {}
 		return {
@@ -61,7 +59,6 @@
 	//let work_status = get(WorkStatusStore);
 	let work_status = $WorkStatusStore.status ? $WorkStatusStore.status : 'ST_RUN';
 	let radioWorkStatus = work_status;
-	console.log(radioWorkStatus);
 	//const jwt = auth && Buffer.from(auth.jwt, 'base64').toString('utf-8');
 
 	//缺省情况下，使用用户邮箱，和ST_RUN
@@ -92,7 +89,6 @@
 	}
 	function setMouseFocus() {}
 	function radioChanged(e) {
-		console.log(e.target.value);
 		radioWorkStatus = e.target.value;
 		$WorkStatusStore.status = radioWorkStatus;
 	}
@@ -108,7 +104,6 @@
 		}, 2000);
 		return () => clearInterval(interval);
 		*/
-		console.log(user);
 		if (user.extra && user.extra.input_search && user.extra.input_search.startsWith('wf:')) {
 			input_search = user.extra.input_search;
 		}

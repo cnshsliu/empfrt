@@ -1,0 +1,8 @@
+.org-logo {
+  border-radius: 12px;
+  background-image: url(http://companya.com:9999/static/logo.jpg);
+}
+
+body {
+  background-image: url(http://companya.com:9999/static/background2.jpg);
+}

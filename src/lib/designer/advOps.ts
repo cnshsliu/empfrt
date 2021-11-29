@@ -1,6 +1,5 @@
 export const AdvOps = {};
 AdvOps.styleCache = {};
-import { merge } from 'jquery';
 import KFK from './KFK';
 
 AdvOps.treeMap = new Map();

@@ -1,20 +1,9 @@
-<script context="module" lang="ts">
-	export async function load({ session }) {
-		return {
-			props: {
-				user: session.user
-			}
-		};
-	}
-</script>
-
 <script lang="ts">
 	import { title } from '$lib/title';
 	import DocQuickStart from './_Quickstart.svelte';
 	import DocIntroduction from './_Introduction.svelte';
 	import DocSidebar from './_Sidebar.svelte';
 	$title = 'HyperFlow';
-	export let user;
 	let tplid;
 </script>
 

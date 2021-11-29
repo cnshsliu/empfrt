@@ -65,7 +65,7 @@
 		applications. For example, a frontend Web developers can quickly complete a full-fledged
 		workflow based application with any web development technology they familiar and Metatocome
 		Javascript SDK, mobile developers can also build enterprise-level workflow applications easily
-		with appropriate SDK or APIs. see <a href="">Application Developer Guide</a> for details.
+		with appropriate SDK or APIs. see <a href="/docs#devguide">Application Developer Guide</a> for details.
 	</p>
 	<div class="text-center">
 		<img src="/help/architecture.svg" alt="hyper_automation_illustration" />

@@ -3,7 +3,6 @@
 <script>
 	//Row component is optional and only serves to render odd/even row, you can use <tr> instead.
 	//Sort component is optional
-	import async from 'async';
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import * as api from '$lib/api';

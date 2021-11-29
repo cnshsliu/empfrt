@@ -1,7 +1,6 @@
 <svelte:options accessors={true} />
 
 <script lang="ts">
-	import jQuery from 'jquery';
 	import Parser from '$lib/parser';
 	import { Status } from '$lib/status';
 	import * as api from '$lib/api';
@@ -36,8 +35,9 @@
 	export let workflow: Workflow;
 	export let tpl_mode: string;
 	let theKFK: KFKclass;
-	const jq = jQuery;
 
+	let jQuery: any;
+	let jq: any;
 	let jqueryui: any;
 	let that = this;
 	let currentTool = KFK.tool;
@@ -136,6 +136,9 @@
 	}
 
 	onMount(async () => {
+		const jqModule = await import('jquery');
+		jQuery = jqModule.default;
+		jq = jQuery;
 		const module = await import('jquery-ui-dist/jquery-ui');
 		jqueryui = module.default;
 		KFK.designerCallback = designerCallback;

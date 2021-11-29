@@ -13,7 +13,6 @@
 		return {
 			props: {
 				work: theWork,
-				work_html: theHtml.html,
 				user: session.user
 			}
 		};
@@ -43,9 +42,7 @@
 
 	const jq = jQuery;
 	moment.locale('zh-CN');
-	console.log(moment([2007, 0, 29]).toNow());
 	let browser_locale = window.navigator.userLanguage || window.navigator.language;
-	console.log(browser_locale);
 
 	$title = work.title;
 
@@ -63,7 +60,6 @@ let res = await axios.post(
   };
   } 
 );
-console.log(res);
 `;
 	let axios_code_get_html = `
 let WORKITEM_HTML = await axios.post(
@@ -79,11 +75,9 @@ let WORKITEM_HTML = await axios.post(
 `;
 	let html_example_svelte = `<p>{@html WORKITEM_HTML}</p>`;
 	let html_example_jquery = `<p>{@html WORKITEM_HTML}</p>`;
-	export let work_html = 'to be implemented';
 	const iframe_html_code = `<iframe title="hyperflow_work_${work.workid}"
 src="${EMP_SERVER}/work/iframe/${work.workid}"></iframe>`;
 
-	console.log('Mode=', mode);
 	let iframe = true;
 </script>
 

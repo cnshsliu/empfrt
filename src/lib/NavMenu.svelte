@@ -60,7 +60,7 @@
 			<div class="d-inline-block col-6 p-0 ml-3">
 				<div class="kfk-org-logo org-logo" />
 			</div>
-			<div class="d-inline-block col-6 pt-3">
+			<div class="d-inline-block col-6 mx-1 align-self-center">
 				{$session.user ? $session.user.username : 'Metatocome'}
 			</div>
 		</div>
