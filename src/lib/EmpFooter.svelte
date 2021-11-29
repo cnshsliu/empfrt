@@ -2,26 +2,25 @@
 	import { Input, InputGroup, InputGroupText, Row, Col, Icon, Container } from 'sveltestrap';
 
 	let browserLanguage = 'en-US';
-	export let user;
 </script>
 
 <div class="container emp-footer">
 	<div class="row m-3">
 		<div class="col-sm-6">
 			<Container class="mt-3">
-				<div><img src="/metatocome.png" style="width:64px; height: 48px;" /></div>
+				<div><img src="/metatocome.png" style="width:64px; height: 48px;" alt="metatocome" /></div>
 				<div class="fs-6">Neural system for your organiation</div>
 				<Row class="mt-3">
-					<Col class="text-info">
-						<i class="fab fa-twitter fa-2x" />
-						<i class="fab fa-github fa-2x" />
-						<i class="fab fa-discord fa-2x" />
+					<Col class="text-info fs-3">
+						<i class="bi-twitter" />
+						<i class="bi-github" />
+						<i class="bi-discord" />
 					</Col>
 				</Row>
 				<div class="mt-3">
 					<InputGroup>
 						<InputGroupText>
-							<i class="fas fa-language" />
+							<i class="bi-translate" />
 						</InputGroupText>
 						<Input
 							type="select"

@@ -1,4 +1,5 @@
 import preprocess from 'svelte-preprocess';
+import adapter from '@sveltejs/adapter-node';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -10,6 +11,7 @@ const config = {
 		// hydrate the <div id="svelte"> element in src/app.html
 		target: '#svelte',
 		//https://www.npmjs.com/package/svelte-kit-cookie-session
+		adapter: adapter({ out: 'my-output-directory' }),
 		vite: {
 			optimizeDeps: {
 				exclude: ['svelte-kit-cookie-session']

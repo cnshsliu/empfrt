@@ -191,9 +191,10 @@
 		height: 80px;
 	}
 	.kfk-avatar-letter-small {
-		width: 32px;
-		height: 32px;
+		width: 36px;
+		height: 36px;
 		border-radius: 16px;
+		border: 1px solid rgba(200, 200, 255, 0.8);
 		background-color: rgba(0, 0, 255, 0.05);
 		font-size: 24px;
 		font-weight: bolder;
@@ -207,5 +208,8 @@
 		font-weight: bolder;
 		overflow: hidden;
 		text-align: cetner;
+	}
+	.navbar-toggler-icon {
+		background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%280, 0, 0, 0.55%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 	}
 </style>
