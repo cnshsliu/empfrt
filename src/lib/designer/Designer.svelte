@@ -40,15 +40,15 @@
 
 	let jqueryui: any;
 	let that = this;
-	let currentMode = KFK.mode;
+	let currentTool = KFK.tool;
 	let kvarsArr: KvarInput[];
 	let errMsg = '';
 	let roleOptions = [];
 
 	let nodeInfo: NodeInfo;
-	function designerSetMode(what: string, event: any) {
-		KFK.setMode(what, event);
-		currentMode = KFK.mode;
+	function designerSetTool(what: string, event?: any) {
+		KFK.setTool(what, event);
+		currentTool = KFK.tool;
 	}
 
 	export let openModal = false;
@@ -96,8 +96,8 @@
 		switch (cmd) {
 			case 'setTemplate':
 				template = args;
-			case 'setMode':
-				currentMode = args;
+			case 'setTool':
+				currentTool = args;
 				break;
 			case 'showNodeProp':
 				modalSize = undefined;
@@ -144,8 +144,12 @@
 		//console.log(template);
 		KFK.scenario = workflow ? 'workflow' : 'template';
 		if (KFK.scenario === 'template') {
+			if (tpl_mode !== 'edit') {
+				designerSetTool('POINTER');
+			}
 			await KFK.loadTemplateDoc(template, tpl_mode);
 		} else {
+			designerSetTool('POINTER');
 			await KFK.loadWorkflowDoc(workflow);
 		}
 		theKFK = KFK;
@@ -157,7 +161,7 @@
 	}
 	export async function loadTemplate(tpl: Template, tpl_mode: string) {
 		template = tpl;
-		tpl_mode = tpl_mode;
+		console.log('loadTemplate ', tpl_mode);
 		await theKFK.loadTemplateDoc(template, tpl_mode);
 	}
 
@@ -202,80 +206,80 @@
 <div id="leftPanel" class="bg-white padlayout spaceToHide noshow">
 	<ListGroup class="mt-3">
 		<ListGroupItem
-			class="d-flex align-items-center toolbox {currentMode === 'POINTER' ? 'active' : ''}"
-			on:click={(event) => designerSetMode('POINTER', event)}
+			class="d-flex align-items-center toolbox {currentTool === 'POINTER' ? 'active' : ''}"
+			on:click={(event) => designerSetTool('POINTER', event)}
 			title="点选"
 		>
 			<img src="/svg/POINTER.svg" alt="" class="cocotool" />
 			<div class="shortcutkey">ESC</div>
 		</ListGroupItem>
 		<ListGroupItem
-			class="d-flex align-items-center toolbox {currentMode === 'ACTION' ? 'active' : ''}"
-			on:click={(event) => designerSetMode('ACTION', event)}
+			class="d-flex align-items-center toolbox {currentTool === 'ACTION' ? 'active' : ''}"
+			on:click={(event) => designerSetTool('ACTION', event)}
 			title="活动"
 		>
 			<img src="/svg/ACTION.svg" alt="" class="cocotool" />
 			<div class="shortcutkey">1</div>
 		</ListGroupItem>
 		<ListGroupItem
-			class="d-flex align-items-center toolbox {currentMode === 'INFORM' ? 'active' : ''}"
-			on:click={(event) => designerSetMode('INFORM', event)}
+			class="d-flex align-items-center toolbox {currentTool === 'INFORM' ? 'active' : ''}"
+			on:click={(event) => designerSetTool('INFORM', event)}
 			title="通知"
 		>
 			<img src="/svg/INFORM.svg" alt="" class="cocotool" />
 			<div class="shortcutkey">2</div>
 		</ListGroupItem>
 		<ListGroupItem
-			class="d-flex align-items-center toolbox {currentMode === 'SCRIPT' ? 'active' : ''}"
-			on:click={(event) => designerSetMode('SCRIPT', event)}
+			class="d-flex align-items-center toolbox {currentTool === 'SCRIPT' ? 'active' : ''}"
+			on:click={(event) => designerSetTool('SCRIPT', event)}
 			title="程序"
 		>
 			<img src="/svg/SCRIPT.svg" alt="" class="cocotool" />
 			<div class="shortcutkey">3</div>
 		</ListGroupItem>
 		<ListGroupItem
-			class="d-flex align-items-center toolbox {currentMode === 'TIMER' ? 'active' : ''}"
-			on:click={(event) => designerSetMode('TIMER', event)}
+			class="d-flex align-items-center toolbox {currentTool === 'TIMER' ? 'active' : ''}"
+			on:click={(event) => designerSetTool('TIMER', event)}
 			title="定时器"
 		>
 			<img src="/svg/TIMER.svg" alt="" class="cocotool" />
 			<div class="shortcutkey">4</div>
 		</ListGroupItem>
 		<ListGroupItem
-			class="d-flex align-items-center toolbox {currentMode === 'SUB' ? 'active' : ''}"
-			on:click={(event) => designerSetMode('SUB', event)}
+			class="d-flex align-items-center toolbox {currentTool === 'SUB' ? 'active' : ''}"
+			on:click={(event) => designerSetTool('SUB', event)}
 			title="子流程"
 		>
 			<img src="/svg/SUB.svg" alt="" class="cocotool" />
 			<div class="shortcutkey">5</div>
 		</ListGroupItem>
 		<ListGroupItem
-			class="d-flex align-items-center toolbox {currentMode === 'AND' ? 'active' : ''}"
-			on:click={(event) => designerSetMode('AND', event)}
+			class="d-flex align-items-center toolbox {currentTool === 'AND' ? 'active' : ''}"
+			on:click={(event) => designerSetTool('AND', event)}
 			title="并"
 		>
 			<img src="/svg/AND.svg" alt="" class="cocotool" />
 			<div class="shortcutkey">6</div>
 		</ListGroupItem>
 		<ListGroupItem
-			class="d-flex align-items-center toolbox {currentMode === 'OR' ? 'active' : ''}"
-			on:click={(event) => designerSetMode('OR', event)}
+			class="d-flex align-items-center toolbox {currentTool === 'OR' ? 'active' : ''}"
+			on:click={(event) => designerSetTool('OR', event)}
 			title="或"
 		>
 			<img src="/svg/OR.svg" alt="" class="cocotool" />
 			<div class="shortcutkey">7</div>
 		</ListGroupItem>
 		<ListGroupItem
-			class="d-flex align-items-center toolbox {currentMode === 'GROUND' ? 'active' : ''}"
-			on:click={(event) => designerSetMode('GROUND', event)}
+			class="d-flex align-items-center toolbox {currentTool === 'GROUND' ? 'active' : ''}"
+			on:click={(event) => designerSetTool('GROUND', event)}
 			title="接地"
 		>
 			<img src="/svg/GROUND.svg" alt="" class="cocotool" />
 			<div class="shortcutkey">8</div>
 		</ListGroupItem>
 		<ListGroupItem
-			class="d-flex align-items-center toolbox {currentMode === 'CONNECT' ? 'active' : ''}"
-			on:click={(event) => designerSetMode('CONNECT', event)}
+			class="d-flex align-items-center toolbox {currentTool === 'CONNECT' ? 'active' : ''}"
+			on:click={(event) => designerSetTool('CONNECT', event)}
 			title="连接"
 		>
 			<img src="/svg/connect.svg" alt="" class="cocotool" id="tool_connect" />

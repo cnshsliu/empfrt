@@ -5,7 +5,7 @@ import suuid from 'short-uuid';
 import Parser from '$lib/parser';
 import jQuery from 'jquery';
 import lodash from 'lodash';
-import { gunzip } from '$lib/gzip';
+import { unzipit } from '$lib/gzip';
 import cocoConfig from './cococonfig';
 import APP from './appConfig';
 import { Buffer } from 'buffer';
@@ -126,7 +126,7 @@ const IsFalse = function (val: any) {
 class KFKclass {
 	APP: typeof APP = APP;
 	showingProp: boolean = false;
-	mode: string = 'POINTER';
+	tool: string = 'POINTER';
 	scenario = 'template';
 	tpl: myJQuery = null;
 	tplid: string = '';
@@ -419,28 +419,29 @@ class KFKclass {
 		}
 	}
 	//eslint-disable-next-line
-	setMode(mode: string, event?: any): void {
+	setTool(tool: string, event?: any): void {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		if (that.docIsReadOnly()) mode = 'POINTER';
+		if (that.docIsReadOnly()) tool = 'POINTER';
+		console.log('set Tool: ', tool);
 
 		const shiftKey = event ? event.shiftKey : false;
 
-		const oldMode = that.mode;
-		that.mode = mode;
+		const oldTool = that.tool;
+		that.tool = tool;
 		for (const key in that.APP.toolActiveState) {
 			that.APP.toolActiveState[key] = false;
 		}
-		if (that.APP.toolActiveState[mode] == undefined)
-			console.warn(`APP.toolActiveState[${mode}] does not exist`);
-		else that.APP.toolActiveState[mode] = true;
+		if (that.APP.toolActiveState[tool] == undefined)
+			console.warn(`APP.toolActiveState[${tool}] does not exist`);
+		else that.APP.toolActiveState[tool] = true;
 
-		if ((oldMode === 'line' && mode !== 'line') || (oldMode === 'CONNECT' && mode !== 'CONNECT')) {
+		if ((oldTool === 'line' && tool !== 'line') || (oldTool === 'CONNECT' && tool !== 'CONNECT')) {
 			that.cancelTempLine();
 		}
 
 		if (shiftKey) {
-			if (that.mode === 'CONNECT') {
+			if (that.tool === 'CONNECT') {
 				that.lockTool = true;
 			} else {
 				that.lockTool = false;
@@ -451,28 +452,28 @@ class KFKclass {
 
 		$('#modeIndicator').hide();
 
-		if (that.mode === 'text') {
+		if (that.tool === 'text') {
 			that.APP.setData('show', 'shape_property', true);
 			that.APP.setData('show', 'customshape', false);
 			that.APP.setData('show', 'custombacksvg', false);
 			that.APP.setData('show', 'customfont', true);
 			that.APP.setData('show', 'layercontrol', true);
 			that.APP.setData('show', 'customline', false);
-		} else if (that.mode === 'textblock') {
+		} else if (that.tool === 'textblock') {
 			that.APP.setData('show', 'shape_property', true);
 			that.APP.setData('show', 'customshape', true);
 			that.APP.setData('show', 'customfont', true);
 			that.APP.setData('show', 'custombacksvg', true);
 			that.APP.setData('show', 'layercontrol', true);
 			that.APP.setData('show', 'customline', false);
-		} else if (that.mode === 'yellowtip' || that.mode === 'comment') {
+		} else if (that.tool === 'yellowtip' || that.tool === 'comment') {
 			that.APP.setData('show', 'shape_property', true);
 			that.APP.setData('show', 'customfont', true);
 			that.APP.setData('show', 'custombacksvg', true);
 			that.APP.setData('show', 'customshape', false);
 			that.APP.setData('show', 'layercontrol', true);
 			that.APP.setData('show', 'customline', false);
-		} else if (that.mode === 'line') {
+		} else if (that.tool === 'line') {
 			that.APP.setData('show', 'shape_property', true);
 			that.APP.setData('show', 'customshape', false);
 			that.APP.setData('show', 'custombacksvg', false);
@@ -481,7 +482,7 @@ class KFKclass {
 			that.APP.setData('show', 'customline', true);
 		}
 		console.log(that.APP.toolActiveState);
-		that.designerCallback('setMode', mode);
+		that.designerCallback('setTool', tool);
 		that.focusOnC3();
 	}
 
@@ -1461,7 +1462,7 @@ ret='DEFAULT'; `
 			that.cancelTempLine();
 			that.linkPosNode.splice(0, 2);
 		} else {
-			that.setMode('POINTER');
+			that.setTool('POINTER');
 		}
 	}
 
@@ -1527,7 +1528,7 @@ ret='DEFAULT'; `
 		that.showNodeMessage(that.jumpNodes[1], '点原节点右上角跳转，或按f，即可跳转到这里');
 		that.jumpNodes[0].attr('jump', that.jumpNodes[1].attr('id'));
 		that.jumpNodes.splice(0, 2);
-		that.setMode('POINTER');
+		that.setTool('POINTER');
 	}
 
 	clearNodeMessage() {
@@ -1653,7 +1654,7 @@ ret='DEFAULT'; `
 		});
 		theShape.on('mousedown', (evt: MouseEvent) => {
 			//that.closeActionLog();
-			if (that.mode === 'lock') {
+			if (that.tool === 'lock') {
 				//that.tryToLockUnlock(evt.shiftKey);
 				return;
 			}
@@ -2213,10 +2214,10 @@ ret='DEFAULT'; `
 				evt.stopImmediatePropagation();
 				evt.stopPropagation();
 				that.focusOnNode(jqNodeDIV);
-				if (that.mode === 'POINTER') {
+				if (that.tool === 'POINTER') {
 					that.selectNodeOnClick(jqNodeDIV, evt.shiftKey);
 					that.showNodeProperties(jqNodeDIV);
-				} else if (that.mode === 'CONNECT') {
+				} else if (that.tool === 'CONNECT') {
 					if (that.afterDragging === false) {
 						await that.yarkLinkNode(jqNodeDIV, evt.shiftKey);
 					} else {
@@ -2227,7 +2228,7 @@ ret='DEFAULT'; `
 					evt.preventDefault();
 					return;
 				} else {
-					that.setMode('POINTER');
+					that.setTool('POINTER');
 				}
 			});
 		} catch (error) {
@@ -2373,8 +2374,8 @@ ret='DEFAULT'; `
 
 		that.pickedShape = null;
 
-		// if (that.mode === 'lock' || that.mode === 'connect') {
-		//   that.setMode('POINTER');
+		// if (that.tool === 'lock' || that.tool === 'connect') {
+		//   that.setTool('POINTER');
 		// }
 		if (that.docIsReadOnly()) return;
 
@@ -2392,7 +2393,7 @@ ret='DEFAULT'; `
 		}
 
 		//place image, place material
-		if (that.mode === 'material' && that.materialPicked) {
+		if (that.tool === 'material' && that.materialPicked) {
 			const fileId = that.myuid();
 
 			await that.makeImageDiv(
@@ -2403,7 +2404,7 @@ ret='DEFAULT'; `
 			);
 			return;
 		} else if (
-			that.mode === 'line' &&
+			that.tool === 'line' &&
 			that.isFreeHandDrawing === false &&
 			IsFalse(that.isZoomingShape) &&
 			that.pmsOk('C') === true
@@ -2418,14 +2419,14 @@ ret='DEFAULT'; `
 			if (that.selectedDIVs.length > 0 || that.selectedShapes.length > 0) {
 				if (that.duringKuangXuan === false) that.cancelAlreadySelected();
 			}
-			if (cocoConfig.node[that.mode]) {
+			if (cocoConfig.node[that.tool]) {
 				const variant = 'default';
 				const realX = that.scalePoint(that.scrXToJc3X(evt.clientX));
 				const realY = that.scalePoint(that.scrYToJc3Y(evt.clientY));
 				const jqDIV = await that.placeNode(
 					evt.shiftKey,
 					that.myuid(),
-					that.mode,
+					that.tool,
 					variant,
 					realX,
 					realY,
@@ -2441,8 +2442,8 @@ ret='DEFAULT'; `
 					to: jqDIV.clone()
 				});
 				that.onChange('New Node');
-			} else if (that.mode !== 'POINTER') {
-				console.warn(that.mode, 'does not have config in cocoConfig');
+			} else if (that.tool !== 'POINTER') {
+				console.warn(that.tool, 'does not have config in cocoConfig');
 			}
 		}
 
@@ -2576,7 +2577,7 @@ toggleOverview (jc3MousePos) {
 					x: evt.offsetX,
 					y: evt.offsetY
 				});
-			} else if (that.mode === 'POINTER') {
+			} else if (that.tool === 'POINTER') {
 				that.toggleOverview();
 			}
 			*/
@@ -2599,10 +2600,10 @@ toggleOverview (jc3MousePos) {
 		that.JC3.keydown(function (evt: KeyboardEvent) {
 			evt.preventDefault();
 			evt.stopPropagation();
-			console.log('JC3.keydown', evt.key, that.mode, that.drawMode);
+			console.log('JC3.keydown', evt.key, that.tool, that.drawMode);
 			if (
 				(evt.key === 'Enter' || evt.key === 'Escape') &&
-				that.mode === 'line' &&
+				that.tool === 'line' &&
 				(that.drawMode === 'polyline' || that.drawMode === 'polygon')
 			) {
 				that.closePolyPoint();
@@ -2646,7 +2647,7 @@ toggleOverview (jc3MousePos) {
 			if (that.docIsNotReadOnly()) {
 				await that.placeNodeOnClick(evt);
 			} else {
-				console.log('Not in edit mode: ' + that.mode);
+				console.log('Not in edit tool: ' + that.tool);
 			}
 		});
 
@@ -2708,7 +2709,7 @@ toggleOverview (jc3MousePos) {
 				that.duringKuangXuan = false; //不再框选过程中
 			}
 
-			if (that.mode === 'CONNECT' && that.docIsNotReadOnly()) {
+			if (that.tool === 'CONNECT' && that.docIsNotReadOnly()) {
 				if (that.linkPosNode.length === 1) {
 					//如果当前为连接两个节点,且已经选择了起始点
 					that.lineTemping = true;
@@ -2738,7 +2739,7 @@ toggleOverview (jc3MousePos) {
 					);
 				}
 			}
-			if (that.mode === 'line' && that.docIsNotReadOnly()) {
+			if (that.tool === 'line' && that.docIsNotReadOnly()) {
 				//如果当前模式为画线,则在鼠标移动时,画出临时线
 				if (that.drawPoints.length === 1) {
 					that.lineTemping = true;
@@ -2787,7 +2788,7 @@ toggleOverview (jc3MousePos) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		if (
-			that.mode === 'POINTER' &&
+			that.tool === 'POINTER' &&
 			that.kuangXuanMouseIsDown &&
 			that.shapeDragging === false &&
 			that.lineTransfomerDragging === false &&
@@ -3203,6 +3204,18 @@ toggleOverview (jc3MousePos) {
 		}
 		const myId = jqNode.attr('id');
 		const tplLinks = that.tpl.find(`.link[from="${myId}"]`);
+		const tmpLinks = KFK.tpl.find(`.link[from="${myId}"]`);
+		const allLinks = KFK.tpl.find(`.link`);
+		console.log(
+			'tplLinks',
+			tplLinks.length,
+			'tmpLinks',
+			tmpLinks.length,
+			'allLinks',
+			allLinks.length
+		);
+		console.log(that.tpl.html());
+
 		//得到当前节点连接到的节点id列表
 		//let toIds = that.getNodeLinkIds(jqNode, "linkto");
 		//找出所有svg连接线条
@@ -3331,10 +3344,10 @@ toggleOverview (jc3MousePos) {
 	}
 
 	//用在index.js中的boostrapevue
-	isActive(mode: any) {
+	isActive(tool: any) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		return that.mode === mode;
+		return that.tool === tool;
 	}
 
 	width(w?: number) {
@@ -4520,7 +4533,7 @@ toggleOverview (jc3MousePos) {
 				//that.closeActionLog();
 				that.lineTransfomerDragging = true;
 				// that.fromJQ = that.tobeTransformJqLine.clone();
-				// that.setMode('line');
+				// that.setTool('line');
 				evt.stopImmediatePropagation();
 				evt.stopPropagation();
 			},
@@ -4688,6 +4701,10 @@ toggleOverview (jc3MousePos) {
 		that.template = template;
 		that.workflow = null;
 		that.tpl_mode = tplmode;
+		console.log(that.tpl_mode);
+		if (that.tpl_mode === 'read') {
+			that.setTool('POINTER');
+		}
 		try {
 			that.tplid = that.template.tplid;
 			that.tpl = $(that.template.doc);
@@ -4744,7 +4761,13 @@ toggleOverview (jc3MousePos) {
 	async loadWorkflowDoc(wfobj: any) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
+		await that.cleanupJC3();
+		// clear以后，所有的球都可以正常运行了。
+		// 之前没有这句话，导致workflow状态下的ball只有在刷新页面后才能正常。
+		// template模式下，有这句话，所以总是正常显示球的运动
+		that.tmpBalls.clear();
 		that.template = null;
+		that.setTool('POINTER');
 		try {
 			$('#leftPanel').addClass('noshow');
 			$('#minimap').addClass('noshow');
@@ -4752,16 +4775,22 @@ toggleOverview (jc3MousePos) {
 			KFKclass.hide(that.JC3);
 			//eslint-disable-next-line
 			that.tpl = $(wfobj.doc).first('.template');
+			//theTplObject = $(wfobj.doc).first('.template');
 			const nodes = that.tpl.find('.node');
 			nodes.addClass('kfknode');
 			await that.JC3.append(nodes);
+			//在上面的that.JC3.append(nodes) 以后，
+			//会导致that.tpl变空（对一个包含很多节点的模板，会变空 .node
+			//和.link全部会丢失，当节点不多时，.node没有了，.link还在）
+			//所以，必须用下面这句话重新读取workflow中的.template，解析后复制给that.tpl
+			//这地方很奇怪，似乎跟JC3.append有关，append会从tpl中抽走对象？又不是完全抽走？什么机制？
+			that.tpl = $(wfobj.doc).first('.template');
 			const guiNodes = that.JC3.find('.node');
 			let setDrag = false;
 			for (let i = 0; i < guiNodes.length; i++) {
 				const jqNode = $(guiNodes[i]);
 				await that.setNodeEventHandler(jqNode, null, setDrag);
-				//jqNode.draggable('disable');
-				await that.redrawLinkLines(jqNode, 'loadDoc');
+				await that.redrawLinkLines(jqNode, 'loadWorkflowDoc');
 			}
 
 			//eslint-disable-next-line
@@ -4793,7 +4822,6 @@ toggleOverview (jc3MousePos) {
 
 			//focusOnC3会导致C3居中
 			that.focusOnC3();
-			//scrollToLastPosition in loadWorkflowDoc
 			that.scrollToLastPosition(that.wfid);
 			that.C3.dispatchEvent(that.refreshC3Event);
 		} catch (err) {
@@ -4849,12 +4877,12 @@ toggleOverview (jc3MousePos) {
 		});
 	}
 
-	onToolboxMouseDown(mode: string) {
+	onToolboxMouseDown(tool: string) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		that.toolboxMouseDown = true;
-		that.mode = mode;
-		that.debug('Set drop toolbox mode to ', that.mode);
+		that.tool = tool;
+		that.debug('Set drop toolbox tool to ', that.tool);
 	}
 	onToolboxMouseUp() {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
@@ -4989,7 +5017,7 @@ toggleOverview (jc3MousePos) {
 		if (content.type !== 'Buffer' || content.data === undefined) {
 			console.error('gzippedContentToString was passed in wrong content', content);
 		}
-		const tmp = await gunzip(Buffer.from(content.data));
+		const tmp = await unzipit(Buffer.from(content.data));
 		return tmp.toString();
 	}
 
@@ -5145,38 +5173,38 @@ toggleOverview (jc3MousePos) {
 					break;
 				case 'Escape':
 					console.log('got Escape');
-					if (that.mode === 'CONNECT') {
+					if (that.tool === 'CONNECT') {
 						that.cancelLinkNode();
 						console.log('Cancel link..');
 					}
-					that.setMode('POINTER', evt);
+					that.setTool('POINTER', evt);
 					break;
 				case '1':
-					that.setMode('ACTION', evt);
+					that.setTool('ACTION', evt);
 					break;
 				case '2':
-					that.setMode('INFORM', evt);
+					that.setTool('INFORM', evt);
 					break;
 				case '3':
-					that.setMode('SCRIPT', evt);
+					that.setTool('SCRIPT', evt);
 					break;
 				case '4':
-					that.setMode('TIMER', evt);
+					that.setTool('TIMER', evt);
 					break;
 				case '5':
-					that.setMode('SUB', evt);
+					that.setTool('SUB', evt);
 					break;
 				case '6':
-					that.setMode('AND', evt);
+					that.setTool('AND', evt);
 					break;
 				case '7':
-					that.setMode('OR', evt);
+					that.setTool('OR', evt);
 					break;
 				case '8':
-					that.setMode('GROUND', evt);
+					that.setTool('GROUND', evt);
 					break;
 				case '9':
-					that.setMode('CONNECT', evt);
+					that.setTool('CONNECT', evt);
 					break;
 				case 'Backspace':
 				case 'Delete':
@@ -5249,7 +5277,7 @@ toggleOverview (jc3MousePos) {
 			}
 		});
 		$(document).on('mousedown', function (evt) {
-			if (that.mode === 'POINTER') {
+			if (that.tool === 'POINTER') {
 				if (that.ctrlMouseToPan === true) {
 					if (evt.shiftKey) {
 						that.panStartAt = {
@@ -5283,7 +5311,7 @@ toggleOverview (jc3MousePos) {
 		});
 		$(document).on('mouseup', async function (evt) {
 			that.panStartAt = undefined;
-			if (that.mode === 'POINTER') {
+			if (that.tool === 'POINTER') {
 				that.kuangXuanMouseIsDown = false;
 				that.kuangXuanEndPoint = {
 					x: that.scrXToJc3X(evt.clientX),
@@ -5467,9 +5495,9 @@ toggleOverview (jc3MousePos) {
 		//eslint-disable-next-line @typescript-eslint/no-this-alias, prefer-const
 		let that = this;
 		that.cancelAlreadySelected();
-		if (!that.isEditting && that.mode !== 'line') that.setMode('POINTER');
+		if (!that.isEditting && that.tool !== 'line') that.setTool('POINTER');
 		that.cancelTempLine();
-		that.setMode('POINTER');
+		that.setTool('POINTER');
 		if (that.tempShape) that.tempShape.hide();
 		if (that.noCopyPaste) {
 			that.noCopyPaste = false;

@@ -104,6 +104,8 @@ export interface Work {
 }
 
 export interface KFKclass {
+	setTool: (tool: string, evt?: any) => any;
+	loadTemplateDoc: (template: any, tpl_mode: string) => any;
 	designerCallback: any;
 	addDocumentEventHandler: any;
 	setConnectProperties: any;

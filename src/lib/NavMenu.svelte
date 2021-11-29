@@ -31,6 +31,7 @@
 	} from 'sveltestrap';
 	import { goto } from '$app/navigation';
 	import { post } from '$lib/utils';
+	import { DEPLOY_MODE } from '$lib/Env';
 	import { whichTabStore } from '$lib/empstores';
 
 	let isMenuOpen = true;
@@ -144,8 +145,10 @@
 										{/if}
 									</Col>
 									<Col class="fw-bold mt-2">{$session.user ? $session.user.username : ''}</Col>
-									<Col>{$session.user && $session.user.tenant ? $session.user.tenant.name : ''}</Col
-									>
+									<Col
+										>{$session.user && $session.user.tenant ? $session.user.tenant.name : ''}
+									</Col>
+									<Col>{DEPLOY_MODE === 'private' ? 'ENTERPRISE' : 'SaaS'}</Col>
 									<Col class="mt-3">
 										<Button
 											on:click={(e) => {

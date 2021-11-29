@@ -162,6 +162,9 @@
 			fade_message = '';
 		}, time);
 	}
+	onMount(() => {
+		console.log('tpl_mode:', tpl_mode);
+	});
 </script>
 
 <svelte:head>

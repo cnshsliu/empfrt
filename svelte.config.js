@@ -11,7 +11,10 @@ const config = {
 		// hydrate the <div id="svelte"> element in src/app.html
 		target: '#svelte',
 		//https://www.npmjs.com/package/svelte-kit-cookie-session
-		adapter: adapter({ out: 'my-output-directory' }),
+		adapter: adapter({
+			out: 'build',
+			precompress: false
+		}),
 		vite: {
 			optimizeDeps: {
 				exclude: ['svelte-kit-cookie-session']

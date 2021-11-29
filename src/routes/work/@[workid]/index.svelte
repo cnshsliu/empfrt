@@ -43,24 +43,12 @@
 	import { API_SERVER, EMP_SERVER } from '$lib/Env';
 	import type { User, Work } from '$lib/types';
 	import { TabContent, TabPane } from 'sveltestrap';
-	import { scale } from 'svelte/transition';
-	import { get } from 'svelte/store';
-	import type { WhichTab } from '$lib/types';
-	import { whichTabStore } from '$lib/empstores';
-	import Parser from '$lib/parser';
-	import { flip } from 'svelte/animate';
 	import { title } from '$lib/title';
-	import { Status } from '$lib/status';
-	import { goto } from '$app/navigation';
 	import WorkPage from './workpage.svelte';
-	import * as api from '$lib/api';
-	import { Container, Row, Col, Nav, Icon, NavItem, NavLink } from 'sveltestrap';
+	import { Container, Row, Col } from 'sveltestrap';
 	import { ClientPermControl } from '$lib/clientperm';
-	import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'sveltestrap';
-	import { enhance } from '$lib/form';
 	export let work: Work;
 	export let user: User;
-	export let mode: string;
 	export let delegators;
 
 	let radioGroup;
@@ -74,8 +62,6 @@
 	$title = work.title;
 
 	$: work_json_string = JSON.stringify(work, null, 2);
-	$: is_workable = work.doer === user.email && work.status === 'ST_RUN';
-	let currentTab = 'work';
 	let axios_code = `
 let res = await axios.post(
   '${API_SERVER}/work/info',
@@ -123,7 +109,7 @@ let WORKITEM_HTML = await axios.post(
 </Container>
 <Container>
 	{#if ClientPermControl(user.perms, user.email, '*', '', 'admin') && iframeMode === false}
-		<TabContent on:tab={(e) => (currentTab = '' + e.detail)}>
+		<TabContent>
 			<TabPane tabId="work" tab="Work" active>
 				<WorkPage {work} {user} {iframeMode} />
 			</TabPane>
