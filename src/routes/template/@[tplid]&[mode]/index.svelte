@@ -40,7 +40,6 @@
 	import { goto } from '$app/navigation';
 	import { session } from '$app/stores';
 	import { title } from '$lib/title';
-	import { onMount } from 'svelte';
 	import * as api from '$lib/api';
 	import { Container, Row, Col, Nav, NavLink } from 'sveltestrap';
 	import { Icon, Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'sveltestrap';
@@ -162,9 +161,6 @@
 			fade_message = '';
 		}, time);
 	}
-	onMount(() => {
-		console.log('tpl_mode:', tpl_mode);
-	});
 </script>
 
 <svelte:head>
