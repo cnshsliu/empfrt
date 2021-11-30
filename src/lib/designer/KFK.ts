@@ -1014,8 +1014,12 @@ ret='DEFAULT'; `
 			ret.INFORM.label = BlankToDefault(jqDIV.find('p').first().text(), 'Email').trim();
 			ret.label = ret.INFORM.label;
 			ret.INFORM.role = BlankToDefault(jqDIV.attr('role'), 'DEFAULT');
-			ret.INFORM.subject = BlankToDefault(jqDIV.find('subject').first().text(), '').trim();
-			ret.INFORM.content = BlankToDefault(jqDIV.find('content').first().text(), '').trim();
+			ret.INFORM.subject = that.base64ToCode(
+				BlankToDefault(jqDIV.find('subject').first().text(), '').trim()
+			);
+			ret.INFORM.content = that.base64ToCode(
+				BlankToDefault(jqDIV.find('content').first().text(), '').trim()
+			);
 		} else if (jqDIV.hasClass('TIMER')) {
 			ret.TIMER.id = jqDIV.attr('id');
 			ret.TIMER.label = BlankToDefault(jqDIV.find('p').first().text(), 'Timer').trim();
@@ -1037,6 +1041,7 @@ ret='DEFAULT'; `
 	}
 
 	setNodeProperties(jqDIV: myJQuery, props: any) {
+		let that = this;
 		let propJSON: NodePropJSON;
 		if (jqDIV.hasClass('ACTION')) {
 			propJSON = props.ACTION;
@@ -1083,8 +1088,8 @@ ret='DEFAULT'; `
 		} else if (jqDIV.hasClass('INFORM')) {
 			propJSON = props.INFORM;
 			this.setNodeLabel(jqDIV, propJSON.label);
-			const subject = propJSON.subject;
-			const content = propJSON.content;
+			const subject = that.codeToBase64(propJSON.subject);
+			const content = that.codeToBase64(propJSON.content);
 			const role = propJSON.role;
 			let node_subject = '';
 			let node_content = '';

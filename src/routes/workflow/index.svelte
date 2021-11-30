@@ -25,6 +25,7 @@
 	$: token = user.sessionToken;
 	let theExtraFilter: any;
 	let filter_status;
+	let filter_template;
 	let remoteTable;
 	let urls = {
 		search: `${API_SERVER}/workflow/search`
@@ -46,25 +47,39 @@
 	let dataFile = null;
 	let tplidImport;
 	let after_mount = false;
-	let payload_extra = { filter: { status: 'ST_RUN' } };
+	let payload_extra = { filter: { status: '', tplid: '' } };
 
 	function reload(status = 'ST_RUN') {
+		reloadOnFilterStatusChange('ST_RUN');
+	}
+	function reloadOnFilterStatusChange(status = 'ST_RUN') {
 		if (status === undefined) {
 			status = 'ST_RUN';
 		}
-		payload_extra = {
-			filter: status !== 'All' ? { status: status } : undefined
-		};
+		payload_extra.filter.status = status;
 
+		if (payload_extra.filter.tplid === '') delete payload_extra.filter.tplid;
+		if (payload_extra.filter.status === 'All') delete payload_extra.filter.status;
 		remoteTable && remoteTable.refresh({ payload_extra });
 	}
 
+	let templates = [];
 	onMount(() => {
+		templates = ['mailer', '铂爵会电脑采购', 'tones_load'];
 		reload();
 	});
 
 	function filterStatusChanged(event) {
-		reload(event.detail);
+		reloadOnFilterStatusChange(event.detail);
+	}
+	function filterTemplateChanged(event) {
+		let tplid = event.detail;
+		if (tplid) {
+			payload_extra.filter.tplid = tplid;
+			if (payload_extra.filter.tplid === '') delete payload_extra.filter.tplid;
+			if (payload_extra.filter.status === 'All') delete payload_extra.filter.status;
+			remoteTable && remoteTable.refresh({ payload_extra });
+		}
 	}
 
 	let fade_message = '';
@@ -89,9 +104,10 @@
 		this={ExtraFilter}
 		bind:this={theExtraFilter}
 		on:filterStatusChange={filterStatusChanged}
+		on:filterTemplateChange={filterTemplateChanged}
 		filter_status={'ST_RUN'}
 		statuses_label="Workflow status:"
-		fields="{['statuses']},"
+		fields="{['statuses', 'templatepicker']},"
 		object_type="processes"
 		statuses={[
 			{ value: 'All', label: 'All' },
@@ -100,8 +116,9 @@
 			{ value: 'ST_DONE', label: 'Finished' },
 			{ value: 'ST_STOP', label: 'Stopped' }
 		]}
+		{templates}
 	/>
-	<Row class="mt-3">
+	<Row class="mt-1">
 		<Col>
 			<RemoteTable endpoint="workflow/search" {token} {user} bind:this={remoteTable} />
 		</Col>

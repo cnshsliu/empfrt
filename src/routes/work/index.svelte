@@ -62,21 +62,14 @@
 	//const jwt = auth && Buffer.from(auth.jwt, 'base64').toString('utf-8');
 
 	//缺省情况下，使用用户邮箱，和ST_RUN
-	let payload_extra = { doer: user.email, filter: { wfstatus: 'ST_RUN', status: 'ST_RUN' } };
-	//当filter_doer或radioWorkStatus发生变化时，刷新RemoteTable
-	$: {
-		payload_extra = {
-			doer: filter_doer === '' ? user.email : filter_doer,
-			filter: filter_status !== 'All' ? { wfstatus: 'ST_RUN', status: filter_status } : undefined
-		};
-
-		remoteTable &&
-			remoteTable.refresh({
-				payload_extra
-			});
-	}
+	let payload_extra = {
+		doer: user.email,
+		filter: { wfstatus: 'ST_RUN', status: 'ST_RUN', tplid: '' }
+	};
 
 	function refreshList() {
+		if (payload_extra.filter.tplid === '') delete payload_extra.filter.tplid;
+		if (payload_extra.filter.status === 'All') delete payload_extra.filter.status;
 		remoteTable &&
 			remoteTable.refresh({
 				payload_extra
@@ -84,26 +77,24 @@
 	}
 
 	export let mouseover_objid: string = '';
-	function setMouseOverObjid(objid: string) {
-		mouseover_objid = objid;
-	}
-	function setMouseFocus() {}
 	function radioChanged(e) {
 		radioWorkStatus = e.target.value;
 		$WorkStatusStore.status = radioWorkStatus;
 	}
 
+	let templates = [];
 	onMount(() => {
 		//refreshList();
 		/* setTimeout(() => {
-			refreshList();
 		}, 2000); */
+		refreshList();
 		/*
 		const interval = setInterval(() => {
 			refreshList();
 		}, 2000);
 		return () => clearInterval(interval);
 		*/
+		templates = ['mailer', '铂爵会电脑采购', 'tones_load'];
 		if (user.extra && user.extra.input_search && user.extra.input_search.startsWith('wf:')) {
 			input_search = user.extra.input_search;
 		}
@@ -115,6 +106,28 @@
 			$session.user = user;
 		}
 	});
+	function filterStatusChanged(event) {
+		let status = event.detail;
+		if (status !== 'ALL') {
+			payload_extra.filter.status = status;
+			if (payload_extra.filter.tplid === '') delete payload_extra.filter.tplid;
+			if (payload_extra.filter.status === 'All') delete payload_extra.filter.status;
+			remoteTable && remoteTable.refresh({ payload_extra });
+		}
+	}
+	function filterTemplateChanged(event) {
+		let tplid = event.detail;
+		payload_extra.filter.tplid = tplid;
+		if (payload_extra.filter.tplid === '') delete payload_extra.filter.tplid;
+		if (payload_extra.filter.status === 'All') delete payload_extra.filter.status;
+		remoteTable && remoteTable.refresh({ payload_extra });
+	}
+	function filterDoerChanged(event) {
+		if (payload_extra.doer !== filter_doer) {
+			payload_extra.doer = filter_doer;
+			remoteTable && remoteTable.refresh({ payload_extra });
+		}
+	}
 </script>
 
 <Container>
@@ -133,7 +146,10 @@
 		bind:filter_doer
 		bind:user
 		bind:delegators
-		fields="{['doer', 'statuses']},"
+		on:filterDoerChange={filterDoerChanged}
+		on:filterStatusChange={filterStatusChanged}
+		on:filterTemplateChange={filterTemplateChanged}
+		fields="{['doer', 'templatepicker', 'statuses']},"
 		object_type="work items"
 		statuses_label="Work status:"
 		statuses={[
@@ -142,6 +158,7 @@
 			{ value: 'ST_PAUSE', label: 'Paused' },
 			{ value: 'ST_DONE', label: 'Finished' }
 		]}
+		{templates}
 	/>
 	<Row class="mt-3">
 		<Col>

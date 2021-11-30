@@ -8,6 +8,16 @@ export interface EmpResponse {
 	errMsg: sgring;
 	user: Record;
 }
+export interface SmtpDef {
+	host: string;
+	port: number;
+	secure: boolean;
+	username: string;
+	password: string;
+	from: string;
+	error?: string;
+	message?: string;
+}
 
 export interface User {
 	userid: string;
@@ -23,6 +33,21 @@ export interface User {
 		filter_status?: string;
 	};
 	perms: unknown;
+}
+export interface Org {
+	site: string;
+	name: string;
+	owner: string;
+	css: string;
+	logo: string;
+	login_background: string;
+	page_background: string;
+	orgmode: boolean;
+	feedsview: number;
+	timezone: string;
+	allowchecker: boolean;
+	smtp: smtpDef;
+	adminorg: boolean;
 }
 
 export interface Template {
@@ -168,4 +193,12 @@ export interface EmpResponse {
 	user?: Record;
 	perm?: string;
 	message?: string;
+}
+export interface OrgMember {
+	member: string;
+	group: string;
+	checked: boolean;
+}
+export interface OrgMembers {
+	members: OrgMember[];
 }

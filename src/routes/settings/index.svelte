@@ -1,4 +1,5 @@
 <script context="module">
+	export const ssr = false;
 	import * as api from '$lib/api';
 	import TimeZone from '$lib/Timezone';
 	export async function load({ session }) {
@@ -37,8 +38,9 @@
 	import { session } from '$app/stores';
 	import { browser, dev, mode } from '$app/env';
 	import { get } from 'svelte/store';
-	import type { EmpResponse, WhichTab } from '$lib/types';
+	import type { EmpResponse, WhichTab, OrgMember } from '$lib/types';
 	import { whichTabStore } from '$lib/empstores';
+	import SmtpAdmin from './smtpadmin.svelte';
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import type { User } from '$lib/types';
@@ -93,7 +95,7 @@
 		{ email: 'liukehong@gmail.com', displayName: 'liugamil', status: 'failed' }
 	];
 
-	function setFadeMessage(message: string, time = 2000) {
+	export function setFadeMessage(message: string, time = 2000) {
 		fade_message = message;
 		if (fade_timer) clearTimeout(fade_timer);
 		fade_timer = setTimeout(() => {
@@ -278,6 +280,9 @@
 
 	async function refreshMyOrg() {
 		myorg = await api.post('tnt/my/org', {}, user.sessionToken);
+		orgname = myorg.orgname;
+		orgtheme = myorg.css;
+		orgtimezone = myorg.timezone;
 		if (myorg && myorg.joinapps && Array.isArray(myorg.joinapps)) {
 			for (let i = 0; i < myorg.joinapps.length; i++) {
 				myorg.joinapps[i].checked = true;
@@ -285,7 +290,7 @@
 		}
 	}
 
-	let orgMembers;
+	let orgMembers: OrgMembers;
 	async function refreshMembers() {
 		orgMembers = await api.post('tnt/members', {}, user.sessionToken);
 		if (orgMembers && orgMembers.members && orgMembers.members.length > 0) {
@@ -301,7 +306,7 @@
 	let whichTab: WhichTab = get(whichTabStore);
 	async function showTab(tabId) {
 		if (tabId === 'org') {
-			refreshMyOrg();
+			//refreshMyOrg();
 		} else if (tabId === 'members') {
 			refreshMembers();
 		}
@@ -426,7 +431,7 @@
 			tab="Personal"
 			active={!whichTab || whichTab['setting'] === 'personal'}
 		>
-			<form on:submit|preventDefault={savePersonel}>
+			<form>
 				<Container class="mt-3">
 					<div class="w-100 text-center fs-3">{user.email}</div>
 					<Row cols="1" class="mt-3">
@@ -477,8 +482,11 @@
 						<Col>
 							<Button
 								class="w-100 btn btn-lg  pull-xs-right"
-								type="submit"
 								disabled={in_progress || userInfoNotChange}
+								on:click={(e) => {
+									e.preventDefault();
+									savePersonel();
+								}}
 							>
 								Update Settings
 							</Button>
@@ -523,17 +531,9 @@
 					<CardBody>
 						<InputGroup class="mb-1">
 							<InputGroupText>Between</InputGroupText>
-							<Input
-								type="date"
-								bind:value={new_delegation_begindate}
-								placeholder="Confirm with your password"
-							/>
+							<Input type="date" bind:value={new_delegation_begindate} />
 							<InputGroupText>and</InputGroupText>
-							<Input
-								type="date"
-								bind:value={new_delegation_enddate}
-								placeholder="Confirm with your password"
-							/>
+							<Input type="date" bind:value={new_delegation_enddate} />
 						</InputGroup>
 						<InputGroup class="mb-1">
 							<InputGroupText>to</InputGroupText>
@@ -618,7 +618,7 @@
 								<Input
 									type="password"
 									bind:value={password_for_admin}
-									placeholder="Confirm with your password"
+									placeholder="Confirm with admin password"
 								/>
 							</InputGroup>
 							<InputGroup class="mb-1">
@@ -768,7 +768,7 @@
 									<Input
 										type="password"
 										bind:value={password_for_admin}
-										placeholder="Confirm with your password"
+										placeholder="Confirm with org password"
 									/>
 									<Button
 										on:click={(e) => {
@@ -871,6 +871,9 @@
 					</Col>
 				{/if}
 			</Container>
+		</TabPane>
+		<TabPane tabId="smtp" tab="SMTP" active={whichTab && whichTab['setting'] === 'smtp'}>
+			<SmtpAdmin {user} {myorg} {setFadeMessage} />
 		</TabPane>
 	</TabContent>
 </Container>

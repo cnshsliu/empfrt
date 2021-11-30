@@ -17,11 +17,13 @@
 	import { createEventDispatcher } from 'svelte';
 	export let object_type: string;
 	export let filter_doer: string;
+	export let filter_template: string;
 	export let user: User;
 	export let delegators;
 	export let filter_status: string;
 	export let statuses_label: string;
 	export let fields: string[] = ['statuses'];
+	export let templates: string[] = [];
 	export let statuses: radioOption[] = [
 		{
 			value: 'ST_RUN',
@@ -29,12 +31,19 @@
 		}
 	];
 	let statusMessage = '';
+	const dispatch = createEventDispatcher();
 	function radioChanged(e) {
 		dispatch('filterStatusChange', e.target.value);
 		statusMessage = getStatusMessage(e.target.value);
 	}
+	function tplChanged(e) {
+		dispatch('filterTemplateChange', (e.target as HTMLInputElement).value);
+	}
 
-	const dispatch = createEventDispatcher();
+	function doerChanged(e) {
+		dispatch('filterDoerChange', (e.target as HTMLInputElement).value);
+	}
+
 	function getStatusMessage(aStatus) {
 		switch (aStatus) {
 			case 'ST_RUN':
@@ -74,8 +83,27 @@
 		<Row><Col class="mx-3">{statusMessage}</Col></Row>
 	</Container>
 {/if}
-{#if fields.indexOf('doer') > -1}
+{#if fields.indexOf('templatepicker') > -1}
 	<Row class="mt-1">
+		<InputGroup>
+			<InputGroupText>Template:</InputGroupText>
+			<Input
+				type="select"
+				name="selectTpl"
+				id="tplSelect"
+				bind:value={filter_template}
+				on:change={tplChanged}
+			>
+				<option value="">--Toggle Template--</option>
+				{#each templates as tpl, index (tpl)}
+					<option value={tpl}>{tpl}</option>
+				{/each}
+			</Input>
+		</InputGroup>
+	</Row>
+{/if}
+{#if fields.indexOf('doer') > -1}
+	<Row class="mt-0">
 		<Col>
 			{#if user.group === 'ADMIN'}
 				<InputGroup class="kfk-input-template-name d-flex">
@@ -89,6 +117,7 @@
 						aria-label="User Email"
 						placeholder="Input user email to query his/her workitems"
 					/>
+					<Button on:click={doerChanged}>List&gt;</Button>
 				</InputGroup>
 			{:else if delegators.length > 0}
 				<InputGroup>
@@ -100,6 +129,7 @@
 							<option value={delegator}>{delegator}</option>
 						{/each}
 					</Input>
+					<Button on:click={doerChanged}>List&gt;</Button>
 				</InputGroup>
 			{/if}
 		</Col>
