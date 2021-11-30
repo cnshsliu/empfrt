@@ -11,6 +11,7 @@
 <script lang="ts">
 	import { API_SERVER } from '$lib/Env';
 	import { onMount } from 'svelte';
+	import * as api from '$lib/api';
 	import RemoteTable from './RemoteTable.svelte';
 	import ExtraFilter from '$lib/form/ExtraFilter.svelte';
 	import type { User } from '$lib/types';
@@ -64,8 +65,9 @@
 	}
 
 	let templates = [];
-	onMount(() => {
-		templates = ['mailer', '铂爵会电脑采购', 'tones_load'];
+	onMount(async () => {
+		let tmp = await api.post('template/tplid/list', {}, user.sessionToken);
+		templates = tmp.map((x) => x.tplid);
 		reload();
 	});
 
@@ -74,12 +76,10 @@
 	}
 	function filterTemplateChanged(event) {
 		let tplid = event.detail;
-		if (tplid) {
-			payload_extra.filter.tplid = tplid;
-			if (payload_extra.filter.tplid === '') delete payload_extra.filter.tplid;
-			if (payload_extra.filter.status === 'All') delete payload_extra.filter.status;
-			remoteTable && remoteTable.refresh({ payload_extra });
-		}
+		payload_extra.filter.tplid = tplid;
+		if (payload_extra.filter.tplid === '') delete payload_extra.filter.tplid;
+		if (payload_extra.filter.status === 'All') delete payload_extra.filter.status;
+		remoteTable && remoteTable.refresh({ payload_extra });
 	}
 
 	let fade_message = '';

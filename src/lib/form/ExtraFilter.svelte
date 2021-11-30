@@ -94,7 +94,7 @@
 				bind:value={filter_template}
 				on:change={tplChanged}
 			>
-				<option value="">--Toggle Template--</option>
+				<option value="">--All Template--</option>
 				{#each templates as tpl, index (tpl)}
 					<option value={tpl}>{tpl}</option>
 				{/each}

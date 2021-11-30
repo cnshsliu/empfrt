@@ -28,7 +28,6 @@
 
 	async function load(_page, reason) {
 		loading = true;
-		console.log('loading...', reason, input_search);
 		const data = await getData(
 			endpoint,
 			token,

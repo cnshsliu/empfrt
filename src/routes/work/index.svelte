@@ -83,7 +83,7 @@
 	}
 
 	let templates = [];
-	onMount(() => {
+	onMount(async () => {
 		//refreshList();
 		/* setTimeout(() => {
 		}, 2000); */
@@ -94,7 +94,10 @@
 		}, 2000);
 		return () => clearInterval(interval);
 		*/
-		templates = ['mailer', '铂爵会电脑采购', 'tones_load'];
+
+		let tmp = await api.post('template/tplid/list', {}, user.sessionToken);
+
+		templates = tmp.map((x) => x.tplid);
 		if (user.extra && user.extra.input_search && user.extra.input_search.startsWith('wf:')) {
 			input_search = user.extra.input_search;
 		}
