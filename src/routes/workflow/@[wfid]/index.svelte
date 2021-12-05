@@ -31,7 +31,6 @@
 	import type { User, Template, Workflow } from '$lib/types';
 	import { session } from '$app/stores';
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
-	import jQuery from 'jquery';
 	import { goto } from '$app/navigation';
 	import { title } from '$lib/title';
 	import { onMount } from 'svelte';
@@ -39,11 +38,8 @@
 	import { Row, Col, Nav, NavLink } from 'sveltestrap';
 	import { Icon } from 'sveltestrap';
 	import { ClientPermControl } from '$lib/clientperm';
-	import Parser from '$lib/parser';
 	export let workflow: Workflow;
 	export let wfid: string;
-
-	const jq = jQuery;
 
 	$title = workflow.wftitle;
 	let Designer: any;
@@ -55,10 +51,6 @@
 	});
 
 	export let user: User;
-	const dumpWorkflow = function () {
-		let wf = jq(workflow.doc);
-		console.log(wf.find('.workflow').attr('class'));
-	};
 	const opWorkflow = (wfid: string, op: string): void => {
 		if (op === 'works') {
 			user = $session.user;

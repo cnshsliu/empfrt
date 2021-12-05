@@ -117,7 +117,7 @@
 						aria-label="User Email"
 						placeholder="Input user email to query his/her workitems"
 					/>
-					<Button on:click={doerChanged}>List&gt;</Button>
+					<Button on:click={doerChanged} color="primary">List&gt;</Button>
 				</InputGroup>
 			{:else if delegators.length > 0}
 				<InputGroup>
@@ -129,7 +129,7 @@
 							<option value={delegator}>{delegator}</option>
 						{/each}
 					</Input>
-					<Button on:click={doerChanged}>List&gt;</Button>
+					<Button on:click={doerChanged} color="primary">List&gt;</Button>
 				</InputGroup>
 			{/if}
 		</Col>

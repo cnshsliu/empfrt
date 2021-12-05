@@ -1,7 +1,8 @@
 <script context="module" lang="ts">
 	import { post } from '$lib/utils';
-	import lodash from 'lodash';
+	let TimeTool = null;
 	export async function load({ page, fetch, session }) {
+		TimeTool = (await import('$lib/TimeTool')).default;
 		let iframeMode = false;
 		if (page.query.has('iframe')) {
 			iframeMode = true;
@@ -13,7 +14,6 @@
 			if (delegators.includes(session.user.email) === false) {
 				delegators.push(session.user.email);
 			}
-			delegators = lodash.uniq(delegators);
 		} catch (e) {}
 		return {
 			props: {
@@ -28,16 +28,11 @@
 <script lang="ts">
 	import RemoteTable from './RemoteTable.svelte';
 	import ExtraFilter from '$lib/form/ExtraFilter.svelte';
+	import * as api from '$lib/api';
 	import type { User, Work } from '$lib/types';
-	import { get } from 'svelte/store';
-	import type { WhichTab } from '$lib/types';
-	import { whichTabStore } from '$lib/empstores';
 	import { session } from '$app/stores';
 	import { Container, Row, Col, Button, FormGroup, Input } from 'sveltestrap';
 	import { onMount } from 'svelte';
-	import WorkPreview from './_WorkPreview.svelte';
-	import { scale } from 'svelte/transition';
-	import { flip } from 'svelte/animate';
 	import { title } from '$lib/title';
 	import { WorkStatusStore } from '$lib/empStores';
 
@@ -76,7 +71,6 @@
 			});
 	}
 
-	export let mouseover_objid: string = '';
 	function radioChanged(e) {
 		radioWorkStatus = e.target.value;
 		$WorkStatusStore.status = radioWorkStatus;
@@ -172,6 +166,7 @@
 				{input_search}
 				{payload_extra}
 				bind:this={remoteTable}
+				{TimeTool}
 			/>
 		</Col>
 	</Row>

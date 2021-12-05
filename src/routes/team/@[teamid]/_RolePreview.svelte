@@ -17,7 +17,6 @@
 
 	export let form_id = '';
 	export let user: User;
-	export let perms: string;
 
 	function show_form(theRole: string, action: string): void {
 		form_id = action + '_' + theRole;
@@ -46,7 +45,7 @@
 				</span>
 			</div>
 		</Col>
-		{#if ClientPermControl(perms, user.email, 'team', team, 'update')}
+		{#if ClientPermControl(user.perms, user.email, 'team', team, 'update')}
 			<Col xs="4" class="d-flex justify-content-end">
 				{#if mouseover_objid === aRole}
 					<a class="btn btn-sm" href={'#'} on:click|preventDefault={() => show_form(aRole, 'add')}>
@@ -74,7 +73,7 @@
 			</Col>
 		{/if}
 	</Row>
-	{#if ClientPermControl(perms, user.email, 'team', team, 'update')}
+	{#if ClientPermControl(user.perms, user.email, 'team', team, 'update')}
 		<Row>
 			<Col xs="12">
 				{#if form_id === `add_${aRole}`}
@@ -148,7 +147,7 @@
 					{#each team.tmap[aRole] as aMember (aMember.uid)}
 						<Badge pill color="info" class="kfk-role-member-tag">
 							{aMember.dname} &lt;{aMember.uid}&gt;
-							{#if ClientPermControl(perms, user.email, 'team', team, 'update')}
+							{#if ClientPermControl(user.perms, user.email, 'team', team, 'update')}
 								<a
 									href={'#'}
 									on:click|preventDefault={() => {

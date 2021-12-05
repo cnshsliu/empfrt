@@ -1,9 +1,6 @@
-@import '@fontsource/fira-mono';
-
 :root {
 	font-family: Arial, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
 		Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-	--font-mono: 'Fira Mono', monospace;
 	--pure-white: #ffffff;
 	--primary-color: #b9c6d2;
 	--secondary-color: #d0dde9;
@@ -156,6 +153,7 @@ input::placeholder {
 	position: absolute;
 	z-index: 999;
 	width: 100%;
+	background-color: rgba(255, 255, 255, 0.5);
 }
 .whiteback {
 	background-color: rgba(255, 255, 255, 0.5);
@@ -2028,8 +2026,11 @@ div.pbo {
 	width: 100%;
 	border: 0px solid;
 }
-.kfk-kvar-value-display {
+.kfk-kvar-key-display {
 	font-weight: bold;
+}
+.kfk-kvar-value-display {
+	font-weight: normal;
 }
 .kfk-code-input {
 	min-height: calc(20em + 0.75rem + 2px) !important;
@@ -2048,10 +2049,13 @@ div.pbo {
 	border-bottom-style: solid;
 	border-bottom: 1px dotted #6666ff;
 }
+.kfk-navmenu {
+	background-color: rgba(0, 0, 255, 0.2);
+}
 .kfk-lastdays {
 	font-size: 24px;
-	color: #666666;
 }
+color: #666666;
 .kfk-fade {
 	position: absolute;
 	z-index: 1000;
@@ -2105,6 +2109,9 @@ div.pbo {
 	border-radius: 5px;
 	background-color: rgba(255, 255, 255, 0.3);
 }
+.kfk-work-kvars {
+	background-color: rgba(0, 0, 255, 0.1);
+}
 .bd-callout-info {
 	border-left-color: #5bc0de;
 }
@@ -2119,4 +2126,12 @@ div.pbo {
 .bd-masthead {
 	padding: 3rem 0;
 	background: linear-gradient(165deg, #f7f5fb 50%, #fff 50%);
+}
+.emp-footer-link {
+	color: rgba(0, 0, 0, 0.8);
+}
+.emp-footer {
+	margin-top: 100px;
+	background-color: rgba(0, 0, 255, 0.05);
+	min-height: 400px;
 }

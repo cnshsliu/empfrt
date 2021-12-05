@@ -17,7 +17,6 @@
 <script lang="ts">
 	import { API_SERVER } from '$lib/Env';
 	import type { User, Team } from '$lib/types';
-	import jQuery from 'jquery';
 	import { TabContent, TabPane } from 'sveltestrap';
 	import RolePreview from './_RolePreview.svelte';
 	import { scale } from 'svelte/transition';
@@ -33,7 +32,6 @@
 	export let mouseover_objid: string = '';
 
 	export let newrole = '';
-	const jq = jQuery;
 
 	//$title = team.teamid;
 	$title = 'HyperFlow';
@@ -105,6 +103,13 @@
 			goto('/team', { replaceState: false });
 		}, 1);
 	}
+	function removeElementsByClass(className) {
+		const elements = document.getElementsByClassName(className);
+		while (elements.length > 0) {
+			elements[0].parentNode.removeChild(elements[0]);
+		}
+	}
+
 	function export_team() {
 		if (export_to_filename.endsWith('.csv'))
 			export_to_filename = export_to_filename.substring(0, export_to_filename.lastIndexOf('.csv'));
@@ -116,7 +121,7 @@
 			)
 			.then((response) => {
 				const url = window.URL.createObjectURL(new Blob([response]));
-				jq('.tempLink').remove();
+				removeElementsByClass('tempLink');
 				const link = document.createElement('a');
 				link.href = url;
 				link.setAttribute('download', `${export_to_filename}.csv`); //or any other extension

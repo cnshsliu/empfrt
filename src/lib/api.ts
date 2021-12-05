@@ -13,7 +13,7 @@ async function send({ method, path, data = null, token = null }) {
 		opts.headers['Content-Type'] = 'application/json';
 		opts.body = JSON.stringify(data);
 	}
-	console.debug(path, opts.body);
+	//console.debug(path, opts.body);
 
 	if (token) {
 		opts.headers['Authorization'] = token;

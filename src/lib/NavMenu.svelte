@@ -17,9 +17,6 @@
 		Col,
 		Icon,
 		Navbar,
-		NavbarToggler,
-		NavbarBrand,
-		Collapse,
 		Nav,
 		NavItem,
 		NavLink,
@@ -48,7 +45,7 @@
 
 	export let user;
 	user = $session.user;
-	let menu_class = 'light kfknavbar bg-info sticky-top';
+	let menu_class = 'light kfk-navmenu tnt-navmenu sticky-top';
 </script>
 
 {#if $session.user && $session.user.tenant && $session.user.tenant.css}
@@ -60,7 +57,9 @@
 			<div class="d-inline-block col-6 p-0 ml-3">
 				<div class="kfk-org-logo org-logo" />
 			</div>
-			<div class="d-inline-block col-6 mx-1 align-self-center">
+			<div
+				class="d-inline-block col-6 mx-1 align-self-center kfk-header-username tnt-header-username"
+			>
 				{$session.user ? $session.user.username : 'Metatocome'}
 			</div>
 		</div>

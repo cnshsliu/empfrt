@@ -1,5 +1,7 @@
 <script context="module" lang="ts">
+	let TimeTool = null;
 	export async function load({ page, fetch, session }) {
+		TimeTool = (await import('$lib/TimeTool')).default;
 		const res = await fetch('/team.json');
 
 		return {
@@ -222,7 +224,7 @@
 <Container class="mt-3">
 	<Row class="mt-3">
 		<Col>
-			<RemoteTable endpoint="team/search" {token} {user} bind:this={remoteTable} />
+			<RemoteTable endpoint="team/search" {token} {user} bind:this={remoteTable} {TimeTool} />
 		</Col>
 	</Row>
 </Container>

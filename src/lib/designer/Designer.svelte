@@ -13,8 +13,6 @@
 	import Sub from '$lib/designer/prop/Sub.svelte';
 	import Connect from '$lib/designer/prop/Connect.svelte';
 	import KFK from '$lib/designer/KFK';
-	import { scale } from 'svelte/transition';
-	import { flip } from 'svelte/animate';
 	import { onMount, onDestroy } from 'svelte';
 	import {
 		Container,
@@ -34,13 +32,12 @@
 	export let template: Template;
 	export let workflow: Workflow;
 	export let tpl_mode: string;
-	let theKFK: KFKclass;
 
 	let jQuery: any;
 	let jq: any;
 	let jqueryui: any;
 	let that = this;
-	let currentTool = KFK.tool;
+	let currentTool = 'POINTER';
 	let kvarsArr: KvarInput[];
 	let errMsg = '';
 	let roleOptions = [];
@@ -69,7 +66,7 @@
 	};
 	const setConnectProperties = async () => {
 		toggle();
-		await theKFK.setConnectProperties(nodeInfo.theConnect, nodeInfo.caseValue);
+		await KFK.setConnectProperties(nodeInfo.theConnect, nodeInfo.caseValue);
 	};
 
 	const setNodeProperties = async () => {
@@ -90,7 +87,7 @@
 			}
 		}
 		toggle();
-		theKFK.setNodeProperties(nodeInfo.jqDiv, nodeInfo.nodeProps);
+		KFK.setNodeProperties(nodeInfo.jqDiv, nodeInfo.nodeProps);
 	};
 	export function designerCallback(cmd: string, args: any): void {
 		switch (cmd) {
@@ -139,8 +136,11 @@
 		const jqModule = await import('jquery');
 		jQuery = jqModule.default;
 		jq = jQuery;
-		const module = await import('jquery-ui-dist/jquery-ui');
+		/* The next several lines of codes make draggalbe/resizeable availabe for jQuery */
+		/* jquery-ui-1.13.0.custom is customized on website https://jqueryui.com/download/ */
+		const module = await import('$lib/../../thirdparty/jquery-ui-1.13.0.custom/jquery-ui.min.js');
 		jqueryui = module.default;
+		/* jquery-ui import finished */
 		KFK.designerCallback = designerCallback;
 		KFK.init($session.user);
 		//console.log(workflow);
@@ -155,24 +155,24 @@
 			designerSetTool('POINTER');
 			await KFK.loadWorkflowDoc(workflow);
 		}
-		theKFK = KFK;
-		theKFK.addDocumentEventHandler(true);
+		KFK.addDocumentEventHandler(true);
+		currentTool = KFK.tool;
 	});
 
 	export async function changeViewMode(tpl_mode: string) {
-		await theKFK.loadTemplateDoc(template, tpl_mode);
+		await KFK.loadTemplateDoc(template, tpl_mode);
 	}
 	export async function loadTemplate(tpl: Template, tpl_mode: string) {
 		template = tpl;
 		console.log('loadTemplate ', tpl_mode);
-		await theKFK.loadTemplateDoc(template, tpl_mode);
+		await KFK.loadTemplateDoc(template, tpl_mode);
 	}
 
 	export function documentEventOff() {
 		jq(document).off();
 	}
 	export function documentEventOn() {
-		theKFK.addDocumentEventHandler(true);
+		KFK.addDocumentEventHandler(true);
 	}
 	onDestroy(async () => {
 		jq(document).off();

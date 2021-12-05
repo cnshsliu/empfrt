@@ -33,7 +33,6 @@
 	import { API_SERVER } from '$lib/Env';
 	import type { User, Template, Team } from '$lib/types';
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
-	import jQuery from 'jquery';
 	import { get } from 'svelte/store';
 	import { ClientPermControl } from '$lib/clientperm';
 	import Parser from '$lib/parser';
@@ -48,8 +47,6 @@
 	export let tplid;
 	export let template: Template;
 	export let tpl_mode: string;
-
-	const jq = jQuery;
 
 	$title = template.tplid;
 	let Designer: any;
@@ -128,12 +125,20 @@
 			goto('/template', { replaceState: false });
 		}, 1);
 	}
+
+	function removeElementsByClass(className) {
+		const elements = document.getElementsByClassName(className);
+		while (elements.length > 0) {
+			elements[0].parentNode.removeChild(elements[0]);
+		}
+	}
+
 	function export_template() {
 		if (export_to_filename.endsWith('.xml'))
 			export_to_filename = export_to_filename.substring(0, export_to_filename.lastIndexOf('.xml'));
 		api.post('template/download', { tplid: template.tplid }, user.sessionToken).then((response) => {
 			const url = window.URL.createObjectURL(new Blob([response]));
-			jq('.tempLink').remove();
+			removeElementsByClass('tempLink');
 			const link = document.createElement('a');
 			link.href = url;
 			link.setAttribute('download', `${export_to_filename}.xml`); //or any other extension

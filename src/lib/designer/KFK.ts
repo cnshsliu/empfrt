@@ -1,11 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
-import { SVG } from '@svgdotjs/svg.js';
 import suuid from 'short-uuid';
 import Parser from '$lib/parser';
-import jQuery from 'jquery';
-import lodash from 'lodash';
-import { unzipit } from '$lib/gzip';
 import cocoConfig from './cococonfig';
 import APP from './appConfig';
 import { Buffer } from 'buffer';
@@ -14,7 +10,6 @@ import NodeController from './NodeController';
 import RegHelper from './RegHelper';
 import * as api from '$lib/api';
 import type { NodePropJSON } from '$lib/types';
-
 declare global {
 	interface Array<T> {
 		remove(elem: T): Array<T>;
@@ -29,6 +24,17 @@ declare global {
 	}
 }
 
+/* const SVG = async () => {
+	await import('@svgdotjs/svg.js');
+}; */
+let SVG = null;
+let jQuery = null;
+let $ = null;
+import('@svgdotjs/svg.js').then((pack) => {
+	SVG = pack.SVG;
+	console.log('SVG just loaded');
+});
+
 if (!Array.prototype.remove) {
 	Array.prototype.remove = function <T>(this: T[], elem: T): T[] {
 		return this.filter((e) => e !== elem);
@@ -40,11 +46,6 @@ if (!Array.prototype.clear) {
 	};
 }
 
-const $ = jQuery;
-if (typeof window !== 'undefined') {
-	window.jQuery = jQuery;
-	window.$ = jQuery;
-}
 type Point = {
 	x: number;
 	y: number;
@@ -265,7 +266,6 @@ class KFKclass {
 	currentMousePos: Point = { x: -1, y: -1 };
 	JCBKG: any = null;
 	hoveredConnectId: string = null;
-	imagesLoaded: boolean = false;
 	tmpPos: Position = null;
 	shapeToRemember: myJQuery = null;
 	polyId: string = '';
@@ -325,19 +325,30 @@ class KFKclass {
 	designerCallback = null;
 
 	constructor() {
-		this.JC1 = $('#C1');
-		this.C1 = el(this.JC1);
-		this.JCBKG = $('#containerbkg');
-		this.PageWidth = 840 * 2;
-		this.PageHeight = 600 * 2;
-		this.PageNumberHori = 2;
-		this.PageNumberVert = 2;
-		this.LeftB = this.PageWidth;
-		this.TopB = this.PageHeight;
-		this._width = this.PageWidth * this.PageNumberHori;
-		this._height = this.PageHeight * this.PageNumberVert;
-		this.scrollContainer = $('#S1');
-		this.designerCallback = null;
+		let that = this;
+		import('jquery').then((pack) => {
+			console.log('imported jquery');
+			jQuery = pack.default;
+			$ = jQuery;
+			console.log('jQuery just loaded');
+			if (typeof window !== 'undefined') {
+				window.jQuery = jQuery;
+				window.$ = jQuery;
+			}
+			this.JC1 = $('#C1');
+			this.C1 = el(this.JC1);
+			this.JCBKG = $('#containerbkg');
+			this.PageWidth = 840 * 2;
+			this.PageHeight = 600 * 2;
+			this.PageNumberHori = 2;
+			this.PageNumberVert = 2;
+			this.LeftB = this.PageWidth;
+			this.TopB = this.PageHeight;
+			this._width = this.PageWidth * this.PageNumberHori;
+			this._height = this.PageHeight * this.PageNumberVert;
+			this.scrollContainer = $('#S1');
+			this.designerCallback = null;
+		});
 	}
 
 	// eslint-disable-next-line
@@ -520,10 +531,6 @@ class KFKclass {
 	getNodeLinkIds(jq1: myJQuery, direction: string): string[] {
 		const linksStr: string = jq1.attr(direction);
 		const linksArr: string[] = KFKclass.stringToArray(linksStr);
-		//过滤掉不存在的节点
-		// linksArr = linksArr.filter((aId) => {
-		//   return $(`#${aId}`).length > 0;
-		// })
 		return linksArr;
 	}
 
@@ -623,41 +630,10 @@ class KFKclass {
 		const that = this;
 		if (that.isEditting || that.resizing || that.dragging) return;
 		return;
-		if (that.JC3) {
-			console.log(new Error().stack);
-			const pos = that.getScrollPos();
-			console.log('scrollToPos', pos);
-			that.JC3.attr('tabIndex', '0');
-			that.JC3.focus();
-			that.scrollToPos(pos);
-		} else {
-			that.warn('focusOnC3 failed. not exist');
-		}
 	}
 
 	myuid() {
 		return suuid.generate();
-	}
-
-	loadImages() {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		if (that.imagesLoaded) return;
-		let loadedImages = 0;
-		const numImages = assetIcons.length;
-		for (let i = 0; i < assetIcons.length; i++) {
-			const imgKey = assetIcons[i];
-			that.images[imgKey] = new Image();
-			that.images[imgKey].onload = function () {
-				if (++loadedImages >= numImages) {
-					that.imagesLoaded = true;
-					that.debug('[Loaded] images fully loaded');
-				}
-			};
-			const imgurl = cocoConfig.frontend.url + '/assets/' + imgKey + '.svg';
-			that.images[imgKey].src = imgurl;
-		}
-		// that.images["toggle_line"].src = that.images["line"].src;
 	}
 
 	setNodeLabel(jqDIV: myJQuery, label: string) {
@@ -730,7 +706,7 @@ class KFKclass {
 			let linkHtml = `<div class="link" from="${aConnect.attr('fid')}" to="${aConnect.attr(
 				'tid'
 			)}"></div>`;
-			if (lodash.isEmpty(aConnect.attr('case')) === false) {
+			if (Parser.isEmpty(aConnect.attr('case')) === false) {
 				linkHtml = `<div class="link" from="${aConnect.attr('fid')}" to="${aConnect.attr(
 					'tid'
 				)}" case="${aConnect.attr('case')}"></div>`;
@@ -745,199 +721,22 @@ class KFKclass {
 	onChange(reason: string) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		console.log('onChange', reason);
 		that.templateChangeTimer && clearTimeout(that.templateChangeTimer);
 		const tpldoc = that.drawingToTemplateDoc();
-		console.log(tpldoc);
 		that.template.doc = tpldoc;
 		that.designerCallback('setTemplate', that.template);
 
 		that.templateChangeTimer = setTimeout(async () => {
-			console.log('saving...');
+			console.log('auto saving..., onChange', reason);
 			//eslint-disable-next-line
 			//Client.putTemplate(tpldoc);
 			const token = that.user.sessionToken;
 			const ret = await api.post('template/put', { doc: that.template.doc }, token);
 			//return ret.data;
-			console.log(ret);
+			//console.log(ret);
 
 			that.templateChangeTimer = undefined;
-		}, 2000);
-	}
-
-	/**
-	 * syncPropertyToNode.
-	 * Sync the APP data to node properties
-	 *
-	 * @param {} jqDIV, if not set, use currentJqNode, if not set then, do nothing
-	 */
-	syncPropertyToNode(reason: string) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		if (that.tpl_mode !== 'edit') return;
-		//如果连当前的也不存在，就要返回
-		if (KFKclass.NotSet(that.currentJqNode)) return;
-		const jqDIV = that.currentJqNode;
-		//是否属性有变化
-		let dirtyCount = 0;
-		if (jqDIV.hasClass('ACTION')) {
-			dirtyCount += that.setNodeLabel(jqDIV, that.APP.node.ACTION.label);
-			dirtyCount += that.setNodeId(jqDIV, that.APP.node.ACTION.id);
-			let theRole = jqDIV.attr('role');
-			theRole = theRole ? theRole.trim() : '';
-			if (
-				theRole !== that.APP.node.ACTION.role.trim() &&
-				that.APP.node.ACTION.role.trim() !== 'DEFAULT' &&
-				NotBlank(that.APP.node.ACTION.role.trim())
-			) {
-				jqDIV.attr('role', that.APP.node.ACTION.role.trim());
-				console.log('Dirty: role changed');
-				dirtyCount += 1;
-			}
-			const appData_kvars = that.APP.node.ACTION.kvars.trim();
-			let codeInBase64 = '';
-			if (NotBlank(appData_kvars)) {
-				try {
-					//let json = JSON.parse(appData_kvars);
-					codeInBase64 = that.codeToBase64(appData_kvars);
-				} catch (error) {
-					codeInBase64 = 'ERROR';
-				}
-			}
-			if (codeInBase64 === 'ERROR') {
-				console.log('JSON format error:', appData_kvars);
-			} else {
-				if (jqDIV.find('.kvars').length > 0) {
-					if (jqDIV.find('.kvars').first().text().trim() !== codeInBase64) {
-						console.log('Dirty: kvars changed');
-						dirtyCount += 1;
-						jqDIV.find('.kvars').first().prop('innerText', codeInBase64);
-					}
-				} else {
-					jqDIV.append('<div class="kvars">' + codeInBase64 + '</div>');
-					console.log('Dirty: append kvars');
-					dirtyCount += 1;
-				}
-			}
-
-			const appData_katts = that.APP.node.ACTION.katts.trim();
-			codeInBase64 = '';
-			if (NotBlank(appData_katts)) {
-				try {
-					//let json = JSON.parse(appData_katts);
-					codeInBase64 = that.codeToBase64(appData_katts);
-				} catch (error) {
-					codeInBase64 = 'ERROR';
-				}
-			}
-			if (codeInBase64 === 'ERROR') {
-				console.log('JSON format error:', appData_katts);
-			} else {
-				if (jqDIV.find('.katts').length > 0) {
-					if (jqDIV.find('.katts').first().text().trim() !== codeInBase64) {
-						console.log('Dirty: katts changed');
-						dirtyCount += 1;
-						jqDIV.find('.katts').first().prop('innerText', codeInBase64);
-					}
-				} else {
-					jqDIV.append('<div class="katts">' + codeInBase64 + '</div>');
-					console.log('Dirty: append katts');
-					dirtyCount += 1;
-				}
-			}
-		} else if (jqDIV.hasClass('SCRIPT')) {
-			dirtyCount += that.setNodeId(jqDIV, that.APP.node.SCRIPT.id);
-			dirtyCount += that.setNodeLabel(jqDIV, that.APP.node.SCRIPT.label);
-			const appData_code = that.APP.node.SCRIPT.code.trim();
-			let codeInBase64 = '';
-			if (NotBlank(appData_code)) {
-				codeInBase64 = that.codeToBase64(appData_code);
-			}
-			if (jqDIV.find('code').length > 0) {
-				if (jqDIV.find('code').first().text().trim() !== codeInBase64) {
-					console.log('Dirty: code changed');
-					dirtyCount += 1;
-					jqDIV.find('code').prop('innerText', codeInBase64);
-				}
-			} else {
-				jqDIV.append('<code>' + codeInBase64 + '</code>');
-				console.log('Dirty: append code');
-				dirtyCount += 1;
-			}
-		} else if (jqDIV.hasClass('INFORM')) {
-			dirtyCount += that.setNodeLabel(jqDIV, that.APP.node.INFORM.label);
-			const subject = that.APP.node.INFORM.subject.trim();
-			const content = that.APP.node.INFORM.content.trim();
-			let node_subject = '';
-			let node_content = '';
-			let theRole = jqDIV.attr('role');
-			theRole = theRole ? theRole.trim() : '';
-			if (
-				theRole !== that.APP.node.INFORM.role.trim() &&
-				that.APP.node.INFORM.role.trim() !== 'DEFAULT' &&
-				NotBlank(that.APP.node.INFORM.role.trim())
-			) {
-				jqDIV.attr('role', that.APP.node.INFORM.role.trim());
-				console.log('Dirty: role changed');
-				dirtyCount += 1;
-			}
-			if (jqDIV.find('subject').length > 0) {
-				node_subject = jqDIV.find('subject').first().text().trim();
-				if (node_subject !== subject) {
-					dirtyCount += 1;
-					console.log('Dirty: subject changed');
-					jqDIV.find('subject').prop('innerText', subject);
-				}
-			} else {
-				jqDIV.append('<subject>' + subject + '</subject>');
-				console.log('Dirty: append subject');
-				dirtyCount += 1;
-			}
-			if (jqDIV.find('content').length > 0) {
-				node_content = jqDIV.find('content').first().text().trim();
-				if (node_content !== content) {
-					dirtyCount += 1;
-					console.log('Dirty: content changed');
-					jqDIV.find('content').prop('innerText', content);
-				}
-			} else {
-				jqDIV.append('<content>' + content + '</content>');
-				console.log('Dirty: append content');
-				dirtyCount += 1;
-			}
-		} else if (jqDIV.hasClass('TIMER')) {
-			dirtyCount += that.setNodeLabel(jqDIV, that.APP.node.TIMER.label);
-			const appData_code = that.APP.node.TIMER.code.trim();
-			if (jqDIV.find('code').length > 0) {
-				if (jqDIV.find('code').first().text().trim() !== appData_code) {
-					console.log('Dirty: code changed');
-					dirtyCount += 1;
-					jqDIV.find('code').prop('innerText', appData_code);
-				}
-			} else {
-				jqDIV.append('<code>' + appData_code + '</code>');
-				console.log('Dirty: append code');
-				dirtyCount += 1;
-			}
-		} else if (jqDIV.hasClass('SUB')) {
-			dirtyCount += that.setNodeId(jqDIV, that.APP.node.SUB.id);
-			dirtyCount += that.setNodeLabel(jqDIV, that.APP.node.SUB.label);
-			const appData_sub = that.APP.node.SUB.sub.trim();
-			if (jqDIV.attr('sub')) {
-				if (jqDIV.attr('sub').trim() !== appData_sub) {
-					console.log('Dirty: sub changed');
-					dirtyCount += 1;
-					jqDIV.attr('sub', appData_sub);
-				}
-			}
-		} else {
-			console.warn(jqDIV.attr('class'), 'syncPropertyToNode not implemented. maybe not necessary');
-		}
-		if (dirtyCount > 0) {
-			//属性有变化，则出发保存
-			console.log(reason);
-			that.onChange('Property Changed');
-		}
+		}, 1000);
 	}
 
 	/**
@@ -1204,7 +1003,7 @@ ret='DEFAULT'; `
 
 	async setConnectProperties(theConnect, caseValue) {
 		let tmp = caseValue.trim();
-		caseValue = lodash.isEmpty(tmp) ? '' : tmp;
+		caseValue = Parser.isEmpty(tmp) ? '' : tmp;
 		await this.setConnectText(theConnect, caseValue);
 	}
 
@@ -1281,31 +1080,6 @@ ret='DEFAULT'; `
 				}
 			);
 		}, staytime);
-	}
-
-	getConnectorPoints(from: Point, to: Point, rad: number) {
-		const dx = to.x - from.x;
-		const dy = to.y - from.y;
-		const angle = Math.atan2(-dy, dx);
-
-		const radius = rad;
-
-		return [
-			from.x + -radius * Math.cos(angle + Math.PI),
-			from.y + radius * Math.sin(angle + Math.PI),
-			to.x + -radius * Math.cos(angle),
-			to.y + radius * Math.sin(angle)
-		];
-	}
-
-	replaceNodeInSelectedDIVs(jqDIV: myJQuery) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		for (let i = 0; i < that.selectedDIVs.length; i++) {
-			if (that.selectedDIVs[i].attr('id') === jqDIV.attr('id')) {
-				that.selectedDIVs[i] = jqDIV;
-			}
-		}
 	}
 
 	calculateNodeConnectPoints(jqDIV: myJQuery) {
@@ -1451,15 +1225,6 @@ ret='DEFAULT'; `
 		await that.procLinkNode(shiftKey);
 	}
 
-	async yarkJumpNode(jqDIV: myJQuery) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		if (that.shapeDragging) return;
-		if (that.nodeLocked(jqDIV)) return;
-		that.jumpNodes.push(jqDIV);
-		await that.procJumpNode();
-	}
-
 	cancelLinkNode() {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -1518,22 +1283,6 @@ ret='DEFAULT'; `
 				that.linkPosNode.splice(1, 1);
 			}
 		}
-	}
-
-	async procJumpNode() {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		if (that.jumpNodes.length < 2) {
-			that.showNodeMessage(that.jumpNodes[0], '起始节点，请选择跳往节点');
-			return;
-		} else if (that.jumpNodes[0].attr('id') === that.jumpNodes[1].attr('id')) {
-			that.jumpNodes.splice(1, 1);
-			return;
-		}
-		that.showNodeMessage(that.jumpNodes[1], '点原节点右上角跳转，或按f，即可跳转到这里');
-		that.jumpNodes[0].attr('jump', that.jumpNodes[1].attr('id'));
-		that.jumpNodes.splice(0, 2);
-		that.setTool('POINTER');
 	}
 
 	clearNodeMessage() {
@@ -1744,154 +1493,6 @@ ret='DEFAULT'; `
 		});
 	}
 
-	closePolyPoint() {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		that.polyId = undefined;
-		that.drawPoints.splice(0, that.drawPoints.length);
-
-		that.addShapeEventListner(that.polyShape);
-		that.setShapeToRemember(that.polyShape);
-
-		that.APP.setData('show', 'shape_property', true);
-		that.APP.setData('show', 'customshape', false);
-		that.APP.setData('show', 'customline', true);
-		that.APP.setData('show', 'custombacksvg', false);
-		that.APP.setData('show', 'customfont', false);
-		that.APP.setData('show', 'layercontrol', false);
-
-		that.pickedShape = that.polyShape;
-		//const _color = that.polyShape.attr('origin-color');
-		const width = that.polyShape.attr('origin-width');
-		//let linecap = that.polyShape.attr('stroke-linecap');
-		//$('#lineColor').spectrum('set', color);
-		$('#spinner_line_width').spinner('value', width);
-	}
-
-	yarkShapePoint(x: number, y: number) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		if (that.shapeDragging) return;
-		if (that.isFreeHandDrawing) return;
-
-		//如果这是划线时，所点的第二个点(此时，开始画线)
-		if (that.drawMode === 'line' && that.drawPoints.length === 1) {
-			//如果按着alt键，则应该画直线
-			if (that.KEYDOWN.alt) {
-				//如果更起始点的x距离比y距离更小，则画垂直线，否则画水平线
-				if (Math.abs(x - that.drawPoints[0].center.x) < Math.abs(y - that.drawPoints[0].center.y)) {
-					//画垂直线(x相等)
-					x = that.drawPoints[0].center.x;
-				} else {
-					//画水平线(y相等)
-					y = that.drawPoints[0].center.y;
-				}
-			}
-		}
-		that.drawPoints.push({
-			type: 'point',
-			center: {
-				x: x,
-				y: y
-			},
-			points: [
-				{
-					x: x,
-					y: y
-				}
-			]
-		});
-		that.procDrawShape();
-	}
-
-	svgDrawPoly(shapeType: string, id: string, option: any) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		const shapeClass = 'kfkshape';
-		const shapeId = 'shape_' + id;
-		let theShape = that.svgDraw.findOne(`.${shapeId}`);
-		try {
-			theShape.remove();
-		} catch (error) {} //eslint-disable-line
-
-		const arr = [];
-		for (let i = 0; i < that.drawPoints.length; i++) {
-			arr.push([that.drawPoints[i].center.x, that.drawPoints[i].center.y]);
-		}
-		if (shapeType === 'polyline') theShape = that.svgDraw.polyline(arr).fill('none').stroke(option);
-		else theShape = that.svgDraw.polygon(arr).fill('none').stroke(option);
-
-		theShape.attr('id', shapeId);
-		theShape
-			.addClass(shapeClass)
-			.addClass(shapeId)
-			.addClass('kfk' + shapeType)
-			.stroke(option);
-		theShape.attr('shapetype', shapeType);
-		theShape.attr('origin-width', option.width);
-		theShape.attr('origin-color', option.color);
-		// that.addShapeEventListner(theShape);
-		return theShape;
-	}
-
-	procDrawShape() {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		if (that.drawPoints.length < 2) {
-			return;
-		} else {
-			if (that.tempShape) that.tempShape.hide();
-			that.lineTemping = false;
-		}
-		if (['line', 'rectangle', 'ellipse'].indexOf(that.drawMode) >= 0)
-			that.justCreatedShape = that.svgDrawShape(
-				that.drawMode,
-				that.myuid(),
-				that.drawPoints[0].center.x,
-				that.drawPoints[0].center.y,
-				that.drawPoints[1].center.x,
-				that.drawPoints[1].center.y,
-				{
-					color: that.YIQColorAux || that.APP.model.svg[that.drawMode].color,
-					width: that.APP.model.svg[that.drawMode].width,
-					linecap: that.APP.model.svg[that.drawMode].linecap ? 'round' : 'square'
-				}
-			);
-		else if (['polyline', 'polygon'].indexOf(that.drawMode) >= 0) {
-			if (that.polyId === undefined) {
-				that.polyId = that.myuid();
-			}
-			that.justCreatedShape = that.svgDrawPoly(that.drawMode, that.polyId, {
-				color: that.YIQColorAux || that.APP.model.svg[that.drawMode].color,
-				width: that.APP.model.svg[that.drawMode].width,
-				linecap: that.APP.model.svg[that.drawMode].linecap ? 'round' : 'square'
-			});
-			that.polyShape = that.justCreatedShape;
-		}
-
-		const theShape = that.justCreatedShape;
-		that.setShapeToRemember(theShape);
-
-		that.APP.setData('show', 'shape_property', true);
-		that.APP.setData('show', 'customshape', false);
-		that.APP.setData('show', 'customline', true);
-		that.APP.setData('show', 'custombacksvg', false);
-		that.APP.setData('show', 'customfont', false);
-		that.APP.setData('show', 'layercontrol', false);
-
-		that.pickedShape = theShape;
-		//const color = theShape.attr('stroke');
-		const width = theShape.attr('origin-width');
-		//let linecap = theShape.attr('stroke-linecap');
-		//eslint-disable-next-line
-		//$('#lineColor').spectrum('set', color);
-		$('#spinner_line_width').spinner('value', width);
-
-		if (['line', 'rectangle', 'ellipse'].indexOf(that.drawMode) >= 0) {
-			that.drawPoints.splice(0, 2);
-		}
-	}
-
 	addLinkTo(jq1: myJQuery, jq2: myJQuery) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -1945,28 +1546,6 @@ ret='DEFAULT'; `
 				const arr = KFKclass.stringToArray(jqConnectFrom.attr('linkto'));
 				if (arr.indexOf(myId) >= 0) ret.push(jqConnectFrom);
 			}
-		});
-		return ret;
-	}
-
-	/**
-	 * 获得一个节点的所有子节点
-	 * @param jq 父节点
-	 * @return 所有子节点
-	 */
-	getChildren(jq: myJQuery) {
-		const str = jq.attr('linkto');
-		if (KFKclass.NotSet(str)) return [];
-		let arr = KFKclass.stringToArray(str);
-		arr = arr.filter((id) => {
-			if ($('#' + id).length > 0) {
-				return true;
-			} else {
-				return false;
-			}
-		});
-		const ret = arr.map((id) => {
-			return $('#' + id);
 		});
 		return ret;
 	}
@@ -2240,15 +1819,6 @@ ret='DEFAULT'; `
 			console.error(error);
 		}
 
-		/* try {
-			//dblclick to edit
-			jqNodeDIV.dblclick(async function (evt: MouseEvent) {
-				await that.procNodeDoubleClick(evt, jqNodeDIV);
-			});
-		} catch (error) {
-			console.error(error);
-		} */
-
 		if (callback) await callback();
 	}
 
@@ -2358,11 +1928,6 @@ ret='DEFAULT'; `
 		});
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	async makeImageDiv(_fileId: string, _x: number, _y: number, _url: string) {
-		console.log('makeImageDiv not implemented');
-	}
-
 	async placeNodeOnClick(evt: MouseEvent) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -2397,155 +1962,40 @@ ret='DEFAULT'; `
 			// return;
 		}
 
-		//place image, place material
-		if (that.tool === 'material' && that.materialPicked) {
-			const fileId = that.myuid();
-
-			await that.makeImageDiv(
-				fileId,
-				that.scalePoint(that.scrXToJc3X(evt.clientX)),
-				that.scalePoint(that.scrYToJc3Y(evt.clientY)),
-				that.materialPicked.url
+		if (that.selectedDIVs.length > 0 || that.selectedShapes.length > 0) {
+			if (that.duringKuangXuan === false) that.cancelAlreadySelected();
+		}
+		if (cocoConfig.node[that.tool]) {
+			const variant = 'default';
+			const realX = that.scalePoint(that.scrXToJc3X(evt.clientX));
+			const realY = that.scalePoint(that.scrYToJc3Y(evt.clientY));
+			const jqDIV = await that.placeNode(
+				evt.shiftKey,
+				that.myuid(),
+				that.tool,
+				variant,
+				realX,
+				realY,
+				undefined,
+				undefined,
+				'',
+				''
 			);
-			return;
-		} else if (
-			that.tool === 'line' &&
-			that.isFreeHandDrawing === false &&
-			IsFalse(that.isZoomingShape) &&
-			that.pmsOk('C') === true
-		) {
-			// console.log("yarkShapePoint");
-			that.yarkShapePoint(
-				that.scalePoint(that.scrXToJc3X(evt.clientX)),
-				that.scalePoint(that.scrYToJc3Y(evt.clientY))
-			);
-			return;
-		} else {
-			if (that.selectedDIVs.length > 0 || that.selectedShapes.length > 0) {
-				if (that.duringKuangXuan === false) that.cancelAlreadySelected();
-			}
-			if (cocoConfig.node[that.tool]) {
-				const variant = 'default';
-				const realX = that.scalePoint(that.scrXToJc3X(evt.clientX));
-				const realY = that.scalePoint(that.scrYToJc3Y(evt.clientY));
-				const jqDIV = await that.placeNode(
-					evt.shiftKey,
-					that.myuid(),
-					that.tool,
-					variant,
-					realX,
-					realY,
-					undefined,
-					undefined,
-					'',
-					''
-				);
-				that.focusOnNode(jqDIV);
-				that.yarkOpHistory({
-					obj: 'node',
-					from: null,
-					to: jqDIV.clone()
-				});
-				that.onChange('New Node');
-			} else if (that.tool !== 'POINTER') {
-				console.warn(that.tool, 'does not have config in cocoConfig');
-			}
+			that.focusOnNode(jqDIV);
+			that.yarkOpHistory({
+				obj: 'node',
+				from: null,
+				to: jqDIV.clone()
+			});
+			that.onChange('New Node');
+		} else if (that.tool !== 'POINTER') {
+			console.warn(that.tool, 'does not have config in cocoConfig');
 		}
 
 		evt.stopImmediatePropagation();
 		evt.stopPropagation();
 		evt.preventDefault();
 	}
-
-	/*
-toggleOverview (jc3MousePos) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-  if (that.inPresentingMode) return;
-  const main = $("#C1");
-  const scroller = $("#S1");
-  const scrCenter = that.scrCenter();
-  const window_width = scrCenter.x * 2;
-  const window_height = scrCenter.y * 2;
-  that.APP.setData("show", "actionlog", false);
-  if (that.inOverviewMode === true) {
-    that.scrLog("");
-    that.restoreDIVsWithStatus([
-      "#containerbkg",
-      "#minimap",
-      "#docHeaderInfo",
-      "#rtcontrol",
-      "#leftPanel",
-      "#rightPanel",
-      ".msgInputWindow",
-      "#coco_chat",
-      "#system_message",
-    ]);
-
-    that.JC3.css({
-      "transform-origin": "0px 0px",
-      "-webkit-transform-origin": "0px 0px",
-      transform: `scale(1, 1)`,
-    });
-    that.scaleRatio = 1;
-    if (jc3MousePos !== undefined) {
-      that.scrollToPos({
-        x: jc3MousePos.x - scrCenter.x + that.LeftB,
-        y: jc3MousePos.y - scrCenter.y + that.TopB,
-      });
-    }
-    that.unmaskScreen();
-    that.show(".panelSwitch");
-    that.inOverviewMode = false;
-  } else {
-    that.hideDIVsWithStatus([
-      "#containerbkg",
-      "#minimap",
-      "#docHeaderInfo",
-      "#rtcontrol",
-      "#leftPanel",
-      "#rightPanel",
-      ".msgInputWindow",
-      "#coco_chat",
-      "#system_message",
-      "#lineExpand",
-    ]);
-
-    that.scrollPosToRemember = {
-      x: scroller.scrollLeft(),
-      y: scroller.scrollTop(),
-    };
-    let scaleX = window_width / that._width;
-    let scaleY = window_height / that._height;
-    let scale = Math.min(scaleX, scaleY);
-    let scaledW = scale * that._width;
-    let scaledH = scale * that._height;
-
-    let offsetX = Math.round((window_width - scaledW) * 0.5) / scale;
-    let offsetY = Math.round((window_height - scaledH) * 0.5) / scale;
-    that.scrollToPos({
-      x: that.LeftB,
-      y: that.TopB,
-    });
-    that.JC3.css({
-      "transform-origin": "0px 0px",
-      "-webkit-transform-origin": "0px 0px",
-    });
-    that.JC3.css("transform", `scale(${scale}, ${scale})`);
-    setTimeout(function () {
-      that.JC3.css(
-        "transform",
-        `scale(${scale}, ${scale}) translate(${offsetX}px, ${offsetY}px)`
-      );
-    }, 200);
-    // main.css( "transform", `translate(${offsetX}px, ${offsetY}px)`)
-    that.hide(".panelSwitch");
-    that.inOverviewMode = true;
-    that.maskScreen();
-    that.scrLog("进入全局要览: 要看哪里, 就双击哪里吧", 1000);
-  }
-}
-*/
 
 	//create C3 create c3
 	initC3() {
@@ -2601,18 +2051,6 @@ toggleOverview (jc3MousePos) {
 			}
 			that.kuangXuanMouseIsDown = false;
 			KFKclass.hide($('.clickOuterToHide'));
-		});
-		that.JC3.keydown(function (evt: KeyboardEvent) {
-			evt.preventDefault();
-			evt.stopPropagation();
-			console.log('JC3.keydown', evt.key, that.tool, that.drawMode);
-			if (
-				(evt.key === 'Enter' || evt.key === 'Escape') &&
-				that.tool === 'line' &&
-				(that.drawMode === 'polyline' || that.drawMode === 'polygon')
-			) {
-				that.closePolyPoint();
-			}
 		});
 		//click c3
 		that.JC3.on('contextmenu', function (evt: MouseEvent) {
@@ -2744,23 +2182,6 @@ toggleOverview (jc3MousePos) {
 					);
 				}
 			}
-			if (that.tool === 'line' && that.docIsNotReadOnly()) {
-				//如果当前模式为画线,则在鼠标移动时,画出临时线
-				if (that.drawPoints.length === 1) {
-					that.lineTemping = true;
-					that.svgDrawTmpShape(
-						that.drawMode,
-						that.drawPoints[0].center.x,
-						that.drawPoints[0].center.y,
-						tmpPoint.x,
-						tmpPoint.y,
-						{
-							color: that.YIQColorAux || '#888888',
-							stroke: 10
-						}
-					);
-				}
-			}
 			if (
 				that.shapeDragging &&
 				that.docIsReadOnly() === false &&
@@ -2827,16 +2248,6 @@ toggleOverview (jc3MousePos) {
     that.MiniMap.init();
   });
   */
-	}
-
-	getImageSrc(img: string) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		if (that.APP && that.APP.images && that.APP.images[img]) {
-			return that.APP.images[img].src;
-		} else {
-			return undefined;
-		}
 	}
 
 	moveLineMoverTo(point: Point) {
@@ -2950,11 +2361,6 @@ toggleOverview (jc3MousePos) {
 		return that.APP.model.svg[shapeType];
 	}
 
-	getShapeRectFromJqObj(shape: any) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		return that.getShapeRect(SVG(shape));
-	}
 	getShapeRect(svgShape: any) {
 		const x = svgShape.x();
 		const y = svgShape.y();
@@ -3211,15 +2617,6 @@ toggleOverview (jc3MousePos) {
 		const tplLinks = that.tpl.find(`.link[from="${myId}"]`);
 		const tmpLinks = KFK.tpl.find(`.link[from="${myId}"]`);
 		const allLinks = KFK.tpl.find(`.link`);
-		console.log(
-			'tplLinks',
-			tplLinks.length,
-			'tmpLinks',
-			tmpLinks.length,
-			'allLinks',
-			allLinks.length
-		);
-		console.log(that.tpl.html());
 
 		//得到当前节点连接到的节点id列表
 		//let toIds = that.getNodeLinkIds(jqNode, "linkto");
@@ -3243,7 +2640,7 @@ toggleOverview (jc3MousePos) {
 			const toId = $(tplLinks[i]).attr('to');
 			const jqTo = $(`#${toId}`);
 			let caseValue = $(tplLinks[i]).attr('case');
-			caseValue = lodash.isEmpty(caseValue) ? '' : caseValue;
+			caseValue = Parser.isEmpty(caseValue) ? '' : caseValue;
 			const anchorPair = await that.drawConnect(
 				jqNode,
 				jqTo,
@@ -3265,7 +2662,7 @@ toggleOverview (jc3MousePos) {
 				const fromId = $(guiLinks_toMe[i]).attr('from');
 				const jqFrom = $(`#${fromId}`);
 				let caseValue = $(guiLinks_toMe[i]).attr('case');
-				caseValue = lodash.isEmpty(caseValue) ? '' : caseValue;
+				caseValue = Parser.isEmpty(caseValue) ? '' : caseValue;
 				const anchorPair = await that.drawConnect(
 					jqFrom,
 					jqNode,
@@ -3431,36 +2828,6 @@ toggleOverview (jc3MousePos) {
 		}
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	startNodeEditing_withTextArea(jqNodeDIV: myJQuery, _enterSelect: boolean = false) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		if (that.getBoolean(jqNodeDIV.attr('edittable')) && that.notAnyLocked(jqNodeDIV)) {
-			that.fromJQ = jqNodeDIV.clone();
-			//const innerText = el(jqNodeDIV.find('.innerobj'));
-			//that.editTextNodeWithTextArea(innerText, el(jqNodeDIV), enterSelect);
-		}
-	}
-	async startNodeEditing(jqNodeDIV: myJQuery, enterSelect: boolean) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		if (that.anyLocked(jqNodeDIV)) return;
-		if (jqNodeDIV.attr('nodetype') === 'text') {
-			that.startInlineEditing(jqNodeDIV);
-		} else that.startNodeEditing_withTextArea(jqNodeDIV, enterSelect);
-	}
-	async procNodeDoubleClick(evt: Event, jqNodeDIV: myJQuery) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		evt.stopPropagation();
-		evt.preventDefault();
-		if (that.anyLocked(jqNodeDIV)) return;
-		//下面这句判断其实没用，因为在演示模式和概览模式下，都加了遮罩，点不到nodeDIV上
-		if (that.inPresentingMode === true || that.inOverviewMode) return;
-
-		await that.startNodeEditing(jqNodeDIV, false);
-	}
-
 	async driveNodeBalls(jqNodeDIV: myJQuery) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -3509,170 +2876,6 @@ toggleOverview (jc3MousePos) {
 			await that.tmpBalls[i].timeline().stop();
 			await that.tmpBalls[i].addClass('noshow');
 		}
-	}
-
-	/**
-	 * 从一个节点，向其attr jump所记录ID的节点跳转
-	 */
-	async tryToJump(jqDIV: myJQuery) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		if (KFKclass.NotSet(jqDIV)) jqDIV = that.getFocusHoverLastCreate();
-		if (jqDIV && jqDIV.attr('jump')) {
-			let followDIV = $(`#${jqDIV.attr('jump')}`);
-			if (followDIV.length <= 0) {
-				return;
-			}
-			followDIV = followDIV.first();
-			//await that.addFromTo(jqDIV, followDIV);
-			//that.scrollToNode(followDIV);
-		}
-	}
-
-	// getSelection、createRange兼容
-	isSupportRange() {
-		return typeof document.createRange === 'function' || typeof window.getSelection === 'function';
-	}
-
-	getCurrentRange() {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		let range = null;
-		let selection = null;
-		if (that.isSupportRange()) {
-			selection = document.getSelection();
-			if (selection.getRangeAt && selection.rangeCount) {
-				range = document.getSelection().getRangeAt(0);
-			}
-		} else {
-			//eslint-disable-next-line
-			range = document.selection.createRange();
-		}
-		return range;
-	}
-	insertHtmlAfterRange(html: string) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		let selection = null;
-		let range = null;
-		if (that.isSupportRange()) {
-			// IE > 9 and 其它浏览器
-			selection = document.getSelection();
-			if (selection.getRangeAt && selection.rangeCount) {
-				let fragment: DocumentFragment, node: ChildNode, lastNode: ChildNode;
-				range = selection.getRangeAt(0);
-				range.deleteContents();
-				const el = document.createElement('span');
-				el.innerHTML = html;
-				// 创建空文档对象,IE > 8支持documentFragment
-				// eslint-disable-next-line prefer-const
-				fragment = document.createDocumentFragment();
-
-				while ((node = el.firstChild)) {
-					lastNode = fragment.appendChild(node);
-				}
-				range.insertNode(fragment);
-
-				if (lastNode) {
-					range = range.cloneRange();
-					range.setStartAfter(lastNode);
-					range.collapse(true);
-					selection.removeAllRanges();
-					selection.addRange(range);
-				}
-			}
-		} else if (document.selection && document.selection.type != 'Control') {
-			// IE < 9
-			document.selection.createRange().pasteHTML(html);
-		}
-	}
-
-	cleanTextInput(jInner: myJQuery, allowBR: boolean = false) {
-		let html = jInner.prop('innerHTML');
-		html = html.replace('<div>', ' ');
-		html = html.replace('</div>', ' ');
-		if (allowBR) {
-			html = html.replace(/<br><br>$/, '<br>');
-			html = html + '<br><br>';
-		} else {
-			html = html.replace('<br>', '');
-		}
-		jInner.prop('innerHTML', html);
-		// that.insertHtmlAfterRange('<br><br>');
-		if (window.getSelection) {
-			//ie11 10 9 ff safari
-			jInner.focus();
-			const range = window.getSelection(); //创建range
-			range.selectAllChildren(jInner[0]); //range 选择obj下所有子内容
-			range.collapseToEnd(); //光标移至最后
-		} else if (document.selection) {
-			//ie10 9 8 7 6 5
-			const range = document.selection.createRange(); //创建选择对象
-			//var range = document.body.createTextRange();
-			range.moveToElementText(jInner[0]); //range定位到obj
-			range.collapse(false); //光标移至最后
-			range.select();
-		}
-	}
-
-	//启动单行文字编辑
-	startInlineEditing(jqNodeDIV: myJQuery) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		that.isEditting = true;
-		jqNodeDIV.find('.innerobj').focus();
-		that.inlineEditor = jqNodeDIV;
-		const allowBR = jqNodeDIV.attr('nodetype') !== 'text';
-		//div keydown
-		jqNodeDIV.keydown(function (evt: KeyboardEvent) {
-			if (evt.key === 'Enter' && (evt.shiftKey || evt.ctrlKey || evt.metaKey)) {
-				//eslint-disable-line
-				const jInner = jqNodeDIV.find('.innerobj');
-				that.cleanTextInput(jInner, allowBR);
-				evt.stopPropagation();
-				evt.preventDefault();
-			} else if (evt.key === 'Enter') {
-				//ENTER || PageUp
-				const jInner = jqNodeDIV.find('.innerobj');
-				that.cleanTextInput(jInner, allowBR);
-				evt.stopPropagation();
-				evt.preventDefault();
-			} else if (evt.key === 'End' || evt.key === 'PageDown') {
-				//END  || PageDown
-				//阻止浏览器滚动窗口的缺省动作
-				evt.stopPropagation();
-				evt.preventDefault();
-			} else if (evt.key === 'Home' || evt.key === 'PageUp' || evt.key === ' ') {
-				//HOME
-				//阻止浏览器滚动窗口的缺省动作
-				evt.stopPropagation();
-				evt.preventDefault();
-				// let jInner = jqNodeDIV.find('.innerobj');
-				// if (window.getSelection) { //ie11 10 9 ff safari
-				//   jInner.focus();
-				//   var range = window.getSelection(); //创建range
-				//   range.selectAllChildren(jInner[0]); //range 选择obj下所有子内容
-				//   range.collapseToStart(); //光标移至最后
-				// } else if (document.selection) { //ie10 9 8 7 6 5
-				//   var range = document.selection.createRange(); //创建选择对象
-				//   //var range = document.body.createTextRange();
-				//   range.moveToElementText(jInner[0]); //range定位到obj
-				//   range.moveEnd(jInner[0], 0);
-				//   range.moveStart(jInner[0], 0);
-				//   range.collapse(); //光标移至最后
-				// }
-			}
-			// on esc do not set value back to node
-			// if (evt.key=== "Escape") {
-			//   console.log("presessed ESC");
-			// }
-		});
-	}
-	endInlineEditing() {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		that.isEditting = false;
-		that.inlineEditor = null;
 	}
 
 	/**
@@ -3758,46 +2961,6 @@ toggleOverview (jc3MousePos) {
 		});
 	}
 
-	/**
-	 * 得到所选DIVS中没有被锁定的div的个数
-	 * @param divs  如为undefined，则自动处理selectedDIVs
-	 */
-	getUnlockedCount(divs: string | any[]) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		if (divs === undefined) {
-			divs = that.selectedDIVs;
-		}
-		let numberOfNotLocked = 0;
-		for (let i = 0; i < divs.length; i++) {
-			if (that.anyLocked(divs[i]) === false) {
-				numberOfNotLocked = numberOfNotLocked + 1;
-			}
-		}
-		return numberOfNotLocked;
-	}
-
-	async sameSize(direction: any) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		that.DivStyler
-			? that.DivStyler.sameSize(direction)
-			: import('./divStyler').then((pack) => {
-					that.DivStyler = pack.DivStyler;
-					that.DivStyler.sameSize(direction);
-			  });
-	}
-	async arrangeNodes(direction: any) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		that.DivStyler
-			? that.DivStyler.arrangeNodes(direction)
-			: import('./divStyler').then((pack) => {
-					that.DivStyler = pack.DivStyler;
-					that.DivStyler.arrangeNodes(direction);
-			  });
-	}
-
 	scroll_posX(x: number) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -3807,21 +2970,6 @@ toggleOverview (jc3MousePos) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		return y + that.scrollContainer.scrollTop();
-	}
-
-	offsetLineDataAttr(lineDIV: any, offset: Point) {
-		let x1 = parseInt($(lineDIV).attr('x1'));
-		let y1 = parseInt($(lineDIV).attr('y1'));
-		let x2 = parseInt($(lineDIV).attr('x2'));
-		let y2 = parseInt($(lineDIV).attr('y2'));
-		x1 += offset.x;
-		y1 += offset.y;
-		x2 += offset.x;
-		y2 += offset.y;
-		$(lineDIV).attr('x1', x1);
-		$(lineDIV).attr('y1', y1);
-		$(lineDIV).attr('x2', x2);
-		$(lineDIV).attr('y2', y2);
 	}
 
 	//Delete node  remove node
@@ -4097,18 +3245,6 @@ toggleOverview (jc3MousePos) {
 		}
 	}
 
-	/**
-	 * get Hovered, if null, then focused, if null, then lastcraeted node
-	 */
-	getHoverFocusLastCreateInner() {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		const div = that.getHoverFocusLastCreate();
-		if (KFKclass.NotSet(div)) return undefined;
-		const inner = div.find('.innerobj');
-		if (inner.length > 0) return inner;
-		else return undefined;
-	}
 	getHoverFocusLastCreate() {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -4155,80 +3291,6 @@ toggleOverview (jc3MousePos) {
 			ret = null;
 		}
 		return ret;
-	}
-
-	/**
-	 * 复制对象
-	 */
-	async duplicateHoverObject(evt: MouseEvent, action = undefined) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		that.debug('entered duplicateHoverObject');
-		if (that.docIsReadOnly()) {
-			that.debug('docIsReady, no duplicate');
-			return;
-		}
-		if (action === 'copy') {
-			if (that.selectedDIVs.length > 1) {
-				//优先多选
-				that.debug('multiple nodes were selected');
-				//过滤掉TODOLISTDIV/chatmessage 等nocopy DIV
-				const filteredDIVs = that.selectedDIVs.filter((div) => {
-					return div.hasClass('nocopy') === false;
-				});
-				that.copyCandidateDIVs = filteredDIVs.map((div) => {
-					const jTemp = div.clone();
-					const jTitle = jTemp.find('.coco_title');
-					if (jTitle.length > 0) {
-						jTitle.text(jTitle.text() + '的复制');
-					}
-					return jTemp;
-				});
-				return true;
-			} else if (that.getPropertyApplyToJqNode()) {
-				//然后selected
-				//过滤掉TODOLISTDIV
-				if (that.getPropertyApplyToJqNode().hasClass('nocopy')) {
-					that.copyCandidateDIVs = [];
-					that.copyCandidateLines = [];
-				} else {
-					const jTemp = that.getPropertyApplyToJqNode().clone();
-					const jTitle = jTemp.find('.coco_title');
-					if (jTitle.length > 0) {
-						jTitle.text(jTitle.text() + '的复制');
-					}
-					that.copyCandidateDIVs = [jTemp];
-					that.copyCandidateLines = [];
-				}
-				return true;
-			} else if (that.hoverSvgLine() && (action === undefined || action === 'copy')) {
-				that.hoverSvgLine().attr({
-					'stroke-width': that.hoverSvgLine().attr('origin-width')
-				});
-				that.copyCandidateLines = [that.hoverSvgLine().clone()];
-				that.copyCandidateDIVs = [];
-				//下面这句代码在第一次按META-D时就粘贴了一条,有些不用,
-				// await that.makeACopyOfLine(that.lineToCopy, evt.shiftKey);
-				return true;
-			} else {
-				return false;
-			}
-		} else if (action === 'paste') {
-			if (that.copyCandidateDIVs && that.copyCandidateDIVs.length > 0) {
-				await that.makeCopyOfJQs(that.copyCandidateDIVs, evt.shiftKey);
-			} else if (that.copyCandidateLines && that.copyCandidateLines.length > 0) {
-				await that.makeCopyOfLines(that.copyCandidateLines);
-			} else {
-				that.debug('Nothing to paste');
-			}
-			// if (that.jqToCopy) {
-			// } else if (that.lineToCopy) {
-			//   await that.makeACopyOfLine(that.lineToCopy, evt.shiftKey);
-			//   //await that.makeACopyOfLine(that.lineToCopy, evt.shiftKey);
-			// }
-			return true;
-		}
-		return true;
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -4319,32 +3381,6 @@ toggleOverview (jc3MousePos) {
 			newLine.addTo(that.svgDraw);
 			that.addShapeEventListner(newLine);
 		}
-	}
-	async makeACopyOfLine(linetocopy: any) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		linetocopy = linetocopy ? linetocopy : that.lineToCopy;
-		const newLine = linetocopy.clone();
-
-		const newline_id = 'shape_' + that.myuid();
-		const classes = newLine.classes();
-		classes.forEach((className: string) => {
-			if (className !== 'kfkshape') {
-				newLine.removeClass(className);
-			}
-		});
-		newLine.attr('id', newline_id);
-		newLine.addClass(newline_id);
-		//现在是移动指定位置再次META-D才放置对象,因此offset没用.
-		//之前的代码在x,y后面分别加了个20, 以便不覆盖到节点
-		//现在第一次点取不马上复制了,+offset已经没有了必要
-		//TODO: curentMousePos位置有问题, 现在应该是JC3的了
-		newLine.center(
-			that.scalePoint(that.scrXToJc3X(that.currentMousePos.x)),
-			that.scalePoint(that.scrYToJc3Y(that.currentMousePos.y))
-		);
-		newLine.addTo(that.lineToCopy.parent());
-		that.addShapeEventListner(newLine);
 	}
 
 	getBoundingRectOfSelectedDIVs(): Rectangle {
@@ -4652,15 +3688,13 @@ toggleOverview (jc3MousePos) {
 		const that = this;
 		that.user = user;
 		if (that.inited === true) {
-			console.error('that.init was called more than once, maybe loadImages error');
+			console.error('that.init was called more than once');
 		}
 		that.debug('Initializing...');
 		//that.checkBrowser();
 		$('body').css('overflow', 'scroll');
 		$('.showAfterInit').removeClass('showAfterInit');
 		try {
-			//that.loadImages();
-			// that.loadSvgs();
 			that.initLayout();
 			that.initC3();
 			that.initLineTransformer();
@@ -4944,150 +3978,6 @@ toggleOverview (jc3MousePos) {
 		const that = this;
 		await that.JC3.empty();
 		that.addSvgLayer();
-	}
-
-	async recreateObject(obj: any, callback: any) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		if (obj.etype === 'document') {
-			that.recreateDoc(obj, callback);
-		} else if (obj.etype === 'DIV') {
-			await that.recreateNode(obj, callback);
-		} else if (obj.etype === 'SLINE') {
-			await that.recreateShape(obj, callback);
-		} else {
-			that.error('Unknown etype, guess it');
-			const tmpHtml = await that.gzippedContentToString(obj.content);
-			that.detail(tmpHtml);
-			if (
-				tmpHtml.indexOf('nodetype') > 0 &&
-				tmpHtml.indexOf('edittable') > 0 &&
-				tmpHtml.indexOf('kfknode') > 0
-			) {
-				obj.etype = 'DIV';
-				that.recreateNode(obj, callback);
-			}
-		}
-	}
-
-	recreateDoc(obj: any, callback: any) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		try {
-			const docRet = obj.content;
-			that.APP.setData('model', 'cocodoc', docRet);
-		} catch (err) {
-			console.error(err);
-		} finally {
-			if (callback) callback(1);
-		}
-	}
-
-	restoreShape(shape_id: string, html: string) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		let aLine = null;
-		const selector = `.${shape_id}`;
-		aLine = that.svgDraw.findOne(selector);
-		if (aLine === null || aLine === undefined) {
-			aLine = that.svgDraw.line();
-		}
-		const parent = aLine.svg(html, true);
-		aLine = parent.findOne(selector);
-		that.addShapeEventListner(aLine);
-		return aLine;
-	}
-
-	async recreateShape(obj: any, callback: any) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		try {
-			const isALockedNode = obj.lock;
-			const content = await that.gzippedContentToString(obj.content);
-			const shape_id = obj.nodeid;
-			const theShape = that.restoreShape(shape_id, content);
-			if (isALockedNode) {
-				that.NodeController.lockline(KFK, theShape);
-			} else {
-				that.NodeController.unlockline(KFK, theShape);
-			}
-		} catch (err) {
-			console.error(err);
-		} finally {
-			if (callback) callback(1);
-		}
-	}
-
-	async gzippedContentToString(content: any) {
-		if (content.type !== 'Buffer' || content.data === undefined) {
-			console.error('gzippedContentToString was passed in wrong content', content);
-		}
-		const tmp = await unzipit(Buffer.from(content.data));
-		return tmp.toString();
-	}
-
-	async recreateNode(obj: any, callback: any) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		try {
-			const isALockedNode = obj.lock;
-
-			const html: string = await that.gzippedContentToString(obj.content);
-
-			console.warn('Warning: 这段代码可能会有问题');
-			const jqDIVArr = $($.parseHTML(html));
-			let jqDIV = $(jqDIVArr[0][0]);
-			const nodeid = jqDIV.attr('id');
-
-			if (jqDIV.hasClass('notify')) {
-				//TODO: notification
-			} else if (jqDIV.hasClass('ad')) {
-				//TODO: Advertisement
-			} else {
-				//需要先清理，否则在替换已有node时，会导致无法resize
-				//that.cleanNodeEventFootprint(jqDIV);
-				//that.setNodeShowEditor(jqDIV);
-				const existingNode = that.getNodeById(nodeid);
-				if (existingNode.length > 0) {
-					//节点存在，需要刷新
-					/*
-					if (existingNode.find('.brsnode').length > 0) {
-					}
-					*/
-					existingNode.prop('outerHTML', jqDIV.prop('outerHTML'));
-					/*
-				if (isBrNode) {
-					that.startBrainstorm(existingNode);
-				}
-				*/
-					//jqDIV = existingNode;
-				} else {
-					//新载入
-					that.JC3.append(jqDIV);
-				}
-				jqDIV = that.getNodeById(nodeid);
-				if (that.APP.model.cocodoc.readonly === false) {
-					await that.setNodeEventHandler(jqDIV, async function () {
-						if (isALockedNode) {
-							// that.debug('is a locked');
-							that.NodeController.lock(jqDIV);
-						}
-					});
-				}
-				await that.redrawLinkLines(jqDIV, 'server update');
-			}
-			if (obj.mdnote) {
-				const tmp = await that.gzippedContentToString(obj.mdnote);
-				that.mdnotes.set(jqDIV.attr('id'), tmp);
-			} else {
-				that.mdnotes.set(jqDIV.attr('id'), '# Recreate empty note #');
-			}
-		} catch (error) {
-			that.error(error);
-		} finally {
-			if (callback) callback(1);
-			that.C3.dispatchEvent(that.refreshC3Event);
-		}
 	}
 
 	getLineOptions(div: JQuery) {
@@ -5552,6 +4442,73 @@ toggleOverview (jc3MousePos) {
 		that.deleteObjects(evt, true);
 	}
 
+	/**
+	 * 复制对象
+	 */
+	async duplicateHoverObject(evt: MouseEvent, action = undefined) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.debug('entered duplicateHoverObject');
+		if (that.docIsReadOnly()) {
+			that.debug('docIsReady, no duplicate');
+			return;
+		}
+		if (action === 'copy') {
+			if (that.selectedDIVs.length > 1) {
+				//优先多选
+				that.debug('multiple nodes were selected');
+				//过滤掉TODOLISTDIV/chatmessage 等nocopy DIV
+				const filteredDIVs = that.selectedDIVs.filter((div) => {
+					return div.hasClass('nocopy') === false;
+				});
+				that.copyCandidateDIVs = filteredDIVs.map((div) => {
+					const jTemp = div.clone();
+					const jTitle = jTemp.find('.coco_title');
+					if (jTitle.length > 0) {
+						jTitle.text(jTitle.text() + '的复制');
+					}
+					return jTemp;
+				});
+				return true;
+			} else if (that.getPropertyApplyToJqNode()) {
+				//然后selected
+				//过滤掉TODOLISTDIV
+				if (that.getPropertyApplyToJqNode().hasClass('nocopy')) {
+					that.copyCandidateDIVs = [];
+					that.copyCandidateLines = [];
+				} else {
+					const jTemp = that.getPropertyApplyToJqNode().clone();
+					const jTitle = jTemp.find('.coco_title');
+					if (jTitle.length > 0) {
+						jTitle.text(jTitle.text() + '的复制');
+					}
+					that.copyCandidateDIVs = [jTemp];
+					that.copyCandidateLines = [];
+				}
+				return true;
+			} else if (that.hoverSvgLine() && (action === undefined || action === 'copy')) {
+				that.hoverSvgLine().attr({
+					'stroke-width': that.hoverSvgLine().attr('origin-width')
+				});
+				that.copyCandidateLines = [that.hoverSvgLine().clone()];
+				that.copyCandidateDIVs = [];
+				return true;
+			} else {
+				return false;
+			}
+		} else if (action === 'paste') {
+			if (that.copyCandidateDIVs && that.copyCandidateDIVs.length > 0) {
+				await that.makeCopyOfJQs(that.copyCandidateDIVs, evt.shiftKey);
+			} else if (that.copyCandidateLines && that.copyCandidateLines.length > 0) {
+				await that.makeCopyOfLines(that.copyCandidateLines);
+			} else {
+				that.debug('Nothing to paste');
+			}
+			return true;
+		}
+		return true;
+	}
+
 	async onCopy(evt: Event) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -5564,146 +4521,7 @@ toggleOverview (jc3MousePos) {
 			evt.clipboardData.setData('text/html', 'usediv');
 		}
 		evt.preventDefault();
-		evt.preventDefault();
 		that.holdEvent(evt);
-	}
-	showTextPasteDialog(content: any) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		if (that.anyLocked(that.hoverJqDiv())) return;
-		const toDisplay = content.text;
-		let urlInHTML = null;
-		let toAdd = content.text;
-		let showbox = false;
-		if (content.html !== '') {
-			let tmpText = RegHelper.removeMeta(content.html);
-			tmpText = that.replaceHTMLTarget(tmpText);
-			const m = tmpText.match(/^\s*<a\s+href\s*=\s*"([^"]*)".*<\/a>$/i);
-			if (m) {
-				urlInHTML = m[1];
-			}
-			toAdd = '<div>' + tmpText + '</div>';
-			const tmp = $(toAdd);
-			tmp.find('[style]').removeAttr('style');
-			toAdd = "<div class='pastedHtml'>" + tmp.prop('innerHTML') + '</div>';
-			showbox = that.hoverJqDiv() ? false : true;
-			if (showbox) {
-				if (urlInHTML) {
-					that.mergeAppData('model', 'paste', {
-						format: '粘贴内容格式为URL地址链接',
-						showcontent: true,
-						showdisplay: true,
-						showbox: showbox,
-						content: urlInHTML,
-						display: urlInHTML,
-						ctype: 'url'
-					});
-				} else {
-					that.mergeAppData('model', 'paste', {
-						format: '粘贴内容格式为HTML',
-						showcontent: false,
-						showdisplay: false,
-						showbox: showbox,
-						content: toAdd,
-						displayBackup: toDisplay,
-						convertHTMLToText: false,
-						display: toDisplay,
-						ctype: 'html'
-					});
-				}
-				that.showDialog({
-					pasteContentDialog: true
-				});
-			} else {
-				that.APP.model.paste.content = toAdd;
-				//that.placePastedContent();
-			}
-		} else {
-			if (content.text !== '') {
-				toAdd = content.text;
-				if (RegHelper.isUrl(toAdd)) {
-					// Plain text is a URL
-					showbox = that.hoverJqDiv() ? false : true;
-					that.mergeAppData('model', 'paste', {
-						format: '粘贴内容格式为URL地址链接',
-						showcontent: true,
-						showdisplay: true,
-						showbox: showbox,
-						content: toAdd,
-						display: '请点击访问',
-						ctype: 'url'
-					});
-					that.showDialog({
-						pasteContentDialog: true
-					});
-				} else {
-					//Normal plain text
-					showbox = that.hoverJqDiv() ? false : true;
-					if (showbox) {
-						that.mergeAppData('model', 'paste', {
-							format: '粘贴内容格式为纯文本',
-							showcontent: false,
-							showdisplay: false,
-							showbox: showbox,
-							content: toAdd,
-							display: toAdd,
-							ctype: 'text'
-						});
-						that.showDialog({
-							pasteContentDialog: true
-						});
-					} else {
-						that.APP.model.paste.content = toAdd;
-						//that.placePastedContent();
-					}
-				}
-			}
-		}
-	}
-
-	async onPaste(evt: ClipboardEvent) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		if (that.inNoteEditor) return;
-		if (that.isShowingModal) {
-			console.log('paste ignored since isShowingModal');
-			return;
-		}
-		if (that.noCopyPaste) {
-			console.log('paste ignored since noCopyPaste is true');
-			return;
-		}
-		if (that.docIsReadOnly()) {
-			console.log('paste ignored since docIsReadOnly');
-			return;
-		}
-		that.pasteAt = {
-			x: that.globalMouseX,
-			y: that.globalMouseY
-		};
-		const content = {
-			html: '',
-			text: '',
-			image: null
-		};
-		const oevt = evt;
-		content.html = oevt.clipboardData.getData('text/html');
-		content.text = oevt.clipboardData.getData('Text');
-		const items = oevt.clipboardData.items;
-		if (items[1] && (content.html !== '' || content.text !== '')) {
-			that.showTextPasteDialog(content);
-		} else if (items[0]) {
-			if (items[0].kind === 'string' && (content.html !== '' || content.text !== '')) {
-				that.showTextPasteDialog(content);
-			} else if (items[0].kind === 'file') {
-				const blob = items[0].getAsFile();
-				that.dropAtPos = {
-					x: that.scalePoint(that.scrXToJc3X(that.globalMouseX)),
-					y: that.scalePoint(that.scrYToJc3Y(that.globalMouseY))
-				};
-				that.procPasteBlob(blob);
-			}
-		}
 	}
 
 	scrCenter() {
@@ -5911,93 +4729,6 @@ toggleOverview (jc3MousePos) {
 			});
 		} catch (error) {
 			console.error(error);
-		}
-	}
-
-	svgDrawShape(
-		shapeType: string,
-		id: string,
-		fx: number,
-		fy: number,
-		tx: number,
-		ty: number,
-		option: any
-	) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		if (cocoConfig.viewConfig.snap) {
-			let p1 = {
-				x: fx,
-				y: fy
-			};
-			let p2 = {
-				x: tx,
-				y: ty
-			};
-			p1 = that.getNearGridPoint(p1.x, p1.y);
-			p2 = that.getNearGridPoint(p2.x, p2.y);
-			fx = p1.x;
-			fy = p1.y;
-			tx = p2.x;
-			ty = p2.y;
-		}
-		const width = Math.abs(fx - tx);
-		const height = Math.abs(fy - ty);
-		const originX = Math.min(fx, tx);
-		const originY = Math.min(fy, ty);
-		const shapeClass = 'kfkshape';
-		const shapeId = 'shape_' + id;
-		let theShape = that.svgDraw.findOne(`#shape_${id}`);
-		if (theShape) theShape.remove();
-		if (shapeType === 'line') {
-			theShape = that.svgDraw.line(fx, fy, tx, ty);
-		} else if (shapeType === 'rectangle') {
-			theShape = that.svgDraw.rect(width, height).fill('none').move(originX, originY);
-		} else if (shapeType === 'ellipse') {
-			theShape = that.svgDraw.ellipse(width, height).fill('none').move(originX, originY);
-		}
-		theShape.attr('id', shapeId);
-		theShape
-			.addClass(shapeClass)
-			.addClass(shapeId)
-			.addClass('kfk' + shapeType)
-			.stroke(option);
-		theShape.attr('shapetype', shapeType);
-		theShape.attr('origin-width', option.width);
-		theShape.attr('origin-color', option.color);
-		that.addShapeEventListner(theShape);
-		return theShape;
-	}
-
-	svgDrawTmpShape(shapeType: string, fx: number, fy: number, tx: number, ty: number, option: any) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		const tmpLineClass = 'shape_temp';
-
-		that.tempShape = that.svgDraw.findOne(`.${tmpLineClass}`);
-		if (that.tempShape) {
-			that.tempShape.remove();
-		}
-		const width = Math.abs(fx - tx);
-		const height = Math.abs(fy - ty);
-		const originX = Math.min(fx, tx);
-		const originY = Math.min(fy, ty);
-		if (shapeType === 'line') {
-			that.tempShape = that.svgDraw.line(fx, fy, tx, ty).addClass(tmpLineClass).stroke(option);
-		} else if (shapeType === 'rectangle') {
-			that.tempShape = that.svgDraw
-				.rect(width, height)
-				.move(originX, originY)
-				.fill('none')
-				.addClass(tmpLineClass)
-				.stroke(option);
-		} else if (shapeType === 'ellipse') {
-			that.tempShape = that.svgDraw
-				.ellipse(width, height)
-				.move(originX, originY)
-				.fill('none')
-				.addClass(tmpLineClass)
-				.stroke(option);
 		}
 	}
 
@@ -6529,8 +5260,8 @@ uploadFileToQcloudCOS (file) {
 }
 const KFK = new KFKclass();
 
-document.onpaste = KFK.onPaste;
-document.oncopy = KFK.onCopy;
-document.oncut = KFK.onCut;
+//document.onpaste = KFK.onPaste;
+//document.oncopy = KFK.onCopy;
+//document.oncut = KFK.onCut;
 
 export default KFK;

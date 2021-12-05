@@ -1,19 +1,19 @@
 <svelte:options accessors />
 
-<script>
+<script lang="ts">
 	//Row component is optional and only serves to render odd/even row, you can use <tr> instead.
 	//Sort component is optional
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import * as api from '$lib/api';
 	import { onMount } from 'svelte';
-	import moment from 'moment';
 	import { ClientPermControl } from '$lib/clientperm';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
 	import { goto } from '$app/navigation';
 	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Icon } from 'sveltestrap';
 	import { getData } from '$lib/pagination/Server.js';
 
+	export let TimeTool;
 	export let token;
 	export let endpoint;
 	export let rows = [];
@@ -139,7 +139,7 @@
 					</a>
 				</td>
 				<td data-label="Author">{row.author}</td>
-				<td data-label="Updated at">{moment(row.updatedAt).format('LLLL')}</td>
+				<td data-label="Updated at">{TimeTool.format(row.updatedAt, 'LLLL')}</td>
 				<td>
 					<Dropdown>
 						<DropdownToggle caret color="notexist" class="btn-sm">Actions</DropdownToggle>

@@ -126,6 +126,7 @@ export interface Work {
 	wfstatus: string;
 	createdAt: string;
 	updatedAt: string;
+	instruct: string;
 }
 
 export interface KFKclass {
@@ -198,6 +199,7 @@ export interface OrgMember {
 	member: string;
 	group: string;
 	checked: boolean;
+	email: string;
 }
 export interface OrgMembers {
 	members: OrgMember[];

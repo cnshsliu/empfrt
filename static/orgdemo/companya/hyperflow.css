@@ -1,17 +1,32 @@
 .org-logo {
-  border-radius: 12px;
-  background-image: url(http://companya.com:9999/static/logo.jpg);
+	border-radius: 12px;
+	background-image: url(http://companya.com:9999/static/logo.jpg);
 }
 
 body {
-  background-image: url(http://companya.com:9999/static/background1.jpg);
+	background-image: url(http://companya.com:9999/static/background1.jpg);
+}
+a {
+	color: white;
+}
+
+.tnt-footer {
+	background-color: rgba(255, 255, 255, 0.6);
 }
 
 .tnt-workflow-id,
 .tnt-template-id,
 .tnt-team-id {
-  color: #ffffff;
+	color: #ffffff;
 }
 .tnt-odd {
-  background-color: rgba(255, 255, 255, 0.3);
+	background-color: rgba(255, 255, 255, 0.3);
+}
+.tnt-footer-link {
+	color: rgba(0, 0, 0, 0.8);
+}
+.tnt-footer {
+	margin-top: 100px;
+	background-color: rgba(255, 255, 255, 0.8);
+	min-height: 400px;
 }

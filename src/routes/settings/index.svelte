@@ -2,7 +2,9 @@
 	export const ssr = false;
 	import * as api from '$lib/api';
 	import TimeZone from '$lib/Timezone';
+	let TimeTool = null;
 	export async function load({ session }) {
+		TimeTool = (await import('$lib/TimeTool')).default;
 		const { user } = session;
 		if (!user) {
 			console.log('setting redict to login');
@@ -38,14 +40,13 @@
 	import { session } from '$app/stores';
 	import { browser, dev, mode } from '$app/env';
 	import { get } from 'svelte/store';
-	import type { EmpResponse, WhichTab, OrgMember } from '$lib/types';
+	import type { EmpResponse, WhichTab, OrgMember, OrgMembers } from '$lib/types';
 	import { whichTabStore } from '$lib/empstores';
 	import SmtpAdmin from './smtpadmin.svelte';
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import type { User } from '$lib/types';
 	import { onMount } from 'svelte';
-	import moment from 'moment';
 	import { post } from '$lib/utils';
 	import {
 		Container,
@@ -289,10 +290,20 @@
 			}
 		}
 	}
+	let testLeader = '';
+	async function testOrgChart() {
+		console.log('post.. getleader');
+		let leader = await api.post(
+			'orgchart/getleader',
+			{ uid: 'xiaozhang@xihuanwu.com', leader: 'VP:GM:总监' },
+			user.sessionToken
+		);
+		testLeader = JSON.stringify(leader, null, 2);
+	}
 
 	let orgMembers: OrgMembers;
 	async function refreshMembers() {
-		orgMembers = await api.post('tnt/members', {}, user.sessionToken);
+		orgMembers = (await api.post('tnt/members', {}, user.sessionToken)) as unknown as OrgMembers;
 		if (orgMembers && orgMembers.members && orgMembers.members.length > 0) {
 			orgMembers.members = orgMembers.members.filter((x) => x.email !== user.email);
 			orgMembers.members.unshift({ email: user.email, username: user.username, group: user.group });
@@ -317,8 +328,9 @@
 		}
 	}
 
-	onMount(() => {
-		refreshMyOrg();
+	onMount(async () => {
+		await refreshMyOrg();
+		await testOrgChart();
 	});
 
 	async function removeSelectedMembers() {
@@ -415,11 +427,14 @@
 
 	let tzArray = TimeZone.getTimeZoneArray();
 	console.log(typeof tzArray);
+
+	$: leaderMessage = testLeader;
 </script>
 
 <svelte:head>
 	<title>Settings • HyperFlow</title>
 </svelte:head>
+{leaderMessage}
 <Container class="mt-3">
 	<TabContent
 		on:tab={(e) => {
@@ -571,10 +586,10 @@
 										class:tnt-even={index % 2 === 0}
 									>
 										<td data-label="Begin Date">
-											{moment(row.begindate).format('LL')}
+											{TimeTool.format(row.begindate, 'LL')}
 										</td>
 										<td data-label="Before Date">
-											{moment(row.enddate).format('LL')}
+											{TimeTool.format(row.enddate, 'LL')}
 										</td>
 										<td data-label="Delegatee">
 											{row.delegatee}
@@ -609,7 +624,7 @@
 				<div class="w-100 text-center fs-6">
 					My Role: {user.group}
 				</div>
-				{#if myorg.adminorg}
+				{#if user.group === 'ADMIN'}
 					<Card class="mt-3">
 						<CardHeader><CardTitle>My Orgnization</CardTitle></CardHeader>
 						<CardBody>
@@ -780,7 +795,7 @@
 									</Button>
 								</InputGroup>
 							{:else}
-								There is no join application at this moment
+								There is no join application at this time
 							{/if}
 						</CardBody>
 					</Card>

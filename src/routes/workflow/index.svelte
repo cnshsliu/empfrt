@@ -1,5 +1,7 @@
 <script context="module" lang="ts">
+	let TimeTool = null;
 	export async function load({ page, fetch, session }) {
+		TimeTool = (await import('$lib/TimeTool')).default;
 		return {
 			props: {
 				user: session.user
@@ -120,7 +122,7 @@
 	/>
 	<Row class="mt-1">
 		<Col>
-			<RemoteTable endpoint="workflow/search" {token} {user} bind:this={remoteTable} />
+			<RemoteTable endpoint="workflow/search" {token} {user} bind:this={remoteTable} {TimeTool} />
 		</Col>
 	</Row>
 </Container>

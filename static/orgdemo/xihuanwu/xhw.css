@@ -1,0 +1,18 @@
+body {
+}
+.org-logo {
+	border-radius: 12px;
+	background-image: url(/orgdemo/xihuanwu/logo.png);
+}
+
+.tnt-navmenu {
+	background-image: url(/orgdemo/xihuanwu/xhw.png);
+}
+
+.tnt-navmenu .nav-link {
+	color: white;
+}
+.tnt-navmenu .tnt-header-username {
+	color: white;
+	padding-left: 20px;
+}

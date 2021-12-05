@@ -4,7 +4,6 @@
 	import { flip } from 'svelte/animate';
 	import { session } from '$app/stores';
 	import type { Workflow } from '$lib/types';
-	import moment from 'moment';
 	import { StatusLabel } from '$lib/lang';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
 	import { goto } from '$app/navigation';
@@ -16,6 +15,7 @@
 	export let payload_extra;
 	export let endpoint;
 	export let user;
+	export let TimeTool;
 	let rows: Workflow[] = [] as Workflow[];
 	let page = 0; //first page
 	let pageIndex = 0; //first row
@@ -176,7 +176,7 @@
 				</td>
 				<td data-label="Status">{row.statusLabel}</td>
 				<td data-label="Starter">{row.starter}</td>
-				<td data-label="Updated at">{moment(row.updatedAt).format('LLLL')}</td>
+				<td data-label="Updated at">{TimeTool.format(row.updatedAt, 'LLLL')}</td>
 				<td>
 					<Dropdown>
 						<DropdownToggle caret color="notexist" class="btn-sm">Actions</DropdownToggle>

@@ -7,7 +7,6 @@
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import { onMount } from 'svelte';
-	import moment from 'moment';
 	import Table, { Pagination, Row, Search, Sort } from '$lib/pagination/Table.svelte';
 	import { goto } from '$app/navigation';
 	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Icon } from 'sveltestrap';
@@ -18,6 +17,7 @@
 	export let endpoint;
 	export let rows = [];
 	export let user;
+	export let TimeTool;
 	let page = 0; //first page
 	let pageIndex = 0; //first row
 	let pageSize = 10; //optional, 10 by default
@@ -121,7 +121,7 @@
 					</a>
 				</td>
 				<td data-label="Author">{row.author}</td>
-				<td data-label="Updated at">{moment(row.updatedAt).format('LLLL')}</td>
+				<td data-label="Updated at">{TimeTool.format(row.updatedAt, 'LLLL')}</td>
 				<td>
 					{#if user.perms && ClientPermControl(user.perms, user.email, 'team', row, 'delete')}
 						<Dropdown>

@@ -1,8 +1,7 @@
 <script lang="ts">
-	import moment from 'moment';
-	import 'moment/locale/zh-cn.js';
 	import * as api from '$lib/api';
 	import { goto } from '$app/navigation';
+	import Parser from '$lib/parser';
 	import {
 		Card,
 		CardHeader,
@@ -20,13 +19,13 @@
 	} from 'sveltestrap';
 	import { Form, FormGroup, FormText, Input, Label } from 'sveltestrap';
 	import { Status } from '$lib/status';
-	import MarkdownInstruction from '$lib/MDInstruction.svelte';
 	import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'sveltestrap';
 	import type { User, Work } from '$lib/types';
 	export let work: Work;
 	export let user: User;
 	export let delegators;
 	export let iframeMode: boolean;
+	export let TimeTool;
 	$: is_doable =
 		(work.doer === user.email ||
 			(delegators && Array.isArray(delegators) && delegators.includes(work.doer))) &&
@@ -78,26 +77,7 @@
 	const setInstructionHeight = (height) => {
 		document.getElementById('workInstruction').height = height;
 	};
-	onMount(() => {
-		/*
-		setInstructionHeight(500);
-		window.addEventListener(
-			'message',
-			function (event) {
-				console.log(event.origin + 'msg:' + event.data);
-				let iframe = document.getElementById('workInstruction');
-				var iframeWin = iframe.contentWindow || iframe.contentDocument.parentWindow;
-				if (iframeWin.document.body) {
-					iframe.height = iframeWin.document.body.scrollHeight;
-					console.log('set iframe height to', iframe.height);
-				} else {
-					console.log('iframeWin.document.body is undefined');
-				}
-			},
-			false
-		);
-*/
-	});
+	onMount(async () => {});
 </script>
 
 {#if work && work.workid}
@@ -116,25 +96,28 @@
 			<Container class="mt-3 kfk-highlight-2">
 				<Row>
 					<Col>
-						Starter:
-						<div class="kfk-kvar-value-display">{work.wf.starter}</div>
+						<span class="fw-bold fs-5">Starter:</span>
+						<div class="fw-light">{work.wf.starter}</div>
 					</Col>
 					<Col>
-						Status: {work.status}
+						<span class="fw-bold fs-5">Status:</span>
+						<div class="fw-light">{work.status}</div>
 					</Col>
 					<Col>
-						Owner: {work.doer}
+						<span class="fw-bold fs-5">Owner:</span>
+						<div class="fw-light">{work.doer}</div>
 					</Col>
 					<Col>
 						{#if work.doneat}
-							Complete at: {work.doneat ? moment(work.doneat).format('LLLL') : ''}
+							<span class="fw-bold fs-5">Complete at:</span>
+							<div class="fw-light">{work.doneat ? TimeTool.format(work.doneat, 'LLL') : ''}</div>
 						{/if}
 					</Col>
 					<Col />
 				</Row>
 			</Container>
-			<Container class="mt-3 kfk-highlight-2">
-				<MarkdownInstruction {user} {work} />
+			<Container class="mt-3 kfk-highlight-2 fs-3">
+				{Parser.base64ToCode(work.instruct)}
 			</Container>
 			<!--- div class="w-100">
 				<iframe id="workInstruction" src="/work/instruct" title="YouTube video" width="100%" />
@@ -142,7 +125,7 @@
 			{#if is_doable && work.kvarsArr.length > 0}
 				<Container class="mt-3 kfk-highlight-2">
 					Node Input:
-					<Row cols={{ lg: 3, md: 2, sm: 1 }}>
+					<Row cols="4">
 						{#each work.kvarsArr as kvar, i}
 							{#if kvar.break}
 								<div class="w-100" />
@@ -280,11 +263,12 @@
 			<CardBody>
 				<Container class="mt-2 ml-5 kfk-highlight-2 ">
 					<Row cols={{ lg: 2, md: 2, sm: 1 }}>
-						<Col>Started at: {work.wf.beginat ? moment(work.wf.begingat).format('LLLL') : ''}</Col>
+						<Col>Started at: {work.wf.beginat ? TimeTool.format(work.wf.begingat, 'LLLL') : ''}</Col
+						>
 						<Col>Started by: {work.wf.starter}</Col>
 						<Col>
 							{work.wf.doneat
-								? 'Completed at ' + moment(work.wf.doneat).format('LLLL')
+								? 'Completed at ' + TimeTool.format(work.wf.doneat, 'LLLL')
 								: 'Still running'}
 						</Col>
 					</Row>
@@ -302,37 +286,29 @@
 			<CardBody>
 				{#each work.history as entry}
 					<Container class="mt-2 kfk-highlight-2 ">
-						<Row cols={{ lg: 1, md: 1, sm: 1 }}>
+						<Row cols={{ sm: 2 }} class="mt-1 pt-3 kfk-work-kvars tnt-work-kvars">
 							<Col>
-								<div>
-									<a
-										class="preview-link kfk-team-id kfk-link"
-										href={'#'}
-										on:click|preventDefault={() => {
-											showWorkitem(entry.workid);
-										}}
-									>
-										<b>{entry.title}</b>
-									</a>
-									: {Status[entry.status]}
-								</div>
+								<b>{entry.title}</b>
+								: {Status[entry.status]}
 							</Col>
 							{#if entry.route}
 								<Col>
-									Decision: <b> {entry.route} </b>
+									<span class="kfk-kvar-key-display">Decision:</span>
+									<span class="kfk-kvar-value-display">{entry.route}</span>
 								</Col>
 							{/if}
 						</Row>
 						{#if entry.kvarsArr.length > 0}
-							<Row><Col><b>Variables:</b></Col></Row>
-							<Row>
+							<Row class="pt-3 kfk-work-kvars tnt-work-kvars">
 								<Col>
 									<Container>
-										<Row cols={{ lg: 2, md: 1, sm: 1 }}>
+										<Row cols={{ xs: 4 }}>
 											{#each entry.kvarsArr as kvar}
 												<Col>
-													<div>{kvar.label}</div>
-													<div class="kfk-kvar-value-display">{kvar.value}</div>
+													<Row cols="2">
+														<Col><p class="kfk-kvar-key-display text-right">{kvar.label}</p></Col>
+														<Col class="kfk-kvar-value-display">{kvar.value}</Col>
+													</Row>
 												</Col>
 											{/each}
 										</Row>
@@ -341,11 +317,11 @@
 							</Row>
 						{/if}
 						<Row>
-							<Col class="d-flex align-content-end">
-								<div>
+							<Col>
+								<p class="text-right fs-6 fw-lighter fst-italic">
 									By: {entry.doer}
-									at: {moment(entry.doneat).format('LLLL')}
-								</div>
+									at: {TimeTool.format(entry.doneat, 'LLLL')}
+								</p>
 							</Col>
 						</Row>
 					</Container>

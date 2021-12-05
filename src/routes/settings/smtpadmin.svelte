@@ -37,7 +37,7 @@
 
 <Container class="mt-3">
 	<form>
-		{#if myorg.adminorg === false}
+		{#if user.group !== 'ADMIN'}
 			<div class="w-100 text-center fs-3">Email setting is managed by org admin</div>
 		{:else}
 			<Row cols="1">

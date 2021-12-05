@@ -1,9 +1,9 @@
 <script context="module" lang="ts">
-	import moment from 'moment';
-	import 'moment/locale/zh-cn.js';
 	import { post } from '$lib/utils';
 	export const ssr = false;
+	let TimeTool = null;
 	export async function load({ page, fetch, session }) {
+		TimeTool = (await import('$lib/TimeTool')).default;
 		let workid = page.params.workid;
 		let iframeMode = false;
 		if (page.query.has('iframe')) {
@@ -39,7 +39,6 @@
 </script>
 
 <script lang="ts">
-	import jQuery from 'jquery';
 	import { API_SERVER, EMP_SERVER } from '$lib/Env';
 	import type { User, Work } from '$lib/types';
 	import { TabContent, TabPane } from 'sveltestrap';
@@ -53,9 +52,6 @@
 
 	let radioGroup;
 
-	const jq = jQuery;
-	moment.locale('zh-CN');
-	console.log(moment([2007, 0, 29]).toNow());
 	let browser_locale = window.navigator.userLanguage || window.navigator.language;
 	console.log(browser_locale);
 
@@ -103,7 +99,7 @@ let WORKITEM_HTML = await axios.post(
 			<h3>{work.title}</h3>
 		</div>
 		<div class="mx-3 align-self-center flex-grow-1">
-			{moment(work.createdAt).toNow()}
+			{TimeTool.toNow(work.createdAt)}
 		</div>
 	</div>
 </Container>
@@ -111,7 +107,7 @@ let WORKITEM_HTML = await axios.post(
 	{#if ClientPermControl(user.perms, user.email, '*', '', 'admin') && iframeMode === false}
 		<TabContent>
 			<TabPane tabId="work" tab="Work" active>
-				<WorkPage {work} {user} {iframeMode} />
+				<WorkPage {work} {user} {iframeMode} {TimeTool} />
 			</TabPane>
 			<TabPane tabId="json" tab="JSON">
 				<Row class="mt-3">
@@ -216,6 +212,6 @@ let WORKITEM_HTML = await axios.post(
 			</TabPane>
 		</TabContent>
 	{:else}
-		<WorkPage {work} {user} {delegators} {iframeMode} />
+		<WorkPage {work} {user} {delegators} {iframeMode} {TimeTool} />
 	{/if}
 </Container>

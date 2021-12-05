@@ -4,7 +4,6 @@
 	import { flip } from 'svelte/animate';
 	import { onMount } from 'svelte';
 	import type { Workflow } from '$lib/types';
-	import moment from 'moment';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
 	import { goto } from '$app/navigation';
 	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Icon } from 'sveltestrap';
@@ -14,6 +13,7 @@
 	export let iframeMode;
 	export let endpoint;
 	export let payload_extra;
+	export let TimeTool;
 	let rows = [];
 	let page = 0; //first page
 	let pageIndex = 0; //first row
@@ -137,8 +137,8 @@
 				</td>
 				<td data-label="Status" style="font-size:0.25rem" valign="bottom">
 					<div>
-						Begin at {moment(row.createdAt).format('LLLL')} <br />
-						{row.doneat ? 'Done at ' + moment(row.doneat).format('LLLL') : row.status}
+						Begin at {TimeTool.format(row.createdAt, 'LLLL')} <br />
+						{row.doneat ? 'Done at ' + TimeTool.format(row.doneat, 'LLLL') : row.status}
 					</div>
 				</td>
 				<td class="kfk-lastdays" valign="bottom">
