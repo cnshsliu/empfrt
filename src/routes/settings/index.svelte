@@ -7,7 +7,7 @@
 		TimeTool = (await import('$lib/TimeTool')).default;
 		const { user } = session;
 		if (!user) {
-			console.log('setting redict to login');
+			console.log('setting redirect to login');
 			return {
 				status: 302,
 				redirect: '/login'
@@ -37,12 +37,15 @@
 </script>
 
 <script lang="ts">
+	import { API_SERVER } from '$lib/Env';
 	import { session } from '$app/stores';
 	import { browser, dev, mode } from '$app/env';
 	import { get } from 'svelte/store';
+	import { ClientPermControl } from '$lib/clientperm';
 	import type { EmpResponse, WhichTab, OrgMember, OrgMembers } from '$lib/types';
 	import { whichTabStore } from '$lib/empstores';
 	import SmtpAdmin from './smtpadmin.svelte';
+	import OrgChart from './orgchart.svelte';
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import type { User } from '$lib/types';
@@ -56,11 +59,11 @@
 		TabContent,
 		TabPane,
 		Fade,
-		Card,
 		InputGroup,
 		InputGroupText,
 		Input,
 		FormGroup,
+		Icon,
 		Label,
 		Card,
 		CardBody,
@@ -74,6 +77,7 @@
 	export let user: User;
 	export let myorg;
 	export let delegationFromMe;
+	let orgchartlist;
 	let fade_message = '';
 	let fade_timer: any;
 	let input_members = '';
@@ -98,6 +102,7 @@
 
 	export function setFadeMessage(message: string, time = 2000) {
 		fade_message = message;
+		console.log(fade_message);
 		if (fade_timer) clearTimeout(fade_timer);
 		fade_timer = setTimeout(() => {
 			fade_message = '';
@@ -427,6 +432,36 @@
 
 	let tzArray = TimeZone.getTimeZoneArray();
 	console.log(typeof tzArray);
+
+	let files;
+	let orgchart_admin_password = 'Jerome@99';
+	let default_user_password = 'Jerome@99';
+	async function uploadOrgChart(e) {
+		e.preventDefault();
+		const formData = new FormData();
+		formData.append('password', orgchart_admin_password);
+		formData.append('default_user_password', default_user_password);
+		formData.append('file', files[0]);
+		const upload = fetch(`${API_SERVER}/orgchart/import`, {
+			method: 'POST',
+			headers: {
+				Authorization: user.sessionToken
+			},
+			body: formData
+		})
+			.then((response) => response.json())
+			.then(async (result) => {
+				if (result.error) {
+					setFadeMessage(result.message);
+				} else {
+					setFadeMessage('Sucess');
+				}
+			})
+			.catch((error) => {
+				console.error('Error:', error);
+				setFadeMessage(error.message);
+			});
+	}
 
 	$: leaderMessage = testLeader;
 </script>
@@ -800,6 +835,109 @@
 						</CardBody>
 					</Card>
 				{/if}
+			</Container>
+		</TabPane>
+		<TabPane
+			tabId="orgchart"
+			tab="Orgchart"
+			active={whichTab && whichTab['setting'] === 'orgchart'}
+		>
+			<Container class="mt-3 mb-3 w-100">
+				<span slot="tab">
+					<Icon name="cloud-upload" />
+					Import OrgChart
+				</span>
+				<form class="new" enctype="multipart/form-data">
+					<Row class="w-100">
+						<Col class="w-100">
+							<InputGroup>
+								<InputGroupText>Default password for new staff</InputGroupText>
+								<input
+									name="default_user_password"
+									type="password"
+									bind:value={default_user_password}
+								/>
+							</InputGroup>
+							<InputGroup>
+								<InputGroupText>Orgchart CSV file</InputGroupText>
+								<input name="file" type="file" bind:files />
+							</InputGroup>
+							<InputGroup>
+								<InputGroupText>Administrator password</InputGroupText>
+								<input
+									name="orgchart_admin_password"
+									type="password"
+									bind:value={orgchart_admin_password}
+								/>
+								<Button size="sm" on:click={uploadOrgChart} color="primary">Import</Button>
+							</InputGroup>
+						</Col>
+					</Row>
+				</form>
+				<TabContent>
+					<TabPane tabId="orgchart" tab="Orgchart">
+						<OrgChart {user} />
+					</TabPane>
+					<TabPane tabId="fileformat" tab="Orgchart File Format">
+						<Card class="mt-5">
+							<CardHeader>
+								<CardTitle>OrgChart CSV file format</CardTitle>
+								<span class="text-right">
+									<a href="/orgdemo/companya/orgchat.csv" target="_blank">
+										download an example orgchart CSV file
+									</a>
+								</span>
+							</CardHeader>
+							<CardBody>
+								<CardSubtitle>Columns</CardSubtitle>
+								ID,CN,EMAIL,POSITION
+								<ul>
+									<li>ID:</li>
+									Identification string
+									<ul>
+										<li>For top organization</li>
+										must be "root"
+										<li>For department</li>
+										must have nx5 characters, every 5 characters represent a orgchart level. must have
+										nx5 characters, every 5 characters represent a orgchart level.
+										<li>For staff</li>
+										Must be empty, staff belongs to the last deparemnt
+									</ul>
+									<li>CN:</li>
+									Comon name
+									<ul>
+										<li>For top organization</li>
+										the name of your organization
+										<li>For department</li>
+										the name of department
+										<li>For staff</li>
+										the name of staff
+									</ul>
+									<li>EMAIL:</li>
+									Email of staff
+									<ul>
+										<li>For top organization</li>
+										blank
+										<li>For department</li>
+										blank
+										<li>For staff</li>
+										the email of staff
+									</ul>
+									<li>POSITION:</li>
+									The names of staff positions
+									<ul>
+										<li>For top organization</li>
+										blank
+										<li>For department</li>
+										blank
+										<li>For staff</li>
+										colon separated positions
+									</ul>
+								</ul>
+							</CardBody>
+						</Card>
+					</TabPane>
+				</TabContent>
 			</Container>
 		</TabPane>
 		<TabPane tabId="members" tab="Members" active={whichTab && whichTab['setting'] === 'members'}>

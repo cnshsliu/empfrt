@@ -1,0 +1,22 @@
+root,Company A
+,Lucas,lucas@example.com,Director of Board
+,Xing,xing@example.com,CEO
+,Tom,ysy@example.com,CTO
+00001,Platform Department
+,Tom,ysy@example.com,Director
+0000100001,System Group
+,Ted,ted@example.com,Leader
+,John,john@example.com,
+00002,Business Unit A
+,Hawk,hawk@example.com,GM:VP
+0000200001,Operation Department
+,Hawk,hawk@example.com,Director
+000020000100001,OP-Group-1
+,Hawk,hawk@example.com,Leader
+,Shawn,shawn@example.com,
+0000200002,BD
+,Qin,qin@example.com,Director
+000020000200001,BD-Group-1
+,Qin,qin@example.com,Leader
+,Michel,michel@example.com,
+,James,james@example.com,
