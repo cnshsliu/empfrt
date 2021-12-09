@@ -47,7 +47,7 @@
 	import SmtpAdmin from './smtpadmin.svelte';
 	import OrgChartCsvFormat from './orgchartcsvformat.svelte';
 	import OrgChart from './orgchart.svelte';
-	import OrgChartRelationTest from './orgchartrelationtest.svelte';
+	import OrgChartRelationTest from '$lib/orgchartrelationtest.svelte';
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import type { User } from '$lib/types';
