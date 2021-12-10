@@ -8,8 +8,11 @@
 		Col,
 		InputGroup,
 		InputGroupText,
-		Input
+		Input,
+		TabContent,
+		TabPane
 	} from 'sveltestrap';
+	import RolePicker from '$lib/designer/prop/RolePicker.svelte';
 
 	export let nodeInfo;
 	export let roleOptions = [];
@@ -27,47 +30,39 @@
 			</InputGroup>
 		</Col>
 	</Row>
-	<Row cols="1">
-		<Col>
-			<InputGroup size="sm">
-				<InputGroupText>To Role</InputGroupText>
-				<Input bind:value={nodeInfo.nodeProps.INFORM.role} disabled={readonly} />
-			</InputGroup>
-		</Col>
-		{#if !readonly}
+	<TabContent pills>
+		<TabPane tabId="recipient" tab="Recipient" active>
 			<Col>
-				<InputGroup size="sm">
-					<InputGroupText>Pick an existing role</InputGroupText>
-					<Input
-						type="select"
-						bind:value={nodeInfo.nodeProps.INFORM.role}
-						name="select"
-						id="exampleSelect"
-					>
-						{#each roleOptions as aRoleOption}
-							<option>{aRoleOption}</option>
-						{/each}
-					</Input>
-				</InputGroup>
-			</Col>
-		{/if}
-		<Col>
-			<InputGroup size="sm">
-				<InputGroupText>Subject</InputGroupText>
-				<Input bind:value={nodeInfo.nodeProps.INFORM.subject} disabled={readonly} />
-			</InputGroup>
-		</Col>
-		<Col>
-			<InputGroup size="sm">
-				<InputGroupText>Content</InputGroupText>
-				<Input
-					bind:value={nodeInfo.nodeProps.INFORM.content}
-					type="textarea"
-					class="kfk-code-input"
-					disabled={readonly}
+				<RolePicker
+					bind:role={nodeInfo.nodeProps.INFORM.role}
+					bind:existingRoles={roleOptions}
+					{readonly}
 				/>
-			</InputGroup>
-		</Col>
+			</Col>
+		</TabPane>
+		<TabPane tabId="content" tab="Content" active>
+			<Row cols="1">
+				<Col>
+					<InputGroup size="sm">
+						<InputGroupText>Subject</InputGroupText>
+						<Input bind:value={nodeInfo.nodeProps.INFORM.subject} disabled={readonly} />
+					</InputGroup>
+				</Col>
+				<Col>
+					<InputGroup size="sm">
+						<InputGroupText>Content</InputGroupText>
+						<Input
+							bind:value={nodeInfo.nodeProps.INFORM.content}
+							type="textarea"
+							class="kfk-code-input"
+							disabled={readonly}
+						/>
+					</InputGroup>
+				</Col>
+			</Row>
+		</TabPane>
+	</TabContent>
+	<Row>
 		<Col class="d-flex mt-3">
 			<span class="kfk-property-id"> ID: {nodeInfo.nodeProps.INFORM.id} </span>
 			<NavLink

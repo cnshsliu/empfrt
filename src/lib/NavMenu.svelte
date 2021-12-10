@@ -150,6 +150,7 @@
 									<Col>{DEPLOY_MODE === 'private' ? 'ENTERPRISE' : 'SaaS'}</Col>
 									<Col class="mt-3">
 										<Button
+											color="primary"
 											on:click={(e) => {
 												goto('/settings');
 											}}

@@ -109,7 +109,7 @@ export interface KvarInput {
 	name: string;
 	value: string | number | string[];
 	label: string;
-	type: string;
+	type?: string;
 }
 export interface Work {
 	_id: string;

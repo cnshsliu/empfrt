@@ -1,5 +1,13 @@
 <script lang="ts">
-	import { InputGroup, InputGroupText, Input, TabContent, TabPane, Button } from 'sveltestrap';
+	import {
+		InputGroup,
+		InputGroupText,
+		Input,
+		TabContent,
+		TabPane,
+		Button,
+		Container
+	} from 'sveltestrap';
 	import { session } from '$app/stores';
 	import OrgChartRelationTest from '$lib/orgchartrelationtest.svelte';
 
@@ -23,6 +31,20 @@
 		}
 	}
 	function setRoleTo(val) {
+		if (val.indexOf('<') > -1 || val.indexOf('>') > -1) {
+			try {
+				//如果字符串中有大于号小于号，就生成一个html对象，通过浏览器来取到起自己的文字，过滤掉字符串中可能的html tag
+				let tmp = document.createElement('DIV');
+				tmp.innerHTML = val;
+				val = tmp.textContent || tmp.innerText || '';
+			} catch (err) {
+				//如果出现错误，则简单使用regexp进行替换
+				//先去掉完整的<>, 然后再去掉独立的< 和  >
+				val = val.replace(/\<\/?.*\>/gi, '');
+				val = val.replace(/\</gi, '');
+				val = val.replace(/\>/gi, '');
+			}
+		}
 		role = val;
 	}
 	function toggleTab(e) {
@@ -46,10 +68,12 @@
 		if (pickedValue.startsWith('Q:')) {
 			pickedQueryString = pickedValue.substring(2);
 			qstr = pickedQueryString;
+			console.log('qstr:', qstr);
 			selectedPickerTab = 'byquery';
 		} else if (pickedValue.startsWith('L:')) {
 			pickedLeaderString = pickedValue.substring(2);
 			lstr = pickedLeaderString;
+			console.log('lstr:', lstr);
 			selectedPickerTab = 'byleader';
 		} else {
 			selectedPickerTab = 'byref';
@@ -91,51 +115,13 @@
 			{/each}
 		</Input>
 	</InputGroup>
-	<TabContent on:tab={(e) => toggleTab(e)}>
+	<TabContent pills on:tab={(e) => toggleTab(e)}>
 		<TabPane tabId="byleader" tab="by Leader">
-			<InputGroup size="sm">
-				<InputGroupText>Leader Title</InputGroupText>
-				<Input bind:value={pickedLeaderString} />
-			</InputGroup>
-			<Button
-				color="primary"
-				class="w-100"
-				on:click={(e) => {
-					e.preventDefault();
-					setRoleTo('L:' + pickedLeaderString);
-					lstr = pickedLeaderString;
-				}}
-			>
-				Set by Leader
-			</Button>
-			Colon separated leaders' title, for example: "director" will search workflow doer's director upwards
-			along the orgchart tree. "director:CTO:CEO" will search doer's director and CTO and CEO upwards
-			along the orgchart tree.
-			<hr />
-			<div>Try out:</div>
 			<div class="overflow-scroll w-100 bg-light">
 				<OrgChartRelationTest {user} show={{ leader: true }} {lstr} {useThisLeader} />
 			</div>
 		</TabPane>
 		<TabPane tabId="byquery" tab="by Query">
-			<InputGroup size="sm">
-				<InputGroupText>Orgchart Query:</InputGroupText>
-				<Input bind:value={pickedQueryString} />
-			</InputGroup>
-			<Button
-				color="primary"
-				class="w-100"
-				on:click={(e) => {
-					e.preventDefault();
-					setRoleTo('Q:' + pickedQueryString);
-					qstr = pickedQueryString;
-				}}
-			>
-				Set by Query String
-			</Button>
-			Format: [dep1 regexp]/(pos1:pos2) & [dep2 regexp]/(pos3:pos4) &...
-			<hr />
-			<div>Try out:</div>
 			<div class="overflow-scroll w-100 bg-light">
 				<OrgChartRelationTest {user} show={{ query: true }} {qstr} {useThisQuery} />
 			</div>

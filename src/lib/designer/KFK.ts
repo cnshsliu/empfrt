@@ -549,6 +549,8 @@ class KFKclass {
 	async removeConnectById(connect_id: string): Promise<void> {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
+		that.ball.addClass('noshow');
+		that.ball.timeline().stop();
 		try {
 			await that.svgDraw.find(`.${connect_id}`).remove();
 			//eslint-disable-next-line
@@ -1283,6 +1285,7 @@ ret='DEFAULT'; `
 				that.linkPosNode.splice(1, 1);
 			}
 		}
+		that.onChange('Connect');
 	}
 
 	clearNodeMessage() {

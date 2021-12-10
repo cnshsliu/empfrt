@@ -7,7 +7,6 @@
 		TimeTool = (await import('$lib/TimeTool')).default;
 		const { user } = session;
 		if (!user) {
-			console.log('setting redirect to login');
 			return {
 				status: 302,
 				redirect: '/login'
