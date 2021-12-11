@@ -1,4 +1,5 @@
 <script lang="ts">
+	import * as api from '$lib/api';
 	import {
 		InputGroup,
 		InputGroupText,
@@ -6,6 +7,10 @@
 		TabContent,
 		TabPane,
 		Button,
+		Card,
+		CardHeader,
+		CardBody,
+		CardTitle,
 		Container
 	} from 'sveltestrap';
 	import { session } from '$app/stores';
@@ -88,6 +93,23 @@
 		pickedQueryString = query;
 		setRoleTo('Q:' + pickedQueryString);
 	}
+	let try_doers = [];
+	let try_with_teamid = '';
+	let try_with_email = user.email;
+	async function testGetDoers(e) {
+		e.preventDefault();
+		let res = await api.post(
+			'action/getdoers',
+			{ try_with_teamid, try_with_email, role },
+			user.sessionToken
+		);
+		if (res.error) {
+			console.log(res.message);
+			try_doers = [];
+		} else {
+			try_doers = res;
+		}
+	}
 </script>
 
 <InputGroup size="sm">
@@ -110,7 +132,31 @@
 			{/each}
 		</Input>
 	</InputGroup>
-	<TabContent pills on:tab={(e) => toggleTab(e)}>
+	<div class="mt-3 fs-5">Test role string</div>
+	<InputGroup>
+		<InputGroupText>Try with team</InputGroupText>
+		<Input type="text" bind:value={try_with_teamid} />
+	</InputGroup>
+	<InputGroup>
+		<InputGroupText>Try with user</InputGroupText>
+		<Input type="text" bind:value={try_with_email} />
+	</InputGroup>
+	<Button on:click={testGetDoers} color="primary">Test it</Button>
+	{#if Array.isArray(try_doers) && try_doers.length > 0}
+		<Card>
+			<CardHeader>
+				<CardTitle>Result:</CardTitle>
+			</CardHeader>
+			<CardBody>
+				<ul>
+					{#each try_doers as rel, index (rel)}
+						<li>{rel.cn}: {rel.uid}</li>
+					{/each}
+				</ul>
+			</CardBody>
+		</Card>
+	{/if}
+	<!-- TabContent pills on:tab={(e) => toggleTab(e)}>
 		<TabPane tabId="byleader" tab="by Leader">
 			<div class="overflow-scroll w-100 bg-light">
 				<OrgChartRelationTest {user} show={{ leader: true }} {lstr} {useThisLeader} />
@@ -121,5 +167,5 @@
 				<OrgChartRelationTest {user} show={{ query: true }} {qstr} {useThisQuery} />
 			</div>
 		</TabPane>
-	</TabContent>
+	</TabContent -->
 {/if}
