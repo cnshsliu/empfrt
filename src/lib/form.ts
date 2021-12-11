@@ -88,9 +88,9 @@ export function enhanceAddOneRoleMember(
 
 		const contentType = 'application/json';
 		const formData = new FormData(form);
-		const members = [{ uid: formData.get('uid'), dname: formData.get('dname') }];
+		const members = [{ uid: formData.get('uid'), cn: formData.get('cn') }];
 		formData.delete('uid');
-		formData.delete('dname');
+		formData.delete('cn');
 
 		const tmp: { [k: string]: unknown } = Object.fromEntries(formData);
 		tmp.members = members;

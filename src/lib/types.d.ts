@@ -78,7 +78,7 @@ export interface Workflow {
 
 export interface TmapEntry {
 	uid: string;
-	dname: string;
+	cn: string;
 }
 
 export interface Tmap {

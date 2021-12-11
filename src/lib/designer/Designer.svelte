@@ -12,6 +12,7 @@
 	import Timer from '$lib/designer/prop/Timer.svelte';
 	import Sub from '$lib/designer/prop/Sub.svelte';
 	import Connect from '$lib/designer/prop/Connect.svelte';
+	import PropertyHelp from '$lib/designer/prop/PropertyHelp.svelte';
 	import KFK from '$lib/designer/KFK';
 	import { onMount, onDestroy } from 'svelte';
 	import {
@@ -320,21 +321,7 @@
 						<Connect {nodeInfo} {showHelp} {readonly} />
 					{/if}
 				</Col>
-				{#if helpId === 'ACTION'}
-					<Col>ACTION HELP HERE</Col>
-				{:else if helpId === 'SCRIPT'}
-					<Col>SCRIPT HELP HERE</Col>
-				{:else if helpId === 'CONNECT'}
-					<Col>CONNECT HELP HERE</Col>
-				{:else if helpId === 'INFORM'}
-					<Col>INFORM HELP HERE</Col>
-				{:else if helpId === 'SCRIPT'}
-					<Col>SCRIPT HELP HERE</Col>
-				{:else if helpId === 'SUB'}
-					<Col>SUB HELP HERE</Col>
-				{:else if helpId === 'TIMER'}
-					<Col>TIMER HELP HERE</Col>
-				{/if}
+				<PropertyHelp {helpId} />
 			</Row>
 		</Container>
 	</ModalBody>

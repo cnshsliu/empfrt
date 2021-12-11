@@ -266,7 +266,7 @@
 					<CardText>
 						{#each theTeam.tmap[aRole] as aMember (aMember.uid)}
 							<Badge pill color="info" class="kfk-role-member-tag">
-								{aMember.dname} &lt;{aMember.uid}&gt;
+								{aMember.cn} &lt;{aMember.uid}&gt;
 							</Badge>
 						{/each}
 					</CardText>

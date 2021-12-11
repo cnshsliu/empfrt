@@ -24,6 +24,7 @@
 	function deleteMember(aTeam: Team, aRole: string, aMember: TmapEntry) {
 		let payload = { teamid: aTeam.teamid, role: aRole, members: [aMember] };
 		const token = user.sessionToken;
+		console.log('Payload:', payload);
 		setTimeout(async () => {
 			//eslint-disable-next-line
 			team = (await api.post('team/role/member/delete', payload, token)) as Team;
@@ -101,7 +102,7 @@
 						Email:
 						<input name="uid" placeholder="Email" autocomplete="off" />
 						Name:
-						<input name="dname" placeholder="Name" autocomplete="off" />
+						<input name="cn" placeholder="Name" autocomplete="off" />
 
 						<input type="hidden" name="teamid" value={team.teamid} />
 						<input type="hidden" name="role" value={aRole} />
@@ -146,7 +147,7 @@
 				{#if team.tmap[aRole]}
 					{#each team.tmap[aRole] as aMember (aMember.uid)}
 						<Badge pill color="info" class="kfk-role-member-tag">
-							{aMember.dname} &lt;{aMember.uid}&gt;
+							{aMember.cn} &lt;{aMember.uid}&gt;
 							{#if ClientPermControl(user.perms, user.email, 'team', team, 'update')}
 								<a
 									href={'#'}

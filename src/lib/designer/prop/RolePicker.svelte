@@ -88,15 +88,10 @@
 		pickedQueryString = query;
 		setRoleTo('Q:' + pickedQueryString);
 	}
-
-	$: {
-		let a = selectedPickerTab;
-		console.log(selectedPickerTab);
-	}
 </script>
 
 <InputGroup size="sm">
-	<InputGroupText>Role</InputGroupText>
+	<InputGroupText>Participant's Role</InputGroupText>
 	<Input bind:value={role} disabled={readonly} />
 </InputGroup>
 {#if !readonly}
