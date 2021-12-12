@@ -101,7 +101,7 @@
 					</Col>
 					<Col>
 						<span class="fw-bold fs-5">Status:</span>
-						<div class="fw-light">{work.status}</div>
+						<div class="fw-light">{Status[work.status]}</div>
 					</Col>
 					<Col>
 						<span class="fw-bold fs-5">Owner:</span>
@@ -320,7 +320,7 @@
 							<Col>
 								<p class="text-right fs-6 fw-lighter fst-italic">
 									By: {entry.doer}
-									at: {TimeTool.format(entry.doneat, 'LLLL')}
+									at: {TimeTool.format(entry.doneat, 'LLL')}
 								</p>
 							</Col>
 						</Row>
