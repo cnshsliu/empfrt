@@ -2,6 +2,7 @@
 	import * as api from '$lib/api';
 	import { goto } from '$app/navigation';
 	import Parser from '$lib/parser';
+	import ProcessTrack from '$lib/ProcessTrack.svelte';
 	import {
 		Card,
 		CardHeader,
@@ -117,7 +118,7 @@
 				</Row>
 			</Container>
 			<Container class="mt-3 kfk-highlight-2 fs-3">
-				{Parser.base64ToCode(work.instruct)}
+				{@html Parser.base64ToCode(work.instruct)}
 			</Container>
 			<!--- div class="w-100">
 				<iframe id="workInstruction" src="/work/instruct" title="YouTube video" width="100%" />
@@ -237,98 +238,7 @@
 			{/each}
 		</Row>
 	</Container>
-	<Container class="mt-4">
-		<Card>
-			<CardHeader>
-				<CardTitle>
-					<Row>
-						<Col>
-							<Icon name="bar-chart-steps" />
-							{work.wf.wftitle}
-						</Col>
-						<Col class="w-100">
-							<div class="w-100 text-right">
-								<NavLink
-									class="m-0 p-0 fs-6"
-									on:click={(e) => {
-										e.preventDefault();
-										gotoWorkflow(work.wfid);
-									}}><Icon name="kanban" />&nbsp;Monitor</NavLink
-								>
-							</div>
-						</Col>
-					</Row>
-				</CardTitle>
-			</CardHeader>
-			<CardBody>
-				<Container class="mt-2 ml-5 kfk-highlight-2 ">
-					<Row cols={{ lg: 2, md: 2, sm: 1 }}>
-						<Col>Started at: {work.wf.beginat ? TimeTool.format(work.wf.begingat, 'LLLL') : ''}</Col
-						>
-						<Col>Started by: {work.wf.starter}</Col>
-						<Col>
-							{work.wf.doneat
-								? 'Completed at ' + TimeTool.format(work.wf.doneat, 'LLLL')
-								: 'Still running'}
-						</Col>
-					</Row>
-				</Container>
-			</CardBody>
-		</Card>
-	</Container>
-	<Container class="my-5">
-		<Card>
-			<CardHeader>
-				<CardTitle>
-					<Icon name="clock-history" />&nbsp; Work Track:
-				</CardTitle>
-			</CardHeader>
-			<CardBody>
-				{#each work.history as entry}
-					<Container class="mt-2 kfk-highlight-2 ">
-						<Row cols={{ sm: 2 }} class="mt-1 pt-3 kfk-work-kvars tnt-work-kvars">
-							<Col>
-								<b>{entry.title}</b>
-								: {Status[entry.status]}
-							</Col>
-							{#if entry.route}
-								<Col>
-									<span class="kfk-kvar-key-display">Decision:</span>
-									<span class="kfk-kvar-value-display">{entry.route}</span>
-								</Col>
-							{/if}
-						</Row>
-						{#if entry.kvarsArr.length > 0}
-							<Row class="pt-3 kfk-work-kvars tnt-work-kvars">
-								<Col>
-									<Container>
-										<Row cols={{ xs: 4 }}>
-											{#each entry.kvarsArr as kvar}
-												<Col>
-													<Row cols="2">
-														<Col><p class="kfk-kvar-key-display text-right">{kvar.label}</p></Col>
-														<Col class="kfk-kvar-value-display">{kvar.value}</Col>
-													</Row>
-												</Col>
-											{/each}
-										</Row>
-									</Container>
-								</Col>
-							</Row>
-						{/if}
-						<Row>
-							<Col>
-								<p class="text-right fs-6 fw-lighter fst-italic">
-									By: {entry.doer}
-									at: {TimeTool.format(entry.doneat, 'LLL')}
-								</p>
-							</Col>
-						</Row>
-					</Container>
-				{/each}
-			</CardBody>
-		</Card>
-	</Container>
+	<ProcessTrack bind:wf={work.wf} bind:wfid={work.wfid} {TimeTool} {iframeMode} />
 {:else}
 	Not found
 {/if}

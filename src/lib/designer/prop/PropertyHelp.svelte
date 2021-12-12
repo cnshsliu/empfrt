@@ -58,13 +58,16 @@
 		</ul>
 	</Col>
 {:else if helpId === 'INFORM'}
-	<Col
-		>Inform Send message to someone.
+	<Col>
+		Inform Send message to someone.
 		<ul>
 			<li>Email: send email to someone</li>
 			<li>Meta: send message via Meta (comming..)</li>
 			<li>SMS: send message via SMS (comming..)</li>
 		</ul>
+		You may include KVAR.value in subject and content in Handlebars format, You may also use restricted
+		HTML tags in your email contennt.
+		<a href="/docs#inform_content" target="_blank"> see details </a>
 	</Col>
 {:else if helpId === 'SUB'}
 	<Col>

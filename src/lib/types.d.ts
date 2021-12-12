@@ -26,6 +26,7 @@ export interface User {
 	email: string;
 	avatar: string;
 	bio: string;
+	ew: boolean;
 	sessionToken: string;
 	password?: string;
 	extra?: {

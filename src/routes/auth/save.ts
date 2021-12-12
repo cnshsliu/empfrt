@@ -10,17 +10,16 @@ export async function post(request) {
 	}
 
 	const token = request.locals.user.sessionToken;
-	console.log('TOken', token);
-	const ret = await api.post(
-		'account/profile/update',
-		{
-			email: request.body.email,
-			username: request.body.username,
-			password: request.body.password,
-			avatar: request.body.avatar
-		},
-		token
-	);
+	const payload = {
+		email: request.body.email,
+		username: request.body.username,
+		password: request.body.password,
+		ew: request.body.ew,
+		old_password: request.body.old_password,
+		avatar: request.body.avatar
+	};
+	const ret = await api.post('account/profile/update', payload, token);
+	console.log('auth/save', payload);
 	if (ret.user) {
 		request.locals.user = Parser.codeToBase64(JSON.stringify(ret.user));
 	}

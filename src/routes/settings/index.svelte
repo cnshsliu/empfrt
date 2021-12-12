@@ -116,7 +116,9 @@
 			email: user.email,
 			avatar: user.avatar,
 			username: user.username,
-			password: user.password
+			password: user.password,
+			ew: user.ew,
+			old_password: my_old_password
 		};
 		console.log(payload);
 		const response = (await post('auth/save', payload)) as unknown as EmpResponse;
@@ -260,6 +262,7 @@
 	}
 
 	let password_for_admin = '';
+	let my_old_password = '';
 	let set_group_to = '';
 
 	async function approveJoinOrgApplications() {
@@ -501,7 +504,7 @@
 						</Col>
 						<Col>
 							<InputGroup class="mb-1">
-								<InputGroupText>Your password:</InputGroupText>
+								<InputGroupText>Change password:</InputGroupText>
 								<input
 									class="form-control"
 									type="password"
@@ -511,6 +514,23 @@
 										onInputChange();
 									}}
 								/>
+							</InputGroup>
+						</Col>
+						<Col>
+							<InputGroup class="mb-1">
+								<InputGroupText>Old password:</InputGroupText>
+								<input
+									class="form-control"
+									type="password"
+									placeholder="Old Password"
+									bind:value={my_old_password}
+								/>
+							</InputGroup>
+						</Col>
+						<Col>
+							<InputGroup>
+								<InputGroupText>Send Email to me on new work comming</InputGroupText> &nbsp;&nbsp;
+								<Input type="checkbox" bind:checked={user.ew} on:change={onInputChange} />
 							</InputGroup>
 						</Col>
 					</Row>
@@ -531,28 +551,35 @@
 				</Container>
 			</form>
 			<Container class="mt-5">
-				<Row cols="1">
-					<Col>
-						<InputGroup class="mb-1">
-							<InputGroupText>Join Org with joincode:</InputGroupText>
-							<Input
-								type="text"
-								bind:value={joinorgwithcode}
-								placeholder="join code"
-								autocomplete="off"
-							/>
-							<Button
-								on:click={(e) => {
-									e.preventDefault();
-									joinOrgWithCode();
-								}}
-							>
-								Join
-							</Button>
-						</InputGroup>
-					</Col>
-					<Col class="p-3">My Group: {user.group}</Col>
-				</Row>
+				<form>
+					<Row cols="1" />
+				</form>
+			</Container>
+			<Container class="mt-5">
+				<form>
+					<Row cols="1">
+						<Col>
+							<InputGroup class="mb-1">
+								<InputGroupText>Join Org with joincode:</InputGroupText>
+								<Input
+									type="text"
+									bind:value={joinorgwithcode}
+									placeholder="join code"
+									autocomplete="off"
+								/>
+								<Button
+									on:click={(e) => {
+										e.preventDefault();
+										joinOrgWithCode();
+									}}
+								>
+									Join
+								</Button>
+							</InputGroup>
+						</Col>
+						<Col class="p-3">My Group: {user.group}</Col>
+					</Row>
+				</form>
 			</Container>
 			{#if dev}
 				<Container class="w-50 mt-5">
