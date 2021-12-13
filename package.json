@@ -1,9 +1,9 @@
 {
-	"name": "~TODO~",
-	"version": "0.0.1",
+	"name": "MetatoCome",
+	"version": "1.0.0",
 	"scripts": {
-		"dev": "svelte-kit dev",
-		"build": "svelte-kit build",
+		"dev": "cp dotEnv_dev .env; svelte-kit dev",
+		"build": "cp dotEnv_prd .env;  svelte-kit build",
 		"preview": "svelte-kit preview",
 		"check": "svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
@@ -34,7 +34,6 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@fontsource/fira-mono": "^4.5.0",
 		"@lukeed/uuid": "^2.0.0",
 		"@svgdotjs/svg.js": "^3.1.1",
 		"@types/sizzle": "^2.3.3",

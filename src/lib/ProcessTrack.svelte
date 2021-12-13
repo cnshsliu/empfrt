@@ -105,7 +105,12 @@
 								</Col>
 							</Row>
 						{/if}
-						<Row>
+						<Row cols="1">
+							{#if entry.comment}
+								<Col>
+									{entry.comment}
+								</Col>
+							{/if}
 							<Col>
 								<p class="text-right fs-6 fw-light fst-italic">
 									{#each entry.doers as aDoer}
@@ -127,9 +132,11 @@
 			</div>
 		</CardBody>
 	</Card>
-	<Row>
-		<Col class="d-flex justify-content-end"><NavLink on:click={printWindow}>Print</NavLink></Col>
-	</Row>
+	{#if print}
+		<Row>
+			<Col class="d-flex justify-content-end"><NavLink on:click={printWindow}>Print</NavLink></Col>
+		</Row>
+	{/if}
 </Container>
 
 <style>

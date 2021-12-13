@@ -64,6 +64,7 @@ export interface Template {
 
 export interface Workflow {
 	_id: string;
+	pbo: string;
 	wfid: string;
 	tenant: string;
 	wftitle: string;
@@ -75,6 +76,32 @@ export interface Workflow {
 	doc: string;
 	createdAt: string;
 	updatedAt: string;
+	kvarsArr?: kvarDef[];
+}
+
+export interface Work {
+	_id: string;
+	tenant: string;
+	doer: string;
+	tplid: string;
+	wfid: string;
+	nodeid: string;
+	workid: string;
+	title: string;
+	status: string;
+	kvars: unknown;
+	kvarsArr: ArrayLike<kvarDef>;
+	wfstatus: string;
+	createdAt: string;
+	updatedAt: string;
+	instruct: string;
+	wf: Workflow;
+	revocable?: boolean;
+	returnable?: boolean;
+	options?: string[];
+	doneby?: string;
+	doneat?: date;
+	comment?: string;
 }
 
 export interface TmapEntry {
@@ -111,23 +138,6 @@ export interface KvarInput {
 	value: string | number | string[];
 	label: string;
 	type?: string;
-}
-export interface Work {
-	_id: string;
-	tenant: string;
-	doer: string;
-	tplid: string;
-	wfid: string;
-	nodeid: string;
-	workid: string;
-	title: string;
-	status: string;
-	kvars: unknown;
-	kvarsArr: ArrayLike<kvarDef>;
-	wfstatus: string;
-	createdAt: string;
-	updatedAt: string;
-	instruct: string;
 }
 
 export interface KFKclass {

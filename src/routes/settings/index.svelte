@@ -958,11 +958,17 @@
 					</Col>
 					<Col class="d-flex justify-content-end mt-2">
 						<InputGroup class="mb-1">
+							<InputGroupText>Admin password</InputGroupText>
 							<Input
 								type="password"
 								bind:value={password_for_admin}
 								placeholder="Confirm with your password"
 							/>
+						</InputGroup>
+					</Col>
+					<Col class="d-flex justify-content-end mt-2">
+						<InputGroup class="mb-1">
+							<InputGroupText>Remove selected?</InputGroupText>
 							<Button
 								on:click={(e) => {
 									e.preventDefault();

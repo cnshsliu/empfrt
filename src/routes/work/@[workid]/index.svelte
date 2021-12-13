@@ -39,7 +39,7 @@
 </script>
 
 <script lang="ts">
-	import { API_SERVER, EMP_SERVER } from '$lib/Env';
+	import { API_SERVER, MTC_SERVER } from '$lib/Env';
 	import type { User, Work } from '$lib/types';
 	import { TabContent, TabPane } from 'sveltestrap';
 	import { title } from '$lib/title';
@@ -86,7 +86,7 @@ let WORKITEM_HTML = await axios.post(
 	let html_example_svelte = `<p>{@html WORKITEM_HTML}</p>`;
 	let html_example_jquery = `<p>{@html WORKITEM_HTML}</p>`;
 	export let work_html = 'to be implemented';
-	const iframe_src = `${EMP_SERVER}/work/@${work.workid}?iframe`;
+	const iframe_src = `${MTC_SERVER}/work/@${work.workid}?iframe`;
 	const iframe_html_code = `<iframe title="hyperflow_work_${work.workid}"
 	src="${iframe_src}"></iframe>`;
 

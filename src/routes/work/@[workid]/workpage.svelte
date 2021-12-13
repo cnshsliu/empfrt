@@ -3,30 +3,18 @@
 	import { goto } from '$app/navigation';
 	import Parser from '$lib/parser';
 	import ProcessTrack from '$lib/ProcessTrack.svelte';
-	import {
-		Card,
-		CardHeader,
-		CardTitle,
-		CardBody,
-		CardSubtitle,
-		CardText,
-		Container,
-		Row,
-		Col,
-		Nav,
-		Icon,
-		NavItem,
-		NavLink
-	} from 'sveltestrap';
-	import { Form, FormGroup, FormText, Input, Label } from 'sveltestrap';
+	import { Container, Row, Col, Icon } from 'sveltestrap';
+	import { Form, FormGroup, Input, Label } from 'sveltestrap';
 	import { Status } from '$lib/status';
-	import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'sveltestrap';
+	import { Button } from 'sveltestrap';
 	import type { User, Work } from '$lib/types';
 	export let work: Work;
 	export let user: User;
 	export let delegators;
 	export let iframeMode: boolean;
 	export let TimeTool;
+	let printProcessTrack = true;
+	let comment = '';
 	$: is_doable =
 		(work.doer === user.email ||
 			(delegators && Array.isArray(delegators) && delegators.includes(work.doer))) &&
@@ -36,7 +24,8 @@
 		let payload = {
 			wfid: work.wfid,
 			workid: work.workid,
-			doer: work.doer
+			doer: work.doer,
+			comment: comment
 		};
 		payload.kvars = {};
 		for (let i = 0; i < work.kvarsArr.length; i++) {
@@ -48,7 +37,8 @@
 	function _revokeWork() {
 		let payload = {
 			wfid: work.wfid,
-			workid: work.workid
+			workid: work.workid,
+			comment: comment
 		};
 		api.post('work/revoke', payload, user.sessionToken);
 		goto(iframeMode ? '/work?iframe' : '/work');
@@ -59,10 +49,11 @@
 	function gotoWorkflow(wfid: string) {
 		goto(iframeMode ? `/workflow/@${wfid}?iframe` : `/workflow/@${wfid}`, { replaceState: false });
 	}
-	function _doneWork(user_choice) {
+	function _doneWork(user_choice = null) {
 		let payload = {
 			doer: work.doer,
-			workid: work.workid
+			workid: work.workid,
+			comment: comment
 		};
 		if (user_choice) {
 			payload.route = user_choice;
@@ -160,11 +151,12 @@
 					</Row>
 				</Container>
 			{/if}
-			<Container class="mt-3">
-				{#if is_doable}
+			{#if is_doable}
+				<Container class="mt-3">
 					<input type="hidden" name="workid" value={work.workid} />
 					{work.doer === user.email ? '' : `Delegated by ${work.doer}`}
-					<Row cols="6">
+					<Input type="textarea" placeholder="Comment" bind:value={comment} />
+					<Row cols="6" class="mt-2">
 						{#if work.status === 'ST_RUN'}
 							{#if work.options.length === 0}
 								<Col>
@@ -220,31 +212,34 @@
 							</Col>
 						{/if}
 					</Row>
-				{/if}
-			</Container>
+				</Container>
+			{/if}
 		</Form>
+		<Container class="mt-3 kfk-highlight-2">
+			Workflow Data:
+			<Row cols={{ lg: 3, md: 2, sm: 1 }}>
+				{#each work.wf.kvarsArr as kvar}
+					{#if kvar.break}
+						<div class="w-100" />
+					{/if}
+					<Col>
+						<div>{kvar.label}</div>
+						<div class="kfk-kvar-value-display">{kvar.value}</div>
+					</Col>
+				{/each}
+			</Row>
+		</Container>
+		<Container>
+			{work.comment}
+		</Container>
 	</Container>
-	<Container class="mt-3 kfk-highlight-2">
-		Workflow Data:
-		<Row cols={{ lg: 3, md: 2, sm: 1 }}>
-			{#each work.wf.kvarsArr as kvar, i}
-				{#if kvar.break}
-					<div class="w-100" />
-				{/if}
-				<Col>
-					<div>{kvar.label}</div>
-					<div class="kfk-kvar-value-display">{kvar.value}</div>
-				</Col>
-			{/each}
-		</Row>
-	</Container>
-	<ProcessTrack bind:wf={work.wf} bind:wfid={work.wfid} {TimeTool} {iframeMode} />
+	<ProcessTrack
+		bind:wf={work.wf}
+		bind:wfid={work.wfid}
+		bind:print={printProcessTrack}
+		{TimeTool}
+		{iframeMode}
+	/>
 {:else}
 	Not found
 {/if}
-
-<style>
-	.text-right {
-		text-align: right;
-	}
-</style>
