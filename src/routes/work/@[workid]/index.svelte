@@ -99,7 +99,7 @@ let WORKITEM_HTML = await axios.post(
 			<h3>{work.title}</h3>
 		</div>
 		<div class="mx-3 align-self-center flex-grow-1">
-			{TimeTool.toNow(work.createdAt)}
+			{TimeTool.fromNow(work.createdAt)}
 		</div>
 	</div>
 </Container>

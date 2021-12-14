@@ -21,6 +21,7 @@
 	import EmpFooter from '$lib/EmpFooter.svelte';
 	import ErrHint from '$lib/ErrHint.svelte';
 	import PreloadingIndicator from '$lib/PreloadingIndicator.svelte';
+	import Notifications from 'svelte-notifications';
 	export let page;
 
 	let bootstrap: any;
@@ -53,16 +54,17 @@
 {#if $navigating}
 	<PreloadingIndicator />
 {/if}
-<NavMenu />
-<main>
-	<slot />
-</main>
-
-{#if page.path.startsWith('/template/@') || page.path.startsWith('/workflow/@')}
-	&nbsp;
-{:else}
-	<EmpFooter />
-{/if}
+<Notifications>
+	<NavMenu />
+	<main>
+		<slot />
+	</main>
+	{#if page.path.startsWith('/template/@') || page.path.startsWith('/workflow/@')}
+		&nbsp;
+	{:else}
+		<EmpFooter />
+	{/if}
+</Notifications>
 {#if $session.errors}
 	<ErrHint errors={$session.errors} />
 {/if}

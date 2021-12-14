@@ -2,6 +2,7 @@
 	import * as api from '$lib/api';
 	import { goto } from '$app/navigation';
 	import Parser from '$lib/parser';
+	import CommentEntry from '$lib/CommentEntry.svelte';
 	import ProcessTrack from '$lib/ProcessTrack.svelte';
 	import { Container, Row, Col, Icon } from 'sveltestrap';
 	import { Form, FormGroup, Input, Label } from 'sveltestrap';
@@ -10,9 +11,9 @@
 	import type { User, Work } from '$lib/types';
 	export let work: Work;
 	export let user: User;
-	export let delegators;
+	export let delegators: String[];
 	export let iframeMode: boolean;
-	export let TimeTool;
+	export let TimeTool: any;
 	let printProcessTrack = true;
 	let comment = '';
 	$: is_doable =
@@ -21,7 +22,7 @@
 		work.status === 'ST_RUN';
 
 	function _sendbackWork() {
-		let payload = {
+		let payload: any = {
 			wfid: work.wfid,
 			workid: work.workid,
 			doer: work.doer,
@@ -35,7 +36,7 @@
 		goto(iframeMode ? '/work?iframe' : '/work');
 	}
 	function _revokeWork() {
-		let payload = {
+		let payload: any = {
 			wfid: work.wfid,
 			workid: work.workid,
 			comment: comment
@@ -43,14 +44,8 @@
 		api.post('work/revoke', payload, user.sessionToken);
 		goto(iframeMode ? '/work?iframe' : '/work');
 	}
-	function showWorkitem(workid: string) {
-		goto(iframeMode ? `/work/@${workid}?iframe` : '/work', { replaceState: true });
-	}
-	function gotoWorkflow(wfid: string) {
-		goto(iframeMode ? `/workflow/@${wfid}?iframe` : `/workflow/@${wfid}`, { replaceState: false });
-	}
 	function _doneWork(user_choice = null) {
-		let payload = {
+		let payload: any = {
 			doer: work.doer,
 			workid: work.workid,
 			comment: comment
@@ -65,11 +60,6 @@
 		api.post('work/do', payload, user.sessionToken);
 		goto(iframeMode ? '/work?iframe' : '/work');
 	}
-	import { onMount } from 'svelte';
-	const setInstructionHeight = (height) => {
-		document.getElementById('workInstruction').height = height;
-	};
-	onMount(async () => {});
 </script>
 
 {#if work && work.workid}
@@ -230,7 +220,9 @@
 			</Row>
 		</Container>
 		<Container>
-			{work.comment}
+			{#if work.comment && work.comment.trim().length > 0}
+				<CommentEntry bind:comment={work.comment} />
+			{/if}
 		</Container>
 	</Container>
 	<ProcessTrack

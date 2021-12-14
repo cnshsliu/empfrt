@@ -11,6 +11,7 @@
 		NavLink,
 		Icon
 	} from 'sveltestrap';
+	import CommentEntry from '$lib/CommentEntry.svelte';
 	import { Status } from '$lib/status';
 	import { goto } from '$app/navigation';
 	export let wfid;
@@ -106,9 +107,9 @@
 							</Row>
 						{/if}
 						<Row cols="1">
-							{#if entry.comment}
+							{#if entry.comment && entry.comment.trim().length > 0}
 								<Col>
-									{entry.comment}
+									<CommentEntry bind:comment={entry.comment} />
 								</Col>
 							{/if}
 							<Col>

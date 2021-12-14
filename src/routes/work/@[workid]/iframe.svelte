@@ -40,7 +40,7 @@
 			<h1>{work.title}</h1>
 		</div>
 		<div class="mx-5 align-self-center flex-grow-1">
-			{TimeTool.toNow(work.createdAt)}
+			{TimeTool.fromNow(work.createdAt)}
 		</div>
 	</div>
 </Container>

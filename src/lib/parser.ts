@@ -65,6 +65,15 @@ const Parser = {
 	base64ToCode: function (base64: string): string {
 		return Buffer.from(base64, 'base64').toString('utf-8');
 	},
+	addUserTag: function (str) {
+		let m = str.match(/(@\S+)/g);
+		if (!m) return str;
+		for (let i = 0; i < m.length; i++) {
+			str = str.replace(m[i], `<span class='usertag'>${m[i]}</span>`);
+		}
+		console.log(str);
+		return str;
+	},
 
 	//eslint-disable-next-line
 	collectRoles: function (nodes): string[] {

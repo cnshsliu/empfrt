@@ -1,7 +1,7 @@
 <script context="module" lang="ts">
 	import { post } from '$lib/utils';
 	let TimeTool = null;
-	export async function load({ page, fetch, session }) {
+	export async function load({ page, session }) {
 		TimeTool = (await import('$lib/TimeTool')).default;
 		let iframeMode = false;
 		if (page.query.has('iframe')) {
@@ -9,8 +9,8 @@
 		}
 		let delegators = [];
 		try {
-			let delegations = await post('/delegation/today');
-			delegators = delegations.map((x) => x.delegator);
+			let delegations = (await post('/delegation/today')) as any;
+			delegators = delegations.map((x: any) => x.delegator);
 			if (delegators.includes(session.user.email) === false) {
 				delegators.push(session.user.email);
 			}
@@ -34,7 +34,7 @@
 	import { Container, Row, Col, Button, FormGroup, Input } from 'sveltestrap';
 	import { onMount } from 'svelte';
 	import { title } from '$lib/title';
-	import { WorkStatusStore } from '$lib/empStores';
+	import { WorkStatusStore } from '$lib/empstores';
 
 	export let user: User;
 	export let iframeMode;
@@ -102,6 +102,11 @@
 			user.extra = undefined;
 			$session.user = user;
 		}
+		if ($session.gotoUser) {
+			filter_doer = $session.gotoUser + user.email.substring(user.email.indexOf('@'));
+			filterDoerChanged(null);
+			$session.gotoUser = undefined;
+		}
 	});
 	function filterStatusChanged(event) {
 		let status = event.detail;
@@ -131,7 +136,7 @@
 	<div class="d-flex">
 		<div class="flex-shrink-0 fs-3">Work list</div>
 		<div class="mx-5 align-self-center flex-grow-1">
-			of {payload_extra.doer}
+			of <span class="fs-4 text-dark">{payload_extra.doer}</span>
 		</div>
 	</div>
 </Container>

@@ -43,7 +43,7 @@
 		$session.user = null;
 	}
 
-	export let user;
+	let user;
 	user = $session.user;
 	let menu_class = 'light kfk-navmenu tnt-navmenu sticky-top';
 </script>
@@ -160,6 +160,14 @@
 									</Col>
 								</Row>
 							</Container>
+							<DropdownItem
+								class="text-center"
+								on:click={(e) => {
+									goto('/comment');
+								}}
+							>
+								Messages
+							</DropdownItem>
 							<DropdownItem divider />
 							<DropdownItem class="text-center" on:click={logout}>
 								<Icon name="door-open" /> Logout

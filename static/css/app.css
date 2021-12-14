@@ -2134,3 +2134,9 @@ div.pbo {
 	background-color: rgba(0, 0, 255, 0.05);
 	min-height: 400px;
 }
+.usertag {
+	color: blue;
+}
+.usertag:hover {
+	cursor: pointer;
+}

@@ -8,6 +8,10 @@ const TimeTool = {
 	toNow: function (atime) {
 		moment.locale('zh-cn');
 		return moment(atime).toNow();
+	},
+	fromNow: function (atime) {
+		moment.locale('zh-cn');
+		return moment(atime).fromNow();
 	}
 };
 export default TimeTool;
