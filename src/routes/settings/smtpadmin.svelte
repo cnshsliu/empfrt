@@ -12,7 +12,7 @@
 	};
 	export let myorg: Org;
 	export let user: User;
-	export let setFadeMessage;
+	export let setFadeMessage: any;
 
 	if (myorg.smtp) {
 		smtp = myorg.smtp;
@@ -28,9 +28,9 @@
 			user.sessionToken
 		)) as unknown as SmtpDef;
 		if (ret.error) {
-			setFadeMessage(ret.message);
+			setFadeMessage(ret.message, 'warning');
 		} else {
-			setFadeMessage("Orgnazation's SMTP setting has been saved");
+			setFadeMessage("Orgnazation's SMTP setting has been saved", 'success');
 		}
 	};
 </script>

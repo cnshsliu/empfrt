@@ -17,9 +17,8 @@
 	import CommentEntry from '$lib/CommentEntry.svelte';
 	import { goto } from '$app/navigation';
 	import { Container, Row, Col, InputGroup, InputGroupText, Input, Button } from 'sveltestrap';
-	import type { User } from '$lib/types';
+	import type { User, oneArgFunc } from '$lib/types';
 	import { getNotificationsContext } from 'svelte-notifications';
-
 	const { addNotification } = getNotificationsContext();
 	export let user: User;
 
@@ -28,7 +27,8 @@
 		let ret = (await api.post('comment/list', {}, user.sessionToken)) as unknown as any[] | any;
 		if (ret.error) {
 			console.log(ret.message);
-			addNotification({
+			//eslint-disable-next-line
+			(addNotification as oneArgFunc)({
 				text: ret.message,
 				position: 'bottom-center',
 				type: 'warning',

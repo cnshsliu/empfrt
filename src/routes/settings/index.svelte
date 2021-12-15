@@ -1,4 +1,4 @@
-<script context="module">
+<script context="module" type="ts">
 	export const ssr = false;
 	import * as api from '$lib/api';
 	import TimeZone from '$lib/Timezone';
@@ -21,9 +21,9 @@
 		}
 		console.log(JSON.stringify(myorg));
 
-		let delegationFromMe = [];
+		let delegationFromMe: any[] = [];
 		try {
-			delegationFromMe = await post('/delegation/fromme');
+			delegationFromMe = (await post('/delegation/fromme')) as unknown as any[];
 			for (let i = 0; i < delegationFromMe.length; i++) {
 				delegationFromMe[i].checked = false;
 			}
@@ -38,10 +38,11 @@
 <script lang="ts">
 	import { API_SERVER } from '$lib/Env';
 	import { session } from '$app/stores';
-	import { browser, dev, mode } from '$app/env';
+	import { dev } from '$app/env';
 	import { get } from 'svelte/store';
-	import { ClientPermControl } from '$lib/clientperm';
-	import type { EmpResponse, WhichTab, OrgMember, OrgMembers } from '$lib/types';
+	import { getNotificationsContext } from 'svelte-notifications';
+	const { addNotification } = getNotificationsContext();
+	import type { EmpResponse, WhichTab, OrgMembers, oneArgFunc } from '$lib/types';
 	import { whichTabStore } from '$lib/empstores';
 	import SmtpAdmin from './smtpadmin.svelte';
 	import OrgChartCsvFormat from './orgchartcsvformat.svelte';
@@ -59,11 +60,9 @@
 		Button,
 		TabContent,
 		TabPane,
-		Fade,
 		InputGroup,
 		InputGroupText,
 		Input,
-		Icon,
 		Label,
 		Card,
 		CardBody,
@@ -75,12 +74,8 @@
 	} from 'sveltestrap';
 
 	export let user: User;
-	export let myorg;
-	export let delegationFromMe;
-	let orgchartlist;
-	let fade_message = '';
-	let fade_timer: any;
-	let input_members = '';
+	export let myorg: any;
+	export let delegationFromMe: any;
 	import { title } from '$lib/title';
 	$title = 'HyperFlow';
 	let in_progress: boolean;
@@ -88,25 +83,26 @@
 	let orgtheme = myorg.css;
 	let orgtimezone = myorg.timezone;
 
-	interface membersDef {
-		email: string;
-		displayName?: string;
-		status: string;
-	}
-	let membersToAdd: membersDef[] = [
-		{ email: 'liukehong@gmail.com', displayName: 'liugamil', status: 'creating' },
-		{ email: 'liukehong@gmail.com', displayName: 'liugamil', status: 'created' },
-		{ email: 'liukehong@gmail.com', displayName: 'liugamil', status: 'duplicated' },
-		{ email: 'liukehong@gmail.com', displayName: 'liugamil', status: 'failed' }
-	];
+	let orgchartrelationtest_conf = {
+		show: { leader: true, query: true },
+		useThisQuery: null,
+		useThisLeader: null,
+		lstr: '',
+		qstr: ''
+	};
 
-	export function setFadeMessage(message: string, time = 2000) {
-		fade_message = message;
-		console.log(fade_message);
-		if (fade_timer) clearTimeout(fade_timer);
-		fade_timer = setTimeout(() => {
-			fade_message = '';
-		}, time);
+	export function setFadeMessage(
+		message: string,
+		type = 'warning',
+		pos = 'bottom-right',
+		time = 2000
+	) {
+		(addNotification as oneArgFunc)({
+			text: message,
+			position: pos,
+			type: type,
+			removeAfter: time
+		});
 	}
 
 	async function savePersonel() {
@@ -128,9 +124,9 @@
 			//eslint-disable-next-line
 			if (response.user) {
 				$session.user = response.user;
-				setFadeMessage('修改用户信息成功');
+				setFadeMessage('修改用户信息成功', 'success');
 			} else {
-				setFadeMessage('错误');
+				setFadeMessage('错误', 'danger');
 			}
 		}
 
@@ -146,14 +142,14 @@
 			user.sessionToken
 		);
 		if (ret.error) {
-			setFadeMessage(ret.message);
+			setFadeMessage(ret.message, 'warning');
 		} else {
 			//eslint-disable-next-line
 			if (ret.orgname) {
-				setFadeMessage('Orgniazation name is set succesfully');
+				setFadeMessage('Orgniazation name is set succesfully', 'success');
 				$session.user.tenant.name = ret.orgname;
 			} else {
-				setFadeMessage('Error');
+				setFadeMessage('Error', 'warning');
 			}
 		}
 
@@ -168,18 +164,18 @@
 			user.sessionToken
 		);
 		if (ret.error) {
-			setFadeMessage(ret.message);
+			setFadeMessage(ret.message, 'warning');
 		} else {
 			//eslint-disable-next-line
 			if (ret.css) {
-				setFadeMessage('Orgniazation theme is set succesfully');
+				setFadeMessage('Orgniazation theme is set succesfully', 'success');
 				const response = (await post(`auth/refresh`, {})) as unknown as EmpResponse;
 
 				if (response.user) {
 					$session.user = response.user;
 				}
 			} else {
-				setFadeMessage('Error');
+				setFadeMessage('Error', 'warning');
 			}
 		}
 
@@ -195,12 +191,12 @@
 			user.sessionToken
 		);
 		if (ret.error) {
-			setFadeMessage(ret.message);
+			setFadeMessage(ret.message, 'warning');
 		} else {
 			//eslint-disable-next-line
 			console.log(ret);
 			if (ret.timezone) {
-				setFadeMessage('Orgniazation timezone is set succesfully');
+				setFadeMessage('Orgniazation timezone is set succesfully', 'success');
 				const response = (await post(`auth/refresh`, {})) as unknown as EmpResponse;
 
 				if (response.user) {
@@ -208,7 +204,7 @@
 					$session.user = response.user;
 				}
 			} else {
-				setFadeMessage('Error');
+				setFadeMessage('Error', 'warning');
 			}
 		}
 
@@ -226,9 +222,8 @@
 			user.sessionToken
 		);
 		if (res.error) {
-			setFadeMessage(res.message);
+			setFadeMessage(res.message, 'warning');
 		} else if (res.joincode) {
-			fade_message = '';
 			generatedJoinCode = res.joincode;
 			myorg.joincode = generatedJoinCode;
 		}
@@ -241,9 +236,8 @@
 			user.sessionToken
 		);
 		if (res.error) {
-			setFadeMessage(res.message);
+			setFadeMessage(res.message, 'warning');
 		} else if (res.joincode) {
-			fade_message = '';
 			generatedJoinCode = res.joincode;
 			myorg.joincode = generatedJoinCode;
 		}
@@ -251,7 +245,7 @@
 
 	async function joinOrgWithCode() {
 		let res = await api.post('tnt/join', { joincode: joinorgwithcode }, user.sessionToken);
-		if (res.message) setFadeMessage(res.message);
+		if (res.message) setFadeMessage(res.message, 'warning');
 	}
 
 	let userInfoNotChange = true;
@@ -267,8 +261,8 @@
 
 	async function approveJoinOrgApplications() {
 		let ems = myorg.joinapps
-			.filter((x) => x.checked)
-			.map((x) => x.user_email)
+			.filter((x: any) => x.checked)
+			.map((x: any) => x.user_email)
 			.join(':');
 		let res = await api.post(
 			'tnt/approve',
@@ -276,7 +270,7 @@
 			user.sessionToken
 		);
 		if (res.error) {
-			setFadeMessage(res.message);
+			setFadeMessage(res.message, 'warning');
 		} else {
 			if (res.joinapps) {
 				myorg.joinapps = res.joinapps;
@@ -304,7 +298,12 @@
 		orgMembers = (await api.post('tnt/members', {}, user.sessionToken)) as unknown as OrgMembers;
 		if (orgMembers && orgMembers.members && orgMembers.members.length > 0) {
 			orgMembers.members = orgMembers.members.filter((x) => x.email !== user.email);
-			orgMembers.members.unshift({ email: user.email, username: user.username, group: user.group });
+			orgMembers.members.unshift({
+				email: user.email,
+				username: user.username,
+				group: user.group,
+				checked: false
+			});
 			for (let i = 0; i < orgMembers.members.length; i++) {
 				orgMembers.members[i].checked = false;
 			}
@@ -313,7 +312,7 @@
 	}
 
 	let whichTab: WhichTab = get(whichTabStore);
-	async function showTab(tabId) {
+	async function showTab(tabId: string) {
 		if (tabId === 'org') {
 			//refreshMyOrg();
 		} else if (tabId === 'members') {
@@ -342,7 +341,7 @@
 			user.sessionToken
 		);
 		if (res.error) {
-			setFadeMessage(res.message);
+			setFadeMessage(res.message, 'warning');
 		} else {
 			console.log('removeSelectedMembers refreshMembers');
 			refreshMembers();
@@ -351,12 +350,12 @@
 
 	async function removeSelectedDelegation() {
 		let ids = delegationFromMe
-			.filter((x) => x.checked)
-			.map((x) => x._id)
+			.filter((x: any) => x.checked)
+			.map((x: any) => x._id)
 			.join(':');
 		let res = await api.post('undelegate', { ids: ids }, user.sessionToken);
 		if (res.error) {
-			setFadeMessage(res.message);
+			setFadeMessage(res.message, 'warning');
 		} else {
 			delegationFromMe = res;
 		}
@@ -374,14 +373,14 @@
 			user.sessionToken
 		);
 		if (res.error) {
-			setFadeMessage(res.message);
+			setFadeMessage(res.message, 'warning');
 		} else {
 			console.log('setSelectedGroup refreshMembers');
 			refreshMembers();
 		}
 	}
 
-	let invitation;
+	let invitation: string;
 
 	async function sendInvitation() {
 		let emails = invitation.split(/[ ;,]/).filter((x) => x.length > 0);
@@ -392,14 +391,16 @@
 			user.sessionToken
 		);
 		if (res.error) {
-			setFadeMessage(res.message);
+			setFadeMessage(res.message, 'warning');
 		} else {
 			console.log('show Invitation refreshMembers');
 			refreshMembers();
 		}
 	}
 
-	let new_delegation_enddate, new_delegation_begindate, new_delegation_delegatee;
+	let new_delegation_enddate: string,
+		new_delegation_begindate: string,
+		new_delegation_delegatee: string;
 
 	async function newDelegation() {
 		console.log(new_delegation_delegatee, new_delegation_begindate, new_delegation_enddate);
@@ -413,7 +414,7 @@
 			$session.user.sessionToken
 		);
 		if (ret.error) {
-			setFadeMessage(ret.message);
+			setFadeMessage(ret.message, 'warning');
 		} else if (ret.length) {
 			delegationFromMe = ret;
 			for (let i = 0; i < delegationFromMe.length; i++) {
@@ -425,16 +426,16 @@
 	let tzArray = TimeZone.getTimeZoneArray();
 	console.log(typeof tzArray);
 
-	let files;
+	let files: any;
 	let orgchart_admin_password = 'Jerome@99';
 	let default_user_password = 'Jerome@99';
-	async function uploadOrgChart(e) {
+	async function uploadOrgChart(e: Event) {
 		e.preventDefault();
 		const formData = new FormData();
 		formData.append('password', orgchart_admin_password);
 		formData.append('default_user_password', default_user_password);
 		formData.append('file', files[0]);
-		const upload = fetch(`${API_SERVER}/orgchart/import`, {
+		await fetch(`${API_SERVER}/orgchart/import`, {
 			method: 'POST',
 			headers: {
 				Authorization: user.sessionToken
@@ -444,14 +445,14 @@
 			.then((response) => response.json())
 			.then(async (result) => {
 				if (result.error) {
-					setFadeMessage(result.message);
+					setFadeMessage(result.message, 'warning');
 				} else {
-					setFadeMessage('Sucess');
+					setFadeMessage('Sucess', 'success');
 				}
 			})
 			.catch((error) => {
 				console.error('Error:', error);
-				setFadeMessage(error.message);
+				setFadeMessage(error.message, 'warning');
 			});
 	}
 </script>
@@ -462,7 +463,7 @@
 <Container class="mt-3">
 	<TabContent
 		on:tab={(e) => {
-			showTab(e.detail);
+			showTab('' + e.detail);
 		}}
 	>
 		<TabPane
@@ -623,7 +624,7 @@
 				<Card class="mt-3">
 					<CardHeader><CardTitle>Delegations to me</CardTitle></CardHeader>
 					<CardBody>
-						<table hover class="w-100">
+						<table class="w-100">
 							<thead>
 								<tr>
 									<th> Begin </th>
@@ -718,7 +719,7 @@
 							<InputGroup class="mb-1">
 								<InputGroupText>Set Timezone to:</InputGroupText>
 								<Input type="select" bind:value={orgtimezone}>
-									{#each tzArray as tz, index (tz)}
+									{#each tzArray as tz}
 										<option value={tz.key}>{tz.name} ({tz.diff})</option>
 									{/each}
 								</Input>
@@ -792,7 +793,7 @@
 									placeholder="Email list to invite, separated by space or comma or semicolon"
 								/>
 								<Button
-									on:click={(e) => {
+									on:click={() => {
 										sendInvitation();
 									}}>Invite</Button
 								>
@@ -819,7 +820,7 @@
 										<tr> <th>Email</th><th>Name</th><th>Approve</th></tr>
 									</thead>
 									<tbody>
-										{#each myorg.joinapps as appl, index (appl)}
+										{#each myorg.joinapps as appl}
 											<tr>
 												<td>
 													{appl.user_email}
@@ -900,7 +901,14 @@
 					</TabPane>
 					<TabPane tabId="orgcharttest" tab="Orgchart Relation Test" active>
 						<div class="overflow-scroll w-100 bg-light">
-							<OrgChartRelationTest {user} />
+							<OrgChartRelationTest
+								{user}
+								bind:show={orgchartrelationtest_conf.show}
+								bind:useThisQuery={orgchartrelationtest_conf.useThisQuery}
+								bind:useThisLeader={orgchartrelationtest_conf.useThisLeader}
+								bind:lstr={orgchartrelationtest_conf.lstr}
+								bind:qstr={orgchartrelationtest_conf.qstr}
+							/>
 						</div>
 					</TabPane>
 					<TabPane tabId="fileformat" tab="Orgchart File Format">
@@ -1005,11 +1013,6 @@
 		</TabPane>
 	</TabContent>
 </Container>
-<Fade isOpen={fade_message != ''} class="kfk-fade">
-	<Card body>
-		{fade_message}
-	</Card>
-</Fade>
 
 <style>
 	.text-right {

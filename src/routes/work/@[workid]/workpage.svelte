@@ -5,17 +5,23 @@
 	import CommentEntry from '$lib/CommentEntry.svelte';
 	import ProcessTrack from '$lib/ProcessTrack.svelte';
 	import { Container, Row, Col, Icon } from 'sveltestrap';
-	import { Form, FormGroup, Input, Label } from 'sveltestrap';
+	import { FormGroup, Input, Label, InputGroup, InputGroupText } from 'sveltestrap';
 	import { Status } from '$lib/status';
 	import { Button } from 'sveltestrap';
-	import type { User, Work } from '$lib/types';
+	import type { User, Work, oneArgFunc } from '$lib/types';
 	export let work: Work;
 	export let user: User;
 	export let delegators: String[];
 	export let iframeMode: boolean;
 	export let TimeTool: any;
+	let showAdhocForm = false;
 	let printProcessTrack = true;
+	let adhocTaskTitle = '';
+	let adhocTaskDoer = '';
+	let adhocTaskComment = '';
 	let comment = '';
+	import { getNotificationsContext } from 'svelte-notifications';
+	const { addNotification } = getNotificationsContext();
 	$: is_doable =
 		(work.doer === user.email ||
 			(delegators && Array.isArray(delegators) && delegators.includes(work.doer))) &&
@@ -44,6 +50,39 @@
 		api.post('work/revoke', payload, user.sessionToken);
 		goto(iframeMode ? '/work?iframe' : '/work');
 	}
+	function _toggleAdhoc() {
+		showAdhocForm = !showAdhocForm;
+	}
+	function setFadeMessage(message: string, type = 'warning', pos = 'bottom-right', time = 2000) {
+		(addNotification as oneArgFunc)({
+			text: message,
+			position: pos,
+			type: type,
+			removeAfter: time
+		});
+	}
+	const createAdhoc = async function () {
+		console.log(adhocTaskTitle);
+		console.log(adhocTaskDoer);
+		console.log(adhocTaskComment);
+
+		let res = await api.post(
+			'work/adhoc',
+			{
+				wfid: work.wfid,
+				workid: work.workid,
+				title: adhocTaskTitle,
+				doer: adhocTaskDoer,
+				comment: adhocTaskComment
+			},
+			user.sessionToken
+		);
+		if (res.error) {
+			setFadeMessage(res.message, 'warning');
+		} else {
+			console.log(res);
+		}
+	};
 	function _doneWork(user_choice = null) {
 		let payload: any = {
 			doer: work.doer,
@@ -64,7 +103,7 @@
 
 {#if work && work.workid}
 	<Container id={'workitem_' + work.workid} class="mt-3">
-		<Form>
+		<form>
 			<Container class="mt-3 kfk-highlight-2">
 				<Row cols={{ lg: 3, md: 2, sm: 1 }}>
 					<Col>
@@ -98,9 +137,12 @@
 					<Col />
 				</Row>
 			</Container>
-			<Container class="mt-3 kfk-highlight-2 fs-3">
-				{@html Parser.base64ToCode(work.instruct)}
-			</Container>
+			{#if work.instruct}
+				<div class="fs-4">Instruction:</div>
+				<Container class="mt-3 kfk-highlight-2 fs-3">
+					{@html Parser.base64ToCode(work.instruct)}
+				</Container>
+			{/if}
 			<!--- div class="w-100">
 				<iframe id="workInstruction" src="/work/instruct" title="YouTube video" width="100%" />
 			</div -->
@@ -201,10 +243,65 @@
 								</Button>
 							</Col>
 						{/if}
+						{#if !showAdhocForm}
+							<Col>
+								<Button
+									class="w-100"
+									on:click={(e) => {
+										e.preventDefault();
+										_toggleAdhoc();
+									}}
+								>
+									Adhoc
+								</Button>
+							</Col>
+						{/if}
 					</Row>
+					{#if showAdhocForm}
+						<Row cols="1">
+							<Col>
+								<InputGroup>
+									<InputGroupText>Task:</InputGroupText>
+									<Input name="adhoc_task_title" bind:value={adhocTaskTitle} />
+								</InputGroup>
+							</Col>
+							<Col>
+								<InputGroup>
+									<InputGroupText>By:</InputGroupText>
+									<Input name="adhoc_task_doer" bind:value={adhocTaskDoer} />
+								</InputGroup>
+							</Col>
+							<Col>
+								<InputGroup>
+									<InputGroupText>Note:</InputGroupText>
+									<Input name="adhoc_task_comment" bind:value={adhocTaskComment} />
+								</InputGroup>
+							</Col>
+							<Col>
+								<Button
+									color="primary"
+									on:click={async (e) => {
+										e.preventDefault();
+										await createAdhoc();
+									}}
+								>
+									Add Adhoc Task
+								</Button>
+								<Button
+									color="secondary"
+									on:click={async (e) => {
+										e.preventDefault();
+										showAdhocForm = false;
+									}}
+								>
+									Cancel
+								</Button>
+							</Col>
+						</Row>
+					{/if}
 				</Container>
 			{/if}
-		</Form>
+		</form>
 		<Container class="mt-3 kfk-highlight-2">
 			Workflow Data:
 			<Row cols={{ lg: 3, md: 2, sm: 1 }}>
@@ -228,6 +325,7 @@
 	<ProcessTrack
 		bind:wf={work.wf}
 		bind:wfid={work.wfid}
+		bind:workid={work.workid}
 		bind:print={printProcessTrack}
 		{TimeTool}
 		{iframeMode}

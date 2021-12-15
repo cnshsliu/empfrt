@@ -1,10 +1,10 @@
 <script lang="ts">
 	import * as api from '$lib/api';
+	import type { User, EmpResponse } from '$lib/types';
 	import {
 		Container,
 		Row,
 		Col,
-		Icon,
 		Form,
 		Input,
 		InputGroup,
@@ -15,16 +15,16 @@
 		CardTitle,
 		CardBody
 	} from 'sveltestrap';
-	export let user;
-	export let show;
-	export let useThisLeader;
-	export let useThisQuery;
+	export let user: User;
+	export let show: any;
+	export let useThisLeader: any;
+	export let useThisQuery: any;
 	let staff_email = user.email;
-	export let lstr;
-	export let qstr;
+	export let lstr: string;
+	export let qstr: string;
 	let leaders = [];
 	let staffs = [];
-	async function testGetLeader(e) {
+	async function testGetLeader(e: Event) {
 		e.preventDefault();
 		let res = await api.post(
 			'orgchart/getleader',
@@ -34,16 +34,16 @@
 		if (res.error) {
 			console.log(res.message);
 		} else {
-			leaders = res;
+			leaders = res as any[];
 		}
 	}
-	async function testGetStaff(e) {
+	async function testGetStaff(e: Event) {
 		e.preventDefault();
-		let res = await api.post('orgchart/getstaff', { qstr: qstr }, user.sessionToken);
+		let res = <EmpResponse>await api.post('orgchart/getstaff', { qstr: qstr }, user.sessionToken);
 		if (res.error) {
 			console.log(res.message);
 		} else {
-			staffs = res;
+			staffs = res as any[];
 		}
 	}
 </script>
@@ -95,7 +95,7 @@
 				</CardHeader>
 				<CardBody>
 					<ul>
-						{#each leaders as rel, index (rel)}
+						{#each leaders as rel}
 							<li>{rel.position}: {rel.uid}</li>
 						{/each}
 					</ul>
@@ -142,7 +142,7 @@
 				</CardHeader>
 				<CardBody>
 					<ul>
-						{#each staffs as rel, index (rel)}
+						{#each staffs as rel}
 							<li>
 								{rel.position.indexOf('staff') > -1 ? '' : rel.position}: {rel.cn}({rel.uid}) of {rel.ou}
 							</li>

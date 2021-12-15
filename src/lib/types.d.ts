@@ -4,9 +4,14 @@
  */
 
 export interface EmpResponse {
-	error: Record;
-	errMsg: sgring;
-	user: Record;
+	error?: Record;
+	errMsg?: sgring;
+	user?: Record;
+}
+export interface EmpResponse {
+	error?: Record;
+	errMsg?: sgring;
+	user?: Record;
 }
 export interface SmtpDef {
 	host: string;
@@ -207,11 +212,16 @@ export interface EmpResponse {
 	message?: string;
 }
 export interface OrgMember {
-	member: string;
+	member?: string;
 	group: string;
 	checked: boolean;
 	email: string;
+	username: string;
 }
 export interface OrgMembers {
+	adminorg?: bollean;
 	members: OrgMember[];
+}
+export interface oneArgFunc {
+	(arg: any): any;
 }
