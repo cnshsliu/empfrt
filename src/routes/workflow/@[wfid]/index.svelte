@@ -77,7 +77,14 @@
 	<title>{workflow.wftitle} • Workflow</title>
 </svelte:head>
 {#if workflow.wftitle !== 'Not Found'}
-	<ProcessTrack bind:wf={workflow} {wfid} {TimeTool} bind:print={hasPrintButton} {iframeMode} />
+	<ProcessTrack
+		{user}
+		bind:wf={workflow}
+		{wfid}
+		{TimeTool}
+		bind:print={hasPrintButton}
+		{iframeMode}
+	/>
 {:else}
 	<ErrorNotify
 		title="Error Found"

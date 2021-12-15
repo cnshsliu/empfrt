@@ -54,28 +54,8 @@
 	let commentIsBase64 = false;
 </script>
 
-<Container class="mt-5">
-	{#each comments as comment}
-		<Row class="mb-2">
-			<Col>
-				<div>{TimeTool.fromNow(comment.createdAt)}</div>
-				<div class="ms-3">
-					<CommentEntry bind:comment={comment.content} bind:base64={commentIsBase64} />
-					-- {comment.cn}
-					<span
-						class="usertag"
-						on:click={(e) => {
-							e.preventDefault();
-							gotoWork(comment);
-						}}
-					>
-						Goto work
-					</span>
-				</div>
-			</Col>
-		</Row>
-	{/each}
-	<Row class="mt-5">
+<Container>
+	<Row class="my-3">
 		<Col>
 			<form>
 				<InputGroup>
@@ -98,4 +78,24 @@
 			</form>
 		</Col>
 	</Row>
+	{#each comments as comment}
+		<Row class="mb-2">
+			<Col>
+				<div>{TimeTool.fromNow(comment.createdAt)}</div>
+				<div class="ms-3">
+					<CommentEntry bind:comment={comment.content} bind:base64={commentIsBase64} />
+					-- {comment.cn}
+					<span
+						class="usertag"
+						on:click={(e) => {
+							e.preventDefault();
+							gotoWork(comment);
+						}}
+					>
+						Goto work
+					</span>
+				</div>
+			</Col>
+		</Row>
+	{/each}
 </Container>

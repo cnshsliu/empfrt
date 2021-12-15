@@ -22,7 +22,8 @@
 	export let TimeTool;
 	export let iframeMode;
 	export let print = false;
-	function gotoWorkflow(wfid: string) {
+	export let user;
+	function gotoWorkflowMonitor(wfid: string) {
 		goto(iframeMode ? `/workflow/@${wfid}/monitor?iframe` : `/workflow/@${wfid}/monitor`, {
 			replaceState: false
 		});
@@ -30,24 +31,39 @@
 	function printWindow() {
 		window.print();
 	}
+	function gotoWorkflow(wfid) {
+		goto(`/workflow/@${wfid}`);
+	}
+	function gotoWork(workid) {
+		goto(`/work/@${workid}`);
+	}
 </script>
 
 <Container class="mt-5">
 	<div class="fs-3">
 		<Icon name="bar-chart-steps" />
 		Process
+		<hr />
 	</div>
 	<Container class="mt-1">
 		<Row>
 			<Col>
-				{wf.wftitle}
+				<div
+					class="clickable text-primary"
+					on:click={(e) => {
+						e.preventDefault();
+						gotoWorkflow(wfid);
+					}}
+				>
+					{wf.wftitle}
+				</div>
 			</Col>
 			<Col class="w-100 d-flex justify-content-end">
 				<NavLink
 					class="m-0 p-0 fs-6"
 					on:click={(e) => {
 						e.preventDefault();
-						gotoWorkflow(wfid);
+						gotoWorkflowMonitor(wfid);
 					}}><Icon name="kanban" />&nbsp;Monitor</NavLink
 				>
 			</Col>
@@ -63,6 +79,7 @@
 	<div class="fs-3 mt-3">
 		<Icon name="clock-history" />
 		Work log
+		<hr />
 	</div>
 	<Container class="my-0">
 		<div>
@@ -73,8 +90,16 @@
 				>
 					<Row cols={{ sm: 2 }} class="mt-1 pt-3 kfk-work-kvars tnt-work-kvars">
 						<Col>
-							<b>{entry.title}</b>
-							: {Status[entry.status]}
+							<div
+								class="clickable text-primary"
+								on:click={(e) => {
+									e.preventDefault();
+									gotoWork(entry.workid);
+								}}
+							>
+								<b>{entry.title}</b>
+								: {Status[entry.status]}
+							</div>
 						</Col>
 						{#if entry.route}
 							<Col>

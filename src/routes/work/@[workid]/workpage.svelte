@@ -5,6 +5,7 @@
 	import CommentEntry from '$lib/CommentEntry.svelte';
 	import ProcessTrack from '$lib/ProcessTrack.svelte';
 	import { Container, Row, Col, Icon } from 'sveltestrap';
+	import { onMount } from 'svelte';
 	import { FormGroup, Input, Label, InputGroup, InputGroupText } from 'sveltestrap';
 	import { Status } from '$lib/status';
 	import { Button } from 'sveltestrap';
@@ -80,6 +81,7 @@
 		if (res.error) {
 			setFadeMessage(res.message, 'warning');
 		} else {
+			saveOneRecentUser(adhocTaskDoer);
 			console.log(res);
 		}
 	};
@@ -99,6 +101,25 @@
 		api.post('work/do', payload, user.sessionToken);
 		goto(iframeMode ? '/work?iframe' : '/work');
 	}
+
+	let recentUsers = [];
+	onMount(async () => {
+		if (localStorage) {
+			recentUsers = JSON.parse(localStorage.getItem('recentUsers') ?? JSON.stringify([]));
+		}
+	});
+	const saveOneRecentUser = function (user) {
+		let tmp = recentUsers.indexOf(user);
+		if (tmp > -1) {
+			recentUsers.splice(tmp, 1);
+		}
+		recentUsers.unshift(user);
+		if (recentUsers.length > 10) {
+			recentUsers.splice(10);
+		}
+		localStorage.setItem('recentUsers', JSON.stringify(recentUsers));
+		recentUsers = recentUsers;
+	};
 </script>
 
 {#if work && work.workid}
@@ -188,7 +209,7 @@
 					<input type="hidden" name="workid" value={work.workid} />
 					{work.doer === user.email ? '' : `Delegated by ${work.doer}`}
 					<Input type="textarea" placeholder="Comment" bind:value={comment} />
-					<Row cols="6" class="mt-2">
+					<Row class="mt-2">
 						{#if work.status === 'ST_RUN'}
 							{#if work.options.length === 0}
 								<Col>
@@ -243,41 +264,67 @@
 								</Button>
 							</Col>
 						{/if}
-						{#if !showAdhocForm}
-							<Col>
-								<Button
-									class="w-100"
-									on:click={(e) => {
-										e.preventDefault();
-										_toggleAdhoc();
-									}}
-								>
-									Adhoc
-								</Button>
-							</Col>
-						{/if}
+						<Col>
+							<Button
+								class="w-100"
+								color="success"
+								on:click={(e) => {
+									e.preventDefault();
+									_toggleAdhoc();
+								}}
+							>
+								{showAdhocForm ? 'Cancel' : 'New Adhoc'}
+							</Button>
+						</Col>
 					</Row>
 					{#if showAdhocForm}
-						<Row cols="1">
-							<Col>
+						<div class="fs-3">Add an Adhoc Task</div>
+						<Row cols="1" class="mt-2 kfk-highlight-2">
+							<Col class="my-1">
 								<InputGroup>
 									<InputGroupText>Task:</InputGroupText>
-									<Input name="adhoc_task_title" bind:value={adhocTaskTitle} />
+									<Input
+										name="adhoc_task_title"
+										bind:value={adhocTaskTitle}
+										placeholder="What to do"
+									/>
 								</InputGroup>
 							</Col>
 							<Col>
 								<InputGroup>
-									<InputGroupText>By:</InputGroupText>
-									<Input name="adhoc_task_doer" bind:value={adhocTaskDoer} />
+									<InputGroupText>By</InputGroupText>
+									<Input
+										name="adhoc_task_doer"
+										bind:value={adhocTaskDoer}
+										placeholder="Who should do it"
+									/>
 								</InputGroup>
 							</Col>
-							<Col>
+							<Container class="mt-2">
+								<span>Recent started:</span>
+								{#each recentUsers as aUser}
+									<Button
+										class="mx-1 badge bg-info text-dark"
+										on:click={(e) => {
+											e.preventDefault();
+											adhocTaskDoer = aUser;
+										}}
+									>
+										{aUser}
+									</Button>
+								{/each}
+							</Container>
+							<Col class="my-1">
 								<InputGroup>
 									<InputGroupText>Note:</InputGroupText>
-									<Input name="adhoc_task_comment" bind:value={adhocTaskComment} />
+									<Input
+										name="adhoc_task_comment"
+										bind:value={adhocTaskComment}
+										placeholder="Any notes to say"
+									/>
 								</InputGroup>
 							</Col>
-							<Col>
+							<Col class="d-flex justify-content-end my-1">
 								<Button
 									color="primary"
 									on:click={async (e) => {
@@ -285,10 +332,11 @@
 										await createAdhoc();
 									}}
 								>
-									Add Adhoc Task
+									Send it out
 								</Button>
 								<Button
 									color="secondary"
+									class="mx-1"
 									on:click={async (e) => {
 										e.preventDefault();
 										showAdhocForm = false;
@@ -302,20 +350,22 @@
 				</Container>
 			{/if}
 		</form>
-		<Container class="mt-3 kfk-highlight-2">
-			Workflow Data:
-			<Row cols={{ lg: 3, md: 2, sm: 1 }}>
-				{#each work.wf.kvarsArr as kvar}
-					{#if kvar.break}
-						<div class="w-100" />
-					{/if}
-					<Col>
-						<div>{kvar.label}</div>
-						<div class="kfk-kvar-value-display">{kvar.value}</div>
-					</Col>
-				{/each}
-			</Row>
-		</Container>
+		{#if work.wf.kvarsArr.length > 0}
+			<Container class="mt-3 kfk-highlight-2">
+				Workflow Data:
+				<Row cols={{ lg: 3, md: 2, sm: 1 }}>
+					{#each work.wf.kvarsArr as kvar}
+						{#if kvar.break}
+							<div class="w-100" />
+						{/if}
+						<Col>
+							<div>{kvar.label}</div>
+							<div class="kfk-kvar-value-display">{kvar.value}</div>
+						</Col>
+					{/each}
+				</Row>
+			</Container>
+		{/if}
 		<Container>
 			{#if work.comment && work.comment.trim().length > 0}
 				<CommentEntry bind:comment={work.comment} />
@@ -323,6 +373,7 @@
 		</Container>
 	</Container>
 	<ProcessTrack
+		{user}
 		bind:wf={work.wf}
 		bind:wfid={work.wfid}
 		bind:workid={work.workid}

@@ -216,7 +216,7 @@
 </Container>
 <Container class="mt-2">
 	<span>Recent started:</span>
-	{#each recentTemplates as aTplid, index (aTplid)}
+	{#each recentTemplates as aTplid}
 		<Button
 			class="mx-1 badge bg-info text-dark"
 			on:click={(e) => {
