@@ -2144,3 +2144,7 @@ div.pbo {
 .usertag:hover {
 	cursor: pointer;
 }
+.nav-link.active {
+	text-decoration: underline;
+	text-decoration-thickness: 4px;
+}

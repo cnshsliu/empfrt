@@ -4,7 +4,6 @@
 	import TimeZone from '$lib/Timezone';
 	let TimeTool = null;
 	export async function load({ session }) {
-		TimeTool = (await import('$lib/TimeTool')).default;
 		const { user } = session;
 		if (!user) {
 			return {
@@ -12,6 +11,7 @@
 				redirect: '/login'
 			};
 		}
+		TimeTool = (await import('$lib/TimeTool')).default;
 
 		let myorg = await api.post('tnt/my/org', {}, user.sessionToken);
 		if (myorg && myorg.joinapps && Array.isArray(myorg.joinapps)) {
@@ -258,7 +258,21 @@
 	let password_for_admin = '';
 	let my_old_password = '';
 	let set_group_to = '';
+	let menu = myorg.menu;
 
+	const setMenu = async function () {
+		let res = await api.post(
+			'tnt/set/menu',
+			{ menu: menu, password: password_for_admin },
+			user.sessionToken
+		);
+		if (res.error) {
+			setFadeMessage(res.error, 'warning');
+		} else {
+			menu = res.menu;
+			myorg.menu = res.menu;
+		}
+	};
 	async function approveJoinOrgApplications() {
 		let ems = myorg.joinapps
 			.filter((x: any) => x.checked)
@@ -427,8 +441,8 @@
 	console.log(typeof tzArray);
 
 	let files: any;
-	let orgchart_admin_password = 'Jerome@99';
-	let default_user_password = 'Jerome@99';
+	let orgchart_admin_password = '';
+	let default_user_password = '';
 	async function uploadOrgChart(e: Event) {
 		e.preventDefault();
 		const formData = new FormData();
@@ -853,6 +867,32 @@
 							{:else}
 								There is no join application at this time
 							{/if}
+						</CardBody>
+					</Card>
+					<Card class="mt-3">
+						<CardHeader>
+							<CardTitle>Default Menu</CardTitle>
+						</CardHeader>
+						<CardBody>
+							<InputGroup class="mb-1">
+								<InputGroupText>Admin Password:</InputGroupText>
+								<Input
+									type="password"
+									bind:value={password_for_admin}
+									placeholder="Confirm with admin password"
+								/>
+							</InputGroup>
+							<InputGroup>
+								<InputGroupText>Menu</InputGroupText>
+								<Input bind:value={menu} placeholder="Home;Docs;Template;Workflow;Worklist;Team" />
+								<Button
+									on:click={(e) => {
+										e.preventDefault();
+										setMenu();
+									}}>Set</Button
+								>
+							</InputGroup>
+							{JSON.stringify(myorg)}
 						</CardBody>
 					</Card>
 				{/if}

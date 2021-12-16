@@ -1,10 +1,10 @@
 <script context="module">
 	export async function load({ session }) {
 		if (session.user) {
-			console.log('Redirect to home');
+			console.log('Redirect to template');
 			return {
 				status: 302,
-				redirect: '/'
+				redirect: '/template'
 			};
 		}
 
@@ -52,7 +52,7 @@
 
 			if (response.user) {
 				$session.user = response.user;
-				goto('/');
+				goto('/template');
 				whichTabStore.set(null);
 			}
 		}

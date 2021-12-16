@@ -96,7 +96,7 @@ let WORKITEM_HTML = await axios.post(
 <Container>
 	<div class="d-flex">
 		<div class="flex-shrink-0">
-			<h3>{work.title}</h3>
+			<h3>{work.title} {work.nodeid === 'ADHOC' ? ' / ADHOC' : ''}</h3>
 		</div>
 		<div class="mx-3 align-self-center flex-grow-1">
 			{TimeTool.fromNow(work.createdAt)}

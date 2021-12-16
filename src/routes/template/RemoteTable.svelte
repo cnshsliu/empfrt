@@ -113,10 +113,11 @@
 				Author
 				<Sort key="author" on:sort={onSort} />
 			</th>
-			<th>
+			<!-- th>
 				Updated at
 				<Sort key="updatedAt" dir="desc" on:sort={onSort} />
-			</th>
+			</th -->
+			<th> &nbsp; </th>
 			<th> &nbsp; </th>
 		</tr>
 	</thead>
@@ -138,8 +139,23 @@
 						{row.tplid}
 					</a>
 				</td>
-				<td data-label="Author">{row.author}</td>
-				<td data-label="Updated at">{TimeTool.format(row.updatedAt, 'LLLL')}</td>
+				<td data-label="Author"
+					>{row.author.indexOf('@') > -1
+						? row.author.substring(0, row.author.indexOf('@'))
+						: row.author}</td
+				>
+				<!--  td data-label="Updated at">{TimeTool.format(row.updatedAt, 'lll')}</td -->
+				<td>
+					<a
+						href={'#'}
+						on:click|preventDefault={() => {
+							goto(`template/start?tplid=${row.tplid}`, { replaceState: false });
+						}}
+						class="nav-link "
+						><Icon name="caret-right-square" />
+						Start it
+					</a>
+				</td>
 				<td>
 					<Dropdown>
 						<DropdownToggle caret color="notexist" class="btn-sm">Actions</DropdownToggle>

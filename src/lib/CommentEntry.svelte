@@ -7,7 +7,9 @@
 	let commentSplitted = [];
 
 	const splitComment = function (str) {
+		//确保@之前有空格
 		str = str.replace(/([\S])@/g, '$1 @');
+		//按空字符分割
 		commentSplitted = str.split(/\s/);
 		console.log(commentSplitted);
 	};
@@ -15,7 +17,10 @@
 	if (base64) splitComment(Parser.base64ToCode(comment));
 	else splitComment(comment);
 	const gotoUser = function (uid) {
-		$session.gotoUser = uid.substring(1);
+		uid = uid.substring(1);
+		//去掉uid后面的标点符号
+		uid = uid.replace(/\W+$/, '');
+		$session.gotoUser = uid;
 		goto('/work');
 	};
 </script>

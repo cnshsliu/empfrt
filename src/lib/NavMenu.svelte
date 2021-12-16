@@ -11,6 +11,7 @@
 
 <script lang="ts">
 	import { page, session } from '$app/stores';
+	import * as api from '$lib/api';
 	import {
 		Button,
 		Row,
@@ -30,6 +31,7 @@
 	import { post } from '$lib/utils';
 	import { DEPLOY_MODE } from '$lib/Env';
 	import { whichTabStore } from '$lib/empstores';
+	import { onMount } from 'svelte';
 
 	let isMenuOpen = true;
 
@@ -43,9 +45,14 @@
 		$session.user = null;
 	}
 
-	let user;
-	user = $session.user;
+	export let user;
+	export let myorg;
 	let menu_class = 'light kfk-navmenu tnt-navmenu sticky-top';
+
+	onMount(async () => {
+		myorg = await api.post('tnt/my/org', {}, $session.user.sessionToken);
+		console.log(JSON.stringify(myorg));
+	});
 </script>
 
 {#if $session.user && $session.user.tenant && $session.user.tenant.css}
@@ -80,7 +87,8 @@
 					<NavLink href="/" class="py-2 ps-0 pe-3" active={$page.path === '/'}>Home</NavLink>
 				</NavItem>
 				<NavItem>
-					<NavLink href="/docs/" class="py-2 ps-0 pe-3" active={$page.path === '/'}>Docs</NavLink>
+					<NavLink href="/docs" class="py-2 ps-0 pe-3" active={$page.path === '/docs'}>Docs</NavLink
+					>
 				</NavItem>
 				{#if $session.user}
 					<NavItem>
@@ -114,7 +122,7 @@
 							</DropdownToggle>
 						{:else}
 							<DropdownToggle nav>
-								<div class="kfk-avatar-letter-small">
+								<div class="kfk-avatar-letter-small text-center">
 									{$session.user ? $session.user.username : 'ME'}
 								</div>
 							</DropdownToggle>
@@ -204,7 +212,7 @@
 	.kfk-avatar-letter-small {
 		width: 36px;
 		height: 36px;
-		border-radius: 16px;
+		border-radius: 18px;
 		border: 1px solid rgba(200, 200, 255, 0.8);
 		background-color: rgba(0, 0, 255, 0.05);
 		font-size: 24px;

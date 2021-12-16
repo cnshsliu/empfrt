@@ -28,11 +28,7 @@
 	}
 
 	import { onMount } from 'svelte';
-	onMount(async () => {
-		if (!whichTab['home']) {
-			await showTab('quickstart');
-		}
-	});
+	onMount(async () => {});
 </script>
 
 <svelte:head>

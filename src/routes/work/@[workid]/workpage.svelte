@@ -278,8 +278,8 @@
 						</Col>
 					</Row>
 					{#if showAdhocForm}
-						<div class="fs-3">Add an Adhoc Task</div>
 						<Row cols="1" class="mt-2 kfk-highlight-2">
+							<div class="fs-3">Add an Adhoc Task</div>
 							<Col class="my-1">
 								<InputGroup>
 									<InputGroupText>Task:</InputGroupText>
@@ -298,6 +298,9 @@
 										bind:value={adhocTaskDoer}
 										placeholder="Who should do it"
 									/>
+									<Button>
+										<Icon name="question" />
+									</Button>
 								</InputGroup>
 							</Col>
 							<Container class="mt-2">

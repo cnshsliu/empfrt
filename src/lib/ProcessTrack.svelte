@@ -88,7 +88,7 @@
 					class={'mt-2 ' +
 						(workid === entry.workid ? 'kfk-highlight-current ' : 'kfk-highlight-2 ')}
 				>
-					<Row cols={{ sm: 2 }} class="mt-1 pt-3 kfk-work-kvars tnt-work-kvars">
+					<Row cols="1" class="mt-1 pt-3 kfk-work-kvars tnt-work-kvars">
 						<Col>
 							<div
 								class="clickable text-primary"
@@ -98,7 +98,7 @@
 								}}
 							>
 								<b>{entry.title}</b>
-								: {Status[entry.status]}
+								/ {Status[entry.status]} / {entry.nodeid === 'ADHOC' ? 'ADHOC' : ''}
 							</div>
 						</Col>
 						{#if entry.route}
@@ -136,7 +136,7 @@
 							<p class="text-right fs-6 fw-light fst-italic">
 								{#each entry.doers as aDoer}
 									{#if entry.status === 'ST_DONE' && entry.doneby === aDoer.uid}
-										<span class="work_doneby">
+										<span class="local_work_doneby">
 											{aDoer.cn}({aDoer.uid});&nbsp;
 										</span>
 									{:else}
@@ -161,7 +161,7 @@
 </Container>
 
 <style>
-	.work_doneby {
+	.local_work_doneby {
 		font-weight: bolder;
 		color: blue;
 	}
