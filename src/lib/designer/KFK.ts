@@ -692,7 +692,7 @@ class KFKclass {
 		const that = this;
 		const nodes = that.JC3.find('.node');
 		const connects = that.svgDraw.find('.connect');
-		let tplDocHtml = `<div class="template" id="${that.tplid}">`;
+		let tplDocHtml = `<div class="template">`;
 
 		nodes.each((_index: any, aNode: any) => {
 			//eslint-disable-line
@@ -733,7 +733,11 @@ class KFKclass {
 			//eslint-disable-next-line
 			//Client.putTemplate(tpldoc);
 			const token = that.user.sessionToken;
-			const ret = await api.post('template/put', { doc: that.template.doc }, token);
+			const ret = await api.post(
+				'template/put',
+				{ doc: that.template.doc, tplid: that.tplid },
+				token
+			);
 			//return ret.data;
 			//console.log(ret);
 
@@ -2606,7 +2610,7 @@ ret='DEFAULT'; `
 	async redrawLinkLines(
 		jqNode: myJQuery,
 		reason = 'unknown',
-		bothside = 'left',
+		bothside = 'both',
 		allowConnectPoints = [[2], [0], [2], [0]]
 	) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
@@ -2655,6 +2659,7 @@ ret='DEFAULT'; `
 			//anchorPair返回一个包含两个数字的数组,第一个数字标识父节点的锚点位置,第二个数字标识子节点的锚点位置
 			anchorPositions.push(anchorPair[0]);
 		}
+		debugger;
 
 		//如果是双边画线,则需要找出那些父节点
 		if (bothside === 'both' || bothside === 'right') {
@@ -3754,6 +3759,8 @@ ret='DEFAULT'; `
 			nodes.addClass('kfknode');
 			await that.JC3.append(nodes);
 			const guiNodes = that.JC3.find('.node');
+			debugger;
+			console.log(that.tpl.html());
 			for (let i = 0; i < guiNodes.length; i++) {
 				const jqNode = $(guiNodes[i]);
 				await that.setNodeEventHandler(jqNode);

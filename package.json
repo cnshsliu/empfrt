@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"scripts": {
 		"dev": "cp dotEnv_dev .env; svelte-kit dev",
-		"build": "cp dotEnv_prd .env;  svelte-kit build",
+		"build": "cp dotEnv_prd .env;  svelte-kit build; cp dotEnv_dev .env;",
 		"preview": "svelte-kit preview",
 		"check": "svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
