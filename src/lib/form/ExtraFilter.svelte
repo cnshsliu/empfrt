@@ -67,7 +67,7 @@
 {#if fields.indexOf('statuses') > -1}
 	<Container class="kfk-tab-menu">
 		<Row>
-			<Col xs="auto"><Icon name="ui-radios-grid" />&nbsp; {statuses_label}</Col>
+			<Col xs="auto"><Icon name="ui-radios" />&nbsp; {statuses_label}</Col>
 			{#each statuses as status, index (status)}
 				<Col xs="auto">
 					<Input

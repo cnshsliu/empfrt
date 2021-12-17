@@ -43,9 +43,9 @@ const Parser = {
 						tmp[varKey] = varValue.replace('[workid]', workid);
 					}
 				}
-				if (tmp.type === 'select' && Array.isArray(tmp.options) === false) {
+				/* if (tmp.type === 'select' && Array.isArray(tmp.options) === false) {
 					tmp.options = ['DEFAULT'];
-				}
+				} */
 			}
 			kvarsArr.push(tmp);
 		}

@@ -133,16 +133,20 @@ export interface kvarDef {
 	value: string | number | string[];
 	type: InputType;
 	label: string;
-	placeholder: string;
-	break: boolean;
+	placeholder?: string;
+	breakrow: boolean;
 	id: string;
-	options: ArrayLike<string | number>;
+	options?: string;
 }
 export interface KvarInput {
 	name: string;
 	value: string | number | string[];
 	label: string;
 	type?: string;
+	breakrow?: boolean;
+	placeholder?: string;
+	id?: string;
+	option?: string;
 }
 
 export interface KFKclass {

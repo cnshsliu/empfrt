@@ -45,14 +45,9 @@
 		$session.user = null;
 	}
 
-	export let user;
-	export let myorg;
 	let menu_class = 'light kfk-navmenu tnt-navmenu sticky-top';
 
-	onMount(async () => {
-		myorg = await api.post('tnt/my/org', {}, $session.user.sessionToken);
-		console.log(JSON.stringify(myorg));
-	});
+	onMount(async () => {});
 </script>
 
 {#if $session.user && $session.user.tenant && $session.user.tenant.css}

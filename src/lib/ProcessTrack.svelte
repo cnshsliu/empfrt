@@ -34,8 +34,8 @@
 	function gotoWorkflow(wfid) {
 		goto(`/workflow/@${wfid}`);
 	}
-	function gotoWork(workid) {
-		goto(`/work/@${workid}`);
+	async function gotoWork(workid) {
+		await goto(`/work/@${workid}`, { replaceState: true, noscroll: true });
 	}
 </script>
 
@@ -70,7 +70,7 @@
 		</Row>
 		<Row cols={{ lg: 2, md: 2, sm: 1 }}>
 			<Col>Started at: {wf.beginat ? TimeTool.format(wf.begingat, 'LLLL') : ''}</Col>
-			<Col>Started by: {wf.starter}</Col>
+			<Col>Started by: {user.email === wf.starter ? 'Me' : wf.starter}</Col>
 			<Col>
 				{wf.doneat ? 'Completed at ' + TimeTool.format(wf.doneat, 'LLLL') : 'Still running'}
 			</Col>
@@ -92,9 +92,9 @@
 						<Col>
 							<div
 								class="clickable text-primary"
-								on:click={(e) => {
+								on:click={async (e) => {
 									e.preventDefault();
-									gotoWork(entry.workid);
+									await gotoWork(entry.workid);
 								}}
 							>
 								<b>{entry.title}</b>
@@ -127,7 +127,7 @@
 						</Row>
 					{/if}
 					<Row cols="1">
-						{#if entry.comment && entry.comment.trim().length > 0}
+						{#if Array.isArray(entry.comment)}
 							<Col>
 								<CommentEntry bind:comment={entry.comment} />
 							</Col>

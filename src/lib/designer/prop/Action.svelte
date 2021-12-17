@@ -50,7 +50,7 @@
 		</Col>
 	</Row>
 	<TabContent pills>
-		<TabPane tabId="participant" tab="Participant" active>
+		<TabPane tabId="participant" tab="Participant">
 			<Col>
 				<InputGroup size="sm">
 					<Input
@@ -81,13 +81,13 @@
 			<InputGroup size="sm">
 				<Input
 					type="textarea"
-					placeholder="in Markdown format"
+					placeholder="support simple HTML and Handlebars"
 					bind:value={nodeInfo.nodeProps.ACTION.instruct}
 					disabled={readonly}
 				/>
 			</InputGroup>
 		</TabPane>
-		<TabPane tabId="varaibles" tab="Variables">
+		<TabPane tabId="varaibles" tab="Variables" active>
 			<Col class="mt-3 mt-1">
 				{#if !readonly}
 					<InputGroup size="sm">
@@ -100,7 +100,9 @@
 								kvarsArr.push({
 									name: '',
 									label: '',
-									value: ''
+									value: '',
+									breakrow: false,
+									placeholder: ''
 								});
 								kvarsArr = kvarsArr;
 							}}
@@ -111,20 +113,44 @@
 				{/if}
 				<Container>
 					{#each kvarsArr as kvar, index}
-						<div class="d-flex">
-							<div class="mt-2 flex-grow-1">
-								<InputGroup size="sm">
-									<InputGroupText>Name</InputGroupText>
-									<Input bind:value={kvar.name} disabled={readonly} />
-								</InputGroup>
-								<InputGroup size="sm">
-									<InputGroupText>Value</InputGroupText>
-									<Input bind:value={kvar.value} disabled={readonly} />
-								</InputGroup>
-								<InputGroup size="sm">
-									<InputGroupText>Label</InputGroupText>
-									<Input bind:value={kvar.label} disabled={readonly} />
-								</InputGroup>
+						<div class="px-2 py-2 my-2 d-flex kfk-highlight-2">
+							<div class="my-1 flex-grow-1">
+								<TabContent vertical pills>
+									<TabPane tabId="basic" tab="Basic" active>
+										<InputGroup size="sm">
+											<InputGroupText>Name</InputGroupText>
+											<Input bind:value={kvar.name} disabled={readonly} />
+										</InputGroup>
+										<InputGroup size="sm">
+											<InputGroupText>Value</InputGroupText>
+											<Input bind:value={kvar.value} disabled={readonly} />
+										</InputGroup>
+										<InputGroup size="sm">
+											<InputGroupText>Label</InputGroupText>
+											<Input bind:value={kvar.label} disabled={readonly} />
+										</InputGroup>
+										{#if kvar.name.startsWith('select_')}
+											<InputGroup size="sm">
+												<InputGroupText>Options</InputGroupText>
+												<Input bind:value={kvar.options} disabled={readonly} />
+											</InputGroup>
+										{/if}
+									</TabPane>
+									<TabPane tabId="extra" tab="Extra">
+										<InputGroup size="sm">
+											<InputGroupText>Placeholder</InputGroupText>
+											<Input bind:value={kvar.placeholder} disabled={readonly} />
+										</InputGroup>
+										<InputGroup size="sm">
+											<InputGroupText>Break row</InputGroupText>
+											<Input type="checkbox" bind:checked={kvar.breakrow} disabled={readonly} />
+										</InputGroup>
+										<InputGroup size="sm">
+											<InputGroupText>ID</InputGroupText>
+											<Input bind:value={kvar.id} disabled={readonly} />
+										</InputGroup>
+									</TabPane>
+								</TabContent>
 							</div>
 							{#if !readonly}
 								<div class="shrink">
@@ -152,7 +178,9 @@
 																	kvarsArr.splice(index, 0, {
 																		name: '',
 																		label: '',
-																		value: ''
+																		value: '',
+																		breakrow: false,
+																		placeholder: ''
 																	});
 																	kvarsArr = kvarsArr;
 																}}

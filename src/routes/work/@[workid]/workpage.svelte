@@ -172,7 +172,7 @@
 					Node Input:
 					<Row cols="4">
 						{#each work.kvarsArr as kvar, i}
-							{#if kvar.break}
+							{#if kvar.breakrow}
 								<div class="w-100" />
 							{/if}
 							<Col>
@@ -358,22 +358,22 @@
 				Workflow Data:
 				<Row cols={{ lg: 3, md: 2, sm: 1 }}>
 					{#each work.wf.kvarsArr as kvar}
-						{#if kvar.break}
+						{#if kvar.breakrow}
 							<div class="w-100" />
 						{/if}
 						<Col>
-							<div>{kvar.label}</div>
+							<div class="fs-4">{kvar.label}</div>
 							<div class="kfk-kvar-value-display">{kvar.value}</div>
 						</Col>
 					{/each}
 				</Row>
 			</Container>
 		{/if}
-		<Container>
-			{#if work.comment && work.comment.trim().length > 0}
+		{#if work.comment}
+			<Container>
 				<CommentEntry bind:comment={work.comment} />
-			{/if}
-		</Container>
+			</Container>
+		{/if}
 	</Container>
 	<ProcessTrack
 		{user}

@@ -62,7 +62,7 @@
 				<li>For department</li>
 				blank
 				<li>For staff</li>
-				colon separated positions
+				comma separated positions
 			</ul>
 		</ul>
 	</CardBody>

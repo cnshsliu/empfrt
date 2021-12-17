@@ -85,7 +85,7 @@
 				{/if}
 			</Row>
 		</Form>
-		<!-- Find those leaders in upper position of the specifed stafff Colon separated leaders' title, for example:
+		<!-- Find those leaders in upper position of the specifed staff comma separated leaders' title, for example:
 		"director" will search workflow doer's director upwards along the orgchart tree. "director:CTO:CEO"
 		will search doer's director and CTO and CEO upwards along the orgchart tree.-->
 		{#if Array.isArray(leaders)}

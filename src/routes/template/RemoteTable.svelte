@@ -146,20 +146,27 @@
 				>
 				<!--  td data-label="Updated at">{TimeTool.format(row.updatedAt, 'lll')}</td -->
 				<td>
-					<a
-						href={'#'}
-						on:click|preventDefault={() => {
-							goto(`template/start?tplid=${row.tplid}`, { replaceState: false });
-						}}
-						class="nav-link "
-						><Icon name="caret-right-square" />
-						Start it
-					</a>
+					{#if user.perms && ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
+						<a
+							href={'#'}
+							on:click|preventDefault={() => {
+								goto(`template/start?tplid=${row.tplid}`, { replaceState: false });
+							}}
+							class="nav-link "
+							><Icon name="caret-right-square" />
+							Start it
+						</a>
+					{:else}
+						&nbsp;
+					{/if}
 				</td>
 				<td>
 					<Dropdown>
 						<DropdownToggle caret color="notexist" class="btn-sm">Actions</DropdownToggle>
 						<DropdownMenu>
+							<DropdownItem>
+								Last update:{TimeTool.format(row.updatedAt, 'lll')}
+							</DropdownItem>
 							{#if user.perms && ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
 								<DropdownItem>
 									<a
