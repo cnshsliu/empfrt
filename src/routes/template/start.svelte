@@ -27,6 +27,7 @@
 
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 	import type { User, Template, Team } from '$lib/types';
 	import { browser, dev } from '$app/env';
 	import * as api from '$lib/api';
@@ -97,7 +98,11 @@
 		}
 	};
 
+	let starting = 0;
+	let startedWorkflow = null;
 	const _startWorkflow = async function () {
+		starting = 0;
+		fade_message = '';
 		saveOneRecentTemplate(tplid);
 		let teamid = theTeam ? theTeam.teamid : '';
 		const res = await api.post(
@@ -105,9 +110,12 @@
 			{ tplid, teamid, wftitle, pbo },
 			user.sessionToken
 		);
+		starting = 1;
 		if (res.wfid) {
+			startedWorkflow = res;
 			fade_message = `Workflow ${res.wftitle} Started.`;
 		} else {
+			startedWorkflow = null;
 			if (res.errors && res.errors.MongoError && res.errors.MongoError[0]) {
 				if (res.errors.MongoError[0].indexOf('duplicate') >= 0)
 					fade_message = `${wfid} exists already`;
@@ -116,9 +124,10 @@
 			}
 		}
 		if (timeoutID) clearTimeout(timeoutID);
+		/*
 		timeoutID = setTimeout(() => {
 			fade_message = '';
-		}, 3000);
+}, 3000); */
 	};
 
 	let recentTemplates = [];
@@ -257,6 +266,17 @@
 			{fade_message}
 		</Card>
 	</Fade>
+	{#if startedWorkflow !== null}
+		<Button
+			class="w-100"
+			on:click={(e) => {
+				e.preventDefault();
+				goto(`/workflow/@${startedWorkflow.wfid}`);
+			}}
+		>
+			Check it out
+		</Button>
+	{/if}
 	{#if theTeam}
 		<div class="text-center fs-4">Team {theTeam.teamid}</div>
 		{#each roles as aRole (aRole)}

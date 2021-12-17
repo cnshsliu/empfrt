@@ -2659,7 +2659,6 @@ ret='DEFAULT'; `
 			//anchorPair返回一个包含两个数字的数组,第一个数字标识父节点的锚点位置,第二个数字标识子节点的锚点位置
 			anchorPositions.push(anchorPair[0]);
 		}
-		debugger;
 
 		//如果是双边画线,则需要找出那些父节点
 		if (bothside === 'both' || bothside === 'right') {
@@ -3759,7 +3758,6 @@ ret='DEFAULT'; `
 			nodes.addClass('kfknode');
 			await that.JC3.append(nodes);
 			const guiNodes = that.JC3.find('.node');
-			debugger;
 			console.log(that.tpl.html());
 			for (let i = 0; i < guiNodes.length; i++) {
 				const jqNode = $(guiNodes[i]);
