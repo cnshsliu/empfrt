@@ -1,7 +1,6 @@
 import type { oneArgFunc } from '$lib/types';
 import { getNotificationsContext } from 'svelte-notifications';
 const { addNotification } = getNotificationsContext();
-FadeMessage;
 export function setFadeMessage(
 	message: string,
 	type = 'warning',
