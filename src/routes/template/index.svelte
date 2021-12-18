@@ -323,22 +323,23 @@
 				</span>
 				<form class="new" enctype="multipart/form-data">
 					<Container class="mt-3">
-						<Row>
-							<Col>
+						<div class="d-flex">
+							<div class="form-floating flex-grow-1">
 								<input
 									name="tplid"
+									id="input-tplid"
 									placeholder="New template name"
-									class="kfk-input-template-name"
+									class="form-control"
 									bind:value={tplidImport}
 								/>
-							</Col>
-							<Col>
-								<input name="file" type="file" class="kfk_input_template_name" bind:files />
-							</Col>
-							<Col>
-								<Button size="sm" on:click={upload} color="primary">Import</Button>
-							</Col>
-						</Row>
+								<label for="input-tplid">Template Name</label>
+							</div>
+							<div class="form-floating">
+								<input name="file" id="input-file" type="file" class="form-control" bind:files />
+								<label for="input-file">Select file</label>
+							</div>
+							<Button on:click={upload} color="primary">Import</Button>
+						</div>
 					</Container>
 				</form>
 			</TabPane>
