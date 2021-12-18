@@ -45,6 +45,7 @@
 	import type { EmpResponse, WhichTab, OrgMembers, oneArgFunc } from '$lib/types';
 	import { whichTabStore } from '$lib/empstores';
 	import SmtpAdmin from './smtpadmin.svelte';
+	import Personal from './personal.svelte';
 	import OrgChartCsvFormat from './orgchartcsvformat.svelte';
 	import OrgChart from './orgchart.svelte';
 	import OrgChartRelationTest from '$lib/orgchartrelationtest.svelte';
@@ -78,10 +79,14 @@
 	export let delegationFromMe: any;
 	import { title } from '$lib/title';
 	$title = 'HyperFlow';
+	let menu = '';
+	let password_for_admin = '';
+	let set_group_to = '';
 	let in_progress: boolean;
 	let orgname = myorg.orgname;
 	let orgtheme = myorg.css;
 	let orgtimezone = myorg.timezone;
+	let orgleveltags = myorg.tags;
 
 	let orgchartrelationtest_conf = {
 		show: { leader: true, query: true },
@@ -211,9 +216,27 @@
 		in_progress = false;
 	}
 
+	async function setMyTenantOrgLevelTags() {
+		in_progress = true;
+
+		let ret = await api.post(
+			'tnt/set/tags',
+			{ tags: orgleveltags, password: password_for_admin },
+			user.sessionToken
+		);
+		if (ret.error) {
+			setFadeMessage(ret.message, 'warning');
+		} else {
+			setFadeMessage('Success', 'success');
+			orgleveltags = ret.tags;
+			myorg.tags = ret.tags;
+		}
+
+		in_progress = false;
+	}
+
 	let generatedJoinCode = '';
 	let userDefinedJoinCode = '';
-	let joinorgwithcode = '';
 
 	async function generateJoinCode() {
 		let res = await api.post(
@@ -243,36 +266,6 @@
 		}
 	}
 
-	async function joinOrgWithCode() {
-		let res = await api.post('tnt/join', { joincode: joinorgwithcode }, user.sessionToken);
-		if (res.message) setFadeMessage(res.message, 'warning');
-	}
-
-	let userInfoNotChange = true;
-
-	function onInputChange() {
-		userInfoNotChange = false;
-		console.log('userInfoNotChange');
-	}
-
-	let password_for_admin = '';
-	let my_old_password = '';
-	let set_group_to = '';
-	let menu = myorg.menu;
-
-	const setMenu = async function () {
-		let res = await api.post(
-			'tnt/set/menu',
-			{ menu: menu, password: password_for_admin },
-			user.sessionToken
-		);
-		if (res.error) {
-			setFadeMessage(res.error, 'warning');
-		} else {
-			menu = res.menu;
-			myorg.menu = res.menu;
-		}
-	};
 	async function approveJoinOrgApplications() {
 		let ems = myorg.joinapps
 			.filter((x: any) => x.checked)
@@ -485,124 +478,7 @@
 			tab="Personal"
 			active={!whichTab || whichTab['setting'] === 'personal'}
 		>
-			<form>
-				<Container class="mt-3">
-					<div class="w-100 text-center fs-3">{user.email}</div>
-					<Row cols="1" class="mt-3">
-						<Col>
-							<InputGroup class="mb-1">
-								<InputGroupText>Your avatar url</InputGroupText>
-								<input
-									class="form-control"
-									type="text"
-									placeholder="URL of profile picture"
-									bind:value={user.avatar}
-									on:input={() => {
-										onInputChange();
-									}}
-								/>
-							</InputGroup>
-						</Col>
-						<Col>
-							<InputGroup class="mb-1">
-								<InputGroupText>Your display name:</InputGroupText>
-								<input
-									class="form-control"
-									type="text"
-									placeholder="Username"
-									bind:value={user.username}
-									on:input={() => {
-										onInputChange();
-									}}
-								/>
-							</InputGroup>
-						</Col>
-						<Col>
-							<InputGroup class="mb-1">
-								<InputGroupText>Change password:</InputGroupText>
-								<input
-									class="form-control"
-									type="password"
-									placeholder="New Password"
-									bind:value={user.password}
-									on:input={() => {
-										onInputChange();
-									}}
-								/>
-							</InputGroup>
-						</Col>
-						<Col>
-							<InputGroup class="mb-1">
-								<InputGroupText>Old password:</InputGroupText>
-								<input
-									class="form-control"
-									type="password"
-									placeholder="Old Password"
-									bind:value={my_old_password}
-								/>
-							</InputGroup>
-						</Col>
-						<Col>
-							<InputGroup>
-								<InputGroupText>Send Email to me on new work comming</InputGroupText> &nbsp;&nbsp;
-								<Input type="checkbox" bind:checked={user.ew} on:change={onInputChange} />
-							</InputGroup>
-						</Col>
-					</Row>
-					<Row>
-						<Col>
-							<Button
-								class="w-100 btn btn-lg  pull-xs-right"
-								disabled={in_progress || userInfoNotChange}
-								on:click={(e) => {
-									e.preventDefault();
-									savePersonel();
-								}}
-							>
-								Update Settings
-							</Button>
-						</Col>
-					</Row>
-				</Container>
-			</form>
-			<Container class="mt-5">
-				<form>
-					<Row cols="1" />
-				</form>
-			</Container>
-			<Container class="mt-5">
-				<form>
-					<Row cols="1">
-						<Col>
-							<InputGroup class="mb-1">
-								<InputGroupText>Join Org with joincode:</InputGroupText>
-								<Input
-									type="text"
-									bind:value={joinorgwithcode}
-									placeholder="join code"
-									autocomplete="off"
-								/>
-								<Button
-									on:click={(e) => {
-										e.preventDefault();
-										joinOrgWithCode();
-									}}
-								>
-									Join
-								</Button>
-							</InputGroup>
-						</Col>
-						<Col class="p-3">My Group: {user.group}</Col>
-					</Row>
-				</form>
-			</Container>
-			{#if dev}
-				<Container class="w-50 mt-5">
-					<code><pre>
-{JSON.stringify(user, null, 2)}
-</pre></code>
-				</Container>
-			{/if}
+			<Personal {user} {setFadeMessage} />
 		</TabPane>
 		<TabPane
 			tabId="delegation"
@@ -746,6 +622,19 @@
 									Set
 								</Button>
 							</InputGroup>
+							{JSON.stringify(myorg)}
+							<InputGroup class="mb-1">
+								<InputGroupText>Org level tags:</InputGroupText>
+								<Input type="text" bind:value={orgleveltags} />
+								<Button
+									on:click={(e) => {
+										e.preventDefault();
+										setMyTenantOrgLevelTags();
+									}}
+								>
+									Set
+								</Button>
+							</InputGroup>
 						</CardBody>
 					</Card>
 				{:else}
@@ -867,32 +756,6 @@
 							{:else}
 								There is no join application at this time
 							{/if}
-						</CardBody>
-					</Card>
-					<Card class="mt-3">
-						<CardHeader>
-							<CardTitle>Default Menu</CardTitle>
-						</CardHeader>
-						<CardBody>
-							<InputGroup class="mb-1">
-								<InputGroupText>Admin Password:</InputGroupText>
-								<Input
-									type="password"
-									bind:value={password_for_admin}
-									placeholder="Confirm with admin password"
-								/>
-							</InputGroup>
-							<InputGroup>
-								<InputGroupText>Menu</InputGroupText>
-								<Input bind:value={menu} placeholder="Home;Docs;Template;Workflow;Worklist;Team" />
-								<Button
-									on:click={(e) => {
-										e.preventDefault();
-										setMenu();
-									}}>Set</Button
-								>
-							</InputGroup>
-							{JSON.stringify(myorg)}
 						</CardBody>
 					</Card>
 				{/if}

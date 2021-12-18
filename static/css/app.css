@@ -90,10 +90,6 @@ button:focus:not(:focus-visible) {
 	}
 }
 
-input {
-	border-radius: 5px;
-	border: 1px solid rgba(200, 200, 255, 0.8);
-}
 section {
 	margin-top: 80px;
 }
@@ -116,21 +112,6 @@ html {
 /* Optional: show position indicator in red */
 ::-webkit-scrollbar-thumb {
 	background: #e50000;
-}
-
-input::-webkit-input-placeholder {
-	color: #68636379 !important;
-	font-size: 18px !important;
-}
-
-input::-ms-input-placeholder {
-	color: #68636379 !important;
-	font-size: 18px !important;
-}
-
-input::placeholder {
-	color: #68636379 !important;
-	font-size: 18px !important;
 }
 
 .tab-space {
@@ -2000,15 +1981,15 @@ div.pbo {
 .kfk-dropdown .active a {
 	color: #ffffff;
 }
-.kfk-role-member-tag {
+.kfk-tag {
 	margin-right: 5px;
 	margin-bottom: 5px;
 }
-.kfk-role-member-tag a {
+.kfk-tag a {
 	text-decoration: none;
 	color: white;
 }
-.kfk-role-member-tag a:hover {
+.kfk-tag a:hover {
 	text-decoration: none;
 	color: white;
 }
@@ -2147,4 +2128,10 @@ div.pbo {
 .nav-link.active {
 	text-decoration: underline;
 	text-decoration-thickness: 1px;
+}
+.kfk-round {
+	border-radius: 10px;
+}
+.kfkshadow {
+	box-shadow: 0px 0px 5px 5px #0d6efd66;
 }

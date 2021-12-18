@@ -11,12 +11,8 @@ export async function post(request) {
 
 	const token = request.locals.user.sessionToken;
 	const payload = {
-		email: request.body.email,
-		username: request.body.username,
-		password: request.body.password,
-		ew: request.body.ew,
-		old_password: request.body.old_password,
-		avatar: request.body.avatar
+		value: request.body.value,
+		old_password: request.body.old_password
 	};
 	const ret = await api.post('account/profile/update', payload, token);
 	console.log('auth/save', payload);

@@ -4,27 +4,40 @@
 	//Row component is optional and only serves to render odd/even row, you can use <tr> instead.
 	//Sort component is optional
 	import { scale } from 'svelte/transition';
-	import { flip } from 'svelte/animate';
 	import * as api from '$lib/api';
 	import { onMount } from 'svelte';
 	import { ClientPermControl } from '$lib/clientperm';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
 	import { goto } from '$app/navigation';
-	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Icon } from 'sveltestrap';
+	import {
+		Dropdown,
+		DropdownItem,
+		DropdownMenu,
+		DropdownToggle,
+		Icon,
+		Container,
+		Row,
+		Col,
+		InputGroup,
+		Button,
+		Badge
+	} from 'sveltestrap';
 	import { getData } from '$lib/pagination/Server.js';
 
 	export let TimeTool;
 	export let token;
 	export let endpoint;
 	export let rows = [];
+	export let tag;
 	export let user;
 	let page = 0; //first page
 	let pageIndex = 0; //first row
-	let pageSize = 10; //optional, 10 by default
+	let pageSize = user && user.ps ? user.ps : 10; //optional, 10 by default
 
 	let loading = true;
 	export let rowsCount = 0;
-	let text;
+	let currentTplid = '';
+	let searchFilter: String = '';
 	let sorting = { dir: 'desc', key: 'updatedAt' };
 
 	onMount(async () => {
@@ -33,7 +46,9 @@
 
 	async function load(_page) {
 		loading = true;
-		const data = await getData(endpoint, token, _page, pageSize, text, sorting);
+		const data = await getData(endpoint, token, _page, pageSize, searchFilter, sorting, {
+			tag: tag
+		});
 		rows = data.rows;
 		rowsCount = data.rowsCount;
 		loading = false;
@@ -50,13 +65,13 @@
 	}
 
 	async function onSearch(event) {
-		text = event.detail.text;
+		searchFilter = event.detail.text;
 		await load(page);
 		page = 0;
 	}
 
 	export async function refresh(detail) {
-		if (detail && detail.text) text = detail.text;
+		if (detail && detail.text) searchFilter = detail.text;
 		if (detail && detail.page) page = detail.page;
 		if (detail && detail.sorting) sorting = detail.sorting;
 		await load(page);
@@ -66,6 +81,22 @@
 		sorting = { dir: event.detail.dir, key: event.detail.key };
 		await load(page);
 	}
+
+	let tag_input = '';
+	const deleteATag = async function (index, tplid, tags, text) {
+		console.log('Delete ', text);
+		tags = await api.post('tag/del', { objtype: 'template', objid: tplid, text: text }, token);
+		rows[index].tags = tags;
+		rows = rows;
+	};
+
+	const addTags = async function (index, tplid, tags, text) {
+		if (text.trim().length === 0) return;
+		tags = await api.post('tag/add', { objtype: 'template', objid: tplid, text: text }, token);
+		console.log('ret', tags);
+		rows[index].tags = tags;
+		rows = rows;
+	};
 
 	async function deleteRow(tplid) {
 		await api.post('template/delete/byname', { tplid: tplid }, token);
@@ -125,7 +156,6 @@
 		{#each rows2 as row, index (row)}
 			<tr
 				transition:scale|local={{ start: 0.7 }}
-				animate:flip={{ duration: 200 }}
 				class:kfk-odd={index % 2 !== 0}
 				class:kfk-even={index % 2 === 0}
 				class:tnt-odd={index % 2 !== 0}
@@ -191,6 +221,18 @@
 									See workflows
 								</a>
 							</DropdownItem>
+							<DropdownItem>
+								<a
+									href={'#'}
+									on:click|preventDefault={() => {
+										currentTplid = row.tplid;
+									}}
+									class="nav-link "
+								>
+									<Icon name="tags" />
+									Set TAGS
+								</a>
+							</DropdownItem>
 							{#if user.perms && ClientPermControl(user.perms, user.email, 'template', row, 'delete')}
 								<DropdownItem>
 									<a
@@ -206,6 +248,65 @@
 					</Dropdown>
 				</td>
 			</tr>
+			{#if currentTplid === row.tplid}
+				<tr>
+					<td colspan="4">
+						<Container>
+							<Row>
+								<InputGroup>
+									<div class="form-floating flex-fill">
+										<input
+											name={'newtag-' + index}
+											class="form-control"
+											id={'input-tplid-' + index}
+											placeholder="New tags"
+											bind:value={tag_input}
+											on:change={async (e) => {
+												e.preventDefault();
+												console.log(tag_input);
+												await addTags(index, row.tplid, row.tags, tag_input);
+												tag_input = '';
+											}}
+										/>
+										<label for="input-tplid">input new tags delimitered by space/;/, </label>
+									</div>
+									<Button
+										color="primary"
+										on:click={async (e) => {
+											e.preventDefault();
+											await addTags(index, row.tplid, row.tags, tag_input);
+											tag_input = '';
+										}}
+									>
+										Set
+									</Button>
+									<Button
+										on:click={(e) => {
+											e.preventDefault();
+											currentTplid = '';
+										}}
+									>
+										Close
+									</Button>
+								</InputGroup>
+							</Row>
+							{#each row.tags as tag, tagIndex}
+								<Badge pill color="secondary" class="kfk-tag">
+									{tag.text}
+									<a
+										href={'#'}
+										on:click|preventDefault={() => {
+											deleteATag(index, row.tplid, row.tags, tag.text);
+										}}
+									>
+										<Icon name="x" />
+									</a>
+								</Badge>
+							{/each}
+						</Container>
+					</td>
+				</tr>
+			{/if}
 		{/each}
 	</tbody>
 	<div slot="bottom">

@@ -32,6 +32,7 @@ export interface User {
 	avatar: string;
 	bio: string;
 	ew: boolean;
+	ps: number;
 	sessionToken: string;
 	password?: string;
 	extra?: {

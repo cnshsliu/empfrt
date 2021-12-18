@@ -26,10 +26,11 @@
 	import ErrorProcessor from '$lib/errorProcessor';
 	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation';
+	import * as api from '$lib/api';
 	import type { WhichTab } from '$lib/types';
 	import { whichTabStore } from '$lib/empstores';
 	import { ClientPermControl } from '$lib/clientperm';
-	import { TabContent, Fade, Card, TabPane } from 'sveltestrap';
+	import { TabContent, Badge, Fade, Card, TabPane, FormGroup, Label, Input } from 'sveltestrap';
 	import type { User } from '$lib/types';
 	import { session } from '$app/stores';
 	import { Container, Row, Col, Icon, Button, Nav, NavLink } from 'sveltestrap';
@@ -88,12 +89,22 @@
 				console.error('Error:', error);
 			});
 	}
+	let allTags: any = {
+		org: [],
+		mine: []
+	};
 	let whichTab: WhichTab = get(whichTabStore);
 	async function showTab(tabId) {
 		whichTab = get(whichTabStore);
 		if (whichTab) {
 			whichTab['template'] = tabId;
 			whichTabStore.set(whichTab);
+		}
+		if (tabId === 'tags') {
+			console.log('update my tags');
+			allTags.org = await api.post('tag/org', {}, user.sessionToken);
+			allTags.mine = await api.post('tag/list', { objtype: 'template' }, user.sessionToken);
+			console.log(allTags);
 		}
 	}
 
@@ -112,6 +123,14 @@
 			recentTemplates = JSON.parse(localStorage.getItem('recentTemplates') ?? JSON.stringify([]));
 		}
 	});
+
+	let currentTag = '';
+	const useThisTag = function (tag) {
+		currentTag = tag;
+		remoteTable.tag = tag;
+		remoteTable.refresh();
+		console.log(tag);
+	};
 </script>
 
 <Container>
@@ -122,7 +141,7 @@
 </Container>
 <Container>
 	<TabContent
-		class="kfk-tab-menu"
+		class="kfk-tab-menu pb-2"
 		on:tab={(e) => {
 			showTab(e.detail);
 		}}
@@ -130,9 +149,100 @@
 		<TabPane tabId="home" active={!whichTab || whichTab['template'] === 'home'}>
 			<span slot="tab">
 				<Icon name="code-square" />
-				Template
+				Recent
 			</span>
-			<div class="mx-3">A template describe how a workflow sould run</div>
+			<Container class="my-2">
+				<span>Recent started:</span>
+				{#each recentTemplates as aTplid}
+					<Button
+						class="mx-1 badge bg-info text-dark"
+						on:click={(e) => {
+							e.preventDefault();
+							goto(`template/start?tplid=${aTplid}`, { replaceState: false });
+						}}
+					>
+						{aTplid}
+					</Button>
+				{/each}
+			</Container>
+		</TabPane>
+		<TabPane tabId="tags" active={whichTab && whichTab['template'] === 'tags'}>
+			<span slot="tab">
+				<Icon name="tags" />
+				Tags
+			</span>
+			<Container>
+				<Row class="mb-2">
+					<Col class="d-flex justify-content-center">
+						<Button
+							color="primary"
+							class="mx-1 badge text-white"
+							on:click={(e) => {
+								e.preventDefault();
+								useThisTag('');
+							}}
+						>
+							All
+						</Button>
+						{#each allTags.org as tag}
+							{#if currentTag === tag}
+								<Button
+									color="primary"
+									class="mx-1 badge text-white"
+									on:click={(e) => {
+										e.preventDefault();
+										useThisTag(tag);
+									}}
+								>
+									{tag}
+								</Button>
+							{:else}
+								<Button
+									color="secondary"
+									class="mx-1 badge text-white "
+									on:click={(e) => {
+										e.preventDefault();
+										useThisTag(tag);
+									}}
+								>
+									{tag}
+								</Button>
+							{/if}
+						{/each}
+					</Col>
+				</Row>
+				<Row>
+					<Col class="d-flex justify-content-center">
+						{#each allTags.mine as tag}
+							{#if currentTag === tag}
+								<Button
+									size="sm"
+									color="primary"
+									class="mx-1 badge kfk-round text-white"
+									on:click={(e) => {
+										e.preventDefault();
+										useThisTag(tag);
+									}}
+								>
+									{tag}
+								</Button>
+							{:else}
+								<Button
+									size="sm"
+									color="secondary"
+									class="mx-1 badge kfk-round text-white"
+									on:click={(e) => {
+										e.preventDefault();
+										useThisTag(tag);
+									}}
+								>
+									{tag}
+								</Button>
+							{/if}
+						{/each}
+					</Col>
+				</Row>
+			</Container>
 		</TabPane>
 		{#if user.perms && ClientPermControl(user.perms, user.email, 'template', '', 'create')}
 			<TabPane tabId="create" active={whichTab && whichTab['template'] === 'create'}>
@@ -168,20 +278,32 @@
 						}
 					}}
 				>
-					<Container class="mt-3">
-						<Row>
-							<Col>
+					<Container class="my-3">
+						<div class="d-flex">
+							<div class="form-floating">
 								<input
 									name="tplid"
+									class="form-control"
+									id="input-tplid"
 									aria-label="Create template"
 									placeholder="New template name"
-									class="kfk-input-template-name"
 								/>
-							</Col>
-							<Col>
-								<Button size="sm" type="submit" color="primary">Create</Button>
-							</Col>
-						</Row>
+								<label for="input-tplid">Template Name</label>
+							</div>
+							<div class=" form-floating flex-grow-1">
+								<input
+									name="tags"
+									id="input-tags"
+									class="w-100 form-control"
+									aria-label="template tags"
+									placeholder="tags delimiter with space/;/,"
+								/>
+								<label for="input-tags">Tags delimitered by spaces/;/,</label>
+							</div>
+							<div>
+								<Button type="submit" class="h-100" color="primary">Create</Button>
+							</div>
+						</div>
 					</Container>
 				</form>
 			</TabPane>
@@ -213,20 +335,6 @@
 			</TabPane>
 		{/if}
 	</TabContent>
-</Container>
-<Container class="mt-2">
-	<span>Recent started:</span>
-	{#each recentTemplates as aTplid}
-		<Button
-			class="mx-1 badge bg-info text-dark"
-			on:click={(e) => {
-				e.preventDefault();
-				goto(`template/start?tplid=${aTplid}`, { replaceState: false });
-			}}
-		>
-			{aTplid}
-		</Button>
-	{/each}
 </Container>
 <Container class="mt-3 kfk-result-list">
 	<Row>

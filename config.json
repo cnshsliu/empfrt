@@ -1,5 +1,0 @@
-{
-	"name": "mtc_server",
-	"script": "npm run dev",
-	"watch": true
-}

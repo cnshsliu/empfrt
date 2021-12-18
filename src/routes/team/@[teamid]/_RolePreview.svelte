@@ -146,7 +146,7 @@
 			<div style="margin-bottom:10px;">
 				{#if team.tmap[aRole]}
 					{#each team.tmap[aRole] as aMember (aMember.uid)}
-						<Badge pill color="info" class="kfk-role-member-tag">
+						<Badge pill color="info" class="kfk-tag">
 							{aMember.cn} &lt;{aMember.uid}&gt;
 							{#if ClientPermControl(user.perms, user.email, 'team', team, 'update')}
 								<a

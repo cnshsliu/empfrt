@@ -101,17 +101,12 @@
 							Worklist
 						</NavLink>
 					</NavItem>
-					<NavItem>
-						<NavLink class="py-2 ps-0 pe-3" href="/team" active={$page.path === '/team'}>
-							Team
-						</NavLink>
-					</NavItem>
 					<Dropdown>
 						{#if $session.user && $session.user.avatar}
 							<DropdownToggle nav>
 								<img
 									src={$session.user.avatar}
-									class="kfk-avatar-small img-thumbnail"
+									class="kfk-avatar-small"
 									alt={$session.user.username}
 								/>
 							</DropdownToggle>
@@ -151,18 +146,25 @@
 										>{$session.user && $session.user.tenant ? $session.user.tenant.name : ''}
 									</Col>
 									<Col>{DEPLOY_MODE === 'private' ? 'ENTERPRISE' : 'SaaS'}</Col>
-									<Col class="mt-3">
-										<Button
-											color="primary"
-											on:click={(e) => {
-												goto('/settings');
-											}}
-										>
-											Manage your account
-										</Button>
-									</Col>
 								</Row>
 							</Container>
+							<DropdownItem divider />
+							<DropdownItem
+								class="text-center"
+								on:click={(e) => {
+									goto('/settings');
+								}}
+							>
+								Settings
+							</DropdownItem>
+							<DropdownItem
+								class="text-center"
+								on:click={(e) => {
+									goto('/team');
+								}}
+							>
+								Teaming
+							</DropdownItem>
 							<DropdownItem
 								class="text-center"
 								on:click={(e) => {

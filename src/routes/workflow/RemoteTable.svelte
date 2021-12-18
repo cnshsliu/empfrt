@@ -19,7 +19,7 @@
 	let rows: Workflow[] = [] as Workflow[];
 	let page = 0; //first page
 	let pageIndex = 0; //first row
-	let pageSize = 10; //optional, 10 by default
+	let pageSize = user && user.ps ? user.ps : 10; //optional, 10 by default
 
 	let loading = true;
 	let rowsCount = 0;
@@ -176,7 +176,7 @@
 				</td>
 				<td data-label="Status">{row.statusLabel}</td>
 				<td data-label="Starter">{row.starter}</td>
-				<td data-label="Updated at">{TimeTool.format(row.updatedAt, 'LLLL')}</td>
+				<td data-label="Updated at">{TimeTool.format(row.updatedAt, 'LLL')}</td>
 				<td>
 					<Dropdown>
 						<DropdownToggle caret color="notexist" class="btn-sm">Actions</DropdownToggle>

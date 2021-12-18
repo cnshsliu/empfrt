@@ -110,15 +110,14 @@
 			{ tplid, teamid, wftitle, pbo },
 			user.sessionToken
 		);
-		starting = 1;
 		if (res.wfid) {
 			startedWorkflow = res;
 			fade_message = `Workflow ${res.wftitle} Started.`;
+			starting = 1;
 		} else {
 			startedWorkflow = null;
 			if (res.errors && res.errors.MongoError && res.errors.MongoError[0]) {
-				if (res.errors.MongoError[0].indexOf('duplicate') >= 0)
-					fade_message = `${wfid} exists already`;
+				if (res.errors.MongoError[0].indexOf('duplicate') >= 0) fade_message = `exists already`;
 			} else {
 				fade_message = JSON.stringify(res);
 			}
@@ -154,6 +153,7 @@
 		recentTeams = recentTeams;
 	};
 	const saveOneRecentTemplate = function (tplid) {
+		if (tplid === null || tplid === undefined || tplid === '') return;
 		let tmp = recentTemplates.indexOf(tplid);
 		if (tmp > -1) {
 			recentTemplates.splice(tmp, 1);
@@ -184,53 +184,108 @@
 <Container class="mt-3 w-50">
 	<Form>
 		<Row cols="1">
+			<Col style="margin-top: 20px;">
+				<Button
+					disabled={starting === 1}
+					color="primary"
+					class="w-100"
+					on:click={(e) => {
+						e.preventDefault();
+						_startWorkflow();
+					}}
+					>Start it
+				</Button>
+			</Col>
 			<Col>
-				<FormGroup>
-					<Label>Primary Business Object</Label>
+				<Fade isOpen={fade_message != ''}>
+					{fade_message}
+				</Fade>
+			</Col>
+		</Row>
+		<Row cols="2">
+			{#if startedWorkflow !== null}
+				<Col>
+					<Button
+						class="w-100"
+						on:click={(e) => {
+							e.preventDefault();
+							goto(`/workflow/@${startedWorkflow.wfid}`);
+						}}
+					>
+						Check it out
+					</Button>
+				</Col>
+				<Col>
+					<Button
+						class="w-100"
+						on:click={(e) => {
+							e.preventDefault();
+							starting = 0;
+							fade_message = '';
+							startedWorkflow = null;
+						}}
+					>
+						Dismiss
+					</Button>
+				</Col>
+			{/if}
+		</Row>
+		<Row cols="1" class="mt-5">
+			<Col>Optional Workflow Context:</Col>
+			<Col>
+				<div class="form-floating">
 					<Input
 						type="url"
 						name="pbo"
+						id="input-pbo"
+						class="form-control"
 						bind:value={pbo}
 						placeholder="URL of Primary Business Object"
 					/>
-				</FormGroup>
+					<Label for="input-pbo">Primary Business Object</Label>
+				</div>
 			</Col>
 			<Col>
-				<FormGroup>
-					<Label>Workflow title</Label>
+				<div class="form-floating">
 					<Input
 						type="text"
 						name="wftitle"
+						id="input-wftitle"
+						class="form-control"
 						bind:value={wftitle}
 						placeholder="Give it a title, or keep empty to use one auto-generated"
 					/>
-				</FormGroup>
+					<Label for="input-wftitle">Workflow title</Label>
+				</div>
 			</Col>
 			<Col>
-				<FormGroup>
-					<Label>Start with team {theTeam ? theTeam.teamid : ''}</Label>
-					<Dropdown {isOpen} class="w-100">
-						<DropdownToggle tag="div" class="d-inline-block w-100">
+				<Dropdown {isOpen} class="w-100">
+					<DropdownToggle tag="div" class="d-inline-block w-100">
+						<div class="form-floating">
 							<Input
 								placeholder="type team name here"
 								on:keyup={searchTeam}
 								bind:value={team_id_for_search}
-								class="w-100"
+								class="w-100 form-control"
+								id="input-team"
 							/>
-						</DropdownToggle>
-						<DropdownMenu>
-							{#each search_result as aTeam}
-								<DropdownItem
-									on:click={(e) => {
-										e.preventDefault();
-										pickTeam(aTeam.teamid);
-									}}
-								>
-									{aTeam.teamid}
-								</DropdownItem>
-							{/each}
-						</DropdownMenu>
-					</Dropdown>
+							<Label for="input-team">Start with team {theTeam ? theTeam.teamid : ''}</Label>
+						</div>
+					</DropdownToggle>
+					<DropdownMenu>
+						{#each search_result as aTeam}
+							<DropdownItem
+								on:click={(e) => {
+									e.preventDefault();
+									pickTeam(aTeam.teamid);
+								}}
+							>
+								{aTeam.teamid}
+							</DropdownItem>
+						{/each}
+					</DropdownMenu>
+				</Dropdown>
+				<div class="mt-2">
 					<span>Recent used team:</span>
 					{#each recentTeams as ateam, index (ateam)}
 						<Button
@@ -245,38 +300,10 @@
 							{ateam}
 						</Button>
 					{/each}
-				</FormGroup>
-			</Col>
-			<Col style="margin-top: 20px;">
-				<FormGroup>
-					<Button
-						color="primary"
-						class="w-100"
-						on:click={(e) => {
-							e.preventDefault();
-							_startWorkflow();
-						}}>Start it</Button
-					>
-				</FormGroup>
+				</div>
 			</Col>
 		</Row>
 	</Form>
-	<Fade isOpen={fade_message != ''}>
-		<Card body>
-			{fade_message}
-		</Card>
-	</Fade>
-	{#if startedWorkflow !== null}
-		<Button
-			class="w-100"
-			on:click={(e) => {
-				e.preventDefault();
-				goto(`/workflow/@${startedWorkflow.wfid}`);
-			}}
-		>
-			Check it out
-		</Button>
-	{/if}
 	{#if theTeam}
 		<div class="text-center fs-4">Team {theTeam.teamid}</div>
 		{#each roles as aRole (aRole)}
@@ -285,7 +312,7 @@
 				<CardBody>
 					<CardText>
 						{#each theTeam.tmap[aRole] as aMember (aMember.uid)}
-							<Badge pill color="info" class="kfk-role-member-tag">
+							<Badge pill color="info" class="kfk-tag">
 								{aMember.cn} &lt;{aMember.uid}&gt;
 							</Badge>
 						{/each}
