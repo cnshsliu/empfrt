@@ -25,6 +25,7 @@
 	import { getData } from '$lib/pagination/Server.js';
 
 	export let TimeTool;
+	export let reloadTags;
 	export let token;
 	export let endpoint;
 	export let rows = [];
@@ -88,6 +89,7 @@
 		tags = await api.post('tag/del', { objtype: 'template', objid: tplid, text: text }, token);
 		rows[index].tags = tags;
 		rows = rows;
+		await reloadTags();
 	};
 
 	const addTags = async function (index, tplid, tags, text) {
@@ -96,6 +98,7 @@
 		console.log('ret', tags);
 		rows[index].tags = tags;
 		rows = rows;
+		await reloadTags();
 	};
 
 	async function deleteRow(tplid) {

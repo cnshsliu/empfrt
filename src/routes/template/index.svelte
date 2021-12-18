@@ -101,11 +101,15 @@
 			whichTabStore.set(whichTab);
 		}
 		if (tabId === 'tags') {
-			console.log('update my tags');
-			allTags.org = await api.post('tag/org', {}, user.sessionToken);
-			allTags.mine = await api.post('tag/list', { objtype: 'template' }, user.sessionToken);
-			console.log(allTags);
+			await reloadTags();
 		}
+	}
+
+	export async function reloadTags() {
+		console.log('update my tags');
+		allTags.org = await api.post('tag/org', {}, user.sessionToken);
+		allTags.mine = await api.post('tag/list', { objtype: 'template' }, user.sessionToken);
+		console.log(allTags);
 	}
 
 	let fade_message = '';
@@ -172,76 +176,81 @@
 				Tags
 			</span>
 			<Container>
-				<Row class="mb-2">
-					<Col class="d-flex justify-content-center">
+				<div class="d-flex">
+					<div class="w-100">
+						<Row class="mb-2">
+							<Col class="d-flex justify-content-center">
+								{#each allTags.org as tag}
+									{#if currentTag === tag}
+										<Button
+											color="primary"
+											class="mx-1 badge text-white"
+											on:click={(e) => {
+												e.preventDefault();
+												useThisTag(tag);
+											}}
+										>
+											{tag}
+										</Button>
+									{:else}
+										<Button
+											color="secondary"
+											class="mx-1 badge text-white "
+											on:click={(e) => {
+												e.preventDefault();
+												useThisTag(tag);
+											}}
+										>
+											{tag}
+										</Button>
+									{/if}
+								{/each}
+							</Col>
+						</Row>
+						<Row>
+							<Col class="d-flex justify-content-center">
+								{#each allTags.mine as tag}
+									{#if currentTag === tag}
+										<Button
+											size="sm"
+											color="primary"
+											class="mx-1 badge kfk-round text-white"
+											on:click={(e) => {
+												e.preventDefault();
+												useThisTag(tag);
+											}}
+										>
+											{tag}
+										</Button>
+									{:else}
+										<Button
+											size="sm"
+											color="secondary"
+											class="mx-1 badge kfk-round text-white"
+											on:click={(e) => {
+												e.preventDefault();
+												useThisTag(tag);
+											}}
+										>
+											{tag}
+										</Button>
+									{/if}
+								{/each}
+							</Col>
+						</Row>
+					</div>
+					<div class="flex-shrink-1">
 						<Button
 							color="primary"
-							class="mx-1 badge text-white"
 							on:click={(e) => {
 								e.preventDefault();
 								useThisTag('');
 							}}
 						>
-							All
+							See All
 						</Button>
-						{#each allTags.org as tag}
-							{#if currentTag === tag}
-								<Button
-									color="primary"
-									class="mx-1 badge text-white"
-									on:click={(e) => {
-										e.preventDefault();
-										useThisTag(tag);
-									}}
-								>
-									{tag}
-								</Button>
-							{:else}
-								<Button
-									color="secondary"
-									class="mx-1 badge text-white "
-									on:click={(e) => {
-										e.preventDefault();
-										useThisTag(tag);
-									}}
-								>
-									{tag}
-								</Button>
-							{/if}
-						{/each}
-					</Col>
-				</Row>
-				<Row>
-					<Col class="d-flex justify-content-center">
-						{#each allTags.mine as tag}
-							{#if currentTag === tag}
-								<Button
-									size="sm"
-									color="primary"
-									class="mx-1 badge kfk-round text-white"
-									on:click={(e) => {
-										e.preventDefault();
-										useThisTag(tag);
-									}}
-								>
-									{tag}
-								</Button>
-							{:else}
-								<Button
-									size="sm"
-									color="secondary"
-									class="mx-1 badge kfk-round text-white"
-									on:click={(e) => {
-										e.preventDefault();
-										useThisTag(tag);
-									}}
-								>
-									{tag}
-								</Button>
-							{/if}
-						{/each}
-					</Col>
-				</Row>
+					</div>
+				</div>
 			</Container>
 		</TabPane>
 		{#if user.perms && ClientPermControl(user.perms, user.email, 'template', '', 'create')}
@@ -339,7 +348,14 @@
 <Container class="mt-3 kfk-result-list">
 	<Row>
 		<Col>
-			<RemoteTable endpoint="template/search" {token} {user} bind:this={remoteTable} {TimeTool} />
+			<RemoteTable
+				endpoint="template/search"
+				{token}
+				{user}
+				bind:this={remoteTable}
+				{TimeTool}
+				{reloadTags}
+			/>
 		</Col>
 	</Row>
 </Container>
