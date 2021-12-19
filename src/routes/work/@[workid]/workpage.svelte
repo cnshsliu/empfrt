@@ -7,7 +7,7 @@
 	import { Container, Row, Col, Icon } from 'sveltestrap';
 	import { onMount } from 'svelte';
 	import { FormGroup, Input, Label, InputGroup, InputGroupText } from 'sveltestrap';
-	import { Status } from '$lib/status';
+	import { StatusClass, StatusLabel } from '$lib/lang';
 	import { Button } from 'sveltestrap';
 	import type { User, Work, oneArgFunc } from '$lib/types';
 	export let work: Work;
@@ -21,6 +21,7 @@
 	let adhocTaskDoer = '';
 	let adhocTaskComment = '';
 	let comment = '';
+	let creatingAdhoc = false;
 	import { getNotificationsContext } from 'svelte-notifications';
 	const { addNotification } = getNotificationsContext();
 	$: is_doable =
@@ -66,6 +67,7 @@
 		console.log(adhocTaskTitle);
 		console.log(adhocTaskDoer);
 		console.log(adhocTaskComment);
+		creatingAdhoc = true;
 
 		let res = await api.post(
 			'work/adhoc',
@@ -78,17 +80,22 @@
 			},
 			user.sessionToken
 		);
+		setTimeout(async () => {
+			creatingAdhoc = false;
+		}, 4000);
 		if (res.error) {
 			setFadeMessage(res.message, 'warning');
 		} else {
 			saveOneRecentUser(adhocTaskDoer);
 			console.log(res);
+			setFadeMessage('Adhoc Task created successfully');
 		}
 	};
-	function _doneWork(user_choice = null) {
+	async function _doneWork(user_choice = null) {
 		let payload: any = {
 			doer: work.doer,
 			workid: work.workid,
+			wfid: work.wfid,
 			comment: comment
 		};
 		if (user_choice) {
@@ -98,8 +105,14 @@
 		for (let i = 0; i < work.kvarsArr.length; i++) {
 			payload.kvars[work.kvarsArr[i]['name']] = work.kvarsArr[i];
 		}
-		api.post('work/do', payload, user.sessionToken);
-		goto(iframeMode ? '/work?iframe' : '/work');
+		await api.post('work/do', payload, user.sessionToken);
+		//goto(iframeMode ? '/work?iframe' : '/work');
+		await _refreshWork(work.workid);
+	}
+	async function _refreshWork(workid) {
+		const res = await fetch(`/work/@${workid}.json`);
+		work = await res.json();
+		comment = '';
 	}
 
 	let recentUsers = [];
@@ -126,14 +139,15 @@
 	<Container id={'workitem_' + work.workid} class="mt-3">
 		<form>
 			<Container class="mt-3 kfk-highlight-2">
-				<Row cols={{ lg: 3, md: 2, sm: 1 }}>
-					<Col>
-						<Icon name="vinyl" />&nbsp; Primary Business Object:
-						<div class="kfk-kvar-value-display">
-							<a href={work.wf.pbo} target="_blank">{work.wf.pbo}</a>
-						</div>
-					</Col>
-				</Row>
+				<Icon name="vinyl" />&nbsp; Primary Business Object:
+				{#if work.wf.pbo}
+					<div class="kfk-kvar-value-display">
+						<a href={work.wf.pbo} target="_blank"
+							>{work.wf.pbo}&nbsp;
+							<Icon name="box-arrow-up-right" />
+						</a>
+					</div>
+				{/if}
 			</Container>
 			<Container class="mt-3 kfk-highlight-2">
 				<Row>
@@ -143,7 +157,7 @@
 					</Col>
 					<Col>
 						<span class="fw-bold fs-5">Status:</span>
-						<div class="fw-light">{Status[work.status]}</div>
+						<div class={'fw-light ' + StatusClass(work.status)}>{StatusLabel(work.status)}</div>
 					</Col>
 					<Col>
 						<span class="fw-bold fs-5">Owner:</span>
@@ -208,7 +222,7 @@
 				<Container class="mt-3">
 					<input type="hidden" name="workid" value={work.workid} />
 					{work.doer === user.email ? '' : `Delegated by ${work.doer}`}
-					<Input type="textarea" placeholder="Comment" bind:value={comment} />
+					<Input type="textarea" placeholder="Comments: " bind:value={comment} />
 					<Row class="mt-2">
 						{#if work.status === 'ST_RUN'}
 							{#if work.options.length === 0}
@@ -216,9 +230,9 @@
 									<Button
 										class="w-100"
 										color="primary"
-										on:click={(e) => {
+										on:click={async (e) => {
 											e.preventDefault();
-											_doneWork();
+											await _doneWork();
 										}}
 									>
 										Done
@@ -229,9 +243,9 @@
 								<Col>
 									<Button
 										class="w-100"
-										on:click={(e) => {
+										on:click={async (e) => {
 											e.preventDefault();
-											_doneWork(aChoice);
+											await _doneWork(aChoice);
 										}}
 									>
 										{aChoice}
@@ -281,27 +295,28 @@
 						<Row cols="1" class="mt-2 kfk-highlight-2">
 							<div class="fs-3">Add an Adhoc Task</div>
 							<Col class="my-1">
-								<InputGroup>
-									<InputGroupText>Task:</InputGroupText>
+								<div class="form-floating">
 									<Input
 										name="adhoc_task_title"
+										id="input-adhoc-title"
+										class="form-control"
 										bind:value={adhocTaskTitle}
 										placeholder="What to do"
 									/>
-								</InputGroup>
+									<label for="input-adhoc-title">Adhoc Task Title</label>
+								</div>
 							</Col>
 							<Col>
-								<InputGroup>
-									<InputGroupText>By</InputGroupText>
+								<div class="form-floating">
 									<Input
 										name="adhoc_task_doer"
+										id="input-adhoc-doer"
+										class="form-control"
 										bind:value={adhocTaskDoer}
 										placeholder="Who should do it"
 									/>
-									<Button>
-										<Icon name="question" />
-									</Button>
-								</InputGroup>
+									<label for="input-adhoc-doer">Who should do it (in PDS format)?</label>
+								</div>
 							</Col>
 							<Container class="mt-2">
 								<span>Recent started:</span>
@@ -318,18 +333,21 @@
 								{/each}
 							</Container>
 							<Col class="my-1">
-								<InputGroup>
-									<InputGroupText>Note:</InputGroupText>
+								<div class="form-floating">
 									<Input
 										name="adhoc_task_comment"
+										id="input-adhoc-comment"
+										class="form-control"
 										bind:value={adhocTaskComment}
-										placeholder="Any notes to say"
+										placeholder="Any extra comments"
 									/>
-								</InputGroup>
+									<label for="input-adhoc-comment">Any extra comments?</label>
+								</div>
 							</Col>
 							<Col class="d-flex justify-content-end my-1">
 								<Button
 									color="primary"
+									disabled={creatingAdhoc}
 									on:click={async (e) => {
 										e.preventDefault();
 										await createAdhoc();
@@ -356,14 +374,14 @@
 		{#if work.wf.kvarsArr.length > 0}
 			<Container class="mt-3 kfk-highlight-2">
 				Workflow Data:
-				<Row cols={{ lg: 3, md: 2, sm: 1 }}>
+				<Row cols={{ lg: 3, md: 2, xs: 1 }}>
 					{#each work.wf.kvarsArr as kvar}
 						{#if kvar.breakrow}
 							<div class="w-100" />
 						{/if}
 						<Col>
-							<div class="fs-4">{kvar.label}</div>
-							<div class="kfk-kvar-value-display">{kvar.value}</div>
+							<span class="fs-5">{kvar.label}: </span>
+							<span class="kfk-kvar-value-display">{kvar.value}</span>
 						</Col>
 					{/each}
 				</Row>

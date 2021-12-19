@@ -16,7 +16,16 @@
 	import Parser from '$lib/parser';
 	import CommentEntry from '$lib/CommentEntry.svelte';
 	import { goto } from '$app/navigation';
-	import { Container, Row, Col, InputGroup, InputGroupText, Input, Button } from 'sveltestrap';
+	import {
+		Container,
+		Row,
+		Col,
+		Icon,
+		InputGroup,
+		InputGroupText,
+		Input,
+		Button
+	} from 'sveltestrap';
 	import type { User, oneArgFunc } from '$lib/types';
 	import { getNotificationsContext } from 'svelte-notifications';
 	const { addNotification } = getNotificationsContext();
@@ -55,6 +64,11 @@
 </script>
 
 <Container>
+	<Row class="my-3">
+		<Col class="d-flex justify-content-center fs-3">
+			<Icon name="chat-square-dots" />
+		</Col>
+	</Row>
 	<Row class="my-3">
 		<Col>
 			<form>

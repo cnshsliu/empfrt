@@ -6,6 +6,7 @@
 	import { scale } from 'svelte/transition';
 	import * as api from '$lib/api';
 	import { onMount } from 'svelte';
+	import { session } from '$app/stores';
 	import { ClientPermControl } from '$lib/clientperm';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
 	import { goto } from '$app/navigation';
@@ -216,12 +217,25 @@
 							<DropdownItem>
 								<a
 									href={'#'}
-									on:click|preventDefault={() => {
-										goto(`workflow?tplid=${row.tplid}`);
+									on:click|preventDefault={async () => {
+										$session.filter_template = row.tplid;
+										goto('/workflow');
 									}}
 									class="nav-link "
 									><Icon name="bar-chart-steps" />
 									See workflows
+								</a>
+							</DropdownItem>
+							<DropdownItem>
+								<a
+									href={'#'}
+									on:click|preventDefault={async () => {
+										$session.filter_template = row.tplid;
+										goto('/work');
+									}}
+									class="nav-link "
+									><Icon name="bar-chart-steps" />
+									See Worklist
 								</a>
 							</DropdownItem>
 							<DropdownItem>

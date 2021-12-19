@@ -13,7 +13,6 @@
 		const res_html = await fetch(`/work/@${workid}/html.json`);
 
 		const theWork = await res.json();
-		console.log(theWork);
 		const theHtml = await res_html.json();
 		let delegators = [];
 		try {
@@ -93,6 +92,7 @@ let WORKITEM_HTML = await axios.post(
 	export let iframeMode;
 </script>
 
+{JSON.stringify(work)}
 <Container>
 	<div class="d-flex">
 		<div class="flex-shrink-0">

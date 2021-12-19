@@ -15,6 +15,7 @@
 	} from 'sveltestrap';
 	import type { User, radioOption } from '$lib/types';
 	import { createEventDispatcher } from 'svelte';
+	import { onMount } from 'svelte';
 	export let object_type: string;
 	export let filter_doer: string;
 	export let filter_template: string;
@@ -37,6 +38,7 @@
 		statusMessage = getStatusMessage(e.target.value);
 	}
 	function tplChanged(e) {
+		console.log('>>>>>>>FilerTemplateChanged');
 		dispatch('filterTemplateChange', (e.target as HTMLInputElement).value);
 	}
 
@@ -62,6 +64,9 @@
 	}
 
 	statusMessage = getStatusMessage(filter_status);
+	onMount(async () => {
+		console.log('ExtraFilter onMount', filter_template);
+	});
 </script>
 
 {#if fields.indexOf('statuses') > -1}
@@ -96,7 +101,11 @@
 			>
 				<option value="">--All Template--</option>
 				{#each templates as tpl, index (tpl)}
-					<option value={tpl}>{tpl}</option>
+					{#if tpl !== filter_template}
+						<option value={tpl}>{tpl}</option>
+					{:else}
+						<option value={tpl} selected>--&gt;&gt; {tpl}</option>
+					{/if}
 				{/each}
 			</Input>
 		</InputGroup>

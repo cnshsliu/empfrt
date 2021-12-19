@@ -1835,54 +1835,84 @@ div.pbo {
 .node.START {
 	left: 100px;
 	top: 100px;
+	background-position: center; /* Center the image */
+	background-repeat: no-repeat; /* Do not repeat the image */
+	background-size: contain;
 	background-image: url('/svg/START.svg');
 }
 
 .node.ACTION {
 	left: 300px;
 	top: 100px;
+	background-position: center; /* Center the image */
+	background-repeat: no-repeat; /* Do not repeat the image */
+	background-size: contain;
 	background-image: url('/svg/ACTION.svg');
 }
 .node.INFORM {
 	left: 400px;
 	top: 300px;
+	background-position: center; /* Center the image */
+	background-repeat: no-repeat; /* Do not repeat the image */
+	background-size: contain;
 	background-image: url('/svg/INFORM.svg');
 }
 .node.SCRIPT {
 	left: 400px;
 	top: 300px;
+	background-position: center; /* Center the image */
+	background-repeat: no-repeat; /* Do not repeat the image */
+	background-size: contain;
 	background-image: url('/svg/SCRIPT.svg');
 }
 .node.TIMER {
 	left: 400px;
 	top: 300px;
+	background-position: center; /* Center the image */
+	background-repeat: no-repeat; /* Do not repeat the image */
+	background-size: contain;
 	background-image: url('/svg/TIMER.svg');
 }
 .node.SUB {
 	left: 400px;
 	top: 300px;
+	background-position: center; /* Center the image */
+	background-repeat: no-repeat; /* Do not repeat the image */
+	background-size: contain;
 	background-image: url('/svg/SUB.svg');
 }
 .node.AND {
 	left: 400px;
 	top: 300px;
+	background-position: center; /* Center the image */
+	background-repeat: no-repeat; /* Do not repeat the image */
+	background-size: contain;
 	background-image: url('/svg/AND.svg');
 }
 .node.OR {
 	left: 400px;
 	top: 300px;
+	background-position: center; /* Center the image */
+	background-repeat: no-repeat; /* Do not repeat the image */
+	background-size: contain;
 	background-image: url('/svg/OR.svg');
 }
 
 .node.GROUND {
 	left: 400px;
 	top: 300px;
+	background-position: center; /* Center the image */
+	background-repeat: no-repeat; /* Do not repeat the image */
+	background-size: contain;
 	background-image: url('/svg/GROUND.svg');
 }
 
 .node.END {
 	left: 800px;
 	top: 300px;
+	background-position: center; /* Center the image */
+	background-repeat: no-repeat; /* Do not repeat the image */
+	background-size: contain;
 	background-image: url('/svg/END.svg');
 }
 

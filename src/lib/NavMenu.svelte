@@ -42,7 +42,9 @@
 
 		// this will trigger a redirect, because it
 		// causes the `load` function to run again
-		$session.user = null;
+		try {
+			$session = {};
+		} catch (e) {}
 	}
 
 	let menu_class = 'light kfk-navmenu tnt-navmenu sticky-top';

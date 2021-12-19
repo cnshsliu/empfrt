@@ -3,6 +3,7 @@
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import { onMount } from 'svelte';
+	import { StatusLabel } from '$lib/lang';
 	import type { Workflow } from '$lib/types';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
 	import { goto } from '$app/navigation';
@@ -91,6 +92,10 @@
 				<Sort key="title" on:sort={onSort} />
 			</th>
 			<th>
+				Status
+				<Sort key="status" on:sort={onSort} />
+			</th>
+			<th>
 				Updated at
 				<Sort key="updatedAt" dir="desc" on:sort={onSort} />
 			</th>
@@ -119,9 +124,8 @@
 						}}
 					>
 						{row.title}
-					</a> <br />
+					</a>
 					<span style="font-size:0.5rem; margin-left:2em; ">
-						<Icon name="bar-chart-steps" style="font-size:0.5rem" />
 						<a
 							class="kfk-link"
 							href={'#'}
@@ -130,18 +134,20 @@
 								gotoWorkflow(row.wfid);
 							}}
 						>
-							{row.wftitle}
+							<Icon name="bar-chart-steps" style="font-size:0.5rem" />
 						</a>
-						({row.wfstarter ? row.wfstarter : ''})
 					</span>
 				</td>
-				<td data-label="Status" style="font-size:0.25rem" valign="bottom">
+				<td data-label="Status" style="font-size:0.25rem">
+					{StatusLabel(row.status)}
+				</td>
+				<td data-label="Date" style="font-size:0.25rem">
 					<div>
-						Begin at {TimeTool.format(row.createdAt, 'LLLL')} <br />
-						{row.doneat ? 'Done at ' + TimeTool.format(row.doneat, 'LLLL') : row.status}
+						<div>{row.doneat ? 'Done at ' + TimeTool.format(row.doneat, 'LLL') : ''}</div>
+						<div>Begin at {TimeTool.format(row.createdAt, 'LLL')}</div>
 					</div>
 				</td>
-				<td class="kfk-lastdays" valign="bottom">
+				<td class="kfk-lastdays">
 					{row.lastdays}
 				</td>
 			</tr>

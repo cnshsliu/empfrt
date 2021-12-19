@@ -14,7 +14,7 @@
 		Icon
 	} from 'sveltestrap';
 	import CommentEntry from '$lib/CommentEntry.svelte';
-	import { Status } from '$lib/status';
+	import { StatusClass, StatusLabel } from '$lib/lang';
 	import { goto } from '$app/navigation';
 	export let wfid;
 	export let wf;
@@ -69,11 +69,16 @@
 			</Col>
 		</Row>
 		<Row cols={{ lg: 2, md: 2, sm: 1 }}>
-			<Col>Started at: {wf.beginat ? TimeTool.format(wf.begingat, 'LLLL') : ''}</Col>
-			<Col>Started by: {user.email === wf.starter ? 'Me' : wf.starter}</Col>
+			<Col>Started at: {TimeTool.format(wf.createdAt, 'LLL')}</Col>
 			<Col>
-				{wf.doneat ? 'Completed at ' + TimeTool.format(wf.doneat, 'LLLL') : 'Still running'}
+				{@html wf.status === 'ST_DONE'
+					? `<span class='${StatusClass('ST_DONE')}'>Completed at ${TimeTool.format(
+							wf.updatedAt,
+							'LLL'
+					  )}</span>`
+					: `<span class='${StatusClass(wf.status)}'>${StatusLabel(wf.status)}</span>`}
 			</Col>
+			<Col>Started by: {user.email === wf.starter ? 'Me' : wf.starter}</Col>
 		</Row>
 	</Container>
 	<div class="fs-3 mt-3">
@@ -97,8 +102,11 @@
 									await gotoWork(entry.workid);
 								}}
 							>
-								<b>{entry.title}</b>
-								/ {Status[entry.status]} / {entry.nodeid === 'ADHOC' ? 'ADHOC' : ''}
+								<span class="fs-5">{entry.title}</span>
+								{#if entry.nodeid === 'ADHOC'}
+									/ ADHOC
+								{/if}
+								/ <span class={StatusClass(entry.status)}>{StatusLabel(entry.status)}</span>
 							</div>
 						</Col>
 						{#if entry.route}
@@ -112,13 +120,11 @@
 						<Row class="pt-3 kfk-work-kvars tnt-work-kvars">
 							<Col>
 								<Container>
-									<Row cols={{ xs: 4 }}>
+									<Row cols={{ xs: 1, md: 2, lg: 3 }}>
 										{#each entry.kvarsArr as kvar}
 											<Col>
-												<Row cols="2">
-													<Col><p class="kfk-kvar-key-display text-right">{kvar.label}</p></Col>
-													<Col class="kfk-kvar-value-display">{kvar.value}</Col>
-												</Row>
+												<span class="fs-5">{kvar.label}: </span>
+												<span class="kfk-kvar-value-display">{kvar.value}</span>
 											</Col>
 										{/each}
 									</Row>

@@ -286,7 +286,7 @@
 			on:click={(event) => designerSetTool('CONNECT', event)}
 			title="连接"
 		>
-			<img src="/svg/connect.svg" alt="" class="cocotool" id="tool_connect" />
+			<img src="/svg/CONNECT.svg" alt="" class="cocotool" id="tool_connect" />
 			<div class="shortcutkey">9</div>
 		</ListGroupItem>
 	</ListGroup>

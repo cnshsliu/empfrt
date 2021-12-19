@@ -46,6 +46,7 @@
 	let theExtraFilter: any;
 	export let filter_doer = user.email;
 	let filter_status = 'ST_RUN';
+	let filter_template;
 	let input_doer;
 	let input_search;
 
@@ -78,16 +79,11 @@
 
 	let templates = [];
 	onMount(async () => {
-		//refreshList();
-		/* setTimeout(() => {
-		}, 2000); */
+		if ($session.filter_template) {
+			payload_extra.filter.tplid = $session.filter_template;
+			filter_template = payload_extra.filter.tplid;
+		}
 		refreshList();
-		/*
-		const interval = setInterval(() => {
-			refreshList();
-		}, 2000);
-		return () => clearInterval(interval);
-		*/
 
 		let tmp = await api.post('template/tplid/list', {}, user.sessionToken);
 
@@ -107,6 +103,7 @@
 			filterDoerChanged(null);
 			$session.gotoUser = undefined;
 		}
+		console.log('>>>>  ', filter_template);
 	});
 	function filterStatusChanged(event) {
 		let status = event.detail;
@@ -148,6 +145,7 @@
 		bind:filter_doer
 		bind:user
 		bind:delegators
+		{filter_template}
 		on:filterDoerChange={filterDoerChanged}
 		on:filterStatusChange={filterStatusChanged}
 		on:filterTemplateChange={filterTemplateChanged}

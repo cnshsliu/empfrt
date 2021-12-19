@@ -53,6 +53,7 @@
 		if (detail && detail.page) page = detail.page;
 		if (detail && detail.sorting) sorting = detail.sorting;
 		if (detail && detail.payload_extra) payload_extra = detail.payload_extra;
+		console.log('REmote table refresh', payload_extra);
 		await load(page);
 	}
 

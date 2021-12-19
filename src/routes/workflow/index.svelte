@@ -2,6 +2,7 @@
 	let TimeTool = null;
 	export async function load({ page, fetch, session }) {
 		TimeTool = (await import('$lib/TimeTool')).default;
+		console.log(JSON.stringify(session.filter_template));
 		return {
 			props: {
 				user: session.user
@@ -13,6 +14,7 @@
 <script lang="ts">
 	import { API_SERVER } from '$lib/Env';
 	import { onMount } from 'svelte';
+	import { session } from '$app/stores';
 	import * as api from '$lib/api';
 	import RemoteTable from './RemoteTable.svelte';
 	import ExtraFilter from '$lib/form/ExtraFilter.svelte';
@@ -27,7 +29,7 @@
 	$title = 'HyperFlow';
 	$: token = user.sessionToken;
 	let theExtraFilter: any;
-	let filter_status;
+	let filter_status = 'ST_RUN';
 	let filter_template;
 	let remoteTable;
 	let urls = {
@@ -52,9 +54,6 @@
 	let after_mount = false;
 	let payload_extra = { filter: { status: '', tplid: '' } };
 
-	function reload(status = 'ST_RUN') {
-		reloadOnFilterStatusChange('ST_RUN');
-	}
 	function reloadOnFilterStatusChange(status = 'ST_RUN') {
 		if (status === undefined) {
 			status = 'ST_RUN';
@@ -70,7 +69,11 @@
 	onMount(async () => {
 		let tmp = await api.post('template/tplid/list', {}, user.sessionToken);
 		templates = tmp.map((x) => x.tplid);
-		reload();
+		if ($session.filter_template) {
+			payload_extra.filter.tplid = $session.filter_template;
+			filter_template = payload_extra.filter.tplid;
+		}
+		reloadOnFilterStatusChange();
 	});
 
 	function filterStatusChanged(event) {
@@ -105,9 +108,10 @@
 	<svelte:component
 		this={ExtraFilter}
 		bind:this={theExtraFilter}
+		{filter_template}
 		on:filterStatusChange={filterStatusChanged}
 		on:filterTemplateChange={filterTemplateChanged}
-		filter_status={'ST_RUN'}
+		{filter_status}
 		statuses_label="Workflow status:"
 		fields="{['statuses', 'templatepicker']},"
 		object_type="processes"
