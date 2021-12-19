@@ -17,29 +17,38 @@
 	import { goto } from '$app/navigation';
 	import { post } from '$lib/utils';
 	import { Fade, Card } from 'sveltestrap';
-	import ListErrors from '$lib/ListErrors.svelte';
+	import { getNotificationsContext } from 'svelte-notifications';
+	const { addNotification } = getNotificationsContext();
 
 	let username: string = '';
 	let email: string = '';
 	let password: string = '';
+	let password2: string = '';
 	let errors = null;
 	let fade_message = '';
 	let fade_timer;
 
-	function setFadeMessage(message) {
-		fade_message = message;
-		if (fade_timer) clearTimeout(fade_timer);
-		fade_timer = setTimeout(() => {
-			fade_message = '';
-		}, 2000);
+	function setFadeMessage(message: string, type = 'warning', pos = 'bottom-right', time = 2000) {
+		(addNotification as oneArgFunc)({
+			text: message,
+			position: pos,
+			type: type,
+			removeAfter: time
+		});
 	}
 	async function submit(event) {
-		const response: EmpResponse = await post(`auth/register`, { username, email, password }); //eslint-disable-line
+		if (password !== password2) {
+			setFadeMessage('Passwords are not equal');
+			return;
+		}
+		const response: EmpResponse = (await post(`auth/register`, {
+			username,
+			email,
+			password
+		})) as unknown as EmpResponse;
 
 		if (response.error) {
 			setFadeMessage(response.message);
-		} else {
-			setFadeMessage('');
 		}
 
 		if (response.user) {
@@ -66,33 +75,50 @@
 		</Col>
 		<Col>
 			<form on:submit|preventDefault={submit}>
-				<fieldset class="form-group">
+				<div class="form-floating">
 					<input
 						class="form-control form-control-lg mt-2"
-						type="text"
-						required
-						placeholder="Your Name"
-						bind:value={username}
-					/>
-				</fieldset>
-				<fieldset class="form-group">
-					<input
-						class="form-control form-control-lg mt-2"
+						id="input-email"
 						type="email"
 						required
 						placeholder="Email"
 						bind:value={email}
 					/>
-				</fieldset>
-				<fieldset class="form-group">
+					<label for="input-email">Your email: </label>
+				</div>
+				<div class="form-floating">
+					<input
+						class="form-control form-control-lg mt-2"
+						type="text"
+						id="input-username"
+						required
+						placeholder="Your display name"
+						bind:value={username}
+					/>
+					<label for="input-username">Your display name: </label>
+				</div>
+				<div class="form-floating">
 					<input
 						class="form-control form-control-lg mt-2"
 						type="password"
+						id="input-password"
 						required
 						placeholder="Password"
 						bind:value={password}
 					/>
-				</fieldset>
+					<label for="input-password">Choose a password: </label>
+				</div>
+				<div class="form-floating">
+					<input
+						class="form-control form-control-lg mt-2"
+						type="password"
+						id="input-password-repeat"
+						required
+						placeholder="Password Repeat"
+						bind:value={password2}
+					/>
+					<label for="input-password-repeat">Repeat password: </label>
+				</div>
 				<button class="w-100 btn btn-lg btn-primary pull-xs-right mt-3"> Sign up </button>
 			</form>
 		</Col>

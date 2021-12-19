@@ -18,24 +18,25 @@
 	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { post } from '$lib/utils';
+	import type { oneArgFunc } from '$lib/types';
 	import * as api from '$lib/api';
-	import { Fade, Input, Card, NavLink } from 'sveltestrap';
+	import { Input, Card, NavLink } from 'sveltestrap';
+	import { getNotificationsContext } from 'svelte-notifications';
+	const { addNotification } = getNotificationsContext();
 	import Countdown from '$lib/Countdown.svelte';
 
 	let email = '';
 	let password = '';
-	let errors = null;
-	let fade_message = '';
-	let fade_timer;
 	let show_resend_email_verification = false;
 	let theCountdown;
 
-	function setFadeMessage(message) {
-		fade_message = message;
-		if (fade_timer) clearTimeout(fade_timer);
-		fade_timer = setTimeout(() => {
-			fade_message = '';
-		}, 2000);
+	function setFadeMessage(message: string, type = 'warning', pos = 'bottom-right', time = 2000) {
+		(addNotification as oneArgFunc)({
+			text: message,
+			position: pos,
+			type: type,
+			removeAfter: time
+		});
 	}
 	async function submit(event) {
 		const response = await post(`auth/login`, { email, password });
@@ -48,8 +49,6 @@
 				//theCountdown.reset(0);
 			}
 		} else {
-			setFadeMessage('');
-
 			if (response.user) {
 				$session.user = response.user;
 				goto('/template');
@@ -86,26 +85,30 @@
 		</Col>
 		<Col>
 			<form on:submit|preventDefault={submit}>
-				<fieldset class="form-group">
+				<div class="form-floating flex-fill">
 					<Input
 						class="form-control form-control-lg"
 						type="email"
+						id="input-email"
 						required
 						autocomplete="username"
 						placeholder="Email"
 						bind:value={email}
 					/>
-				</fieldset>
-				<fieldset class="form-group">
+					<label for="input-email">Your email: </label>
+				</div>
+				<div class="form-floating flex-fill">
 					<Input
 						class="form-control form-control-lg mt-2"
+						id="input-password"
 						type="password"
 						required
 						placeholder="Password"
 						autocomplete="current-password"
 						bind:value={password}
 					/>
-				</fieldset>
+					<label for="input-password">Password: </label>
+				</div>
 				<div class="w-100 d-flex justify-content-end">
 					<button class="w-100 btn btn-lg btn-primary pull-xs-right mt-3" type="submit">
 						Sign in
@@ -127,8 +130,3 @@
 		</Col>
 	</Row>
 </Container>
-<Fade isOpen={fade_message != ''} class="kfk-fade">
-	<Card body>
-		{fade_message}
-	</Card>
-</Fade>

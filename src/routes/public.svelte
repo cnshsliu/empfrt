@@ -57,7 +57,9 @@
 								See it works now.
 							</a>
 						{:else}
-							<a href="/register" class="btn btn-lg btn-outline-secondary mb-3"> Sign up </a>
+							<a href="/register" class="btn btn-lg btn-outline-secondary mb-3"> Sign Up </a>
+							or if you have an account
+							<a href="/login" class="btn btn-lg btn-outline-secondary mb-3"> Sign In </a>
 						{/if}
 					</div>
 				</div>

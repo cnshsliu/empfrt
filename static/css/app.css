@@ -2066,7 +2066,10 @@ div.pbo {
 	border-bottom: 1px dotted #6666ff;
 }
 .kfk-navmenu {
-	background-color: rgba(0, 0, 255, 0.2);
+	background-color: rgba(200, 200, 255);
+}
+.kfk-w-75 {
+	max-width: 1400px;
 }
 .kfk-lastdays {
 	font-size: 24px;
