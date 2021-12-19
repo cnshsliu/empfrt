@@ -92,7 +92,6 @@ let WORKITEM_HTML = await axios.post(
 	export let iframeMode;
 </script>
 
-{JSON.stringify(work)}
 <Container>
 	<div class="d-flex">
 		<div class="flex-shrink-0">
