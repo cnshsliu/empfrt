@@ -171,7 +171,8 @@ export interface NodeInfo {
 	nodeProps: {
 		kvarsArr: KvarInput[];
 		label: string;
-		ACTION: any;
+		ACTION?: any;
+		SUB?: any;
 	};
 }
 
@@ -185,6 +186,7 @@ export interface NodePropJSON {
 	sub: string;
 	byall: boolean;
 	instruct: string;
+	alone: boolean;
 }
 
 export interface SearchResult {

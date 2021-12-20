@@ -49,7 +49,10 @@
 		} catch (e) {}
 	}
 
+	//To let navmenu stick to top only when scrollTop < 200, DO: AAA-*
+	//AAA-1: uncomment next line
 	//let navmenu_class = 'light kfk-navmenu tnt-navmenu d-flex justify-content-center';
+	//AAA-2: comment next line
 	let navmenu_class = 'light kfk-navmenu tnt-navmenu d-flex justify-content-center sticky-top';
 
 	function myFunction() {
@@ -61,6 +64,7 @@
 	}
 
 	onMount(async () => {
+		//AAA-2: uncomment next 2 lines
 		/* window.onscroll = function () {
 			myFunction();
 		}; */

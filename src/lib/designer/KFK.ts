@@ -115,7 +115,7 @@ const BlankToDefault = function (val: string, defaultValue: string) {
 	if (IsBlank(val)) return defaultValue;
 	else return val;
 };
-const NotBlank = function (val: string) {
+const HasValue = function (val: string) {
 	return !IsBlank(val);
 };
 //eslint-disable-next-line
@@ -661,7 +661,7 @@ class KFKclass {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		let isDirty = false;
-		if (jqDIV.attr('id').trim() !== id.trim() && NotBlank(id.trim())) {
+		if (jqDIV.attr('id').trim() !== id.trim() && HasValue(id.trim())) {
 			jqDIV.attr('id', id.trim());
 			console.log('Dirty: id changed');
 			isDirty = true;
@@ -768,7 +768,8 @@ class KFKclass {
 			SCRIPT: { id: '', label: '', code: '', runmode: 'ASYNC' },
 			INFORM: { id: '', label: '', role: '', subject: '', content: '' },
 			TIMER: { id: '', label: '', code: '' },
-			SUB: { id: '', label: '', sub: '' },
+			//alone: means not a sub process, but a standalone process
+			SUB: { id: '', label: '', sub: '', alone: false },
 			AND: { id: '', label: '' },
 			label: ''
 		};
@@ -837,6 +838,8 @@ ret='DEFAULT'; `
 			ret.SUB.label = BlankToDefault(jqDIV.find('p').first().text(), 'Sub').trim();
 			ret.label = ret.SUB.label;
 			ret.SUB.sub = BlankToDefault(jqDIV.attr('sub'), '').trim();
+			//alone: means not a sub process, but a standalone process
+			ret.SUB.alone = BlankToDefault(jqDIV.attr('alone'), 'no') === 'yes';
 		} else if (jqDIV.hasClass('AND')) {
 			ret.AND.id = jqDIV.attr('id');
 			ret.AND.label = 'AND';
@@ -880,7 +883,7 @@ ret='DEFAULT'; `
 			const code = propJSON.code;
 			const appData_code = code.trim();
 			let codeInBase64 = '';
-			if (NotBlank(appData_code)) {
+			if (HasValue(appData_code)) {
 				codeInBase64 = this.codeToBase64(appData_code);
 			}
 			if (jqDIV.find('code').length > 0) {
@@ -900,7 +903,7 @@ ret='DEFAULT'; `
 			let node_content = '';
 			let theRole = jqDIV.attr('role');
 			theRole = theRole ? theRole.trim() : '';
-			if (theRole !== role.trim() && role.trim() !== 'DEFAULT' && NotBlank(role.trim())) {
+			if (theRole !== role.trim() && role.trim() !== 'DEFAULT' && HasValue(role.trim())) {
 				jqDIV.attr('role', role.trim());
 			}
 			if (jqDIV.find('subject').length > 0) {
@@ -935,6 +938,10 @@ ret='DEFAULT'; `
 			const appData_code = propJSON.sub.trim();
 			this.setNodeLabel(jqDIV, propJSON.label);
 			jqDIV.attr('sub', appData_code);
+			//alone: means not a sub process, but a standalone process
+			if (propJSON.alone) {
+				jqDIV.attr('alone', 'yes');
+			}
 		}
 		this.onChange('Property Changed');
 	}

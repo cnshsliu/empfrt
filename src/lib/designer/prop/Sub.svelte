@@ -37,6 +37,12 @@
 			</InputGroup>
 		</Col>
 		<Col>
+			<InputGroup size="sm">
+				<InputGroupText>Standalone</InputGroupText>
+				<Input type="checkbox" bind:checked={nodeInfo.nodeProps.SUB.alone} disabled={readonly} />
+			</InputGroup>
+		</Col>
+		<Col>
 			{errMsg}
 		</Col>
 		<Col class="d-flex mt-3">
