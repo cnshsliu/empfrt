@@ -300,6 +300,8 @@
 		<span class="kfk-wf-info-title">/</span>
 		<span class="kfk-wf-info-value">{workflow.starter}</span>
 	</div>
+{:else}
+	<div id="templatehelp" class="kfk-workflow-info">Help</div>
 {/if}
 <Modal isOpen={openModal} {toggle} size={modalSize}>
 	<ModalHeader {toggle}>{nodeInfo.nodeProps.label}</ModalHeader>

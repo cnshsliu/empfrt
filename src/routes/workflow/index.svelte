@@ -35,6 +35,13 @@
 	let urls = {
 		search: `${API_SERVER}/workflow/search`
 	};
+	let files;
+	let theSearchForm;
+	let dataFile = null;
+	let tplidImport;
+	let after_mount = false;
+	let payload_extra = { filter: { status: '', tplid: '' } };
+
 	function hide_all_form() {
 		Object.keys(form_status).forEach((key) => {
 			form_status[key] = false;
@@ -47,21 +54,16 @@
 		menu_has_form = true;
 	}
 
-	let files;
-	let theSearchForm;
-	let dataFile = null;
-	let tplidImport;
-	let after_mount = false;
-	let payload_extra = { filter: { status: '', tplid: '' } };
-
-	function reloadOnFilterStatusChange(status = 'ST_RUN') {
+	function reloadOnFilterStatusChange(status) {
 		if (status === undefined) {
+			console.log('====== SET status to ST_RUN');
 			status = 'ST_RUN';
 		}
 		payload_extra.filter.status = status;
 
 		if (payload_extra.filter.tplid === '') delete payload_extra.filter.tplid;
 		if (payload_extra.filter.status === 'All') delete payload_extra.filter.status;
+		console.log('REfresh 2');
 		remoteTable && remoteTable.refresh({ payload_extra });
 	}
 
@@ -73,10 +75,19 @@
 			payload_extra.filter.tplid = $session.filter_template;
 			filter_template = payload_extra.filter.tplid;
 		}
-		reloadOnFilterStatusChange();
+		// Every page load, read fitler_status from $session
+		filter_status = $session.workflow_extraFilterStatus;
+		//Set filte_status for ExtraFilter use
+		if (!filter_status) filter_status = 'ST_RUN';
+		//Set filte_status for RemoteTable use
+		if (filter_status === 'All') delete payload_extra.filter.status;
+		else payload_extra.filter.status = filter_status;
+		reloadOnFilterStatusChange(filter_status);
 	});
 
 	function filterStatusChanged(event) {
+		$session.workflow_extraFilterStatus = event.detail;
+		filter_status = event.detail;
 		reloadOnFilterStatusChange(event.detail);
 	}
 	function filterTemplateChanged(event) {
@@ -84,6 +95,7 @@
 		payload_extra.filter.tplid = tplid;
 		if (payload_extra.filter.tplid === '') delete payload_extra.filter.tplid;
 		if (payload_extra.filter.status === 'All') delete payload_extra.filter.status;
+		console.log('REfresh 1');
 		remoteTable && remoteTable.refresh({ payload_extra });
 	}
 
@@ -126,7 +138,14 @@
 	/>
 	<Row class="mt-1">
 		<Col>
-			<RemoteTable endpoint="workflow/search" {token} {user} bind:this={remoteTable} {TimeTool} />
+			<RemoteTable
+				endpoint="workflow/search"
+				{token}
+				{user}
+				{payload_extra}
+				bind:this={remoteTable}
+				{TimeTool}
+			/>
 		</Col>
 	</Row>
 </Container>

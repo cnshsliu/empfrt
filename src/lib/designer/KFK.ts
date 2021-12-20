@@ -7,6 +7,7 @@ import APP from './appConfig';
 import { Buffer } from 'buffer';
 import assetIcons from './assetIcons';
 import NodeController from './NodeController';
+import { ClientPermControl } from '$lib/clientperm';
 import RegHelper from './RegHelper';
 import * as api from '$lib/api';
 import type { NodePropJSON } from '$lib/types';
@@ -145,8 +146,10 @@ class KFKclass {
 	scaleRatio: number = 1;
 	currentPage: number = 0;
 	loadedProjectId: string = null;
+	closeHelpTimer: any = null;
 	keypool: string = '';
 	svgDraw: any = null; //画svg的画布
+	helpArea: any = null;
 	isFreeHandDrawing: boolean = false;
 	isShowingModal: boolean = false;
 	toolboxMouseDown: boolean = false;
@@ -247,6 +250,7 @@ class KFKclass {
 	jumpNodes: any[] = [];
 	drawPoints: any[] = [];
 	drawMode: string = 'line';
+	showProp: boolean = false;
 	KEYDOWN: any = { ctrl: false, shift: false, alt: false, meta: false };
 	originZIndex: number = 1;
 	lastActionLogJqDIV: any = null;
@@ -1813,8 +1817,11 @@ ret='DEFAULT'; `
 				evt.stopPropagation();
 				that.focusOnNode(jqNodeDIV);
 				if (that.tool === 'POINTER') {
-					that.selectNodeOnClick(jqNodeDIV, evt.shiftKey);
-					that.showNodeProperties(jqNodeDIV);
+					if (that.showProp) {
+						that.showNodeProperties(jqNodeDIV);
+					} else {
+						that.selectNodeOnClick(jqNodeDIV, evt.shiftKey);
+					}
 				} else if (that.tool === 'CONNECT') {
 					if (that.afterDragging === false) {
 						await that.yarkLinkNode(jqNodeDIV, evt.shiftKey);
@@ -3744,6 +3751,7 @@ ret='DEFAULT'; `
 		$('.padlayout').fadeIn(1000, function () {
 			// Animation complete
 		});
+		that.helpArea = $('#templatehelp');
 	}
 
 	async loadTemplateDoc(template: any, tplmode: string = 'edit') {
@@ -3806,6 +3814,7 @@ ret='DEFAULT'; `
 		} finally {
 			that.addDocumentEventHandler();
 			that.inited = true;
+			that.showHelp('To see node properties, press SPACE then click on a node', 10000);
 		}
 	}
 
@@ -4039,6 +4048,8 @@ ret='DEFAULT'; `
 		//document keydown
 		//eslint-disable-next-line
 		$(document).keydown(async function (evt) {
+			if (evt === that.lastEvt) return;
+			that.lastEvt = evt;
 			if (that.isShowingModal === true) return;
 			if (that.onC3 === false) return;
 			if (that.isEditting) return;
@@ -4061,7 +4072,7 @@ ret='DEFAULT'; `
 			) {
 				that.keypool += evt.key;
 				that.keypool = that.keypool.toLowerCase();
-				that.logKey(that.keypool);
+				that.log(that.keypool);
 			} else {
 				that.keypool = '';
 			}
@@ -4123,8 +4134,19 @@ ret='DEFAULT'; `
 				case 'r':
 					that.scrollToFirstPage();
 					break;
+				case ' ':
+					that.showProp = !that.showProp;
+					if (that.showProp) {
+						that.showHelp(
+							'click node to show its properties, press SPACE again to change to normal mode'
+						);
+					} else {
+						that.showHelp('Now in normal mode');
+					}
+					console.log(that.showProp);
+					break;
 				default:
-					/* console.log('got key', evt.key); */
+					console.log('got key', evt.key);
 					break;
 			}
 		});
@@ -5027,6 +5049,16 @@ ret='DEFAULT'; `
 		);
 	}
 
+	showHelp(msg, timeout = 4000) {
+		this.helpArea.text(msg);
+		this.myFadeIn(this.helpArea);
+		if (this.closeHelpTimer) {
+			clearTimeout(this.closeHelpTimer);
+		}
+		this.closeHelpTimer = setTimeout(() => {
+			this.myFadeOut(this.helpArea);
+		}, timeout);
+	}
 	myFadeIn(jq: JQuery, ms = 200) {
 		jq &&
 			jq

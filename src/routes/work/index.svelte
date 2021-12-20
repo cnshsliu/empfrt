@@ -51,17 +51,16 @@
 	let input_search;
 
 	let doer = user.email;
-
-	//let work_status = get(WorkStatusStore);
-	let work_status = $WorkStatusStore.status ? $WorkStatusStore.status : 'ST_RUN';
-	let radioWorkStatus = work_status;
-	//const jwt = auth && Buffer.from(auth.jwt, 'base64').toString('utf-8');
-
 	//缺省情况下，使用用户邮箱，和ST_RUN
 	let payload_extra = {
 		doer: user.email,
 		filter: { wfstatus: 'ST_RUN', status: 'ST_RUN', tplid: '' }
 	};
+
+	//let work_status = get(WorkStatusStore);
+	let work_status = $WorkStatusStore.status ? $WorkStatusStore.status : 'ST_RUN';
+	let radioWorkStatus = work_status;
+	//const jwt = auth && Buffer.from(auth.jwt, 'base64').toString('utf-8');
 
 	function refreshList() {
 		if (payload_extra.filter.tplid === '') delete payload_extra.filter.tplid;
@@ -83,6 +82,13 @@
 			payload_extra.filter.tplid = $session.filter_template;
 			filter_template = payload_extra.filter.tplid;
 		}
+		// Every page load, read fitler_status from $session
+		filter_status = $session.worklist_extraFilterStatus;
+		//Set filte_status for ExtraFilter use
+		if (!filter_status) filter_status = 'ST_RUN';
+		//Set filte_status for RemoteTable use
+		if (filter_status === 'All') delete payload_extra.filter.status;
+		else payload_extra.filter.status = filter_status;
 		refreshList();
 
 		let tmp = await api.post('template/tplid/list', {}, user.sessionToken);
@@ -90,13 +96,6 @@
 		templates = tmp.map((x) => x.tplid);
 		if (user.extra && user.extra.input_search && user.extra.input_search.startsWith('wf:')) {
 			input_search = user.extra.input_search;
-		}
-		if (user.extra && user.extra.filter_status) {
-			filter_status = user.extra.filter_status;
-		}
-		if (user.extra) {
-			user.extra = undefined;
-			$session.user = user;
 		}
 		if ($session.gotoUser) {
 			filter_doer = $session.gotoUser + user.email.substring(user.email.indexOf('@'));
@@ -107,6 +106,8 @@
 	});
 	function filterStatusChanged(event) {
 		let status = event.detail;
+		$session.worklist_extraFilterStatus = event.detail;
+		filter_status = event.detail;
 		if (status !== 'ALL') {
 			payload_extra.filter.status = status;
 			if (payload_extra.filter.tplid === '') delete payload_extra.filter.tplid;
@@ -116,6 +117,7 @@
 	}
 	function filterTemplateChanged(event) {
 		let tplid = event.detail;
+		$session.filter_template = tplid;
 		payload_extra.filter.tplid = tplid;
 		if (payload_extra.filter.tplid === '') delete payload_extra.filter.tplid;
 		if (payload_extra.filter.status === 'All') delete payload_extra.filter.status;

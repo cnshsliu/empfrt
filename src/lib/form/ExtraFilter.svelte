@@ -16,6 +16,7 @@
 	import type { User, radioOption } from '$lib/types';
 	import { createEventDispatcher } from 'svelte';
 	import { onMount } from 'svelte';
+	import { session } from '$app/stores';
 	export let object_type: string;
 	export let filter_doer: string;
 	export let filter_template: string;
@@ -63,6 +64,9 @@
 		}
 	}
 
+	/* filter_status = $session.extraFilterStatus;
+	if (!filter_status) filter_status = 'ST_RUN'; */
+
 	statusMessage = getStatusMessage(filter_status);
 	onMount(async () => {
 		console.log('ExtraFilter onMount', filter_template);
@@ -86,6 +90,7 @@
 			{/each}
 		</Row>
 		<Row><Col class="mx-3">{statusMessage}</Col></Row>
+		{$session.extraFilterStatus}
 	</Container>
 {/if}
 {#if fields.indexOf('templatepicker') > -1}

@@ -12,7 +12,7 @@
 	import { ClientPermControl } from '$lib/clientperm';
 
 	export let token;
-	export let payload_extra;
+	export let payload_extra: any;
 	export let endpoint;
 	export let user;
 	export let TimeTool;
@@ -28,6 +28,7 @@
 
 	async function load(_page: number) {
 		loading = true;
+		console.log('getData....', JSON.stringify(payload_extra));
 		const data = await getData(endpoint, token, _page, pageSize, text, sorting, payload_extra);
 		rows = data.rows;
 		for (let i = 0; i < rows.length; i++) {
