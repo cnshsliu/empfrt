@@ -131,13 +131,14 @@ export interface Team {
 
 export interface kvarDef {
 	name: string;
-	value: string | number | string[];
+	value: string | number | string[] | boolean;
 	type: InputType;
 	label: string;
 	placeholder?: string;
 	breakrow: boolean;
 	id: string;
 	options?: string;
+	required?: boolean;
 }
 export interface KvarInput {
 	name: string;
@@ -146,6 +147,7 @@ export interface KvarInput {
 	type?: string;
 	breakrow?: boolean;
 	placeholder?: string;
+	required?: boolean;
 	id?: string;
 	option?: string;
 }

@@ -5,10 +5,9 @@ import Parser from '$lib/parser';
 import cocoConfig from './cococonfig';
 import APP from './appConfig';
 import { Buffer } from 'buffer';
-import assetIcons from './assetIcons';
 import NodeController from './NodeController';
-import { ClientPermControl } from '$lib/clientperm';
-import RegHelper from './RegHelper';
+import DesignerHelpMessage from './_designerHelpMessage';
+//import RegHelper from './RegHelper';
 import * as api from '$lib/api';
 import type { NodePropJSON } from '$lib/types';
 declare global {
@@ -118,11 +117,6 @@ const BlankToDefault = function (val: string, defaultValue: string) {
 };
 const HasValue = function (val: string) {
 	return !IsBlank(val);
-};
-//eslint-disable-next-line
-const IsFalse = function (val: any) {
-	if (val === undefined || val === null || val === false) return true;
-	else return false;
 };
 
 class KFKclass {
@@ -262,6 +256,7 @@ class KFKclass {
 	scrollContainer: any = null;
 	lockMode: boolean = false;
 	selectedDIVs: any[] = [];
+	selectedConnects: any[] = [];
 	selectedShapes: any[] = [];
 	kuangXuanMouseIsDown: boolean = false;
 	kuangXuanStartPoint: any = { x: 0, y: 0 };
@@ -339,19 +334,19 @@ class KFKclass {
 				window.jQuery = jQuery;
 				window.$ = jQuery;
 			}
-			this.JC1 = $('#C1');
-			this.C1 = el(this.JC1);
-			this.JCBKG = $('#containerbkg');
-			this.PageWidth = 840 * 2;
-			this.PageHeight = 600 * 2;
-			this.PageNumberHori = 2;
-			this.PageNumberVert = 2;
-			this.LeftB = this.PageWidth;
-			this.TopB = this.PageHeight;
-			this._width = this.PageWidth * this.PageNumberHori;
-			this._height = this.PageHeight * this.PageNumberVert;
-			this.scrollContainer = $('#S1');
-			this.designerCallback = null;
+			that.JC1 = $('#C1');
+			that.C1 = el(that.JC1);
+			that.JCBKG = $('#containerbkg');
+			that.PageWidth = 840 * 2;
+			that.PageHeight = 600 * 2;
+			that.PageNumberHori = 2;
+			that.PageNumberVert = 2;
+			that.LeftB = that.PageWidth;
+			that.TopB = that.PageHeight;
+			that._width = that.PageWidth * that.PageNumberHori;
+			that._height = that.PageHeight * that.PageNumberVert;
+			that.scrollContainer = $('#S1');
+			that.designerCallback = null;
 		});
 	}
 
@@ -433,7 +428,7 @@ class KFKclass {
 			that.drawPoints.clear();
 		}
 	}
-	//eslint-disable-next-line
+	//select tool set tool settool
 	setTool(tool: string, event?: any): void {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -497,7 +492,9 @@ class KFKclass {
 			that.APP.setData('show', 'customline', true);
 		}
 		console.log(that.APP.toolActiveState);
+		console.log('>>>>>>>>>>>>>>>');
 		that.designerCallback('setTool', tool);
+		if (DesignerHelpMessage[tool]) that.showHelp(DesignerHelpMessage[tool]);
 		that.focusOnC3();
 	}
 
@@ -1018,7 +1015,7 @@ ret='DEFAULT'; `
 		this.onChange('Connect case Changed');
 	}
 
-	async setConnectProperties(theConnect, caseValue) {
+	async setConnectProperties(theConnect: any, caseValue) {
 		let tmp = caseValue.trim();
 		caseValue = Parser.isEmpty(tmp) ? '' : tmp;
 		await this.setConnectText(theConnect, caseValue);
@@ -1253,12 +1250,14 @@ ret='DEFAULT'; `
 		}
 	}
 
+	//add link add connection lianjie lianxian
 	async procLinkNode(shiftKey: boolean) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		if (that.linkPosNode.length < 2) {
-			//if A is END, remove it
-			if (that.linkPosNode[0].hasClass('END')) that.linkPosNode.splice(0, 1);
+			//if A is END or GROUND, remove it
+			if (that.linkPosNode[0].hasClass('END') || that.linkPosNode[0].hasClass('GROUND'))
+				that.linkPosNode.splice(0, 1);
 			else that.showNodeMessage(that.linkPosNode[0], 'A点选定，请继续点选B点');
 			return;
 		} else {
@@ -1473,8 +1472,9 @@ ret='DEFAULT'; `
 				};
 			}
 		});
-		//click line click shape
+		//click line click shape click connection click connect
 		theShape.on('click', (evt: MouseEvent) => {
+			debugger;
 			evt.stopImmediatePropagation();
 			evt.stopPropagation();
 			evt.preventDefault();
@@ -1609,6 +1609,11 @@ ret='DEFAULT'; `
 			that.deselectNode(that.selectedDIVs[0]);
 		}
 		that.selectedDIVs = [];
+
+		while (that.selectedConnects.length > 0) {
+			that.deselectConnect(that.selectedConnects[0]);
+		}
+		that.selectedConnects = [];
 		that.focusOnNode(null);
 	}
 
@@ -1816,25 +1821,7 @@ ret='DEFAULT'; `
 				evt.stopImmediatePropagation();
 				evt.stopPropagation();
 				that.focusOnNode(jqNodeDIV);
-				if (that.tool === 'POINTER') {
-					if (that.showProp) {
-						that.showNodeProperties(jqNodeDIV);
-					} else {
-						that.selectNodeOnClick(jqNodeDIV, evt.shiftKey);
-					}
-				} else if (that.tool === 'CONNECT') {
-					if (that.afterDragging === false) {
-						await that.yarkLinkNode(jqNodeDIV, evt.shiftKey);
-					} else {
-						that.afterDragging = true;
-					}
-					evt.stopImmediatePropagation();
-					evt.stopPropagation();
-					evt.preventDefault();
-					return;
-				} else {
-					that.setTool('POINTER');
-				}
+				await that.onClickNode(evt, jqNodeDIV);
 			});
 		} catch (error) {
 			console.error(error);
@@ -1983,7 +1970,11 @@ ret='DEFAULT'; `
 			// return;
 		}
 
-		if (that.selectedDIVs.length > 0 || that.selectedShapes.length > 0) {
+		if (
+			that.selectedDIVs.length > 0 ||
+			that.selectedShapes.length > 0 ||
+			that.selectedConnects.length > 0
+		) {
 			if (that.duringKuangXuan === false) that.cancelAlreadySelected();
 		}
 		if (cocoConfig.node[that.tool]) {
@@ -2041,9 +2032,9 @@ ret='DEFAULT'; `
 		});
 
 		that.JC3.dblclick(async function (evt: MouseEvent) {
-			if (that.isEditting && that.inlineEditor) {
+			/* if (that.isEditting && that.inlineEditor) {
 				that.endInlineEditing();
-			}
+			} */
 			if (that.isEditting || that.resizing || that.dragging) {
 				return;
 			}
@@ -2285,6 +2276,34 @@ ret='DEFAULT'; `
 		that.selectedDIVs.push(jqDIV);
 		that.setSelectedNodesBoundingRect();
 	}
+	deselectNode(jqDIV: any) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		jqDIV.removeClass('selected');
+		const index = that.selectedDIVs.indexOf(jqDIV);
+		if (index > -1) {
+			that.selectedDIVs.splice(index, 1);
+			that.setSelectedNodesBoundingRect();
+		}
+	}
+	selectConnect(jqConnect: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		console.log('=======selectConnect');
+		const that = this;
+		jqConnect.addClass('selected');
+		that.selectedConnects.push(jqConnect);
+		let textClass = '.' + jqConnect.attr('id') + '_text';
+		$(textClass).addClass('selected');
+	}
+	deselectConnect(jqConnect: myJQuery) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		jqConnect.removeClass('selected');
+		const index = that.selectedConnects.indexOf(jqConnect);
+		if (index > -1) that.selectedConnects.splice(index, 1);
+		let textClass = '.' + jqConnect.attr('id') + '_text';
+		$(textClass).removeClass('selected');
+	}
 
 	/**
 	 * 根据选定的多个元素，显示其周围的边框
@@ -2399,15 +2418,6 @@ ret='DEFAULT'; `
 		};
 	}
 
-	deselectNode(theDIV: any) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		$(theDIV).removeClass('selected');
-		const index = that.selectedDIVs.indexOf(theDIV);
-		that.selectedDIVs.splice(index, 1);
-		that.setSelectedNodesBoundingRect();
-	}
-
 	selectNodeOnClick(jqDIV: myJQuery, shiftKey: boolean) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -2419,10 +2429,41 @@ ret='DEFAULT'; `
 				that.selectNode(jqDIV);
 			}
 		} else {
+			//Loop to deselecte all nodes
 			while (that.selectedDIVs.length > 0) {
 				that.deselectNode(that.selectedDIVs[0]);
 			}
+			while (that.selectedConnects.length > 0) {
+				that.deselectConnect(that.selectedConnects[0]);
+			}
 			that.selectNode(jqDIV);
+		}
+	}
+
+	selectConnectOnClick(jqConnect: myJQuery, shiftKey: boolean) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		console.log('selectConnectOnClick....');
+		const exist = that.selectedConnects.indexOf(jqConnect);
+		console.log('\texist index: ', exist, 'shiftkey:', shiftKey);
+		if (shiftKey) {
+			if (exist >= 0) {
+				console.log('shiftkey: deselect');
+				that.deselectConnect(jqConnect);
+			} else {
+				console.log('shiftkey: select');
+				that.selectConnect(jqConnect);
+			}
+		} else {
+			while (that.selectedDIVs.length > 0) {
+				that.deselectNode(that.selectedDIVs[0]);
+			}
+			console.log('no shiftkey  loop to deselect all');
+			while (that.selectedConnects.length > 0) {
+				that.deselectConnect(that.selectedConnects[0]);
+			}
+			console.log('no shiftkey  select this');
+			that.selectConnect(jqConnect);
 		}
 	}
 
@@ -3129,6 +3170,49 @@ ret='DEFAULT'; `
 		}
 	}
 
+	deleteSingleNode(theDIV, cutMode) {
+		let that = this;
+		if (that.anyLocked(theDIV)) return;
+		if (theDIV.hasClass('START') || theDIV.hasClass('END')) {
+			return;
+		}
+		if (cutMode === true) {
+			//copy时不过滤nocopy
+			const jTemp = theDIV.clone();
+			const jTitle = jTemp.find('.coco_title');
+			if (jTitle.length > 0) {
+				jTitle.text(jTitle.text() + '的复制');
+			}
+			that.copyCandidateDIVs.push(jTemp);
+		}
+		theDIV.shouldBeDeleted = true;
+		that.deleteNode_request(theDIV);
+	}
+
+	async deleteSingleConnect(connectId) {
+		let that = this;
+		//delete connect
+		//最后看鼠标滑过的connect（节点间连接线）
+		console.log('Delete a Connection...');
+		//Find ids of the two nodes connected by this connect.
+		const tmpNodeIdPair = that.getNodeIdsFromConnectId(that.hoveredConnectId);
+		const nid = tmpNodeIdPair[0];
+		const tid = tmpNodeIdPair[1];
+		//let jqFrom = $(`#${nid}`);
+		//let jqTo = $(`#${tid}`);
+		//if (that.anyLocked(jqFrom)) return;
+		//if (that.anyLocked(jqTo)) return;
+		//let oldJq = jqFrom.clone();
+		//Remove this connect from the FROM node
+		//that.removeLinkTo(jqFrom, tid);
+		//let connect_id = `connect_${nid}_${tid}`;
+		//Remove ths connect drawing
+		const tmp = that.tpl.find(`.link[from="${nid}"][to="${tid}"]`);
+		await that.removeConnectById(that.hoveredConnectId);
+		//await that.redrawLinkLines(jqFrom);
+		//删除一个connect, 则jqFrom被修改
+	}
+
 	/**
 	 * 删除hover或者selected 节点
 	 * @param evt oncut事件
@@ -3148,9 +3232,26 @@ ret='DEFAULT'; `
 		try {
 			that.copyCandidateDIVs = [];
 			that.copyCandidateLines = [];
-			if (that.selectedDIVs.length > 1 || that.selectedShapes.length > 1) {
-				if (that.selectedDIVs.length > 1) {
-					that.debug('delete, selected DIVS >1');
+			let objectDeleted = 0;
+			if (that.hoverJqDiv() || that.hoveredConnectId) {
+				//没有多项选择时，则进行单项删除
+				//首先，先处理鼠标滑过的NODE
+				if (that.hoverJqDiv()) {
+					const theDIV = that.hoverJqDiv();
+					that.deleteSingleNode(theDIV, cutMode);
+					that.hoverJqDiv(null);
+					that.onChange('Delete Node');
+				} else if (that.hoveredConnectId) {
+					that.deleteSingleConnect(that.hoveredConnectId);
+					that.onChange('Delete Connect');
+				}
+			} else if (
+				that.selectedDIVs.length > 0 ||
+				that.selectedShapes.length > 0 ||
+				that.selectedConnects.length > 0
+			) {
+				if (that.selectedDIVs.length > 0) {
+					that.debug('delete, selected DIVS >0');
 					let notLockedCount = 0;
 					for (let i = 0; i < that.selectedDIVs.length; i++) {
 						if (that.anyLocked(that.selectedDIVs[i]) === false) {
@@ -3159,30 +3260,23 @@ ret='DEFAULT'; `
 					}
 					that.debug(`没锁定的节点数量是 ${notLockedCount}, 一共是${that.selectedDIVs.length}`);
 					if (notLockedCount > 0) {
-						for (let i = 0; i < that.selectedDIVs.length; ) {
-							if (that.anyLocked(that.selectedDIVs[i]) === false) {
-								if (cutMode === true) {
-									//copy时不过滤nocopy
-									const jTemp = that.selectedDIVs[i].clone();
-									const jTitle = jTemp.find('.coco_title');
-									if (jTitle.length > 0) {
-										jTitle.text(jTitle.text() + '的复制');
-									}
-									that.copyCandidateDIVs.push(jTemp);
-								}
-								affectedParentsArray.push([...that.getParent(that.selectedDIVs[i])]);
-								i++;
-							}
+						for (let i = 0; i < that.selectedDIVs.length; i++) {
+							if (that.anyLocked(that.selectedDIVs[i])) continue;
+							that.deleteSingleNode(that.selectedDIVs[i], cutMode);
+							objectDeleted++;
+							affectedParentsArray.push([...that.getParent(that.selectedDIVs[i])]);
 						}
 
 						affectedParentsArray = that.AdvOps.uniquefyKfkObjectArray(affectedParentsArray);
-						//TODO: for every affected Parent, re-layout it's children if it's a autolayout node
-						//TODO: place autolayout icon on the right or left of parent node
-						console.log(affectedParentsArray.length);
 					}
+					$('.boundingrect').hide();
 				}
-				if (that.selectedShapes.length > 1) {
-					that.debug('delete, selected Shapes >1');
+				for (let i = 0; i < that.selectedConnects.length; i++) {
+					await that.deleteSingleConnect(that.selectedConnects[i]);
+					objectDeleted++;
+				}
+				if (that.selectedShapes.length > 0) {
+					that.debug('delete, selected Shapes >0');
 					let notLockedCount = 0;
 					for (let i = 0; i < that.selectedShapes.length; i++) {
 						if (that.lineLocked(that.selectedShapes[i]) === false) {
@@ -3191,64 +3285,14 @@ ret='DEFAULT'; `
 					}
 					that.debug(`没锁定的Shape数量是 ${notLockedCount}, 一共是${that.selectedShapes.length}`);
 					if (notLockedCount > 0) {
-						for (let i = 0; i < that.selectedShapes.length; ) {
+						for (let i = 0; i < that.selectedShapes.length; i++) {
 							if (that.lineLocked(that.selectedShapes[i]) === false) {
 								that._deleteShape(that.selectedShapes[i]);
-								i++;
 							}
 						}
 					}
 				}
-			} else {
-				//没有多项选择时，则进行单项删除
-				//首先，先处理鼠标滑过的NODE
-				if (that.hoverJqDiv()) {
-					const theDIV = that.hoverJqDiv();
-					if (that.anyLocked(theDIV)) return;
-					if (theDIV.hasClass('START') || theDIV.hasClass('END')) {
-						return;
-					}
-					const jTemp = theDIV.clone();
-					const jTitle = jTemp.find('.coco_title');
-					if (jTitle.length > 0) {
-						jTitle.text(jTitle.text() + '的复制');
-					}
-					that.copyCandidateDIVs = [jTemp];
-					//这个地方加上shouldBeDeleted标志应该没有必要，不过还是加一下
-					//在拖动覆盖其它节点，内容合并后删除被拖动节点时，这个标志是一定要加的，防止draggable end事件中，重新上传U指令，这样内容又会update回来
-					theDIV.shouldBeDeleted = true;
-					that.deleteNode_request(theDIV);
-					that.hoverJqDiv(null);
-				} else if (that.hoveredConnectId) {
-					//delete connect
-					//最后看鼠标滑过的connect（节点间连接线）
-					if (that.docIsReadOnly()) return;
-					console.log('Delete a Connection...');
-					//Find ids of the two nodes connected by this connect.
-					const tmpNodeIdPair = that.getNodeIdsFromConnectId(that.hoveredConnectId);
-					const nid = tmpNodeIdPair[0];
-					const tid = tmpNodeIdPair[1];
-					//let jqFrom = $(`#${nid}`);
-					//let jqTo = $(`#${tid}`);
-					//if (that.anyLocked(jqFrom)) return;
-					//if (that.anyLocked(jqTo)) return;
-					//let oldJq = jqFrom.clone();
-					//Remove this connect from the FROM node
-					//that.removeLinkTo(jqFrom, tid);
-					//let connect_id = `connect_${nid}_${tid}`;
-					//Remove ths connect drawing
-					const tmp = that.tpl.find(`.link[from="${nid}"][to="${tid}"]`);
-					const jTmp = $(tmp).clone();
-					await that.removeConnectById(that.hoveredConnectId);
-					that.yarkOpHistory({
-						obj: 'link',
-						from: jTmp,
-						to: null
-					});
-					//await that.redrawLinkLines(jqFrom);
-					//删除一个connect, 则jqFrom被修改
-					that.onChange('Delete Connect');
-				}
+				that.onChange('Delete nodes');
 			}
 			if (that.copyCandidateDIVs.length > 0 || that.copyCandidateLines.length > 0) {
 				//判断是否是cut， 而不是delete， cut有clipbaordData, delete没有
@@ -4094,11 +4138,7 @@ ret='DEFAULT'; `
 					break;
 				case 'Escape':
 					console.log('got Escape');
-					if (that.tool === 'CONNECT') {
-						that.cancelLinkNode();
-						console.log('Cancel link..');
-					}
-					that.setTool('POINTER', evt);
+					that.onESC();
 					break;
 				case '1':
 					that.setTool('ACTION', evt);
@@ -4427,6 +4467,10 @@ ret='DEFAULT'; `
 		//eslint-disable-next-line @typescript-eslint/no-this-alias, prefer-const
 		let that = this;
 		that.cancelAlreadySelected();
+		if (that.tool === 'CONNECT') {
+			that.cancelLinkNode();
+			console.log('Cancel link..');
+		}
 		if (!that.isEditting && that.tool !== 'line') that.setTool('POINTER');
 		that.cancelTempLine();
 		that.setTool('POINTER');
@@ -4434,7 +4478,7 @@ ret='DEFAULT'; `
 		if (that.noCopyPaste) {
 			that.noCopyPaste = false;
 		}
-		that.scrollToFirstPage();
+		//that.scrollToFirstPage();
 	}
 
 	dataURLtoFile(dataurl: string, filename: string) {
@@ -4694,7 +4738,7 @@ ret='DEFAULT'; `
 			theConnect.attr('case', caseValue);
 			/* console.log('draw text for ', lineClass, 'case is', caseValue); */
 			const connectText = await that.svgDraw.text(function (add: any) {
-				add.tspan(caseValue).fill(theConnect_color).dy(-2);
+				add.tspan(caseValue).dy(-2);
 			});
 			connectText.font({ family: 'Helvetica', anchor: 'start' });
 			connectText.addClass(lineClass + '_text');
@@ -4707,7 +4751,8 @@ ret='DEFAULT'; `
 				fid: fid,
 				tid: tid
 			});
-			theConnect.off('mouseover mouseout');
+			theConnect.off('mouseover mouseout click');
+			connectText.off('click');
 			theConnect.on('mouseover', () => {
 				const styleid = theConnect.attr('styleid');
 				const connect_color = that.YIQColorAux || that.config.connect.styles[styleid].hover.color;
@@ -4733,6 +4778,7 @@ ret='DEFAULT'; `
 			});
 			theConnect.on('mouseout', () => {
 				const styleid = theConnect.attr('styleid');
+				console.log('Mouse out connect: ', theConnect.attr('id'));
 				that.ball.addClass('noshow');
 				that.ball.timeline().stop();
 				theConnect.stroke({
@@ -4745,27 +4791,58 @@ ret='DEFAULT'; `
 				e.preventDefault();
 				e.stopPropagation();
 				console.log('Click on connnection', theConnect.attr('id'));
-				//that.showConnectionProperties(theConnect);
-				if (theConnect.attr('fid') !== 'start') that.showConnectionProperties(theConnect);
-				else console.log('Connection from start not configurable');
+				that.onClickConnect(e, theConnect);
 			});
 			connectText.on('click', (e) => {
+				//click text
 				e.preventDefault();
 				e.stopPropagation();
 				console.log(
-					'Click on connnection',
+					'Click on conntext',
 					theConnect.attr('id'),
 					'from',
 					theConnect.attr('fid'),
 					'to',
 					theConnect.attr('tid')
 				);
-				//that.showConnectionProperties(theConnect);
-				if (theConnect.attr('fid') !== 'start') that.showConnectionProperties(theConnect);
-				else console.log('Connection from start not configurable');
+				that.onClickConnect(e, theConnect);
 			});
 		} catch (error) {
 			console.error(error);
+		}
+	}
+
+	onClickConnect(evt: MouseEvent, theConnect) {
+		let that = this;
+		if (that.showProp) {
+			if (theConnect.attr('fid') !== 'start') that.showConnectionProperties(theConnect);
+			else {
+				that.showHelp('Link from START is not configurable');
+			}
+		} else {
+			that.selectConnectOnClick(theConnect, evt.shiftKey);
+		}
+	}
+	async onClickNode(evt: MouseEvent, jqNodeDIV) {
+		let that = this;
+		if (that.tool === 'POINTER') {
+			if (that.showProp) {
+				that.showNodeProperties(jqNodeDIV);
+			} else {
+				that.selectNodeOnClick(jqNodeDIV, evt.shiftKey);
+			}
+		} else if (that.tool === 'CONNECT') {
+			if (that.afterDragging === false) {
+				await that.yarkLinkNode(jqNodeDIV, evt.shiftKey);
+			} else {
+				that.afterDragging = true;
+			}
+			evt.stopImmediatePropagation();
+			evt.stopPropagation();
+			evt.preventDefault();
+			return;
+		} else {
+			that.setTool('POINTER');
 		}
 	}
 

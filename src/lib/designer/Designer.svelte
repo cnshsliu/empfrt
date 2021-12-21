@@ -94,7 +94,9 @@
 		switch (cmd) {
 			case 'setTemplate':
 				template = args;
+				break;
 			case 'setTool':
+				console.log('.....settooll to ', args);
 				currentTool = args;
 				break;
 			case 'showNodeProp':
@@ -196,7 +198,12 @@
 		modalSize = hid ? 'xl' : undefined;
 	};
 
+	let tmp;
 	$: readonly = tpl_mode !== 'edit';
+	$: {
+		tmp = currentTool;
+		console.log('Current tool is', currentTool);
+	}
 </script>
 
 <div id="S1">

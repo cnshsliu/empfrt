@@ -78,7 +78,7 @@ const config = {
 			style1: {
 				normal: {
 					width: 2,
-					color: '#4B92DB'
+					color: '#2726ff'
 				},
 				hover: {
 					width: 4,

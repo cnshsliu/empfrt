@@ -50,7 +50,7 @@
 		</Col>
 	</Row>
 	<TabContent pills>
-		<TabPane tabId="participant" tab="Participant">
+		<TabPane tabId="participant" tab="Participant" active>
 			<Col>
 				<InputGroup size="sm">
 					<Input
@@ -87,7 +87,7 @@
 				/>
 			</InputGroup>
 		</TabPane>
-		<TabPane tabId="varaibles" tab="Variables" active>
+		<TabPane tabId="varaibles" tab="Variables">
 			<Col class="mt-3 mt-1">
 				{#if !readonly}
 					<InputGroup size="sm">
@@ -102,7 +102,8 @@
 									label: '',
 									value: '',
 									breakrow: false,
-									placeholder: ''
+									placeholder: '',
+									required: true
 								});
 								kvarsArr = kvarsArr;
 							}}
@@ -149,6 +150,10 @@
 											<InputGroupText>ID</InputGroupText>
 											<Input bind:value={kvar.id} disabled={readonly} />
 										</InputGroup>
+										<InputGroup size="sm">
+											<InputGroupText>Required</InputGroupText>
+											<Input type="checkbox" bind:checked={kvar.required} disabled={readonly} />
+										</InputGroup>
 									</TabPane>
 								</TabContent>
 							</div>
@@ -180,7 +185,8 @@
 																		label: '',
 																		value: '',
 																		breakrow: false,
-																		placeholder: ''
+																		placeholder: '',
+																		required: true
 																	});
 																	kvarsArr = kvarsArr;
 																}}

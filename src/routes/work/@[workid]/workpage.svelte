@@ -30,6 +30,7 @@
 		work.status === 'ST_RUN';
 
 	function _sendbackWork() {
+		if (checkRequired() === false) return;
 		let payload: any = {
 			wfid: work.wfid,
 			workid: work.workid,
@@ -44,6 +45,7 @@
 		goto(iframeMode ? '/work?iframe' : '/work');
 	}
 	function _revokeWork() {
+		if (checkRequired() === false) return;
 		let payload: any = {
 			wfid: work.wfid,
 			workid: work.workid,
@@ -91,7 +93,31 @@
 			setFadeMessage('Adhoc Task created successfully');
 		}
 	};
+	function checkRequired() {
+		let errMsg = '';
+		for (let i = 0; i < work.kvarsArr.length; i++) {
+			if (work.kvarsArr[i].required) {
+				if (work.kvarsArr[i].type === 'boolean') {
+					if (work.kvarsArr[i].value !== true && work.kvarsArr[i].value !== false) {
+						errMsg = `${work.kvarsArr[i].label} should hava value`;
+						break;
+					}
+				} else {
+					if (!work.kvarsArr[i].value) {
+						errMsg = `${work.kvarsArr[i].label} should hava value`;
+						break;
+					}
+				}
+			}
+		}
+		if (errMsg !== '') {
+			setFadeMessage(errMsg, 'warning');
+			return false;
+		}
+		return true;
+	}
 	async function _doneWork(user_choice = null) {
+		if (checkRequired() === false) return;
 		let payload: any = {
 			doer: work.doer,
 			workid: work.workid,
@@ -191,7 +217,7 @@
 							{/if}
 							<Col>
 								<FormGroup>
-									<Label>{kvar.label}</Label>
+									<Label>{kvar.label}{kvar.required ? '*' : ''}</Label>
 									{#if kvar.type !== 'select'}
 										<Input
 											type={kvar.type}
@@ -199,6 +225,7 @@
 											bind:value={work.kvarsArr[i].value}
 											id={kvar.id}
 											placeholder={kvar.placeholder}
+											required={kvar.required}
 										/>
 									{:else}
 										<Input
@@ -206,6 +233,7 @@
 											name={kvar.name}
 											id={kvar.id}
 											bind:value={work.kvarsArr[i].value}
+											required={kvar.required}
 										>
 											{#each kvar.options as option}
 												<option>{option}</option>
