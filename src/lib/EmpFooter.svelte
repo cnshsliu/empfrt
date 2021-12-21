@@ -11,7 +11,7 @@
 				<div><img src="/metatocome.png" style="width:64px; height: 48px;" alt="metatocome" /></div>
 				<div class="fs-6">Neural system for your organiation</div>
 				<Row class="mt-3">
-					<Col class="text-info fs-3">
+					<Col class="text-primary fs-3">
 						<i class="bi-twitter" />
 						<i class="bi-github" />
 						<i class="bi-discord" />
@@ -44,7 +44,7 @@
 							<Col>
 								<a
 									sveltekit:prefetch
-									class="fs-5 text-info text-decoration-none"
+									class="fs-5 text-primary text-decoration-none"
 									href="/docs/about"
 								>
 									PLATFORM
@@ -104,7 +104,7 @@
 							<Col>
 								<a
 									sveltekit:prefetch
-									class="fs-5 text-info text-decoration-none"
+									class="fs-5 text-primary text-decoration-none"
 									href="/docs/about"
 								>
 									DEVELOPER
@@ -182,7 +182,7 @@
 							<Col>
 								<a
 									sveltekit:prefetch
-									class="fs-5 text-info text-decoration-none"
+									class="fs-5 text-primary text-decoration-none"
 									href="/docs/about"
 								>
 									DEPLOYMENT
