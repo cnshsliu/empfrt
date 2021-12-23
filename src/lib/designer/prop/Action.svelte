@@ -40,16 +40,31 @@
 		}
 	}
 
-	const setTab = function (tabname) {
-		$filterStore.tabs = tabname;
+	let theTab = $filterStore.tabs;
+	if (['participant', 'instruct', 'variables'].includes(theTab) === false) {
+		$filterStore.tabs = 'participant';
+	}
+
+	const setTab = function (tabname, firstLevel = true) {
+		if (firstLevel) $filterStore.tabs = tabname;
+		else $filterStore.tabs2nd = tabname;
 	};
-	const isActive = function (tabname) {
-		let tabs = $filterStore.tabs;
-		if (!tabs) {
-			tabs = '';
-			$filterStore.tabs = '';
+	const isActive = function (tabname, firstLevel = true) {
+		if (firstLevel) {
+			let tabs = $filterStore.tabs;
+			if (!tabs) {
+				tabs = 'participant';
+				$filterStore.tabs = 'participant';
+			}
+			return tabs.indexOf(tabname) > -1;
+		} else {
+			let tabs2nd = $filterStore.tabs2nd;
+			if (!tabs2nd) {
+				tabs2nd = 'basic';
+				$filterStore.tabs2nd = 'basic';
+			}
+			return tabs2nd.indexOf(tabname) > -1;
 		}
-		return tabs.indexOf(tabname) > -1;
 	};
 </script>
 
@@ -149,10 +164,10 @@
 									vertical
 									pills
 									on:tab={(e) => {
-										setTab('variables/' + e.detail);
+										setTab(e.detail, false);
 									}}
 								>
-									<TabPane tabId="basic" tab="Basic" active={isActive('variables/basic')}>
+									<TabPane tabId="basic" tab="Basic" active={isActive('basic', false)}>
 										<InputGroup size="sm">
 											<InputGroupText>Name</InputGroupText>
 											<Input bind:value={kvar.name} disabled={readonly} />
@@ -172,7 +187,7 @@
 											<Input bind:value={kvar.label} disabled={readonly} />
 										</InputGroup>
 									</TabPane>
-									<TabPane tabId="extra" tab="Extra" active={isActive('variables/extra')}>
+									<TabPane tabId="extra" tab="Extra" active={isActive('extra', false)}>
 										<InputGroup size="sm">
 											<InputGroupText>Placeholder</InputGroupText>
 											<Input bind:value={kvar.placeholder} disabled={readonly} />

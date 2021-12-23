@@ -229,6 +229,9 @@ export interface FilterPicks {
 	wfSorting: { dir: string; key: string };
 	tplSorting: { dir: string; key: string };
 	tabs: string;
+	tabs2nd: string;
+	settingTab: string;
+	settingTab2nd: string;
 }
 export interface EmpResponse {
 	error?: Record;

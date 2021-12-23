@@ -318,25 +318,38 @@
 		console.log(orgMembers.members);
 	}
 
-	async function showTab(tabId: string) {
-		$filterStore.tabs = tabId;
-		if (tabId === 'org') {
-			//refreshMyOrg();
-		} else if (tabId === 'members') {
-			refreshMembers();
+	async function showTab(tabId: string, firstLevel = true) {
+		if (firstLevel) {
+			$filterStore.settingTab = tabId;
+			if (tabId === 'org') {
+				//refreshMyOrg();
+			} else if (tabId === 'members') {
+				refreshMembers();
+			}
+		} else {
+			$filterStore.settingTab2nd = tabId;
 		}
 	}
 
 	onMount(async () => {
 		await refreshMyOrg();
 	});
-	const isActive = function (tabname) {
-		let tabs = $filterStore.tabs;
-		if (!tabs) {
-			tabs = '';
-			$filterStore.tabs = '';
+	const isActive = function (tabname, firstLevel = true) {
+		if (firstLevel) {
+			let tabs = $filterStore.settingTab;
+			if (!tabs) {
+				tabs = 'personal';
+				$filterStore.settingTab = 'personal';
+			}
+			return tabs.indexOf(tabname) > -1;
+		} else {
+			let tabs = $filterStore.settingTab2nd;
+			if (!tabs) {
+				tabs = 'personal';
+				$filterStore.settingTab = 'personal';
+			}
+			return tabs.indexOf(tabname) > -1;
 		}
-		return tabs.indexOf(tabname) > -1;
 	};
 
 	async function removeSelectedMembers() {
@@ -760,10 +773,10 @@
 				<TabContent
 					pills
 					on:tab={(e) => {
-						showTab('orgchart/' + e.detail);
+						showTab(e.detail.toString(), false);
 					}}
 				>
-					<TabPane tabId="zzorg" tab="Orgchart" active={isActive('orgchart/zzorg')}>
+					<TabPane tabId="zzorg" tab="Orgchart" active={isActive('zzorg', false)}>
 						<div class="overflow-scroll w-100 bg-light">
 							<OrgChart {user} showOuId={true} />
 						</div>
@@ -804,7 +817,7 @@
 					<TabPane
 						tabId="zzorgtest"
 						tab="Orgchart Relation Test"
-						active={isActive('orgchart/zzorgtest')}
+						active={isActive('zzorgtest', false)}
 					>
 						<div class="overflow-scroll w-100 bg-light">
 							<OrgChartRelationTest
@@ -820,7 +833,7 @@
 					<TabPane
 						tabId="fileformat"
 						tab="Orgchart File Format"
-						active={isActive('orgchart/fileformat')}
+						active={isActive('fileformat', false)}
 					>
 						<OrgChartCsvFormat />
 					</TabPane>
