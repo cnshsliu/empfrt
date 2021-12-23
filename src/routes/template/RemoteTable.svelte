@@ -7,6 +7,7 @@
 	import * as api from '$lib/api';
 	import { onMount } from 'svelte';
 	import { session } from '$app/stores';
+	import { filterStore } from '$lib/empstores';
 	import { ClientPermControl } from '$lib/clientperm';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
 	import { goto } from '$app/navigation';
@@ -39,16 +40,29 @@
 	let loading = true;
 	export let rowsCount = 0;
 	let currentTplid = '';
-	let searchFilter: String = '';
+	let input_search: String = '';
 	let sorting = { dir: 'desc', key: 'updatedAt' };
+	let storeSorting = $filterStore.tplSorting;
+	if (storeSorting) {
+		if (storeSorting.dir && storeSorting.key) {
+			sorting = storeSorting;
+		} else {
+			$filterStore.tplSorting = sorting;
+		}
+	}
 
-	onMount(async () => {
+	export function reset() {
+		input_search = '';
+	}
+	export async function reload() {
+		input_search = $filterStore.tplTitlePattern;
 		await load(page);
-	});
+	}
 
 	async function load(_page) {
 		loading = true;
-		const data = await getData(endpoint, token, _page, pageSize, searchFilter, sorting, {
+		console.log('Remote load', new Date());
+		const data = await getData(endpoint, token, _page, pageSize, input_search, sorting, {
 			tag: tag
 		});
 		rows = data.rows;
@@ -67,13 +81,13 @@
 	}
 
 	async function onSearch(event) {
-		searchFilter = event.detail.text;
+		input_search = event.detail.text;
+		$filterStore.tplTitlePattern = input_search.toString();
 		await load(page);
 		page = 0;
 	}
 
 	export async function refresh(detail) {
-		if (detail && detail.text) searchFilter = detail.text;
 		if (detail && detail.page) page = detail.page;
 		if (detail && detail.sorting) sorting = detail.sorting;
 		await load(page);
@@ -81,12 +95,12 @@
 
 	async function onSort(event) {
 		sorting = { dir: event.detail.dir, key: event.detail.key };
+		$filterStore.tplSorting = sorting;
 		await load(page);
 	}
 
 	let tag_input = '';
 	const deleteATag = async function (index, tplid, tags, text) {
-		console.log('Delete ', text);
 		tags = await api.post('tag/del', { objtype: 'template', objid: tplid, text: text }, token);
 		rows[index].tags = tags;
 		rows = rows;
@@ -136,7 +150,7 @@
 
 <Table {loading} {rows} {pageIndex} {pageSize} let:rows={rows2}>
 	<div slot="top">
-		<Search on:search={onSearch} />
+		<Search on:search={onSearch} text={input_search} />
 	</div>
 	<thead slot="head">
 		<tr>
@@ -218,19 +232,19 @@
 								<a
 									href={'#'}
 									on:click|preventDefault={async () => {
-										$session.filter_template = row.tplid;
+										$filterStore.tplid = row.tplid;
 										goto('/workflow');
 									}}
 									class="nav-link "
 									><Icon name="bar-chart-steps" />
-									See workflows
+									See Workflows
 								</a>
 							</DropdownItem>
 							<DropdownItem>
 								<a
 									href={'#'}
 									on:click|preventDefault={async () => {
-										$session.filter_template = row.tplid;
+										$filterStore.tplid = row.tplid;
 										goto('/work');
 									}}
 									class="nav-link "

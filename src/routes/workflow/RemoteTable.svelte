@@ -2,7 +2,8 @@
 	import * as api from '$lib/api';
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
-	import { session } from '$app/stores';
+	import { filterStore } from '$lib/empstores';
+	import { onMount } from 'svelte';
 	import type { Workflow } from '$lib/types';
 	import { StatusLabel } from '$lib/lang';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
@@ -23,13 +24,29 @@
 
 	let loading = true;
 	let rowsCount = 0;
-	let text;
+	let input_search;
 	let sorting = { dir: 'desc', key: 'updatedAt' };
+	let storeSorting = $filterStore.wfSorting;
+	if (storeSorting) {
+		if (storeSorting.dir && storeSorting.key) {
+			sorting = storeSorting;
+		} else {
+			$filterStore.wfSorting = sorting;
+		}
+	}
 
 	async function load(_page: number) {
 		loading = true;
 		console.log('getData....', JSON.stringify(payload_extra));
-		const data = await getData(endpoint, token, _page, pageSize, text, sorting, payload_extra);
+		const data = await getData(
+			endpoint,
+			token,
+			_page,
+			pageSize,
+			input_search,
+			sorting,
+			payload_extra
+		);
 		rows = data.rows;
 		for (let i = 0; i < rows.length; i++) {
 			rows[i].statusLabel = StatusLabel(rows[i].status);
@@ -44,13 +61,13 @@
 	}
 
 	async function onSearch(event) {
-		text = event.detail.text;
+		input_search = event.detail.text;
+		$filterStore.wfTitlePattern = input_search;
 		await load(page);
 		page = 0;
 	}
 
 	export async function refresh(detail) {
-		if (detail && detail.text) text = detail.text;
 		if (detail && detail.page) page = detail.page;
 		if (detail && detail.sorting) sorting = detail.sorting;
 		if (detail && detail.payload_extra) payload_extra = detail.payload_extra;
@@ -60,6 +77,7 @@
 
 	async function onSort(event) {
 		sorting = { dir: event.detail.dir, key: event.detail.key };
+		$filterStore.wfSorting = sorting;
 		await load(page);
 	}
 
@@ -68,25 +86,23 @@
 			goto(`/template/start?tplid=${workflow.tplid}`);
 			return;
 		} else if (op === 'works') {
-			let user = $session.user;
-			user.extra.input_search = 'wf:' + workflow.wfid;
-			$session.user = user;
+			$filterStore.tplid = workflow.tplid;
+			$filterStore.workTitlePattern = 'wf:' + workflow.wfid;
 			goto('/work');
 			return;
 		} else if (op === 'works_running') {
-			let user = $session.user;
-			user.extra = { input_search: 'wf:' + workflow.wfid, filter_status: 'ST_RUN' };
-			$session.user = user;
+			$filterStore.tplid = workflow.tplid;
+			$filterStore.workTitlePattern = 'wf:' + workflow.wfid;
+			$filterStore.workStatus = 'ST_RUN';
 			goto('/work');
 			return;
 		} else if (op === 'works_all') {
-			let user = $session.user;
-			user.extra = { input_search: 'wf:' + workflow.wfid, filter_status: 'All' };
-			$session.user = user;
+			$filterStore.tplid = workflow.tplid;
+			$filterStore.workTitlePattern = 'wf:' + workflow.wfid;
+			$filterStore.workStatus = 'All';
 			goto('/work');
 			return;
 		} else if (op === 'viewTemplate') {
-			$session.wfid = workflow.wfid;
 			goto(`/template/@${workflow.tplid}&read`);
 			return;
 		}
@@ -125,20 +141,21 @@
 		}
 	};
 
-	let fade_message = '';
-	let fade_timer: any;
-	function setFadeMessage(message: string, time = 2000) {
-		fade_message = message;
-		if (fade_timer) clearTimeout(fade_timer);
-		fade_timer = setTimeout(() => {
-			fade_message = '';
-		}, time);
+	export function reset() {
+		input_search = '';
 	}
+	export function reload() {
+		input_search = $filterStore.wfTitlePattern;
+	}
+
+	onMount(async () => {
+		reload();
+	});
 </script>
 
 <Table {loading} {rows} {pageIndex} {pageSize} let:rows={rows2}>
 	<div slot="top">
-		<Search on:search={onSearch} />
+		<Search on:search={onSearch} text={input_search} />
 	</div>
 	<thead slot="head">
 		<tr>

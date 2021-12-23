@@ -16,9 +16,10 @@
 	import type { User, radioOption } from '$lib/types';
 	import { createEventDispatcher } from 'svelte';
 	import { onMount } from 'svelte';
+	import { filterStore } from '$lib/empstores';
 	import { session } from '$app/stores';
 	export let object_type: string;
-	export let filter_doer: string;
+	let filter_doer: string;
 	export let filter_template: string;
 	export let user: User;
 	export let delegators;
@@ -39,12 +40,14 @@
 		statusMessage = getStatusMessage(e.target.value);
 	}
 	function tplChanged(e) {
-		console.log('>>>>>>>FilerTemplateChanged');
-		dispatch('filterTemplateChange', (e.target as HTMLInputElement).value);
+		console.log('>>>>>>>FilterTemplateChanged');
+		$filterStore.tplid = (e.target as HTMLInputElement).value;
+		dispatch('filterTemplateChange');
 	}
 
-	function doerChanged(e) {
-		dispatch('filterDoerChange', (e.target as HTMLInputElement).value);
+	function doerChanged() {
+		$filterStore.doer = filter_doer;
+		dispatch('filterDoerChange');
 	}
 
 	function getStatusMessage(aStatus) {
@@ -64,12 +67,21 @@
 		}
 	}
 
-	/* filter_status = $session.extraFilterStatus;
-	if (!filter_status) filter_status = 'ST_RUN'; */
-
-	statusMessage = getStatusMessage(filter_status);
+	export function reload() {
+		if (object_type === 'work items') filter_status = $filterStore.workStatus;
+		else filter_status = $filterStore.wfStatus;
+		filter_template = $filterStore.tplid;
+		filter_doer = $filterStore.doer;
+		statusMessage = getStatusMessage(filter_status);
+	}
+	export function reset() {
+		filter_status = 'All';
+		filter_template = '';
+		filter_doer = user.email;
+		statusMessage = getStatusMessage(filter_status);
+	}
 	onMount(async () => {
-		console.log('ExtraFilter onMount', filter_template);
+		reload();
 	});
 </script>
 
@@ -90,7 +102,6 @@
 			{/each}
 		</Row>
 		<Row><Col class="mx-3">{statusMessage}</Col></Row>
-		{$session.extraFilterStatus}
 	</Container>
 {/if}
 {#if fields.indexOf('templatepicker') > -1}
@@ -106,7 +117,7 @@
 			>
 				<option value="">--All Template--</option>
 				{#each templates as tpl, index (tpl)}
-					{#if tpl !== filter_template}
+					{#if tpl !== $filterStore.tplid}
 						<option value={tpl}>{tpl}</option>
 					{:else}
 						<option value={tpl} selected>--&gt;&gt; {tpl}</option>
@@ -126,12 +137,21 @@
 					</InputGroupText>
 					<input
 						class="flex-fill"
-						name="tplid"
+						name="other_doer"
 						bind:value={filter_doer}
 						aria-label="User Email"
 						placeholder="Input user email to query his/her workitems"
 					/>
 					<Button on:click={doerChanged} color="primary">List&gt;</Button>
+					<Button
+						on:click={() => {
+							filter_doer = user.email;
+							doerChanged();
+						}}
+						color="secondary"
+					>
+						Mine&gt;
+					</Button>
 				</InputGroup>
 			{:else if delegators.length > 0}
 				<InputGroup>
@@ -140,7 +160,11 @@
 					</InputGroupText>
 					<Input type="select" name="select" id="exampleSelect" bind:value={filter_doer}>
 						{#each delegators as delegator, index (delegator)}
-							<option value={delegator}>{delegator}</option>
+							{#if delegator === $filterStore.doer}
+								<option value={delegator} selected>{delegator}</option>
+							{:else}
+								<option value={delegator}>{delegator}</option>
+							{/if}
 						{/each}
 					</Input>
 					<Button on:click={doerChanged} color="primary">List&gt;</Button>

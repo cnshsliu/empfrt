@@ -13,12 +13,11 @@
 </script>
 
 <script lang="ts">
-	import { whichTabStore } from '$lib/empstores';
 	import { Container, Row, Col } from 'sveltestrap';
 	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { post } from '$lib/utils';
-	import type { oneArgFunc } from '$lib/types';
+	import type { oneArgFunc, EmpResponse } from '$lib/types';
 	import * as api from '$lib/api';
 	import { Input, Card, NavLink } from 'sveltestrap';
 	import { getNotificationsContext } from 'svelte-notifications';
@@ -29,6 +28,8 @@
 	let password = '';
 	let show_resend_email_verification = false;
 	let theCountdown;
+	let login_wait = -1;
+	let login_wait_interval = null;
 
 	function setFadeMessage(message: string, type = 'warning', pos = 'bottom-right', time = 2000) {
 		(addNotification as oneArgFunc)({
@@ -39,9 +40,19 @@
 		});
 	}
 	async function submit(event) {
-		const response = await post(`auth/login`, { email, password });
+		const response = (await post(`auth/login`, { email, password })) as unknown as EmpResponse;
 
 		if (response.error) {
+			if (response.error === 'NO_BRUTE') {
+				login_wait = 10;
+				if (login_wait_interval) {
+					clearInterval(login_wait_interval);
+				}
+				login_wait_interval = setInterval(() => {
+					login_wait--;
+					if (login_wait < 0) clearInterval(login_wait_interval);
+				}, 1000);
+			}
 			setFadeMessage(response.message);
 			if (response.error === 'login_emailVerified_false') {
 				show_resend_email_verification = true;
@@ -49,10 +60,10 @@
 				//theCountdown.reset(0);
 			}
 		} else {
+			login_wait = -1;
 			if (response.user) {
 				$session.user = response.user;
 				goto('/template');
-				whichTabStore.set(null);
 			}
 		}
 	}
@@ -110,8 +121,12 @@
 					<label for="input-password">Password: </label>
 				</div>
 				<div class="w-100 d-flex justify-content-end">
-					<button class="w-100 btn btn-lg btn-primary pull-xs-right mt-3" type="submit">
-						Sign in
+					<button
+						class="w-100 btn btn-lg btn-primary pull-xs-right mt-3"
+						type="submit"
+						disabled={login_wait >= 0}
+					>
+						Sign in {login_wait < 0 ? '' : `(${login_wait})`}
 					</button>
 				</div>
 			</form>

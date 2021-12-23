@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Parser from '$lib/parser';
+	import { filterStore } from '$lib/empstores';
 	import {
 		NavLink,
 		Icon,
@@ -38,6 +39,18 @@
 			doerHTML = doerJSON;
 		}
 	}
+
+	const setTab = function (tabname) {
+		$filterStore.tabs = tabname;
+	};
+	const isActive = function (tabname) {
+		let tabs = $filterStore.tabs;
+		if (!tabs) {
+			tabs = '';
+			$filterStore.tabs = '';
+		}
+		return tabs.indexOf(tabname) > -1;
+	};
 </script>
 
 <Container>
@@ -49,8 +62,13 @@
 			</InputGroup>
 		</Col>
 	</Row>
-	<TabContent pills>
-		<TabPane tabId="participant" tab="Participant" active>
+	<TabContent
+		pills
+		on:tab={(e) => {
+			setTab(e.detail);
+		}}
+	>
+		<TabPane tabId="participant" tab="Participant" active={isActive('participant')}>
 			<Col>
 				<InputGroup size="sm">
 					<Input
@@ -58,6 +76,17 @@
 						type="checkbox"
 						label="Only finish on ALL-Done?"
 						bind:checked={nodeInfo.nodeProps.ACTION.byall}
+						disabled={readonly}
+					/>
+				</InputGroup>
+			</Col>
+			<Col>
+				<InputGroup size="sm">
+					<Input
+						id="t1"
+						type="checkbox"
+						label="Transferable"
+						bind:checked={nodeInfo.nodeProps.ACTION.transferable}
 						disabled={readonly}
 					/>
 				</InputGroup>
@@ -77,7 +106,7 @@
 				</Col>
 			{/if}
 		</TabPane>
-		<TabPane tabId="instruct" tab="Instruction">
+		<TabPane tabId="instruct" tab="Instruction" active={isActive('instruct')}>
 			<InputGroup size="sm">
 				<Input
 					type="textarea"
@@ -87,7 +116,7 @@
 				/>
 			</InputGroup>
 		</TabPane>
-		<TabPane tabId="varaibles" tab="Variables">
+		<TabPane tabId="variables" tab="Variables" active={isActive('variables')}>
 			<Col class="mt-3 mt-1">
 				{#if !readonly}
 					<InputGroup size="sm">
@@ -116,12 +145,24 @@
 					{#each kvarsArr as kvar, index}
 						<div class="px-2 py-2 my-2 d-flex kfk-highlight-2">
 							<div class="my-1 flex-grow-1">
-								<TabContent vertical pills>
-									<TabPane tabId="basic" tab="Basic" active>
+								<TabContent
+									vertical
+									pills
+									on:tab={(e) => {
+										setTab('variables/' + e.detail);
+									}}
+								>
+									<TabPane tabId="basic" tab="Basic" active={isActive('variables/basic')}>
 										<InputGroup size="sm">
 											<InputGroupText>Name</InputGroupText>
 											<Input bind:value={kvar.name} disabled={readonly} />
 										</InputGroup>
+										{#if kvar.name.startsWith('select_')}
+											<InputGroup size="sm">
+												<InputGroupText>Options</InputGroupText>
+												<Input bind:value={kvar.options} disabled={readonly} placeholder="a;b;c" />
+											</InputGroup>
+										{/if}
 										<InputGroup size="sm">
 											<InputGroupText>Value</InputGroupText>
 											<Input bind:value={kvar.value} disabled={readonly} />
@@ -130,14 +171,8 @@
 											<InputGroupText>Label</InputGroupText>
 											<Input bind:value={kvar.label} disabled={readonly} />
 										</InputGroup>
-										{#if kvar.name.startsWith('select_')}
-											<InputGroup size="sm">
-												<InputGroupText>Options</InputGroupText>
-												<Input bind:value={kvar.options} disabled={readonly} />
-											</InputGroup>
-										{/if}
 									</TabPane>
-									<TabPane tabId="extra" tab="Extra">
+									<TabPane tabId="extra" tab="Extra" active={isActive('variables/extra')}>
 										<InputGroup size="sm">
 											<InputGroupText>Placeholder</InputGroupText>
 											<Input bind:value={kvar.placeholder} disabled={readonly} />

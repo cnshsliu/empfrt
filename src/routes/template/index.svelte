@@ -29,6 +29,7 @@
 	import * as api from '$lib/api';
 	import type { WhichTab } from '$lib/types';
 	import { whichTabStore } from '$lib/empstores';
+	import { filterStore } from '$lib/empstores';
 	import { ClientPermControl } from '$lib/clientperm';
 	import { TabContent, Badge, Fade, Card, TabPane, FormGroup, Label, Input } from 'sveltestrap';
 	import type { User } from '$lib/types';
@@ -42,7 +43,7 @@
 	import { title } from '$lib/title';
 	$title = 'HyperFlow';
 	$: token = user.sessionToken;
-	let remoteTable;
+	let theRemoteTable;
 	function hide_all_form() {
 		Object.keys(form_status).forEach((key) => {
 			form_status[key] = false;
@@ -83,7 +84,7 @@
 			.then(async (result) => {
 				console.log('Success:', result);
 				//templates = [result, ...templates];
-				remoteTable.rows = [result, ...remoteTable.rows];
+				theRemoteTable.rows = [result, ...theRemoteTable.rows];
 			})
 			.catch((error) => {
 				console.error('Error:', error);
@@ -122,25 +123,41 @@
 		}, time);
 	}
 	let recentTemplates = [];
-	onMount(() => {
-		if (localStorage) {
-			recentTemplates = JSON.parse(localStorage.getItem('recentTemplates') ?? JSON.stringify([]));
-		}
-	});
 
 	let currentTag = '';
 	const useThisTag = function (tag) {
 		currentTag = tag;
-		remoteTable.tag = tag;
-		remoteTable.refresh();
+		$filterStore.tplTag = tag;
+		console.log('Use this tag', new Date());
+		theRemoteTable.tag = tag;
+		theRemoteTable.refresh();
 		console.log(tag);
 	};
+	onMount(() => {
+		if (localStorage) {
+			recentTemplates = JSON.parse(localStorage.getItem('recentTemplates') ?? JSON.stringify([]));
+		}
+		currentTag = $filterStore.tplTag;
+		useThisTag(currentTag);
+	});
 </script>
 
-<Container>
+<Container class="mt-1">
 	<div class="d-flex">
 		<div class="flex-shrink-0 fs-3">Templates</div>
-		<div class="mx-5 align-self-center flex-grow-1">Defines how workflow would be running</div>
+		<div class="ms-5 align-self-center flex-grow-1">Defines how workflow would be running</div>
+		<div class="justify-content-end flex-shrink-0">
+			<Button
+				on:click={async () => {
+					$filterStore.tplTitlePattern = '';
+					await theRemoteTable.reset();
+					useThisTag('');
+				}}
+				class="m-0 p-1"
+			>
+				Reset Query
+			</Button>
+		</div>
 	</div>
 </Container>
 <Container>
@@ -272,8 +289,8 @@
 							const created = await res.json();
 							/* templates = [created, ...templates]; */
 							lastSearchCondition = created.tplid;
-							remoteTable.rows = [created, ...remoteTable.rows];
-							remoteTable.rowsCount = remoteTable.rowsCount + 1;
+							theRemoteTable.rows = [created, ...theRemoteTable.rows];
+							theRemoteTable.rowsCount = theRemoteTable.rowsCount + 1;
 							form.reset();
 							//form_status['create'] = false;
 						},
@@ -353,7 +370,7 @@
 				endpoint="template/search"
 				{token}
 				{user}
-				bind:this={remoteTable}
+				bind:this={theRemoteTable}
 				{TimeTool}
 				{reloadTags}
 			/>

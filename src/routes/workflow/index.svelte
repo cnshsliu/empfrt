@@ -2,7 +2,6 @@
 	let TimeTool = null;
 	export async function load({ page, fetch, session }) {
 		TimeTool = (await import('$lib/TimeTool')).default;
-		console.log(JSON.stringify(session.filter_template));
 		return {
 			props: {
 				user: session.user
@@ -12,16 +11,16 @@
 </script>
 
 <script lang="ts">
+	import * as Utils from '$lib/utils';
 	import { API_SERVER } from '$lib/Env';
 	import { onMount } from 'svelte';
-	import { session } from '$app/stores';
+	import { filterStore } from '$lib/empstores';
 	import * as api from '$lib/api';
 	import RemoteTable from './RemoteTable.svelte';
 	import ExtraFilter from '$lib/form/ExtraFilter.svelte';
 	import type { User } from '$lib/types';
-	import { Fade, Card, Container, Row, Col } from 'sveltestrap';
+	import { Button, Container, Row, Col } from 'sveltestrap';
 	import { ClientPermControl } from '$lib/clientperm';
-	import Parser from '$lib/parser';
 	export let menu_has_form = false;
 	export let user: User;
 	export let form_status = { create: false, search: false, sort: false, import: false };
@@ -29,17 +28,11 @@
 	$title = 'HyperFlow';
 	$: token = user.sessionToken;
 	let theExtraFilter: any;
-	let filter_status = 'ST_RUN';
 	let filter_template;
-	let remoteTable;
-	let urls = {
-		search: `${API_SERVER}/workflow/search`
-	};
+	let theRemoteTable;
 	let files;
 	let theSearchForm;
-	let dataFile = null;
 	let tplidImport;
-	let after_mount = false;
 	let payload_extra = { filter: { status: '', tplid: '' } };
 
 	function hide_all_form() {
@@ -54,76 +47,74 @@
 		menu_has_form = true;
 	}
 
-	function reloadOnFilterStatusChange(status) {
-		if (status === undefined) {
-			console.log('====== SET status to ST_RUN');
-			status = 'ST_RUN';
+	function checkStore() {
+		if (Utils.isBlank($filterStore.doer)) {
+			$filterStore.doer = user.email;
 		}
-		payload_extra.filter.status = status;
+		if (Utils.isBlank($filterStore.wfStatus)) {
+			$filterStore.wfStatus = 'ST_RUN';
+		}
+		if (Utils.isBlank($filterStore.workStatus)) {
+			$filterStore.workStatus = 'ST_RUN';
+		}
+		if ($filterStore.workTitlePattern === undefined) {
+			$filterStore.workTitlePattern = '';
+		}
+		if ($filterStore.wfTitlePattern === undefined) {
+			$filterStore.wfTitlePattern = '';
+		}
+	}
 
-		if (payload_extra.filter.tplid === '') delete payload_extra.filter.tplid;
-		if (payload_extra.filter.status === 'All') delete payload_extra.filter.status;
-		console.log('REfresh 2');
-		remoteTable && remoteTable.refresh({ payload_extra });
+	function refreshList() {
+		checkStore();
+		payload_extra.filter.status = $filterStore.wfStatus;
+
+		payload_extra.filter.tplid = $filterStore.tplid;
+		//payload_extra.doer = $filterStore.doer;
+		theRemoteTable && theRemoteTable.refresh({ payload_extra });
 	}
 
 	let templates = [];
 	onMount(async () => {
 		let tmp = await api.post('template/tplid/list', {}, user.sessionToken);
 		templates = tmp.map((x) => x.tplid);
-		if ($session.filter_template) {
-			payload_extra.filter.tplid = $session.filter_template;
-			filter_template = payload_extra.filter.tplid;
-		}
-		// Every page load, read fitler_status from $session
-		filter_status = $session.workflow_extraFilterStatus;
-		//Set filte_status for ExtraFilter use
-		if (!filter_status) filter_status = 'ST_RUN';
-		//Set filte_status for RemoteTable use
-		if (filter_status === 'All') delete payload_extra.filter.status;
-		else payload_extra.filter.status = filter_status;
-		reloadOnFilterStatusChange(filter_status);
+		refreshList();
 	});
 
 	function filterStatusChanged(event) {
-		$session.workflow_extraFilterStatus = event.detail;
-		filter_status = event.detail;
-		reloadOnFilterStatusChange(event.detail);
-	}
-	function filterTemplateChanged(event) {
-		let tplid = event.detail;
-		payload_extra.filter.tplid = tplid;
-		if (payload_extra.filter.tplid === '') delete payload_extra.filter.tplid;
-		if (payload_extra.filter.status === 'All') delete payload_extra.filter.status;
-		console.log('REfresh 1');
-		remoteTable && remoteTable.refresh({ payload_extra });
-	}
-
-	let fade_message = '';
-	let fade_timer: any;
-	function setFadeMessage(message: string, time = 2000) {
-		fade_message = message;
-		if (fade_timer) clearTimeout(fade_timer);
-		fade_timer = setTimeout(() => {
-			fade_message = '';
-		}, time);
+		$filterStore.wfStatus = event.detail;
+		refreshList();
 	}
 </script>
 
-<Container>
+<Container class="mt-1">
 	<div class="d-flex">
 		<div class="flex-shrink-0 fs-3">Processes</div>
-		<div class="mx-5 align-self-center flex-grow-1">Instantiated workflow processes</div>
+		<div class="ms-5 align-self-center flex-grow-1">Instantiated workflow processes</div>
+		<div class="justify-content-end flex-shrink-0">
+			<Button
+				on:click={() => {
+					$filterStore.wfStatus = 'All';
+					$filterStore.tplid = '';
+					$filterStore.wfTitlePattern = '';
+					theExtraFilter.reset();
+					theRemoteTable.reset();
+					refreshList();
+				}}
+				class="m-0 p-1"
+			>
+				Reset Query
+			</Button>
+		</div>
 	</div>
 </Container>
 <Container class="mb-3">
 	<svelte:component
 		this={ExtraFilter}
 		bind:this={theExtraFilter}
-		{filter_template}
+		{user}
 		on:filterStatusChange={filterStatusChanged}
-		on:filterTemplateChange={filterTemplateChanged}
-		{filter_status}
+		on:filterTemplateChange={refreshList}
 		statuses_label="Workflow status:"
 		fields="{['statuses', 'templatepicker']},"
 		object_type="processes"
@@ -143,7 +134,7 @@
 				{token}
 				{user}
 				{payload_extra}
-				bind:this={remoteTable}
+				bind:this={theRemoteTable}
 				{TimeTool}
 			/>
 		</Col>

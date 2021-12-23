@@ -107,16 +107,16 @@ function el(jq: any) {
 	return jq[0];
 }
 
-const IsBlank = function (val: string) {
+const isBlank = function (val: string) {
 	if (val === undefined || val === null || val === '') return true;
 	else return false;
 };
-const BlankToDefault = function (val: string, defaultValue: string) {
-	if (IsBlank(val)) return defaultValue;
+const blankToDefault = function (val: string, defaultValue: string) {
+	if (isBlank(val)) return defaultValue;
 	else return val;
 };
-const HasValue = function (val: string) {
-	return !IsBlank(val);
+const hasValue = function (val: string) {
+	return !isBlank(val);
 };
 
 class KFKclass {
@@ -662,13 +662,13 @@ class KFKclass {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		let isDirty = false;
-		if (jqDIV.attr('id').trim() !== id.trim() && HasValue(id.trim())) {
+		if (jqDIV.attr('id').trim() !== id.trim() && hasValue(id.trim())) {
 			jqDIV.attr('id', id.trim());
 			console.log('Dirty: id changed');
 			isDirty = true;
 		}
-		if (IsBlank(id.trim())) {
-			if (IsBlank(jqDIV.attr('id').trim())) {
+		if (isBlank(id.trim())) {
+			if (isBlank(jqDIV.attr('id').trim())) {
 				jqDIV.attr('id', that.myuid());
 				console.log('Dirty: id changed');
 				isDirty = true;
@@ -764,7 +764,8 @@ class KFKclass {
 				katts: '',
 				byall: true,
 				doer: '',
-				instruct: ''
+				instruct: '',
+				transferable: false
 			},
 			SCRIPT: { id: '', label: '', code: '', runmode: 'ASYNC' },
 			INFORM: { id: '', label: '', role: '', subject: '', content: '' },
@@ -784,63 +785,64 @@ class KFKclass {
 			ret.label = 'START';
 		} else if (jqDIV.hasClass('ACTION')) {
 			ret.ACTION.id = jqDIV.attr('id').trim();
-			ret.ACTION.role = BlankToDefault(jqDIV.attr('role'), 'DEFAULT');
-			ret.ACTION.label = BlankToDefault(jqDIV.find('p').first().text(), 'Activity').trim();
+			ret.ACTION.role = blankToDefault(jqDIV.attr('role'), 'DEFAULT');
+			ret.ACTION.label = blankToDefault(jqDIV.find('p').first().text(), 'Activity').trim();
 			ret.label = ret.ACTION.label;
-			let kvarsString = BlankToDefault(jqDIV.find('.kvars').text(), 'e30=');
+			let kvarsString = blankToDefault(jqDIV.find('.kvars').text(), 'e30=');
 			kvarsString = that.base64ToCode(kvarsString);
 			ret.ACTION.kvars = kvarsString;
-			let kattsString = BlankToDefault(jqDIV.find('.katts').text(), 'e30=');
+			let kattsString = blankToDefault(jqDIV.find('.katts').text(), 'e30=');
 			kattsString = that.base64ToCode(kattsString);
 			ret.ACTION.katts = kattsString;
 			ret.ACTION.byall = jqDIV.hasClass('BYALL');
-			ret.ACTION.instruct = that.base64ToCode(BlankToDefault(jqDIV.find('.instruct').text(), ''));
+			ret.ACTION.instruct = that.base64ToCode(blankToDefault(jqDIV.find('.instruct').text(), ''));
+			ret.ACTION.transferable = blankToDefault(jqDIV.attr('transferable'), 'false') === 'true';
 
 			if (that.workflow) {
 				let theWork = jqDIV.find('.work').first();
 				console.log(theWork.attr('doer'));
 				ret.ACTION.doer = theWork.attr('doer');
-				let kvarsString = BlankToDefault(theWork.find('.kvars').text(), 'e30=');
+				let kvarsString = blankToDefault(theWork.find('.kvars').text(), 'e30=');
 				kvarsString = that.base64ToCode(kvarsString);
 				ret.ACTION.kvars = kvarsString;
 			}
 		} else if (jqDIV.hasClass('SCRIPT')) {
 			ret.SCRIPT.id = jqDIV.attr('id');
 			ret.SCRIPT.runmode = jqDIV.attr('runmode') ? jqDIV.attr('runmode') : 'SYNC';
-			ret.SCRIPT.label = BlankToDefault(jqDIV.find('p').first().text(), 'Script').trim();
+			ret.SCRIPT.label = blankToDefault(jqDIV.find('p').first().text(), 'Script').trim();
 			ret.label = ret.SCRIPT.label;
 			let defaultScript = that.codeToBase64(
 				`// read Hyperflow Developer's Guide for details
 ret='DEFAULT'; `
 			);
-			let str = BlankToDefault(jqDIV.find('code').first().text(), defaultScript).trim();
+			let str = blankToDefault(jqDIV.find('code').first().text(), defaultScript).trim();
 			str = that.base64ToCode(str);
 			ret.SCRIPT.code = str;
 		} else if (jqDIV.hasClass('INFORM')) {
 			ret.INFORM.id = jqDIV.attr('id');
-			ret.INFORM.label = BlankToDefault(jqDIV.find('p').first().text(), 'Email').trim();
+			ret.INFORM.label = blankToDefault(jqDIV.find('p').first().text(), 'Email').trim();
 			ret.label = ret.INFORM.label;
-			ret.INFORM.role = BlankToDefault(jqDIV.attr('role'), 'DEFAULT');
+			ret.INFORM.role = blankToDefault(jqDIV.attr('role'), 'DEFAULT');
 			ret.INFORM.subject = that.base64ToCode(
-				BlankToDefault(jqDIV.find('subject').first().text(), '').trim()
+				blankToDefault(jqDIV.find('subject').first().text(), '').trim()
 			);
 			ret.INFORM.content = that.base64ToCode(
-				BlankToDefault(jqDIV.find('content').first().text(), '').trim()
+				blankToDefault(jqDIV.find('content').first().text(), '').trim()
 			);
 		} else if (jqDIV.hasClass('TIMER')) {
 			ret.TIMER.id = jqDIV.attr('id');
-			ret.TIMER.label = BlankToDefault(jqDIV.find('p').first().text(), 'Timer').trim();
+			ret.TIMER.label = blankToDefault(jqDIV.find('p').first().text(), 'Timer').trim();
 			ret.label = ret.TIMER.label;
-			const str = BlankToDefault(jqDIV.find('code').first().text(), '').trim();
+			const str = blankToDefault(jqDIV.find('code').first().text(), '').trim();
 			console.log('Get node properties', str);
 			ret.TIMER.code = str;
 		} else if (jqDIV.hasClass('SUB')) {
 			ret.SUB.id = jqDIV.attr('id');
-			ret.SUB.label = BlankToDefault(jqDIV.find('p').first().text(), 'Sub').trim();
+			ret.SUB.label = blankToDefault(jqDIV.find('p').first().text(), 'Sub').trim();
 			ret.label = ret.SUB.label;
-			ret.SUB.sub = BlankToDefault(jqDIV.attr('sub'), '').trim();
+			ret.SUB.sub = blankToDefault(jqDIV.attr('sub'), '').trim();
 			//alone: means not a sub process, but a standalone process
-			ret.SUB.alone = BlankToDefault(jqDIV.attr('alone'), 'no') === 'yes';
+			ret.SUB.alone = blankToDefault(jqDIV.attr('alone'), 'no') === 'yes';
 		} else if (jqDIV.hasClass('AND')) {
 			ret.AND.id = jqDIV.attr('id');
 			ret.AND.label = 'AND';
@@ -877,6 +879,9 @@ ret='DEFAULT'; `
 			} else {
 				jqDIV.removeClass('BYALL');
 			}
+			if (propJSON.transferable) {
+				jqDIV.attr('transferable', propJSON.transferable.toString());
+			}
 		} else if (jqDIV.hasClass('SCRIPT')) {
 			propJSON = props.SCRIPT;
 			this.setNodeLabel(jqDIV, propJSON.label);
@@ -884,7 +889,7 @@ ret='DEFAULT'; `
 			const code = propJSON.code;
 			const appData_code = code.trim();
 			let codeInBase64 = '';
-			if (HasValue(appData_code)) {
+			if (hasValue(appData_code)) {
 				codeInBase64 = this.codeToBase64(appData_code);
 			}
 			if (jqDIV.find('code').length > 0) {
@@ -904,7 +909,7 @@ ret='DEFAULT'; `
 			let node_content = '';
 			let theRole = jqDIV.attr('role');
 			theRole = theRole ? theRole.trim() : '';
-			if (theRole !== role.trim() && role.trim() !== 'DEFAULT' && HasValue(role.trim())) {
+			if (theRole !== role.trim() && role.trim() !== 'DEFAULT' && hasValue(role.trim())) {
 				jqDIV.attr('role', role.trim());
 			}
 			if (jqDIV.find('subject').length > 0) {
@@ -3858,7 +3863,7 @@ ret='DEFAULT'; `
 		} finally {
 			that.addDocumentEventHandler();
 			that.inited = true;
-			that.showHelp('To see node properties, press SPACE then click on a node', 10000);
+			that.showHelp('To see node properties, press P then click on a node', 10000);
 		}
 	}
 
@@ -4174,11 +4179,11 @@ ret='DEFAULT'; `
 				case 'r':
 					that.scrollToFirstPage();
 					break;
-				case ' ':
+				case 'p':
 					that.showProp = !that.showProp;
 					if (that.showProp) {
 						that.showHelp(
-							'click node to show its properties, press SPACE again to change to normal mode'
+							'click node to show its properties, press P again to change to normal mode'
 						);
 					} else {
 						that.showHelp('Now in normal mode');

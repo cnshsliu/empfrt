@@ -12,6 +12,14 @@ body {
 .tnt-navmenu .nav-link {
 	color: white;
 }
+.tnt-navmenu .nav-link:hover {
+	color: #9796ff;
+}
+.tnt-navmenu .nav-link.active {
+	color: #9796ff;
+	text-decoration: none;
+	text-decoration-thickness: 1px;
+}
 .tnt-navmenu .tnt-header-username {
 	color: white;
 	padding-left: 20px;

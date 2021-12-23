@@ -39,11 +39,11 @@
 	import { API_SERVER } from '$lib/Env';
 	import { session } from '$app/stores';
 	import { dev } from '$app/env';
+	import { filterStore } from '$lib/empstores';
 	import { get } from 'svelte/store';
 	import { getNotificationsContext } from 'svelte-notifications';
 	const { addNotification } = getNotificationsContext();
-	import type { EmpResponse, WhichTab, OrgMembers, oneArgFunc } from '$lib/types';
-	import { whichTabStore } from '$lib/empstores';
+	import type { EmpResponse, OrgMembers, oneArgFunc } from '$lib/types';
 	import SmtpAdmin from './smtpadmin.svelte';
 	import Personal from './personal.svelte';
 	import OrgChartCsvFormat from './orgchartcsvformat.svelte';
@@ -318,23 +318,26 @@
 		console.log(orgMembers.members);
 	}
 
-	let whichTab: WhichTab = get(whichTabStore);
 	async function showTab(tabId: string) {
+		$filterStore.tabs = tabId;
 		if (tabId === 'org') {
 			//refreshMyOrg();
 		} else if (tabId === 'members') {
 			refreshMembers();
-		}
-		whichTab = get(whichTabStore);
-		if (whichTab) {
-			whichTab['setting'] = tabId;
-			whichTabStore.set(whichTab);
 		}
 	}
 
 	onMount(async () => {
 		await refreshMyOrg();
 	});
+	const isActive = function (tabname) {
+		let tabs = $filterStore.tabs;
+		if (!tabs) {
+			tabs = '';
+			$filterStore.tabs = '';
+		}
+		return tabs.indexOf(tabname) > -1;
+	};
 
 	async function removeSelectedMembers() {
 		let ems = orgMembers.members
@@ -473,18 +476,10 @@
 			showTab('' + e.detail);
 		}}
 	>
-		<TabPane
-			tabId="personal"
-			tab="Personal"
-			active={!whichTab || whichTab['setting'] === 'personal'}
-		>
+		<TabPane tabId="personal" tab="Personal" active={isActive('personal')}>
 			<Personal {user} {setFadeMessage} />
 		</TabPane>
-		<TabPane
-			tabId="delegation"
-			tab="Delegation"
-			active={whichTab && whichTab['setting'] === 'delegation'}
-		>
+		<TabPane tabId="delegation" tab="Delegation" active={isActive('delegation')}>
 			<Container class="mt-3">
 				<div class="w-100 text-center fs-3">Delegation</div>
 				<Card class="mt-3">
@@ -561,7 +556,7 @@
 				</Card>
 			</Container>
 		</TabPane>
-		<TabPane tabId="org" tab="Org" active={whichTab && whichTab['setting'] === 'org'}>
+		<TabPane tabId="orgset" tab="Org" active={isActive('orgset')}>
 			<Container class="mt-3 mb-3">
 				<div class="w-100 text-center fs-3">{orgname}</div>
 				<div class="w-100 text-center fs-6">
@@ -622,7 +617,6 @@
 									Set
 								</Button>
 							</InputGroup>
-							{JSON.stringify(myorg)}
 							<InputGroup class="mb-1">
 								<InputGroupText>Org level tags:</InputGroupText>
 								<Input type="text" bind:value={orgleveltags} />
@@ -761,19 +755,24 @@
 				{/if}
 			</Container>
 		</TabPane>
-		<TabPane
-			tabId="orgchart"
-			tab="Orgchart"
-			active={whichTab && whichTab['setting'] === 'orgchart'}
-		>
+		<TabPane tabId="orgchart" tab="Orgchart" active={isActive('orgchart')}>
 			<Container class="mt-3 mb-3 w-100">
-				<TabContent pills>
-					<TabPane tabId="orgchart" tab="Orgchart" active>
+				<TabContent
+					pills
+					on:tab={(e) => {
+						showTab('orgchart/' + e.detail);
+					}}
+				>
+					<TabPane tabId="zzorg" tab="Orgchart" active={isActive('orgchart/zzorg')}>
 						<div class="overflow-scroll w-100 bg-light">
 							<OrgChart {user} showOuId={true} />
 						</div>
 					</TabPane>
-					<TabPane tabId="orgchartimport" tab="Orgchart Import" active>
+					<TabPane
+						tabId="zzorgimport"
+						tab="Orgchart Import"
+						active={isActive('orgchart/zzorgimport')}
+					>
 						<form class="new" enctype="multipart/form-data">
 							<Row class="w-100">
 								<Col class="w-100">
@@ -802,7 +801,11 @@
 							</Row>
 						</form>
 					</TabPane>
-					<TabPane tabId="orgcharttest" tab="Orgchart Relation Test" active>
+					<TabPane
+						tabId="zzorgtest"
+						tab="Orgchart Relation Test"
+						active={isActive('orgchart/zzorgtest')}
+					>
 						<div class="overflow-scroll w-100 bg-light">
 							<OrgChartRelationTest
 								{user}
@@ -814,13 +817,17 @@
 							/>
 						</div>
 					</TabPane>
-					<TabPane tabId="fileformat" tab="Orgchart File Format">
+					<TabPane
+						tabId="fileformat"
+						tab="Orgchart File Format"
+						active={isActive('orgchart/fileformat')}
+					>
 						<OrgChartCsvFormat />
 					</TabPane>
 				</TabContent>
 			</Container>
 		</TabPane>
-		<TabPane tabId="members" tab="Members" active={whichTab && whichTab['setting'] === 'members'}>
+		<TabPane tabId="members" tab="Members" active={isActive('members')}>
 			<Container class="mt-3">
 				{#if myorg.adminorg === false}
 					{#if myorg.owner === user.email}
@@ -911,7 +918,7 @@
 				{/if}
 			</Container>
 		</TabPane>
-		<TabPane tabId="smtp" tab="SMTP" active={whichTab && whichTab['setting'] === 'smtp'}>
+		<TabPane tabId="smtp" tab="SMTP" active={isActive('smtp')}>
 			<SmtpAdmin {user} {myorg} {setFadeMessage} />
 		</TabPane>
 	</TabContent>

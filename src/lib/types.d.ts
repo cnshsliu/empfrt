@@ -189,6 +189,7 @@ export interface NodePropJSON {
 	byall: boolean;
 	instruct: string;
 	alone: boolean;
+	transferable: boolean;
 }
 
 export interface SearchResult {
@@ -212,6 +213,22 @@ export interface WhichTab {
 }
 export interface WorkStatus {
 	status: string;
+}
+export interface FilterPicks {
+	wfStatus: string;
+	workStatus: string;
+	tplTag: string;
+	tplid: string;
+	doer: string;
+	workTitlePattern: string;
+	wfTitlePattern: string;
+	tplTitlePattern: string;
+	gotoUID: string;
+	tplTag: string;
+	workSorting: { dir: string; key: string };
+	wfSorting: { dir: string; key: string };
+	tplSorting: { dir: string; key: string };
+	tabs: string;
 }
 export interface EmpResponse {
 	error?: Record;

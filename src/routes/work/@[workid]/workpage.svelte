@@ -4,6 +4,7 @@
 	import Parser from '$lib/parser';
 	import CommentEntry from '$lib/CommentEntry.svelte';
 	import ProcessTrack from '$lib/ProcessTrack.svelte';
+	import TransferWork from './_transfer.svelte';
 	import { Container, Row, Col, Icon } from 'sveltestrap';
 	import { onMount } from 'svelte';
 	import { FormGroup, Input, Label, InputGroup, InputGroupText } from 'sveltestrap';
@@ -44,6 +45,7 @@
 		api.post('work/sendback', payload, user.sessionToken);
 		goto(iframeMode ? '/work?iframe' : '/work');
 	}
+	function _transferWork() {}
 	function _revokeWork() {
 		if (checkRequired() === false) return;
 		let payload: any = {
@@ -396,6 +398,8 @@
 							</Col>
 						</Row>
 					{/if}
+					<!-- Transfer --->
+					<TransferWork {work} {_transferWork} {iframeMode} />
 				</Container>
 			{/if}
 		</form>

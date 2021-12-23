@@ -2,9 +2,10 @@
 	import * as api from '$lib/api';
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
+	import { filterStore } from '$lib/empstores';
 	import { onMount } from 'svelte';
 	import { StatusLabel } from '$lib/lang';
-	import type { Workflow } from '$lib/types';
+	import type { Workflow, Work } from '$lib/types';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
 	import { goto } from '$app/navigation';
 	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Icon } from 'sveltestrap';
@@ -22,10 +23,16 @@
 
 	let loading = true;
 	let rowsCount = 0;
-	export let input_search;
+	let input_search;
 	let sorting = { dir: 'desc', key: 'lastdays' };
-
-	onMount(async () => {});
+	let storeSorting = $filterStore.workSorting;
+	if (storeSorting) {
+		if (storeSorting.dir && storeSorting.key) {
+			sorting = storeSorting;
+		} else {
+			$filterStore.workSorting = sorting;
+		}
+	}
 
 	async function load(_page, reason) {
 		loading = true;
@@ -55,20 +62,32 @@
 
 	async function onSearch(event) {
 		input_search = event.detail.text;
+		$filterStore.workTitlePattern = input_search;
 		await load(page, 'onSearch');
 		page = 0;
 	}
 
 	export async function refresh(detail) {
-		if (detail && detail.input_search) input_search = detail.input_search;
 		if (detail && detail.page) page = detail.page;
 		if (detail && detail.sorting) sorting = detail.sorting;
 		if (detail && detail.payload_extra) payload_extra = detail.payload_extra;
 		await load(page, 'refresh');
 	}
 
+	export function reset() {
+		input_search = '';
+	}
+	export function reload() {
+		input_search = $filterStore.workTitlePattern;
+	}
+
+	onMount(async () => {
+		reload();
+	});
+
 	async function onSort(event) {
 		sorting = { dir: event.detail.dir, key: event.detail.key };
+		$filterStore.workSorting = sorting;
 		await load(page, 'onSort');
 	}
 	function gotoWorkitem(work: Work) {

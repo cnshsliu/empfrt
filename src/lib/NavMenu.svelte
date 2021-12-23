@@ -76,7 +76,7 @@
 {/if}
 {#if $page.query.has('iframe') === false}
 	<div class={navmenu_class}>
-		<Navbar id="myNavBar" class="flex-fill kfk-w-75 " expand="sm">
+		<Navbar id="myNavBar" class="flex-fill" expand="sm">
 			<div class="d-flex">
 				<div class="d-inline-block col-6 p-0 ml-3">
 					<div class="kfk-org-logo org-logo">&nbsp;</div>

@@ -3,7 +3,7 @@
    id="svg1146"
    viewBox="0 0 9.97 13.48"
    version="1.1"
-   sodipodi:docname="ACTION.svg"
+   sodipodi:docname="ACTION2.svg"
    inkscape:version="1.1.1 (c3084ef, 2021-09-22)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -36,10 +36,10 @@
      class="cls-1"
      d="M 7.3879089,4.2266329 A 2.4105045,2.3441168 0 1 1 4.9774044,1.882516 2.4105045,2.3441168 0 0 1 7.3879089,4.2266329 Z"
      id="path324"
-     style="stroke-width:0.858151" />
+     style="stroke-width:0.858151;fill:#ffffff" />
   <path
      class="cls-1"
      d="m 8.4408729,9.7695806 c 0,1.6078784 -1.5489884,1.8279034 -3.4808729,1.8279034 -1.9318845,0 -3.4808729,-0.220025 -3.4808729,-1.8279034 A 3.2546162,3.1649809 0 0 1 4.96,6.8584752 3.2546162,3.1649809 0 0 1 8.4408729,9.7695806 Z"
      id="path326"
-     style="stroke-width:0.858151" />
+     style="stroke-width:0.858151;fill:#ffffff" />
 </svg>
