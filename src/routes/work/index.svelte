@@ -50,7 +50,7 @@
 	//缺省情况下，使用用户邮箱，和ST_RUN
 	let payload_extra = {
 		doer: user.email,
-		filter: { wfstatus: 'ST_RUN', status: 'ST_RUN', tplid: '' }
+		filter: { status: 'ST_RUN', tplid: '' }
 	};
 
 	//const jwt = auth && Buffer.from(auth.jwt, 'base64').toString('utf-8');
@@ -77,9 +77,6 @@
 		payload_extra.filter.status = $filterStore.workStatus;
 		payload_extra.filter.tplid = $filterStore.tplid;
 		payload_extra.doer = $filterStore.doer;
-		console.log('=============');
-		console.log(JSON.stringify($filterStore));
-		console.log(payload_extra);
 		theRemoteTable &&
 			theRemoteTable.refresh({
 				payload_extra

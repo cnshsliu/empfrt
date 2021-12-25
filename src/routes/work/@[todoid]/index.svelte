@@ -4,13 +4,13 @@
 	let TimeTool = null;
 	export async function load({ page, fetch, session }) {
 		TimeTool = (await import('$lib/TimeTool')).default;
-		let workid = page.params.workid;
+		let todoid = page.params.todoid;
 		let iframeMode = false;
 		if (page.query.has('iframe')) {
 			iframeMode = true;
 		}
-		const res = await fetch(`/work/@${workid}.json`);
-		const res_html = await fetch(`/work/@${workid}/html.json`);
+		const res = await fetch(`/work/@${todoid}.json`);
+		const res_html = await fetch(`/work/@${todoid}/html.json`);
 
 		const theWork = await res.json();
 		const theHtml = await res_html.json();
@@ -42,6 +42,7 @@
 	import type { User, Work } from '$lib/types';
 	import { TabContent, TabPane } from 'sveltestrap';
 	import { title } from '$lib/title';
+	import { onMount } from 'svelte';
 	import WorkPage from './workpage.svelte';
 	import { Container, Row, Col } from 'sveltestrap';
 	import { ClientPermControl } from '$lib/clientperm';
@@ -60,7 +61,7 @@
 	let axios_code = `
 let res = await axios.post(
   '${API_SERVER}/work/info',
-  {workid: '${work.workid}'}, 
+  {todoid: '${work.todoid}'}, 
   {
     headers: {
       "authorization", 
@@ -73,7 +74,7 @@ console.log(res);
 	let axios_code_get_html = `
 let WORKITEM_HTML = await axios.post(
   '${API_SERVER}/work/html',
-  {workid: '${work.workid}'}, 
+  {todoid: '${work.todoid}'}, 
   {
     headers: {
       "authorization", 
@@ -85,17 +86,29 @@ let WORKITEM_HTML = await axios.post(
 	let html_example_svelte = `<p>{@html WORKITEM_HTML}</p>`;
 	let html_example_jquery = `<p>{@html WORKITEM_HTML}</p>`;
 	export let work_html = 'to be implemented';
-	const iframe_src = `${MTC_SERVER}/work/@${work.workid}?iframe`;
-	const iframe_html_code = `<iframe title="hyperflow_work_${work.workid}"
+	const iframe_src = `${MTC_SERVER}/work/@${work.todoid}?iframe`;
+	const iframe_html_code = `<iframe title="hyperflow_work_${work.todoid}"
 	src="${iframe_src}"></iframe>`;
 
 	export let iframeMode;
+
+	onMount(() => {
+		console.log('work onMount');
+	});
 </script>
 
 <Container>
 	<div class="d-flex">
 		<div class="flex-shrink-0">
-			<h3>{work.title} {work.nodeid === 'ADHOC' ? ' / ADHOC' : ''}</h3>
+			<h3>
+				{work.title}
+				<sup>
+					{work.nodeid === 'ADHOC' ? '/ adhoc' : ''}
+					{#if work.rehearsal}
+						/ <i class="bi-patch-check" /> Rehearsal
+					{/if}
+				</sup>
+			</h3>
 		</div>
 		<div class="mx-3 align-self-center flex-grow-1">
 			{TimeTool.fromNow(work.createdAt)}
@@ -130,7 +143,7 @@ let WORKITEM_HTML = await axios.post(
 						<div>The JSON of</div>
 					</Col>
 					<Col class="d-flex justify-content-center">
-						<div><b>{work.workid}</b></div>
+						<div><b>{work.todoid}</b></div>
 					</Col>
 				</Row>
 				<Row>
@@ -179,7 +192,7 @@ let WORKITEM_HTML = await axios.post(
 						<div>The HTML of</div>
 					</Col>
 					<Col class="d-flex justify-content-center">
-						<div><b>{work.workid}</b></div>
+						<div><b>{work.todoid}</b></div>
 					</Col>
 				</Row>
 				<Row>

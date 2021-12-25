@@ -14,6 +14,9 @@
 	import Connect from '$lib/designer/prop/Connect.svelte';
 	import PropertyHelp from '$lib/designer/prop/PropertyHelp.svelte';
 	import KFK from '$lib/designer/KFK';
+	import { getNotificationsContext } from 'svelte-notifications';
+	const { addNotification } = getNotificationsContext();
+	import type { oneArgFunc } from '$lib/types';
 	import { onMount, onDestroy } from 'svelte';
 	import {
 		Container,
@@ -187,6 +190,19 @@
 	const showDesignerHelp = function () {
 		return;
 	};
+	export function setFadeMessage(
+		message: string,
+		type = 'warning',
+		pos = 'bottom-right',
+		time = 2000
+	) {
+		(addNotification as oneArgFunc)({
+			text: message,
+			position: pos,
+			type: type,
+			removeAfter: time
+		});
+	}
 
 	const showHelp = function (hid) {
 		if (hid) {
@@ -307,7 +323,7 @@
 			<Row>
 				<Col>
 					{#if nodeInfo.nodeType === 'ACTION'}
-						<Action {nodeInfo} bind:kvarsArr {roleOptions} {showHelp} {readonly} />
+						<Action {nodeInfo} bind:kvarsArr {roleOptions} {showHelp} {readonly} {setFadeMessage} />
 					{:else if nodeInfo.nodeType === 'INFORM'}
 						<Inform {nodeInfo} {roleOptions} {showHelp} {readonly} />
 					{:else if nodeInfo.nodeType === 'SCRIPT'}

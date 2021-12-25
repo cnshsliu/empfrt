@@ -2682,8 +2682,6 @@ ret='DEFAULT'; `
 		}
 		const myId = jqNode.attr('id');
 		const tplLinks = that.tpl.find(`.link[from="${myId}"]`);
-		const tmpLinks = KFK.tpl.find(`.link[from="${myId}"]`);
-		const allLinks = KFK.tpl.find(`.link`);
 
 		//得到当前节点连接到的节点id列表
 		//let toIds = that.getNodeLinkIds(jqNode, "linkto");
@@ -2744,17 +2742,34 @@ ret='DEFAULT'; `
 	}
 
 	async setConnectionStatusColor() {
+		const that = this;
 		const connectLines = this.svgDraw.find('.connect');
 
 		connectLines.each(async (connect: any) => {
 			//如果这根连接线条的fid属性是当前node的id
-			const toDIV: any = $(`#${connect.attr('tid')}`);
+			let fid = connect.attr('fid');
+			let tid = connect.attr('tid');
+			const fromDIV: any = $(`#${fid}`);
+			const toDIV: any = $(`#${tid}`);
 			if (toDIV.hasClass('ST_DONE')) {
 				console.log(toDIV.attr('id'));
-				//connect.stroke({ color: '#FF0000' });
 				connect.addClass('ST_DONE');
 			} else if (toDIV.hasClass('ST_RUN')) {
-				connect.addClass('ST_RUN');
+				const links = that.tpl.find(`.link[from="${fid}"]`);
+				let hasDone = false;
+				for (let i = 0; i < links.length; i++) {
+					const toId = $(links[i]).attr('to');
+					const jqTo = $(`#${toId}`);
+					if (that.isA(jqTo, 'ST_DONE')) {
+						hasDone = true;
+						break;
+					}
+				}
+				if (!hasDone) {
+					connect.addClass('ST_RUN');
+				} else {
+					connect.addClass('ST_IGNORE');
+				}
 			}
 		});
 	}
@@ -3749,7 +3764,7 @@ ret='DEFAULT'; `
 
 		//在连接线上跑动，用于显示连接线的标识球
 		//以后多条线上的标识球都是从that.ball clone而来
-		that.ball = that.svgDraw.circle(8);
+		that.ball = that.svgDraw.circle(12);
 		that.ball.addClass('noshow');
 	}
 
@@ -4766,7 +4781,7 @@ ret='DEFAULT'; `
 					color: connect_color
 				});
 				that.ball.removeClass('noshow');
-				that.ball.fill(connect_color);
+				that.ball.fill('#2726ff');
 				const length = theConnect.length();
 				//let runner_duration = 500 * length / 100;
 				const runner_duration = 1500;
@@ -4783,7 +4798,6 @@ ret='DEFAULT'; `
 			});
 			theConnect.on('mouseout', () => {
 				const styleid = theConnect.attr('styleid');
-				console.log('Mouse out connect: ', theConnect.attr('id'));
 				that.ball.addClass('noshow');
 				that.ball.timeline().stop();
 				theConnect.stroke({

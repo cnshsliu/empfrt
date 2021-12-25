@@ -41,7 +41,10 @@
 	}
 	function tplChanged(e) {
 		console.log('>>>>>>>FilterTemplateChanged');
-		$filterStore.tplid = (e.target as HTMLInputElement).value;
+		tplChangedTo((e.target as HTMLInputElement).value);
+	}
+	function tplChangedTo(value) {
+		$filterStore.tplid = value;
 		dispatch('filterTemplateChange');
 	}
 
@@ -124,6 +127,13 @@
 					{/if}
 				{/each}
 			</Input>
+			<Button
+				on:click={(e) => {
+					e.preventDefault;
+					filter_template = '';
+					tplChangedTo('');
+				}}>All</Button
+			>
 		</InputGroup>
 	</Row>
 {/if}

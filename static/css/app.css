@@ -1958,6 +1958,10 @@ div.pbo {
 	animation: jellocolor 3s;
 	animation-iteration-count: 1000;
 }
+.connect.ST_IGNORE {
+	stroke-width: 5;
+	stroke: #2726ff13;
+}
 .connect.ST_DONE {
 	stroke-width: 5;
 	stroke: #4bdb92;
@@ -2253,14 +2257,33 @@ div.pbo {
 .toolbox.CONNECT.active {
 	background-image: url('/svg/CONNECT2.svg');
 }
-@-webkit-keyframes spinning,
+@-webkit-keyframes spinning {
+	100% {
+		-webkit-transform: rotate(360deg);
+		transform: rotate(360deg);
+	}
+}
 @keyframes spinning {
 	100% {
 		-webkit-transform: rotate(360deg);
 		transform: rotate(360deg);
 	}
 }
-@-webkit-keyframes loadingCircle,
+@-webkit-keyframes loadingCircle {
+	0%,
+	100% {
+		background-image: url('/svg/spinner/spinner00.svg');
+	}
+	25% {
+		background-image: url('/svg/spinner/spinner25.svg');
+	}
+	50% {
+		background-image: url('/svg/spinner/spinner50.svg');
+	}
+	75% {
+		background-image: url('/svg/spinner/spinner75.svg');
+	}
+}
 @keyframes loadingCircle {
 	0%,
 	100% {
@@ -2289,12 +2312,27 @@ div.pbo {
 	background-size: 20px;
 	background-color: white;
 }
-.input_spinning:before,
-.input_spinning {
+.input_circle:before,
+.input_circle {
 	padding-right: 25px;
 	background: url('/svg/spinner/spinner00.svg') no-repeat right;
 	background-size: 20px;
 	background-color: white;
 	-webkit-animation: loadingCircle 1s infinite linear;
 	animation: loadingCircle 1s infinite linear;
+}
+.input_spinning:before,
+.input_spinning {
+	-webkit-animation: spinning 1s infinite linear;
+	animation: spinning 1s infinite linear;
+}
+
+.spinner {
+	width: 40px;
+	height: 40px;
+	background-image: url(/images/spinning.png);
+	background-size: contain;
+	background-position: center center;
+	background-repeat: no-repeat;
+	animation: 1.5s linear 0s infinite normal none running spinning;
 }

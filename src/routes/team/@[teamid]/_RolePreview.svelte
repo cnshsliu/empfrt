@@ -18,6 +18,13 @@
 	export let form_id = '';
 	export let user: User;
 
+	let findUserMsg = '';
+	let newuid;
+	let urls = {
+		role_member_add: `${API_SERVER}/team/role/member/add`,
+		role_copy: `${API_SERVER}/team/role/copy`
+	};
+
 	function show_form(theRole: string, action: string): void {
 		form_id = action + '_' + theRole;
 	}
@@ -31,9 +38,30 @@
 		}, 10);
 	}
 
-	let urls = {
-		role_member_add: `${API_SERVER}/team/role/member/add`,
-		role_copy: `${API_SERVER}/team/role/copy`
+	let check_timer;
+	let status = '';
+	let ok_user = {};
+	const onInputNewUid = function (e) {
+		findUserMsg = 'looking up...';
+		status = 'checking';
+		if (check_timer) clearTimeout(check_timer);
+		check_timer = setTimeout(async () => {
+			let ret = await api.post('check/coworker', { whom: newuid }, user.sessionToken);
+			if (ret) {
+				if (ret.error) {
+					findUserMsg = ret.message;
+					status = 'wrong';
+				} else {
+					ok_user = { uid: ret.email, cn: ret.username };
+					findUserMsg = `${ret.username}(${ret.email})`;
+					status = 'good';
+				}
+			} else {
+				status = 'wrong';
+				findUserMsg = `${newuid} does not exist`;
+			}
+			check_timer = null;
+		}, 1000);
 	};
 </script>
 
@@ -78,36 +106,45 @@
 		<Row>
 			<Col xs="12">
 				{#if form_id === `add_${aRole}`}
-					<form
-						action={urls.role_member_add}
-						method="post"
-						use:enhanceAddOneRoleMember={{
-							token: user.sessionToken,
-							result: async (res, form) => {
-								const retObj = await res.json();
-								console.log('--------');
-								console.log(JSON.stringify(retObj, null, 2));
-								console.log('--------');
-								if (retObj.error) {
-									console.log(retObj.error);
-									errmsg = retObj.errMsg;
-								} else {
-									team = retObj;
-									form.reset();
-									errmsg = '';
-								}
-							}
-						}}
-					>
+					<form>
 						Email:
-						<input name="uid" placeholder="Email" autocomplete="off" />
-						Name:
-						<input name="cn" placeholder="Name" autocomplete="off" />
+						<input
+							name="uid"
+							placeholder="Email"
+							autocomplete="off"
+							bind:value={newuid}
+							on:input={onInputNewUid}
+						/>
 
 						<input type="hidden" name="teamid" value={team.teamid} />
 						<input type="hidden" name="role" value={aRole} />
-						<Button color="primary" type="submit" size="sm">Add</Button>
+						<Button
+							color="primary"
+							type="submit"
+							size="sm"
+							on:click={async (e) => {
+								e.preventDefault();
+								if (status !== 'good') return;
+								let retObj = await api.post(
+									'team/role/member/add',
+									{ teamid: team.teamid, role: aRole, members: [ok_user] },
+									user.sessionToken
+								);
+								if (retObj.error) {
+									findUserMsg = retObj.message;
+									console.error(retObj.message);
+									status = 'wrong';
+								} else {
+									team = retObj;
+									findUserMsg = 'Success';
+									status = 'waiting';
+								}
+								newuid = '';
+							}}
+							disabled={status !== 'good'}>Add</Button
+						>
 						{#if errmsg !== ''}{errmsg}{/if}
+						{findUserMsg}
 					</form>
 				{/if}
 				{#if form_id === `copy_${aRole}`}

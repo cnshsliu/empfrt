@@ -3,9 +3,9 @@
 	let TimeTool = null;
 	export async function load({ page, fetch, session }) {
 		TimeTool = (await import('$lib/TimeTool')).default;
-		const workid = page.params.workid;
-		const res = await fetch(`/work/@${workid}.json`);
-		const res_html = await fetch(`/work/@${workid}/html.json`);
+		const todoid = page.params.todoid;
+		const res = await fetch(`/work/@${todoid}.json`);
+		const res_html = await fetch(`/work/@${todoid}/html.json`);
 
 		const theWork = await res.json();
 		const theHtml = await res_html.json();

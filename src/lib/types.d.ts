@@ -91,6 +91,7 @@ export interface Work {
 	doer: string;
 	tplid: string;
 	wfid: string;
+	todoid: string;
 	nodeid: string;
 	workid: string;
 	title: string;
@@ -101,6 +102,8 @@ export interface Work {
 	createdAt: string;
 	updatedAt: string;
 	instruct: string;
+	rehearsal?: boolean;
+	wfstarter?: string;
 	wf: Workflow;
 	revocable?: boolean;
 	returnable?: boolean;
@@ -232,6 +235,8 @@ export interface FilterPicks {
 	tabs2nd: string;
 	settingTab: string;
 	settingTab2nd: string;
+	try_with_teamid?: string;
+	try_with_email?: string;
 }
 export interface EmpResponse {
 	error?: Record;

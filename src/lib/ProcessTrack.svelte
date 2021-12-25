@@ -19,10 +19,12 @@
 	export let wfid;
 	export let wf;
 	export let workid;
+	export let todoid;
 	export let TimeTool;
 	export let iframeMode;
 	export let print = false;
 	export let user;
+	export let _refreshWork;
 	function gotoWorkflowMonitor(wfid: string) {
 		goto(iframeMode ? `/workflow/@${wfid}/monitor?iframe` : `/workflow/@${wfid}/monitor`, {
 			replaceState: false
@@ -34,15 +36,20 @@
 	function gotoWorkflow(wfid) {
 		goto(`/workflow/@${wfid}`);
 	}
-	async function gotoWork(workid) {
-		await goto(`/work/@${workid}`, { replaceState: true, noscroll: true });
+	async function gotoWork(todoid) {
+		if (_refreshWork) await _refreshWork(todoid);
+		else await goto(`/work/@${todoid}`);
 	}
 </script>
 
 <Container class="mt-5">
 	<div class="fs-3">
 		<Icon name="bar-chart-steps" />
-		Process
+		{#if wf.rehearsal}
+			Process Rehearsal <i class="bi-patch-check" />
+		{:else}
+			Process
+		{/if}
 		<hr />
 	</div>
 	<Container class="mt-1">
@@ -95,18 +102,14 @@
 				>
 					<Row cols="1" class="mt-1 pt-3 kfk-work-kvars tnt-work-kvars">
 						<Col>
-							<div
-								class="clickable text-primary"
-								on:click={async (e) => {
-									e.preventDefault();
-									await gotoWork(entry.workid);
-								}}
-							>
+							<div>
 								<span class="fs-5">{entry.title}</span>
-								{#if entry.nodeid === 'ADHOC'}
-									/ ADHOC
-								{/if}
-								/ <span class={StatusClass(entry.status)}>{StatusLabel(entry.status)}</span>
+								<sup>
+									{#if entry.nodeid === 'ADHOC'}
+										/ ADHOC
+									{/if}
+									/ <span class={StatusClass(entry.status)}>{StatusLabel(entry.status)}</span>
+								</sup>
 							</div>
 						</Col>
 						{#if entry.route}
@@ -141,13 +144,20 @@
 						<Col>
 							<p class="text-right fs-6 fw-light fst-italic">
 								{#each entry.doers as aDoer}
-									{#if entry.status === 'ST_DONE' && entry.doneby === aDoer.uid}
-										<span class="local_work_doneby">
-											{aDoer.cn}({aDoer.uid});&nbsp;
-										</span>
-									{:else}
-										{aDoer.cn}({aDoer.uid});
-									{/if}
+									<div
+										class="clickable text-primary"
+										on:click={async (e) => {
+											e.preventDefault();
+											await gotoWork(aDoer.todoid);
+										}}
+									>
+										{#if aDoer.status === 'ST_DONE'}
+											<i class="bi bi-emoji-sunglasses" />{aDoer.cn}({aDoer.uid}); &nbsp;
+											<sup>{TimeTool.format(aDoer.doneat, 'LLL')}</sup>
+										{:else}
+											<i class="bi bi-emoji-expressionless" />{aDoer.cn}({aDoer.uid});
+										{/if}
+									</div>
 								{/each}
 								at: {TimeTool.format(entry.doneat, 'LLL')}
 							</p>
@@ -159,8 +169,9 @@
 		</div>
 		{#if print}
 			<Row>
-				<Col class="d-flex justify-content-end"><NavLink on:click={printWindow}>Print</NavLink></Col
-				>
+				<Col class="d-flex justify-content-end"
+					><NavLink on:click={printWindow}>Print</NavLink>
+				</Col>
 			</Row>
 		{/if}
 	</Container>

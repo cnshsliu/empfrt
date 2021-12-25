@@ -23,6 +23,8 @@
 	let pickedQueryString = '';
 	export let existingRoles: any[];
 	export let readonly;
+	export let setFadeMessage;
+	import { filterStore } from '$lib/empstores';
 	let lstr = 'VP:GM:Director:Leader';
 	let qstr = '/staff&/CEO';
 	let user = $session.user;
@@ -94,10 +96,16 @@
 		setRoleTo('Q:' + pickedQueryString);
 	}
 	let try_doers = [];
-	let try_with_teamid = '';
-	let try_with_email = user.email;
+	let try_with_teamid = $filterStore.try_with_teamid;
+	let try_with_email = $filterStore.try_with_email ? $filterStore.try_with_email : user.email;
 	async function testGetDoers(e) {
 		e.preventDefault();
+		if (try_with_teamid === '') {
+			setFadeMessage('Please input a team');
+			return;
+		}
+		$filterStore.try_with_teamid = try_with_teamid;
+		$filterStore.try_with_email = try_with_email;
 		let res = await api.post(
 			'action/getdoers',
 			{ try_with_teamid, try_with_email, role },
@@ -107,7 +115,7 @@
 			console.log(res.message);
 			try_doers = [];
 		} else {
-			try_doers = res;
+			try_doers = res as unknown as string[];
 		}
 	}
 </script>

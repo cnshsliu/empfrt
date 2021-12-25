@@ -22,6 +22,7 @@
 	export let roleOptions = [];
 	export let showHelp;
 	export let readonly;
+	export let setFadeMessage;
 	let helpShowing = false;
 
 	let doerHTML = '';
@@ -112,6 +113,7 @@
 						bind:role={nodeInfo.nodeProps.ACTION.role}
 						bind:existingRoles={roleOptions}
 						{readonly}
+						{setFadeMessage}
 					/>
 				</div>
 			</Col>
@@ -172,7 +174,7 @@
 											<InputGroupText>Name</InputGroupText>
 											<Input bind:value={kvar.name} disabled={readonly} />
 										</InputGroup>
-										{#if kvar.name.startsWith('select_')}
+										{#if kvar.name.startsWith('select_') || kvar.name.startsWith('radio_') || kvar.name.startsWith('cb_') || kvar.name.startsWith('checkbox_')}
 											<InputGroup size="sm">
 												<InputGroupText>Options</InputGroupText>
 												<Input bind:value={kvar.options} disabled={readonly} placeholder="a;b;c" />

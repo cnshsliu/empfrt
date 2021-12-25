@@ -45,6 +45,7 @@
 			sorting,
 			payload_extra
 		);
+		console.log('load', payload_extra);
 		rows = data.rows;
 		rowsCount = data.rowsCount;
 		loading = false;
@@ -91,7 +92,7 @@
 		await load(page, 'onSort');
 	}
 	function gotoWorkitem(work: Work) {
-		goto(iframeMode ? `/work/@${work.workid}?iframe` : `/work/@${work.workid}`, {
+		goto(iframeMode ? `/work/@${work.todoid}?iframe` : `/work/@${work.todoid}`, {
 			replaceState: false
 		});
 	}
@@ -143,7 +144,17 @@
 						}}
 					>
 						{row.title}
+						<sup>
+							{#if row.nodeid === 'ADHOC'}
+								/ adhoc
+							{/if}
+							{#if row.rehearsal}
+								/ <i class="bi-patch-check" />
+								{row.doer}
+							{/if}
+						</sup>
 					</a>
+					<br />
 					<span style="font-size:0.5rem; margin-left:2em; ">
 						<a
 							class="kfk-link"
@@ -154,6 +165,8 @@
 							}}
 						>
 							<Icon name="bar-chart-steps" style="font-size:0.5rem" />
+							{row.wftitle}
+							- {StatusLabel(row.wfstatus)}
 						</a>
 					</span>
 				</td>

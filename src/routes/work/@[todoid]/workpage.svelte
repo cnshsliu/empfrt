@@ -25,16 +25,12 @@
 	let creatingAdhoc = false;
 	import { getNotificationsContext } from 'svelte-notifications';
 	const { addNotification } = getNotificationsContext();
-	$: is_doable =
-		(work.doer === user.email ||
-			(delegators && Array.isArray(delegators) && delegators.includes(work.doer))) &&
-		work.status === 'ST_RUN';
 
 	function _sendbackWork() {
 		if (checkRequired() === false) return;
 		let payload: any = {
 			wfid: work.wfid,
-			workid: work.workid,
+			todoid: work.todoid,
 			doer: work.doer,
 			comment: comment
 		};
@@ -50,7 +46,7 @@
 		if (checkRequired() === false) return;
 		let payload: any = {
 			wfid: work.wfid,
-			workid: work.workid,
+			todoid: work.todoid,
 			comment: comment
 		};
 		api.post('work/revoke', payload, user.sessionToken);
@@ -77,7 +73,7 @@
 			'work/adhoc',
 			{
 				wfid: work.wfid,
-				workid: work.workid,
+				todoid: work.todoid,
 				title: adhocTaskTitle,
 				doer: adhocTaskDoer,
 				comment: adhocTaskComment
@@ -122,7 +118,7 @@
 		if (checkRequired() === false) return;
 		let payload: any = {
 			doer: work.doer,
-			workid: work.workid,
+			todoid: work.todoid,
 			wfid: work.wfid,
 			comment: comment
 		};
@@ -133,14 +129,25 @@
 		for (let i = 0; i < work.kvarsArr.length; i++) {
 			payload.kvars[work.kvarsArr[i]['name']] = work.kvarsArr[i];
 		}
-		await api.post('work/do', payload, user.sessionToken);
+		let ret = await api.post('work/do', payload, user.sessionToken);
+		if (ret.error) {
+			setFadeMessage(ret.message, 'error');
+		} else {
+			setFadeMessage('Completed', 'success');
+		}
 		//goto(iframeMode ? '/work?iframe' : '/work');
-		await _refreshWork(work.workid);
+		await _refreshWork(work.todoid);
 	}
-	async function _refreshWork(workid) {
-		const res = await fetch(`/work/@${workid}.json`);
-		work = await res.json();
+
+	let is_doable = false;
+	export async function _refreshWork(todoid) {
+		work = (await api.post('work/info', { todoid: todoid }, user.sessionToken)) as unknown as Work;
 		comment = '';
+		is_doable =
+			(work.doer === user.email ||
+				(work.rehearsal && work.wfstarter === user.email) ||
+				(delegators && Array.isArray(delegators) && delegators.includes(work.doer))) &&
+			work.status === 'ST_RUN';
 	}
 
 	let recentUsers = [];
@@ -148,6 +155,16 @@
 		if (localStorage) {
 			recentUsers = JSON.parse(localStorage.getItem('recentUsers') ?? JSON.stringify([]));
 		}
+		is_doable =
+			(work.doer === user.email ||
+				(work.rehearsal && work.wfstarter === user.email) ||
+				(delegators && Array.isArray(delegators) && delegators.includes(work.doer))) &&
+			work.status === 'ST_RUN';
+		console.log(work.doer);
+		console.log(user.email);
+		console.log(work.rehearsal);
+		console.log(work.wfstarter);
+		console.log('is_doable: ' + is_doable);
 	});
 	const saveOneRecentUser = function (user) {
 		let tmp = recentUsers.indexOf(user);
@@ -163,8 +180,8 @@
 	};
 </script>
 
-{#if work && work.workid}
-	<Container id={'workitem_' + work.workid} class="mt-3">
+{#if work && work.todoid}
+	<Container id={'workitem_' + work.todoid} class="mt-3">
 		<form>
 			<Container class="mt-3 kfk-highlight-2">
 				<Icon name="vinyl" />&nbsp; Primary Business Object:
@@ -209,7 +226,7 @@
 			<!--- div class="w-100">
 				<iframe id="workInstruction" src="/work/instruct" title="YouTube video" width="100%" />
 			</div -->
-			{#if is_doable && work.kvarsArr.length > 0}
+			{#if is_doable && work.status === 'ST_RUN' && work.kvarsArr.length > 0}
 				<Container class="mt-3 kfk-highlight-2">
 					Node Input:
 					<Row cols="4">
@@ -222,7 +239,7 @@
 									<Label>{kvar.label}{kvar.required ? '*' : ''}</Label>
 									{#if kvar.type !== 'select'}
 										<Input
-											type={kvar.type}
+											type={['dt', 'datetime'].includes(kvar.type) ? 'datetime-local' : kvar.type}
 											name={kvar.name}
 											bind:value={work.kvarsArr[i].value}
 											id={kvar.id}
@@ -248,11 +265,12 @@
 					</Row>
 				</Container>
 			{/if}
-			{#if is_doable}
+			{#if is_doable && work.status === 'ST_RUN'}
 				<Container class="mt-3">
-					<input type="hidden" name="workid" value={work.workid} />
-					{work.doer === user.email ? '' : `Delegated by ${work.doer}`}
-					<Input type="textarea" placeholder="Comments: " bind:value={comment} />
+					<input type="hidden" name="todoid" value={work.todoid} />
+					{#if work.status === 'ST_RUN'}
+						<Input type="textarea" placeholder="Comments: " bind:value={comment} />
+					{/if}
 					<Row class="mt-2">
 						{#if work.status === 'ST_RUN'}
 							{#if work.options.length === 0}
@@ -308,18 +326,20 @@
 								</Button>
 							</Col>
 						{/if}
-						<Col>
-							<Button
-								class="w-100"
-								color="success"
-								on:click={(e) => {
-									e.preventDefault();
-									_toggleAdhoc();
-								}}
-							>
-								{showAdhocForm ? 'Cancel' : 'New Adhoc'}
-							</Button>
-						</Col>
+						{#if work.status === 'ST_RUN'}
+							<Col>
+								<Button
+									class="w-100"
+									color="success"
+									on:click={(e) => {
+										e.preventDefault();
+										_toggleAdhoc();
+									}}
+								>
+									{showAdhocForm ? 'Cancel' : 'New Adhoc'}
+								</Button>
+							</Col>
+						{/if}
 					</Row>
 					{#if showAdhocForm}
 						<Row cols="1" class="mt-2 kfk-highlight-2">
@@ -420,9 +440,21 @@
 			</Container>
 		{/if}
 		{#if work.comment}
-			<Container>
-				<CommentEntry bind:comment={work.comment} />
-			</Container>
+			<CommentEntry bind:comment={work.comment} />
+		{/if}
+		{#if work.rehearsal}
+			Rehearsal Information:<br />
+			{work.doer === user.email ? '' : `Rehearsal for ${work.doer}`}
+			<Row><Col>Role: {work.role}</Col></Row>
+			{#each JSON.parse(Parser.base64ToCode(work.doer_string)) as aDoer, index}
+				<Row
+					><Col>
+						{aDoer.cn}({aDoer.uid})
+					</Col>
+				</Row>
+			{/each}
+		{:else}
+			{work.doer === user.email ? '' : `Delegated by ${work.doer}`}
 		{/if}
 	</Container>
 	<ProcessTrack
@@ -430,8 +462,10 @@
 		bind:wf={work.wf}
 		bind:wfid={work.wfid}
 		bind:workid={work.workid}
+		bind:todoid={work.todoid}
 		bind:print={printProcessTrack}
 		{TimeTool}
+		{_refreshWork}
 		{iframeMode}
 	/>
 {:else}

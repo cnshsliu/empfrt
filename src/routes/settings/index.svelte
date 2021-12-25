@@ -484,6 +484,7 @@
 	<title>Settings • HyperFlow</title>
 </svelte:head>
 <Container class="mt-3">
+	<div class="spinner">&nbsp;</div>
 	<TabContent
 		on:tab={(e) => {
 			showTab('' + e.detail);

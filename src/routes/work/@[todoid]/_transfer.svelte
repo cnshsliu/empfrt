@@ -21,7 +21,6 @@
 		if (check_timer) clearTimeout(check_timer);
 		check_timer = setTimeout(async () => {
 			let ret = await api.post('check/coworker', { whom: transferee }, $session.user.sessionToken);
-			console.log(ret);
 			if (ret) {
 				if (ret.error) {
 					status = 'wrong';
@@ -60,7 +59,7 @@
 				await api.post(
 					'transfer/work',
 					{
-						workid: work.workid,
+						todoid: work.todoid,
 						whom: transferee
 					},
 					$session.user.sessionToken
@@ -71,5 +70,5 @@
 	</InputGroup>
 	{msg}
 {:else}
-	Not Transferable
+	This task is not transferable
 {/if}

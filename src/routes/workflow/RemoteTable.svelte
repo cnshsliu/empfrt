@@ -122,6 +122,8 @@
 					rows[i].status = ret.status;
 				}
 			}
+			console.log('set rows = rows');
+			console.log(JSON.stringify(rows, null, 2));
 			rows = rows;
 		} else if (op === 'destroy') {
 			let deletedIndex = -1;
@@ -136,9 +138,9 @@
 				rows = rows;
 				rowsCount = rowsCount - 1;
 			}
-		} else {
-			await refresh({});
 		}
+		console.log('Come to refresh', op);
+		await refresh({});
 	};
 
 	export function reset() {
@@ -153,7 +155,7 @@
 	});
 </script>
 
-<Table {loading} {rows} {pageIndex} {pageSize} let:rows={rows2}>
+<Table {loading} {rows} {pageIndex} {pageSize}>
 	<div slot="top">
 		<Search on:search={onSearch} text={input_search} />
 	</div>
@@ -179,7 +181,7 @@
 		</tr>
 	</thead>
 	<tbody>
-		{#each rows2 as row, index (row)}
+		{#each rows as row, index (row)}
 			<tr
 				transition:scale|local={{ start: 0.7 }}
 				animate:flip={{ duration: 1000 }}
@@ -191,6 +193,9 @@
 				<td data-label="Title">
 					<a class="preview-link kfk-workflow-id tnt-workflow-id" href="/workflow/@{row.wfid}">
 						{row.wftitle}
+						{#if row.rehearsal}
+							<i class="bi-patch-check" />
+						{/if}
 					</a>
 				</td>
 				<td data-label="Status">{row.statusLabel}</td>

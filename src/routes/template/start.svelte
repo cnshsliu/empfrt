@@ -28,8 +28,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import type { User, Template, Team } from '$lib/types';
-	import { browser, dev } from '$app/env';
+	import type { User, Template, Team, oneArgFunc } from '$lib/types';
+	import { getNotificationsContext } from 'svelte-notifications';
+	const { addNotification } = getNotificationsContext();
 	import * as api from '$lib/api';
 	import {
 		Container,
@@ -42,11 +43,8 @@
 		CardText,
 		CardTitle,
 		Form,
-		FormGroup,
-		FormText,
 		Input,
-		Label,
-		Fade
+		Label
 	} from 'sveltestrap';
 	import { Badge, DropdownItem, DropdownMenu, DropdownToggle, Dropdown } from 'sveltestrap';
 	//export let template;
@@ -66,6 +64,15 @@
 	$title = 'HyperFlow';
 	let search_result = [];
 	let theTeam: Team;
+
+	function setFadeMessage(message: string, type = 'warning', pos = 'bottom-right', time = 2000) {
+		(addNotification as oneArgFunc)({
+			text: message,
+			position: pos,
+			type: type,
+			removeAfter: time
+		});
+	}
 
 	const pickTeam = function (teamId: string) {
 		team_id_for_search = teamId;
@@ -100,33 +107,33 @@
 
 	let starting = 0;
 	let startedWorkflow = null;
-	const _startWorkflow = async function () {
+	const _startWorkflow = async function (rehearsal = false) {
 		starting = 0;
 		fade_message = '';
 		saveOneRecentTemplate(tplid);
 		let teamid = theTeam ? theTeam.teamid : '';
 		const res = await api.post(
 			'workflow/start',
-			{ tplid, teamid, wftitle, pbo },
+			{ rehearsal, tplid, teamid, wftitle, pbo },
 			user.sessionToken
 		);
 		if (res.wfid) {
 			startedWorkflow = res;
 			fade_message = `Workflow ${res.wftitle} Started.`;
+			setFadeMessage(fade_message, 'success');
 			starting = 1;
 		} else {
 			startedWorkflow = null;
 			if (res.errors && res.errors.MongoError && res.errors.MongoError[0]) {
-				if (res.errors.MongoError[0].indexOf('duplicate') >= 0) fade_message = `exists already`;
+				if (res.errors.MongoError[0].indexOf('duplicate') >= 0) {
+					fade_message = `exists already`;
+					setFadeMessage(fade_message, 'warning');
+				}
 			} else {
 				fade_message = JSON.stringify(res);
+				setFadeMessage(fade_message, 'warning');
 			}
 		}
-		if (timeoutID) clearTimeout(timeoutID);
-		/*
-		timeoutID = setTimeout(() => {
-			fade_message = '';
-}, 3000); */
 	};
 
 	let recentTemplates = [];
@@ -191,18 +198,28 @@
 					class="w-100"
 					on:click={(e) => {
 						e.preventDefault();
-						_startWorkflow();
+						_startWorkflow(false);
 					}}
 					>Start it
 				</Button>
 			</Col>
-			<Col>
-				<Fade isOpen={fade_message != ''}>
-					{fade_message}
-				</Fade>
+		</Row>
+		<Row cols="1">
+			<Col style="margin-top: 20px;">
+				<Button
+					disabled={starting === 1}
+					color="primary"
+					class="w-100"
+					on:click={(e) => {
+						e.preventDefault();
+						_startWorkflow(true);
+					}}
+				>
+					Rehearsal
+				</Button>
 			</Col>
 		</Row>
-		<Row cols="2">
+		<Row cols="2" style="margin-top: 20px;">
 			{#if startedWorkflow !== null}
 				<Col>
 					<Button
@@ -221,7 +238,6 @@
 						on:click={(e) => {
 							e.preventDefault();
 							starting = 0;
-							fade_message = '';
 							startedWorkflow = null;
 						}}
 					>

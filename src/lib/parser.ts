@@ -13,9 +13,6 @@ const Parser = {
 		const kvarsArr = [];
 		for (const [name, valueDef] of Object.entries(kvars)) {
 			//eslint-disable-next-line
-			if (name === 'reason2') {
-				console.log(valueDef);
-			}
 			let tmp: Record<string, unknown> = {};
 			if (typeof valueDef === 'string') tmp = { name: name, value: valueDef, type: 'plaintext' };
 			else {
@@ -23,7 +20,7 @@ const Parser = {
 				//START Speculate variable type
 				//based on prefix_ of name
 				let matchResult = name.match(
-					'(email|password|url|range|number|datetime|date|time|color|search|select|textarea|file|radio|checkbox)_'
+					'(email|password|url|range|number|datetime|dt|date|time|color|search|select|textarea|file|radio|checkbox|cb)_'
 				);
 				tmp.type = 'plaintext';
 				if (matchResult) {
@@ -71,7 +68,6 @@ const Parser = {
 		for (let i = 0; i < m.length; i++) {
 			str = str.replace(m[i], `<span class='usertag'>${m[i]}</span>`);
 		}
-		console.log(str);
 		return str;
 	},
 
