@@ -26,9 +26,7 @@
 	export let user;
 	export let _refreshWork;
 	function gotoWorkflowMonitor(wfid: string) {
-		goto(iframeMode ? `/workflow/@${wfid}/monitor?iframe` : `/workflow/@${wfid}/monitor`, {
-			replaceState: false
-		});
+		goto(iframeMode ? `/workflow/@${wfid}/monitor?iframe` : `/workflow/@${wfid}/monitor`);
 	}
 	function printWindow() {
 		window.print();
@@ -38,7 +36,7 @@
 	}
 	async function gotoWork(todoid) {
 		if (_refreshWork) await _refreshWork(todoid);
-		else await goto(`/work/@${todoid}`);
+		else await goto(`/work/@${todoid}`, { noscroll: false });
 	}
 </script>
 
@@ -94,31 +92,40 @@
 		<hr />
 	</div>
 	<Container class="my-0">
-		<div>
-			{#each wf.history as entry}
-				<Container
-					class={'mt-2 ' +
-						(workid === entry.workid ? 'kfk-highlight-current ' : 'kfk-highlight-2 ')}
-				>
-					<Row cols="1" class="mt-1 pt-3 kfk-work-kvars tnt-work-kvars">
-						<Col>
-							<div>
-								<span class="fs-5">{entry.title}</span>
-								<sup>
-									{#if entry.nodeid === 'ADHOC'}
-										/ ADHOC
+		{#each wf.history as entry}
+			<Card
+				class={'mt-2 ' + (workid === entry.workid ? 'kfk-highlight-current ' : 'kfk-highlight-2 ')}
+			>
+				<CardHeader>
+					<CardTitle>
+						<Row cols="1" class="mt-1 pt-3 kfk-work-kvars tnt-work-kvars">
+							<Col class="d-flex">
+								<div class="w-100">
+									<span class="fs-5">{entry.title}</span>
+									<sup>
+										{#if entry.nodeid === 'ADHOC'}
+											/ ADHOC
+										{/if}
+										/ <span class={StatusClass(entry.status)}>{StatusLabel(entry.status)}</span>
+									</sup>
+								</div>
+								<div class="flex-shringk-1">
+									{#if entry.doneat}
+										Done at: <br />{TimeTool.format(entry.doneat, 'LLL')}
 									{/if}
-									/ <span class={StatusClass(entry.status)}>{StatusLabel(entry.status)}</span>
-								</sup>
-							</div>
-						</Col>
-						{#if entry.route}
-							<Col>
-								<span class="kfk-kvar-key-display">Decision:</span>
-								<span class="kfk-kvar-value-display">{entry.route}</span>
+								</div>
 							</Col>
-						{/if}
-					</Row>
+							{#if entry.route}
+								<hr />
+								<Col>
+									<span class="kfk-kvar-key-display">Decision:</span>
+									<span class="kfk-kvar-value-display">{entry.route}</span>
+								</Col>
+							{/if}
+						</Row>
+					</CardTitle>
+				</CardHeader>
+				<CardBody>
 					{#if entry.kvarsArr.length > 0}
 						<Row class="pt-3 kfk-work-kvars tnt-work-kvars">
 							<Col>
@@ -144,33 +151,31 @@
 						<Col>
 							<p class="text-right fs-6 fw-light fst-italic">
 								{#each entry.doers as aDoer}
-									<div
-										class="clickable text-primary"
-										on:click={async (e) => {
-											e.preventDefault();
-											await gotoWork(aDoer.todoid);
-										}}
-									>
+									<a href={`/work/@${aDoer.todoid}`} class="clickable text-primary btn btn-sm">
 										{#if aDoer.status === 'ST_DONE'}
-											<i class="bi bi-emoji-sunglasses" />{aDoer.cn}({aDoer.uid}); &nbsp;
+											<i class="bi bi-emoji-sunglasses" alt="Done" />{aDoer.cn}({aDoer.uid}); &nbsp;
 											<sup>{TimeTool.format(aDoer.doneat, 'LLL')}</sup>
+										{:else if aDoer.status === 'ST_IGNORE'}
+											<i
+												class="bi bi-emoji-smile-upside-down"
+												alt="Ignored"
+											/>{aDoer.cn}({aDoer.uid});
 										{:else}
-											<i class="bi bi-emoji-expressionless" />{aDoer.cn}({aDoer.uid});
+											<i class="bi bi-emoji-expressionless" alt="Done" />{aDoer.cn}({aDoer.uid});
 										{/if}
-									</div>
+									</a>
 								{/each}
-								at: {TimeTool.format(entry.doneat, 'LLL')}
 							</p>
 							<p class="text-right fs-6 fw-light fst-italic" />
 						</Col>
 					</Row>
-				</Container>
-			{/each}
-		</div>
+				</CardBody>
+			</Card>
+		{/each}
 		{#if print}
 			<Row>
-				<Col class="d-flex justify-content-end"
-					><NavLink on:click={printWindow}>Print</NavLink>
+				<Col class="d-flex justify-content-end">
+					<NavLink on:click={printWindow}>Print</NavLink>
 				</Col>
 			</Row>
 		{/if}

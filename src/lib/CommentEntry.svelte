@@ -29,6 +29,8 @@
 					>
 						{seg + ' '}
 					</a>
+				{:else if seg.startsWith('http')}
+					{@html `<a href='${seg}' target='_blank'>${seg}</a> `}
 				{:else}
 					{seg + ' '}
 				{/if}

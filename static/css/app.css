@@ -1623,11 +1623,6 @@ table.quick-help-table td:first-of-type {
 	padding: 4px !important;
 }
 
-.btn-primary {
-	background-color: #4b92db;
-	border-color: #4b92db;
-}
-
 #interLinkDialog {
 	z-index: 5000;
 	position: absolute;

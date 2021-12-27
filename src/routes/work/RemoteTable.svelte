@@ -8,7 +8,7 @@
 	import type { Workflow, Work } from '$lib/types';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
 	import { goto } from '$app/navigation';
-	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Icon } from 'sveltestrap';
+	import { Button, InputGroup, Icon } from 'sveltestrap';
 	import { getData } from '$lib/pagination/Server.js';
 
 	export let token;

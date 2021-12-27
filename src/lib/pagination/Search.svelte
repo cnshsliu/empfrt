@@ -8,7 +8,7 @@
 
 <script>
 	import { createEventDispatcher, getContext } from 'svelte';
-	import { InputGroup, InputGroupText, Icon } from 'sveltestrap';
+	import { Button, InputGroup, InputGroupText, Icon } from 'sveltestrap';
 
 	const dispatch = createEventDispatcher();
 	const stateContext = getContext('state');

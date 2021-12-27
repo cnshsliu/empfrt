@@ -6,8 +6,7 @@ const APP = {
 			label: '',
 			role: '',
 			kvars: '{}',
-			katts: '{}',
-			workitem: { status: '', doer: '', kvars: '{}', katts: '{}' }
+			workitem: { status: '', doer: '', kvars: '{}' }
 		},
 		SCRIPT: { id: '', label: '', code: '' },
 		INFORM: { id: '', label: '', role: '', subject: '', content: '' },

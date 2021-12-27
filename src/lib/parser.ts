@@ -35,9 +35,11 @@ const Parser = {
 					}
 				}
 				//END Speculate variable type
-				for (const [varKey, varValue] of Object.entries(tmp)) {
-					if (typeof varValue === 'string' && varValue.indexOf('[workid]') >= 0) {
-						tmp[varKey] = varValue.replace('[workid]', workid);
+				if (workid && workid.length > 0) {
+					for (const [varKey, varValue] of Object.entries(tmp)) {
+						if (typeof varValue === 'string' && varValue.indexOf('[workid]') >= 0) {
+							tmp[varKey] = varValue.replace('[workid]', workid);
+						}
 					}
 				}
 				/* if (tmp.type === 'select' && Array.isArray(tmp.options) === false) {

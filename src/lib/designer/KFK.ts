@@ -32,7 +32,6 @@ let jQuery = null;
 let $ = null;
 import('@svgdotjs/svg.js').then((pack) => {
 	SVG = pack.SVG;
-	console.log('SVG just loaded');
 });
 
 if (!Array.prototype.remove) {
@@ -244,7 +243,6 @@ class KFKclass {
 	jumpNodes: any[] = [];
 	drawPoints: any[] = [];
 	drawMode: string = 'line';
-	showProp: boolean = false;
 	KEYDOWN: any = { ctrl: false, shift: false, alt: false, meta: false };
 	originZIndex: number = 1;
 	lastActionLogJqDIV: any = null;
@@ -326,10 +324,8 @@ class KFKclass {
 	constructor() {
 		let that = this;
 		import('jquery').then((pack) => {
-			console.log('imported jquery');
 			jQuery = pack.default;
 			$ = jQuery;
-			console.log('jQuery just loaded');
 			if (typeof window !== 'undefined') {
 				window.jQuery = jQuery;
 				window.$ = jQuery;
@@ -433,7 +429,6 @@ class KFKclass {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		if (that.docIsReadOnly()) tool = 'POINTER';
-		console.log('set Tool: ', tool);
 
 		const shiftKey = event ? event.shiftKey : false;
 
@@ -491,8 +486,6 @@ class KFKclass {
 			that.APP.setData('show', 'layercontrol', false);
 			that.APP.setData('show', 'customline', true);
 		}
-		console.log(that.APP.toolActiveState);
-		console.log('>>>>>>>>>>>>>>>');
 		that.designerCallback('setTool', tool);
 		if (DesignerHelpMessage[tool]) that.showHelp(DesignerHelpMessage[tool]);
 		that.focusOnC3();
@@ -619,7 +612,6 @@ class KFKclass {
 		const that = this;
 		that.JS1.scrollLeft(pos.x);
 		that.JS1.scrollTop(pos.y);
-		console.log('scrollToPos', pos);
 	}
 
 	//Following solution to prevetn scrolling after focus  cause a problem of juqery
@@ -708,16 +700,18 @@ class KFKclass {
 		connects.each((aConnect: any) => {
 			let linkHtml = `<div class="link" from="${aConnect.attr('fid')}" to="${aConnect.attr(
 				'tid'
-			)}"></div>`;
+			)}">link</div>`;
 			if (Parser.isEmpty(aConnect.attr('case')) === false) {
 				linkHtml = `<div class="link" from="${aConnect.attr('fid')}" to="${aConnect.attr(
 					'tid'
-				)}" case="${aConnect.attr('case')}"></div>`;
+				)}" case="${aConnect.attr('case')}">link</div>`;
 			}
 			tplDocHtml += linkHtml;
 		});
 		tplDocHtml += '</div>';
 
+		console.log(tplDocHtml);
+		console.log(`Nodes: ${nodes.length} , Links: ${connects.length}`);
 		return tplDocHtml;
 	}
 
@@ -761,7 +755,6 @@ class KFKclass {
 				role: '',
 				label: '',
 				kvars: '',
-				katts: '',
 				byall: true,
 				doer: '',
 				instruct: '',
@@ -791,9 +784,6 @@ class KFKclass {
 			let kvarsString = blankToDefault(jqDIV.find('.kvars').text(), 'e30=');
 			kvarsString = that.base64ToCode(kvarsString);
 			ret.ACTION.kvars = kvarsString;
-			let kattsString = blankToDefault(jqDIV.find('.katts').text(), 'e30=');
-			kattsString = that.base64ToCode(kattsString);
-			ret.ACTION.katts = kattsString;
 			ret.ACTION.byall = jqDIV.hasClass('BYALL');
 			ret.ACTION.instruct = that.base64ToCode(blankToDefault(jqDIV.find('.instruct').text(), ''));
 			ret.ACTION.transferable = blankToDefault(jqDIV.attr('transferable'), 'false') === 'true';
@@ -860,6 +850,7 @@ ret='DEFAULT'; `
 			jqDIV.attr('role', propJSON.role.trim());
 			const kvars_json = Parser.arrayToKvars(props.kvarsArr);
 			const kvars_string = JSON.stringify(kvars_json);
+			console.log('KFK.setNodeProperties', kvars_string);
 			const codeInBase64 = Parser.codeToBase64(kvars_string);
 			let kvarsChildren = jqDIV.find('.kvars');
 			if (kvarsChildren.length === 0) {
@@ -1479,7 +1470,6 @@ ret='DEFAULT'; `
 		});
 		//click line click shape click connection click connect
 		theShape.on('click', (evt: MouseEvent) => {
-			debugger;
 			evt.stopImmediatePropagation();
 			evt.stopPropagation();
 			evt.preventDefault();
@@ -1729,7 +1719,6 @@ ret='DEFAULT'; `
 								}
 
 								if (that.shouldMovedInParalles.length > 0) {
-									that.debug('others should be moved');
 									//要移动的个数是被选中的全部
 									for (let i = 0; i < that.shouldMovedInParalles.length; i++) {
 										//虽然这出跳过了被拖动的节点，但在后面这个节点一样要被移动
@@ -1930,7 +1919,6 @@ ret='DEFAULT'; `
 	initLayout() {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		that.debug('...initLayout');
 		that.JC1 = $('#C1');
 		that.C1 = el(that.JC1);
 		that.JS1 = $('#S1');
@@ -2018,7 +2006,6 @@ ret='DEFAULT'; `
 	initC3() {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		that.debug('...initC3');
 		that.JC3 = $('#C3');
 		that.C3 = el(that.JC3);
 		that.JC3.css({
@@ -2027,7 +2014,6 @@ ret='DEFAULT'; `
 			left: KFKclass.px(that.LeftB),
 			top: KFKclass.px(that.TopB)
 		});
-		// that.JC3.focus((evt) => { that.debug("JC3 got focus"); })
 		that.JCBKG = $('#containerbkg');
 		that.JCBKG.css({
 			width: KFKclass.px(that.PageWidth * that.PageNumberHori),
@@ -2566,7 +2552,6 @@ ret='DEFAULT'; `
 		jqDIV.append('<p>' + label + '</p>');
 		if (nodeType === 'ACTION') {
 			jqDIV.append('<div class="kvars">e30=</div>');
-			jqDIV.append('<div class="katts">e30=</div>');
 		}
 		console.log('placeNode', nodeType);
 		await that.JC3.append(nodeDIV);
@@ -2675,7 +2660,6 @@ ret='DEFAULT'; `
 	) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		/* that.debug('Redrawlinks', reason, 'bothside', bothside); */
 		if (!(jqNode instanceof jQuery)) {
 			console.error('redrawLinkLines for a non-jquery object, sometime caused by no await');
 			return;
@@ -2745,14 +2729,15 @@ ret='DEFAULT'; `
 		const that = this;
 		const connectLines = this.svgDraw.find('.connect');
 
+		let connectNumber = 0;
 		connectLines.each(async (connect: any) => {
 			//如果这根连接线条的fid属性是当前node的id
+			connectNumber++;
 			let fid = connect.attr('fid');
 			let tid = connect.attr('tid');
 			const fromDIV: any = $(`#${fid}`);
 			const toDIV: any = $(`#${tid}`);
 			if (toDIV.hasClass('ST_DONE')) {
-				console.log(toDIV.attr('id'));
 				connect.addClass('ST_DONE');
 			} else if (toDIV.hasClass('ST_RUN')) {
 				const links = that.tpl.find(`.link[from="${fid}"]`);
@@ -2772,6 +2757,7 @@ ret='DEFAULT'; `
 				}
 			}
 		});
+		return connectNumber;
 	}
 
 	getNodeDefaultSize(nodeType: string, variant: string) {
@@ -3271,14 +3257,12 @@ ret='DEFAULT'; `
 				that.selectedConnects.length > 0
 			) {
 				if (that.selectedDIVs.length > 0) {
-					that.debug('delete, selected DIVS >0');
 					let notLockedCount = 0;
 					for (let i = 0; i < that.selectedDIVs.length; i++) {
 						if (that.anyLocked(that.selectedDIVs[i]) === false) {
 							notLockedCount += 1;
 						}
 					}
-					that.debug(`没锁定的节点数量是 ${notLockedCount}, 一共是${that.selectedDIVs.length}`);
 					if (notLockedCount > 0) {
 						for (let i = 0; i < that.selectedDIVs.length; i++) {
 							if (that.anyLocked(that.selectedDIVs[i])) continue;
@@ -3296,14 +3280,12 @@ ret='DEFAULT'; `
 					objectDeleted++;
 				}
 				if (that.selectedShapes.length > 0) {
-					that.debug('delete, selected Shapes >0');
 					let notLockedCount = 0;
 					for (let i = 0; i < that.selectedShapes.length; i++) {
 						if (that.lineLocked(that.selectedShapes[i]) === false) {
 							notLockedCount += 1;
 						}
 					}
-					that.debug(`没锁定的Shape数量是 ${notLockedCount}, 一共是${that.selectedShapes.length}`);
 					if (notLockedCount > 0) {
 						for (let i = 0; i < that.selectedShapes.length; i++) {
 							if (that.lineLocked(that.selectedShapes[i]) === false) {
@@ -3651,7 +3633,6 @@ ret='DEFAULT'; `
 	initLineTransformer() {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		that.debug('...initLineTransformer');
 		$('#linetransformer').draggable({
 			// move line resize line transform line
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -3708,7 +3689,6 @@ ret='DEFAULT'; `
 					? that.debug('AdvOps already loaded')
 					: import('./advOps').then((pack) => {
 							that.AdvOps = pack.AdvOps;
-							that.debug('AdvOps just loaded');
 					  });
 				break;
 			case 'DivStyler':
@@ -3716,7 +3696,6 @@ ret='DEFAULT'; `
 					? that.debug('DivStyler already exists')
 					: import('./divStyler').then((pack) => {
 							that.DivStyler = pack.DivStyler;
-							that.debug('DivStyler just loaded');
 					  });
 				break;
 		}
@@ -3730,7 +3709,6 @@ ret='DEFAULT'; `
 		that.svgDraw.attr('id', 'D3');
 		that.svgDraw.addClass('svgcanvas');
 
-		that.debug('svg layer initialized');
 		that.pageBounding = {
 			Pages: []
 		};
@@ -3775,7 +3753,6 @@ ret='DEFAULT'; `
 		if (that.inited === true) {
 			console.error('that.init was called more than once');
 		}
-		that.debug('Initializing...');
 		//that.checkBrowser();
 		$('body').css('overflow', 'scroll');
 		$('.showAfterInit').removeClass('showAfterInit');
@@ -3832,6 +3809,7 @@ ret='DEFAULT'; `
 		}
 		try {
 			that.tplid = that.template.tplid;
+			console.log(that.template.doc);
 			that.tpl = $(that.template.doc);
 			const nodes = that.tpl.find('.node');
 			nodes.addClass('kfknode');
@@ -3936,12 +3914,15 @@ ret='DEFAULT'; `
 				theGuiNode.append(aWork);
 			}
 
+			/*
 			for (let i = 0; i < guiNodes.length; i++) {
 				//let jqNode = $(guiNodes[i]);
 				//Add node className by it's running status in process
 				//Change link line style by it's status
 			}
-			await that.setConnectionStatusColor();
+			*/
+			let connectionNumber = await that.setConnectionStatusColor();
+			console.log('Node count: ', guiNodes.length, 'Link count: ', connectionNumber);
 
 			that.myFadeOut($('.loading'));
 			that.myFadeIn(that.JC3, 1000);
@@ -4009,7 +3990,6 @@ ret='DEFAULT'; `
 		const that = this;
 		that.toolboxMouseDown = true;
 		that.tool = tool;
-		that.debug('Set drop toolbox tool to ', that.tool);
 	}
 	onToolboxMouseUp() {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
@@ -4104,10 +4084,7 @@ ret='DEFAULT'; `
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		if (that.documentEventHandlerSet && force === false) {
-			that.debug('documentEventHandlerSet already, bypass');
 			return;
-		} else {
-			that.debug('document events on');
 		}
 		//document keydown
 		//eslint-disable-next-line
@@ -4193,17 +4170,6 @@ ret='DEFAULT'; `
 					break;
 				case 'r':
 					that.scrollToFirstPage();
-					break;
-				case 'p':
-					that.showProp = !that.showProp;
-					if (that.showProp) {
-						that.showHelp(
-							'click node to show its properties, press P again to change to normal mode'
-						);
-					} else {
-						that.showHelp('Now in normal mode');
-					}
-					console.log(that.showProp);
 					break;
 				default:
 					console.log('got key', evt.key);
@@ -4549,15 +4515,12 @@ ret='DEFAULT'; `
 	async duplicateHoverObject(evt: MouseEvent, action = undefined) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		that.debug('entered duplicateHoverObject');
 		if (that.docIsReadOnly()) {
-			that.debug('docIsReady, no duplicate');
 			return;
 		}
 		if (action === 'copy') {
 			if (that.selectedDIVs.length > 1) {
 				//优先多选
-				that.debug('multiple nodes were selected');
 				//过滤掉TODOLISTDIV/chatmessage 等nocopy DIV
 				const filteredDIVs = that.selectedDIVs.filter((div) => {
 					return div.hasClass('nocopy') === false;
@@ -4602,8 +4565,6 @@ ret='DEFAULT'; `
 				await that.makeCopyOfJQs(that.copyCandidateDIVs, evt.shiftKey);
 			} else if (that.copyCandidateLines && that.copyCandidateLines.length > 0) {
 				await that.makeCopyOfLines(that.copyCandidateLines);
-			} else {
-				that.debug('Nothing to paste');
 			}
 			return true;
 		}
@@ -4833,7 +4794,7 @@ ret='DEFAULT'; `
 
 	onClickConnect(evt: MouseEvent, theConnect) {
 		let that = this;
-		if (that.showProp) {
+		if (evt.shiftKey) {
 			if (theConnect.attr('fid') !== 'start') that.showConnectionProperties(theConnect);
 			else {
 				that.showHelp('Link from START is not configurable');
@@ -4845,7 +4806,7 @@ ret='DEFAULT'; `
 	async onClickNode(evt: MouseEvent, jqNodeDIV) {
 		let that = this;
 		if (that.tool === 'POINTER') {
-			if (that.showProp) {
+			if (evt.shiftKey) {
 				that.showNodeProperties(jqNodeDIV);
 			} else {
 				that.selectNodeOnClick(jqNodeDIV, evt.shiftKey);
@@ -5202,9 +5163,6 @@ checkBrowser () {
 	that.APP.setData('model', 'isValidBrowser', isValidBrowser);
 	that.APP.setData('model', 'isNotValidBrowser', !isValidBrowser);
 	that.APP.setData('model', 'osName', browser.getOSName(true));
-	that.debug('isValidBrowser', isValidBrowser);
-	that.debug('osName', that.APP.model.osName);
-	console.log(browser);
 	if (['ios', 'android'].indexOf(that.APP.model.osName) >= 0) {
 		that.APP.model.isMobile = true;
 		that.APP.model.isPC = false;

@@ -33,6 +33,7 @@
 	import { API_SERVER } from '$lib/Env';
 	import type { User, Template, Team } from '$lib/types';
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
+	import { filterStore } from '$lib/empstores';
 	import { get } from 'svelte/store';
 	import { ClientPermControl } from '$lib/clientperm';
 	import Parser from '$lib/parser';
@@ -55,6 +56,8 @@
 		console.log('import Designer...');
 		const module = await import('$lib/designer/Designer.svelte');
 		Designer = module.default;
+		$filterStore.tplid = tplid;
+		$filterStore.workTitlePattern = '';
 	});
 
 	let urls = {

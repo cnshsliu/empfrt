@@ -36,6 +36,7 @@
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
 	import { goto } from '$app/navigation';
 	import { title } from '$lib/title';
+	import { filterStore } from '$lib/empstores';
 	import { onMount } from 'svelte';
 	import * as api from '$lib/api';
 	import { Container, Row, Col, Nav, NavLink, Button } from 'sveltestrap';
@@ -51,6 +52,9 @@
 		console.log('import Designer...');
 		const module = await import('$lib/designer/Designer.svelte');
 		Designer = module.default;
+
+		$filterStore.tplid = workflow.tplid;
+		$filterStore.workTitlePattern = 'wf:' + wfid;
 	});
 
 	export let user: User;

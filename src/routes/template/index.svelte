@@ -110,7 +110,6 @@
 		console.log('update my tags');
 		allTags.org = await api.post('tag/org', {}, user.sessionToken);
 		allTags.mine = await api.post('tag/list', { objtype: 'template' }, user.sessionToken);
-		console.log(allTags);
 	}
 
 	let fade_message = '';
@@ -124,21 +123,39 @@
 	}
 	let recentTemplates = [];
 
-	let currentTag = '';
-	const useThisTag = function (tag) {
-		currentTag = tag;
-		$filterStore.tplTag = tag;
-		console.log('Use this tag', new Date());
-		theRemoteTable.tag = tag;
+	let currentTags = [];
+	const clearTag = function () {
+		currentTags = [];
+		$filterStore.tplTag = '';
+		theRemoteTable.tagsForFilter = [];
 		theRemoteTable.refresh();
-		console.log(tag);
+	};
+	const useThisTag = function (tag, appendMode = false) {
+		if (appendMode) {
+			let existingTags = $filterStore.tplTag;
+			if (Parser.isEmpty(existingTags)) {
+				existingTags = '';
+			}
+			let existingArr = existingTags.split(';');
+			if (existingArr.includes(tag)) {
+				currentTags = existingArr.filter((x) => x !== tag);
+			} else {
+				let newTags = existingTags + ';' + tag;
+				currentTags = newTags.split(';').filter((x) => x.length > 0);
+			}
+		} else {
+			if (tag.trim().length > 0) currentTags = [tag];
+			else currentTags = [];
+		}
+		$filterStore.tplTag = currentTags.join(';');
+		theRemoteTable.tagsForFilter = currentTags;
+		theRemoteTable.refresh();
 	};
 	onMount(() => {
 		if (localStorage) {
 			recentTemplates = JSON.parse(localStorage.getItem('recentTemplates') ?? JSON.stringify([]));
 		}
-		currentTag = $filterStore.tplTag;
-		useThisTag(currentTag);
+		useThisTag('', true);
 	});
 </script>
 
@@ -151,7 +168,7 @@
 				on:click={async () => {
 					$filterStore.tplTitlePattern = '';
 					await theRemoteTable.reset();
-					useThisTag('');
+					clearTag();
 				}}
 				class="m-0 p-1"
 			>
@@ -198,60 +215,33 @@
 						<Row class="mb-2">
 							<Col class="d-flex justify-content-center">
 								{#each allTags.org as tag}
-									{#if currentTag === tag}
-										<Button
-											color="primary"
-											class="mx-1 badge text-white"
-											on:click={(e) => {
-												e.preventDefault();
-												useThisTag(tag);
-											}}
-										>
-											{tag}
-										</Button>
-									{:else}
-										<Button
-											color="secondary"
-											class="mx-1 badge text-white "
-											on:click={(e) => {
-												e.preventDefault();
-												useThisTag(tag);
-											}}
-										>
-											{tag}
-										</Button>
-									{/if}
+									<Button
+										color={currentTags.includes(tag) ? 'primary' : 'secondary'}
+										class="mx-1 badge text-white"
+										on:click={(e) => {
+											e.preventDefault();
+											useThisTag(tag, e.shiftKey);
+										}}
+									>
+										{tag}
+									</Button>
 								{/each}
 							</Col>
 						</Row>
 						<Row>
 							<Col class="d-flex justify-content-center">
 								{#each allTags.mine as tag}
-									{#if currentTag === tag}
-										<Button
-											size="sm"
-											color="primary"
-											class="mx-1 badge kfk-round text-white"
-											on:click={(e) => {
-												e.preventDefault();
-												useThisTag(tag);
-											}}
-										>
-											{tag}
-										</Button>
-									{:else}
-										<Button
-											size="sm"
-											color="secondary"
-											class="mx-1 badge kfk-round text-white"
-											on:click={(e) => {
-												e.preventDefault();
-												useThisTag(tag);
-											}}
-										>
-											{tag}
-										</Button>
-									{/if}
+									<Button
+										size="sm"
+										color={currentTags.includes(tag) ? 'primary' : 'secondary'}
+										class="mx-1 badge kfk-round text-white"
+										on:click={(e) => {
+											e.preventDefault();
+											useThisTag(tag, e.shiftKey);
+										}}
+									>
+										{tag}
+									</Button>
 								{/each}
 							</Col>
 						</Row>
@@ -261,7 +251,7 @@
 							color="primary"
 							on:click={(e) => {
 								e.preventDefault();
-								useThisTag('');
+								clearTag('');
 							}}
 						>
 							See All

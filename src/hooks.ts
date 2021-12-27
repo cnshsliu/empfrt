@@ -24,18 +24,3 @@ export function getSession({ locals }) {
 	};
 	return ret;
 }
-
-/*
- * manifest
-export async function getSession(request) {
-	let userValue = '';
-	if (request.locals.user) {
-		userValue = JSON.parse(Parser.base64ToCode(request.locals.user));
-	}
-	console.log('Session.user=', userValue);
-
-	return {
-		user: userValue
-	};
-}
- */

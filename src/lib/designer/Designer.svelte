@@ -45,6 +45,7 @@
 	let kvarsArr: KvarInput[];
 	let errMsg = '';
 	let roleOptions = [];
+	let workid = null;
 
 	let nodeInfo: NodeInfo;
 	function designerSetTool(what: string, event?: any) {
@@ -75,6 +76,13 @@
 
 	const setNodeProperties = async () => {
 		if (nodeInfo.nodeType === 'ACTION') {
+			for (let i = 0; i < kvarsArr.length; i++) {
+				if (kvarsArr[i].options) {
+					let arr = kvarsArr[i].options.split(/[\s;,]/).filter((x) => x.length > 0);
+					kvarsArr[i].options = arr.join(';');
+					console.log(kvarsArr[i].options);
+				}
+			}
 			nodeInfo.nodeProps.kvarsArr = kvarsArr;
 		}
 		if (nodeInfo.nodeType === 'SUB') {
@@ -99,7 +107,6 @@
 				template = args;
 				break;
 			case 'setTool':
-				console.log('.....settooll to ', args);
 				currentTool = args;
 				break;
 			case 'showNodeProp':
@@ -107,17 +114,19 @@
 				helpId = undefined;
 				nodeInfo = args;
 				if (nodeInfo.nodeType === 'ACTION') {
+					workid = nodeInfo.jqDiv.find('.work').attr('id');
 					//ACTION 是需要有role和kvars的
 					roleOptions = Parser.collectRoles(args.nodes);
 					if (nodeInfo.nodeProps.ACTION.kvars) {
 						let kvarsString = nodeInfo.nodeProps.ACTION.kvars;
 						try {
-							kvarsArr = Parser.kvarsToArray(JSON.parse(kvarsString));
+							kvarsArr = Parser.kvarsToArray(JSON.parse(kvarsString), '') as unknown as KvarInput[];
+							console.log(kvarsArr);
 						} catch (e) {
 							console.log(kvarsString);
 							kvarsString = kvarsString.replace('}{', ',');
 							console.log(kvarsString);
-							kvarsArr = Parser.kvarsToArray(JSON.parse(kvarsString));
+							kvarsArr = Parser.kvarsToArray(JSON.parse(kvarsString), '') as unknown as KvarInput[];
 						}
 					}
 				} else if (nodeInfo.nodeType === 'INFORM') {
@@ -323,7 +332,16 @@
 			<Row>
 				<Col>
 					{#if nodeInfo.nodeType === 'ACTION'}
-						<Action {nodeInfo} bind:kvarsArr {roleOptions} {showHelp} {readonly} {setFadeMessage} />
+						<Action
+							{nodeInfo}
+							bind:kvarsArr
+							{roleOptions}
+							{showHelp}
+							{readonly}
+							{setFadeMessage}
+							bind:scenario={KFK.scenario}
+							{workid}
+						/>
 					{:else if nodeInfo.nodeType === 'INFORM'}
 						<Inform {nodeInfo} {roleOptions} {showHelp} {readonly} />
 					{:else if nodeInfo.nodeType === 'SCRIPT'}

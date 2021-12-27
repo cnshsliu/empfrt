@@ -139,6 +139,7 @@
 				rowsCount = rowsCount - 1;
 			}
 		}
+		$filterStore.workTitlePattern = 'wf:' + ret.wfid;
 		console.log('Come to refresh', op);
 		await refresh({});
 	};

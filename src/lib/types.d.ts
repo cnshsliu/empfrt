@@ -152,7 +152,7 @@ export interface KvarInput {
 	placeholder?: string;
 	required?: boolean;
 	id?: string;
-	option?: string;
+	options?: string;
 }
 
 export interface KFKclass {

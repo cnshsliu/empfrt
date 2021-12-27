@@ -93,9 +93,10 @@
 	};
 	function checkRequired() {
 		let errMsg = '';
+		console.log(JSON.stringify(work.kvarsArr, null, 2));
 		for (let i = 0; i < work.kvarsArr.length; i++) {
 			if (work.kvarsArr[i].required) {
-				if (work.kvarsArr[i].type === 'boolean') {
+				if (work.kvarsArr[i].type === 'checkbox') {
 					if (work.kvarsArr[i].value !== true && work.kvarsArr[i].value !== false) {
 						errMsg = `${work.kvarsArr[i].label} should hava value`;
 						break;
@@ -201,11 +202,11 @@
 						<div class="fw-light">{work.wf.starter}</div>
 					</Col>
 					<Col>
-						<span class="fw-bold fs-5">Status:</span>
+						<span class="fw-bold fs-5">Task Status:</span>
 						<div class={'fw-light ' + StatusClass(work.status)}>{StatusLabel(work.status)}</div>
 					</Col>
 					<Col>
-						<span class="fw-bold fs-5">Owner:</span>
+						<span class="fw-bold fs-5">Task Owner:</span>
 						<div class="fw-light">{work.doer}</div>
 					</Col>
 					<Col>
@@ -237,7 +238,7 @@
 							<Col>
 								<FormGroup>
 									<Label>{kvar.label}{kvar.required ? '*' : ''}</Label>
-									{#if kvar.type !== 'select'}
+									{#if ['select', 'checkbox', 'radio'].includes(kvar.type) === false}
 										<Input
 											type={['dt', 'datetime'].includes(kvar.type) ? 'datetime-local' : kvar.type}
 											name={kvar.name}
@@ -246,12 +247,26 @@
 											placeholder={kvar.placeholder}
 											required={kvar.required}
 										/>
-									{:else}
+									{:else if kvar.type === 'checkbox'}
+										<div class="form-check form-switch">
+											<input
+												class="form-check-input"
+												type="checkbox"
+												role="switch"
+												bind:checked={kvar.value}
+												id={'chk-' + kvar.id ? kvar.id : kvar.name}
+											/>
+										</div>
+									{:else if kvar.type === 'radio'}
+										{#each kvar.options as option}
+											<Input type="radio" bind:group={kvar.value} value={option} label={option} />
+										{/each}
+									{:else if kvar.type === 'select'}
 										<Input
 											type={kvar.type}
 											name={kvar.name}
 											id={kvar.id}
-											bind:value={work.kvarsArr[i].value}
+											bind:value={kvar.value}
 											required={kvar.required}
 										>
 											{#each kvar.options as option}
@@ -273,7 +288,7 @@
 					{/if}
 					<Row class="mt-2">
 						{#if work.status === 'ST_RUN'}
-							{#if work.options.length === 0}
+							{#if work.routingOptions.length === 0}
 								<Col>
 									<Button
 										class="w-100"
@@ -287,7 +302,7 @@
 									</Button>
 								</Col>
 							{/if}
-							{#each work.options as aChoice}
+							{#each work.routingOptions as aChoice}
 								<Col>
 									<Button
 										class="w-100"
@@ -447,8 +462,8 @@
 			{work.doer === user.email ? '' : `Rehearsal for ${work.doer}`}
 			<Row><Col>Role: {work.role}</Col></Row>
 			{#each JSON.parse(Parser.base64ToCode(work.doer_string)) as aDoer, index}
-				<Row
-					><Col>
+				<Row>
+					<Col>
 						{aDoer.cn}({aDoer.uid})
 					</Col>
 				</Row>

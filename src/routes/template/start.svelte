@@ -28,6 +28,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { filterStore } from '$lib/empstores';
 	import type { User, Template, Team, oneArgFunc } from '$lib/types';
 	import { getNotificationsContext } from 'svelte-notifications';
 	const { addNotification } = getNotificationsContext();
@@ -146,6 +147,8 @@
 			console.log('recentTemplates:>>', recentTemplates, '<<');
 			console.log('recentTeams>>', recentTeams, '<<');
 		}
+		$filterStore.tplid = tplid;
+		$filterStore.workTitlePattern = '';
 	});
 	const saveOneRecentTeam = function (team) {
 		let tmp = recentTeams.indexOf(team);
@@ -226,7 +229,11 @@
 						class="w-100"
 						on:click={(e) => {
 							e.preventDefault();
-							goto(`/workflow/@${startedWorkflow.wfid}`);
+							$filterStore.tplid = startedWorkflow.tplid;
+							$filterStore.workTitlePattern = 'wf:' + startedWorkflow.wfid;
+							$filterStore.workStatus = 'ST_RUN';
+							goto('/work');
+							//goto(`/workflow/@${startedWorkflow.wfid}`);
 						}}
 					>
 						Check it out

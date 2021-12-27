@@ -58,7 +58,7 @@
 	};
 
 	const gotoWork = async function (comment) {
-		goto(`/work/@${comment.workid}`);
+		goto(`/work/@${comment.todoid}`);
 	};
 	let commentIsBase64 = false;
 </script>

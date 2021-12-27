@@ -31,7 +31,7 @@
 	export let token;
 	export let endpoint;
 	export let rows = [];
-	export let tag;
+	export let tagsForFilter;
 	export let user;
 	let page = 0; //first page
 	let pageIndex = 0; //first row
@@ -63,7 +63,7 @@
 		loading = true;
 		console.log('Remote load', new Date());
 		const data = await getData(endpoint, token, _page, pageSize, input_search, sorting, {
-			tag: tag
+			tagsForFilter: tagsForFilter
 		});
 		rows = data.rows;
 		rowsCount = data.rowsCount;

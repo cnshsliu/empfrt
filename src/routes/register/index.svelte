@@ -53,7 +53,6 @@
 
 		if (response.user) {
 			$session.user = response.user;
-			console.log('set session.user to', $session.user);
 			goto('/');
 		}
 	}

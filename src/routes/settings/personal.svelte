@@ -40,7 +40,6 @@
 			if (response.user) {
 				$session.user = response.user;
 				setFadeMessage('修改用户信息成功', 'success');
-				console.log($session.user);
 			} else {
 				setFadeMessage('错误', 'danger');
 			}
