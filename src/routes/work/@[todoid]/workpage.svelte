@@ -182,7 +182,7 @@
 {#if work && work.todoid}
 	<Container id={'workitem_' + work.todoid} class="mt-3">
 		<form>
-			<Container class="mt-3 kfk-highlight-2 text-wrap">
+			<Container class="mt-3 kfk-highlight-2 text-wrap text-break">
 				<Icon name="vinyl" />&nbsp; Primary Business Object:
 				{#if work.wf.pbo}
 					<a href={work.wf.pbo} target="_blank"
