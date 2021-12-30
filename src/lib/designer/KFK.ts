@@ -30,6 +30,8 @@ declare global {
 let SVG = null;
 let jQuery = null;
 let $ = null;
+let history = [];
+let history_pointer = 0;
 import('@svgdotjs/svg.js').then((pack) => {
 	SVG = pack.SVG;
 });
@@ -720,6 +722,11 @@ class KFKclass {
 		const that = this;
 		that.templateChangeTimer && clearTimeout(that.templateChangeTimer);
 		const tpldoc = that.drawingToTemplateDoc();
+		if (['UNDO', 'REDO'].includes(reason) === false) {
+			history.splice(history_pointer);
+			history.push(tpldoc);
+			history_pointer++;
+		}
 		that.template.doc = tpldoc;
 		that.designerCallback('setTemplate', that.template);
 
@@ -739,6 +746,8 @@ class KFKclass {
 			that.templateChangeTimer = undefined;
 		}, 1000);
 	}
+
+	Undo;
 
 	/**
 	 * nodeToAppData.
@@ -1824,7 +1833,7 @@ ret='DEFAULT'; `
 		if (callback) await callback();
 	}
 
-	async undo() {
+	/* async undo() {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		console.log('that.undo');
@@ -1871,9 +1880,96 @@ ret='DEFAULT'; `
 		}
 		that.opz = that.opz - 1;
 		that.onChange('Undo');
+	} */
+
+	async undo() {
+		const that = this;
+		if (history_pointer - 2 >= 0) {
+			that.template.doc = history[history_pointer - 2];
+			history_pointer--;
+			console.log('UNDO', that.template.doc);
+			await that.resetTemplateDoc();
+			that.designerCallback('setTemplate', that.template);
+			that.onChange('UNDO');
+		}
+	}
+	async redo() {
+		const that = this;
+		if (history_pointer < history.length) {
+			that.template.doc = history[history_pointer];
+			history_pointer++;
+			console.log('REDO', that.template.doc);
+			await that.resetTemplateDoc();
+			that.designerCallback('setTemplate', that.template);
+			that.onChange('REDO');
+		}
 	}
 
-	async redo() {
+	async resetTemplateDoc() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		await that.cleanupJC3();
+		//that.tmpBalls.clear();
+		//that.template = template;
+		//that.workflow = null;
+		//that.tpl_mode = tplmode;
+		//console.log(that.tpl_mode);
+		/* if (that.tpl_mode === 'read') {
+			that.setTool('POINTER');
+		} */
+		try {
+			//that.tplid = that.template.tplid;
+			//console.log(that.template.doc);
+			that.tpl = $(that.template.doc);
+			const nodes = that.tpl.find('.node');
+			nodes.addClass('kfknode');
+			await that.JC3.append(nodes);
+			const guiNodes = that.JC3.find('.node');
+			for (let i = 0; i < guiNodes.length; i++) {
+				const jqNode = $(guiNodes[i]);
+				await that.setNodeEventHandler(jqNode);
+				if (that.docIsReadOnly()) {
+					jqNode.draggable('disable');
+				} else {
+					jqNode.draggable('enable');
+				}
+				await that.redrawLinkLines(jqNode, 'loadTemplateDoc');
+			}
+
+			if (that.docIsNotReadOnly()) {
+				$('#linetransformer').draggable('enable');
+			} else {
+				$('#linetransformer').draggable('disable');
+			}
+			/* that.myFadeOut($('.loading'));
+			that.myFadeIn(that.JC3, 1000);
+			$('#overallbackground').removeClass('grid1');
+			that.focusOnC3();
+			that.scrollToLastPosition(that.tplid);
+			that.C3.dispatchEvent(that.refreshC3Event); */
+
+			/*
+			KFKclass.show(that.JC3);
+			if (that.docIsReadOnly()) {
+				$('#leftPanel').addClass('noshow');
+				$('#minimap').addClass('noshow');
+				that.myFadeOut($('#leftPanel'), 500);
+			} else {
+				$('#leftPanel').removeClass('noshow');
+				$('#minimap').removeClass('noshow');
+				that.myFadeIn($('#leftPanel'), 1000);
+			}
+			 */
+		} catch (err) {
+			console.error(err);
+		} finally {
+			//that.addDocumentEventHandler();
+			//that.inited = true;
+			that.showHelp('Undo one step', 10000);
+		}
+	}
+
+	/* async redo() {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		console.log('that.redo');
@@ -1914,7 +2010,7 @@ ret='DEFAULT'; `
 			}
 		}
 		that.onChange('Redo');
-	}
+	} */
 
 	initLayout() {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
@@ -3810,6 +3906,9 @@ ret='DEFAULT'; `
 		try {
 			that.tplid = that.template.tplid;
 			console.log(that.template.doc);
+			history.splice(history_pointer);
+			history.push(that.template.doc);
+			history_pointer++;
 			that.tpl = $(that.template.doc);
 			const nodes = that.tpl.find('.node');
 			nodes.addClass('kfknode');
@@ -4125,12 +4224,19 @@ ret='DEFAULT'; `
 					console.log('PRessed Z');
 					if ((evt.metaKey || evt.ctrlKey) && evt.shiftKey) {
 						that.logKey('META-SHIFT-Z');
-						that.redo();
+						await that.redo();
 					}
 					if ((evt.metaKey || evt.ctrlKey) && !evt.shiftKey) {
 						console.log('PRessed meta-Z');
 						that.logKey('META-Z');
-						that.undo();
+						await that.undo();
+					}
+					break;
+				case 'y':
+					if ((evt.metaKey || evt.ctrlKey) && !evt.shiftKey) {
+						console.log('Pressed meta-y');
+						that.logKey('META-Y');
+						await that.redo();
 					}
 					break;
 				case 'Escape':

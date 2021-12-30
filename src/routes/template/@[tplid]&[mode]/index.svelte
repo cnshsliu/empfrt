@@ -52,12 +52,34 @@
 	$title = template.tplid;
 	let Designer: any;
 	let theDesigner: any;
+	let recentTemplates = [];
+	let recentTeams = [];
+
+	const saveOneRecentTemplate = function (tplid) {
+		if (tplid === null || tplid === undefined || tplid === '') return;
+		let tmp = recentTemplates.indexOf(tplid);
+		if (tmp > -1) {
+			recentTemplates.splice(tmp, 1);
+		}
+		recentTemplates.unshift(tplid);
+		if (recentTemplates.length > 10) {
+			recentTemplates.splice(10);
+		}
+		localStorage.setItem('recentTemplates', JSON.stringify(recentTemplates));
+		recentTemplates = recentTemplates;
+	};
+
 	onMount(async () => {
 		console.log('import Designer...');
 		const module = await import('$lib/designer/Designer.svelte');
 		Designer = module.default;
 		$filterStore.tplid = tplid;
 		$filterStore.workTitlePattern = '';
+		if (localStorage) {
+			recentTemplates = JSON.parse(localStorage.getItem('recentTemplates') ?? JSON.stringify([]));
+			recentTeams = JSON.parse(localStorage.getItem('recentTeams') ?? JSON.stringify([]));
+			saveOneRecentTemplate(tplid);
+		}
 	});
 
 	let urls = {

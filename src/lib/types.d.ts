@@ -227,7 +227,6 @@ export interface FilterPicks {
 	wfTitlePattern: string;
 	tplTitlePattern: string;
 	gotoUID: string;
-	tplTag: string;
 	workSorting: { dir: string; key: string };
 	wfSorting: { dir: string; key: string };
 	tplSorting: { dir: string; key: string };

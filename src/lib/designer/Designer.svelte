@@ -229,6 +229,8 @@
 		tmp = currentTool;
 		console.log('Current tool is', currentTool);
 	}
+
+	let user = $session.user;
 </script>
 
 <div id="S1">

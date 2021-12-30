@@ -39,7 +39,8 @@
 
 	let loading = true;
 	export let rowsCount = 0;
-	let currentTplid = '';
+	let setTagForTplid = '';
+	let addDescForTplid = '';
 	let input_search: String = '';
 	let sorting = { dir: 'desc', key: 'updatedAt' };
 	let storeSorting = $filterStore.tplSorting;
@@ -100,6 +101,7 @@
 	}
 
 	let tag_input = '';
+	let desc_input = '';
 	const deleteATag = async function (index, tplid, tags, text) {
 		tags = await api.post('tag/del', { objtype: 'template', objid: tplid, text: text }, token);
 		rows[index].tags = tags;
@@ -107,6 +109,12 @@
 		await reloadTags();
 	};
 
+	const addDesc = async function (index, tplid, desc) {
+		desc = desc.trim();
+		let ret = await api.post('template/desc', { tplid: tplid, desc: desc }, token);
+		rows[index].desc = desc;
+		rows = rows;
+	};
 	const addTags = async function (index, tplid, tags, text) {
 		if (text.trim().length === 0) return;
 		tags = await api.post('tag/add', { objtype: 'template', objid: tplid, text: text }, token);
@@ -190,9 +198,8 @@
 				<td data-label="Author"
 					>{row.author.indexOf('@') > -1
 						? row.author.substring(0, row.author.indexOf('@'))
-						: row.author}</td
-				>
-				<!--  td data-label="Updated at">{TimeTool.format(row.updatedAt, 'lll')}</td -->
+						: row.author}
+				</td>
 				<td>
 					{#if user.perms && ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
 						<a
@@ -256,7 +263,20 @@
 								<a
 									href={'#'}
 									on:click|preventDefault={() => {
-										currentTplid = row.tplid;
+										desc_input = row.desc;
+										addDescForTplid = row.tplid;
+									}}
+									class="nav-link "
+								>
+									<Icon name="tags" />
+									Add Description
+								</a>
+							</DropdownItem>
+							<DropdownItem>
+								<a
+									href={'#'}
+									on:click|preventDefault={() => {
+										setTagForTplid = row.tplid;
 									}}
 									class="nav-link "
 								>
@@ -279,7 +299,51 @@
 					</Dropdown>
 				</td>
 			</tr>
-			{#if currentTplid === row.tplid}
+			{#if row.desc && row.desc.trim().length > 0}
+				<tr>
+					<td colspan="4"><div class="ms-5">{row.desc}</div> </td>
+				</tr>
+			{/if}
+			{#if addDescForTplid === row.tplid}
+				<tr>
+					<td colspan="4">
+						<Container>
+							<Row>
+								<InputGroup>
+									<div class="form-floating flex-fill">
+										<input
+											class="form-control"
+											id={'input-desc-' + index}
+											placeholder="Description"
+											bind:value={desc_input}
+										/>
+										<label for={`input-desc-${index}`}> set description to: </label>
+									</div>
+									<Button
+										color="primary"
+										on:click={async (e) => {
+											e.preventDefault();
+											await addDesc(index, row.tplid, desc_input);
+										}}
+									>
+										Set
+									</Button>
+									<Button
+										on:click={(e) => {
+											e.preventDefault();
+											addDescForTplid = '';
+											desc_input = '';
+										}}
+									>
+										Close
+									</Button>
+								</InputGroup>
+							</Row>
+						</Container>
+					</td>
+				</tr>
+			{/if}
+			{#if setTagForTplid === row.tplid}
 				<tr>
 					<td colspan="4">
 						<Container>
@@ -299,7 +363,9 @@
 												tag_input = '';
 											}}
 										/>
-										<label for="input-tplid">input new tags delimitered by space/;/, </label>
+										<label for={`input-tplid-${index}`}
+											>input new tags delimitered by space/;/,
+										</label>
 									</div>
 									<Button
 										color="primary"
@@ -314,7 +380,7 @@
 									<Button
 										on:click={(e) => {
 											e.preventDefault();
-											currentTplid = '';
+											setTagForTplid = '';
 										}}
 									>
 										Close

@@ -82,6 +82,7 @@
 				todoid: work.todoid,
 				title: adhocTaskTitle,
 				doer: adhocTaskDoer,
+				rehearsal: work.rehearsal,
 				comment: adhocTaskComment
 			},
 			user.sessionToken
@@ -99,7 +100,6 @@
 	};
 	function checkRequired() {
 		let errMsg = '';
-		console.log(JSON.stringify(work.kvarsArr, null, 2));
 		for (let i = 0; i < work.kvarsArr.length; i++) {
 			if (work.kvarsArr[i].required) {
 				if (work.kvarsArr[i].type === 'checkbox') {
@@ -157,6 +157,7 @@
 				(work.rehearsal && work.wfstarter === user.email) ||
 				(delegators && Array.isArray(delegators) && delegators.includes(work.doer))) &&
 			work.status === 'ST_RUN';
+		console.log('checkDoable return ', is_doable);
 		return is_doable;
 	};
 	let recentUsers = [];

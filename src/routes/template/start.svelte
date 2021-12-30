@@ -4,10 +4,6 @@
 		const tplid = page.query.get('tplid');
 		console.log('TPLID = ', tplid);
 		const tpl_mode = 'read';
-		/* const jsonUrl = `/template/@${tplid}&${tpl_mode}.json`;
-		const res = await fetch(jsonUrl);
-		console.log('---------');
-		console.log(await res.json()); */
 		const res_team: SearchResult = (await api.post(
 			'team/search',
 			{ limit: 1000 },
@@ -139,7 +135,8 @@
 
 	let recentTemplates = [];
 	let recentTeams = [];
-	onMount(() => {
+	let desc = '';
+	onMount(async () => {
 		if (localStorage) {
 			recentTemplates = JSON.parse(localStorage.getItem('recentTemplates') ?? JSON.stringify([]));
 			recentTeams = JSON.parse(localStorage.getItem('recentTeams') ?? JSON.stringify([]));
@@ -149,6 +146,9 @@
 		}
 		$filterStore.tplid = tplid;
 		$filterStore.workTitlePattern = '';
+
+		let res = await api.post('template/basic', { tplid: tplid }, user.sessionToken);
+		desc = res.desc ? res.desc : '';
 	});
 	const saveOneRecentTeam = function (team) {
 		let tmp = recentTeams.indexOf(team);
@@ -189,6 +189,11 @@
 				</a>
 			</span>
 		</Col>
+		<Col class="d-flex justify-content-center">
+			<span class="text-xs-center fs-5">
+				{desc}
+			</span>
+		</Col>
 	</Row>
 </Container>
 <Container class="mt-3 w-50">
@@ -207,11 +212,12 @@
 				</Button>
 			</Col>
 		</Row>
+		<div class="mt-3 w-100 text-center"><div>OR</div></div>
 		<Row cols="1">
-			<Col style="margin-top: 20px;">
+			<Col>
 				<Button
 					disabled={starting === 1}
-					color="primary"
+					color="secondary"
 					class="w-100"
 					on:click={(e) => {
 						e.preventDefault();

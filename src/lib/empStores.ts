@@ -18,5 +18,18 @@ export const filterStore = storage<FilterPicks>('filter', {
 	tplTag: '',
 	tplid: '',
 	doer: '',
-	workTitlePattern: ''
+	workTitlePattern: '',
+	wfTitlePattern: '',
+	tplTitlePattern: '',
+	gotoUID: '',
+	workSorting: { dir: '', key: '' },
+	wfSorting: { dir: '', key: '' },
+	tplSorting: { dir: '', key: '' },
+	tabs: '',
+	tabs2nd: '',
+	settingTab: '',
+	settingTab2nd: '',
+	try_with_teamid: '',
+	try_with_email: '',
+	debug: ''
 });
