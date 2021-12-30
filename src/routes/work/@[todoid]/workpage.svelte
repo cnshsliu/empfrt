@@ -10,6 +10,8 @@
 	import { FormGroup, Input, Label, InputGroup, InputGroupText } from 'sveltestrap';
 	import { StatusClass, StatusLabel } from '$lib/lang';
 	import { Button } from 'sveltestrap';
+	import { debugOption } from '$lib/empstores';
+	import List from '$lib/input/List.svelte';
 	import type { User, Work, oneArgFunc } from '$lib/types';
 	export let work: Work;
 	export let user: User;
@@ -17,14 +19,18 @@
 	export let iframeMode: boolean;
 	export let TimeTool: any;
 	let showAdhocForm = false;
-	let printProcessTrack = true;
 	let adhocTaskTitle = '';
 	let adhocTaskDoer = '';
 	let adhocTaskComment = '';
 	let comment = '';
+	let whichtoChange = '';
+	let serverListKey = '';
 	let creatingAdhoc = false;
 	import { getNotificationsContext } from 'svelte-notifications';
 	const { addNotification } = getNotificationsContext();
+
+	const onPrint = async function () {};
+	let isDebug = $debugOption === 'yes';
 
 	function _sendbackWork() {
 		if (checkRequired() === false) return;
@@ -140,32 +146,24 @@
 		await _refreshWork(work.todoid);
 	}
 
-	let is_doable = false;
 	export async function _refreshWork(todoid) {
 		work = (await api.post('work/info', { todoid: todoid }, user.sessionToken)) as unknown as Work;
 		comment = '';
-		is_doable =
+	}
+
+	const checkDoable = function () {
+		let is_doable =
 			(work.doer === user.email ||
 				(work.rehearsal && work.wfstarter === user.email) ||
 				(delegators && Array.isArray(delegators) && delegators.includes(work.doer))) &&
 			work.status === 'ST_RUN';
-	}
-
+		return is_doable;
+	};
 	let recentUsers = [];
 	onMount(async () => {
 		if (localStorage) {
 			recentUsers = JSON.parse(localStorage.getItem('recentUsers') ?? JSON.stringify([]));
 		}
-		is_doable =
-			(work.doer === user.email ||
-				(work.rehearsal && work.wfstarter === user.email) ||
-				(delegators && Array.isArray(delegators) && delegators.includes(work.doer))) &&
-			work.status === 'ST_RUN';
-		console.log(work.doer);
-		console.log(user.email);
-		console.log(work.rehearsal);
-		console.log(work.wfstarter);
-		console.log('is_doable: ' + is_doable);
 	});
 	const saveOneRecentUser = function (user) {
 		let tmp = recentUsers.indexOf(user);
@@ -184,104 +182,90 @@
 {#if work && work.todoid}
 	<Container id={'workitem_' + work.todoid} class="mt-3">
 		<form>
-			<Container class="mt-3 kfk-highlight-2">
+			<Container class="mt-3 kfk-highlight-2 text-wrap">
 				<Icon name="vinyl" />&nbsp; Primary Business Object:
 				{#if work.wf.pbo}
-					<div class="kfk-kvar-value-display">
-						<a href={work.wf.pbo} target="_blank"
-							>{work.wf.pbo}&nbsp;
-							<Icon name="box-arrow-up-right" />
-						</a>
-					</div>
+					<a href={work.wf.pbo} target="_blank"
+						>{work.wf.pbo}&nbsp;
+						<Icon name="box-arrow-up-right" />
+					</a>
 				{/if}
 			</Container>
-			<Container class="mt-3 kfk-highlight-2">
-				<Row>
-					<Col>
-						<span class="fw-bold fs-5">Starter:</span>
-						<div class="fw-light">{work.wf.starter}</div>
-					</Col>
-					<Col>
-						<span class="fw-bold fs-5">Task Status:</span>
-						<div class={'fw-light ' + StatusClass(work.status)}>{StatusLabel(work.status)}</div>
-					</Col>
-					<Col>
-						<span class="fw-bold fs-5">Task Owner:</span>
-						<div class="fw-light">{work.doer}</div>
-					</Col>
-					<Col>
-						{#if work.doneat}
-							<span class="fw-bold fs-5">Complete at:</span>
-							<div class="fw-light">{work.doneat ? TimeTool.format(work.doneat, 'LLL') : ''}</div>
-						{/if}
-					</Col>
-					<Col />
-				</Row>
-			</Container>
 			{#if work.instruct}
-				<div class="fs-4">Instruction:</div>
-				<Container class="mt-3 kfk-highlight-2 fs-3">
-					{@html Parser.base64ToCode(work.instruct)}
-				</Container>
+				<div class="fs-5">
+					Instruction:
+					<span class="mt-3 fs-3">
+						{@html Parser.base64ToCode(work.instruct)}
+					</span>
+				</div>
 			{/if}
 			<!--- div class="w-100">
 				<iframe id="workInstruction" src="/work/instruct" title="YouTube video" width="100%" />
 			</div -->
-			{#if is_doable && work.status === 'ST_RUN' && work.kvarsArr.length > 0}
+			{#if checkDoable() && work.status === 'ST_RUN'}
 				<Container class="mt-3 kfk-highlight-2">
-					Node Input:
-					<Row cols="4">
-						{#each work.kvarsArr as kvar, i}
-							{#if kvar.breakrow}
-								<div class="w-100" />
-							{/if}
-							<Col>
-								<FormGroup>
-									<Label>{kvar.label}{kvar.required ? '*' : ''}</Label>
-									{#if ['select', 'checkbox', 'radio'].includes(kvar.type) === false}
-										<Input
-											type={['dt', 'datetime'].includes(kvar.type) ? 'datetime-local' : kvar.type}
-											name={kvar.name}
-											bind:value={work.kvarsArr[i].value}
-											id={kvar.id}
-											placeholder={kvar.placeholder}
-											required={kvar.required}
-										/>
-									{:else if kvar.type === 'checkbox'}
-										<div class="form-check form-switch">
-											<input
-												class="form-check-input"
-												type="checkbox"
-												role="switch"
-												bind:checked={kvar.value}
-												id={'chk-' + kvar.id ? kvar.id : kvar.name}
-											/>
-										</div>
-									{:else if kvar.type === 'radio'}
-										{#each kvar.options as option}
-											<Input type="radio" bind:group={kvar.value} value={option} label={option} />
-										{/each}
-									{:else if kvar.type === 'select'}
-										<Input
-											type={kvar.type}
-											name={kvar.name}
-											id={kvar.id}
-											bind:value={kvar.value}
-											required={kvar.required}
-										>
-											{#each kvar.options as option}
-												<option>{option}</option>
-											{/each}
-										</Input>
+					{#if work.kvarsArr.length > 0}
+						Node Input:
+						<Row cols="4">
+							{#each work.kvarsArr as kvar, i}
+								{#if kvar.breakrow}
+									<div class="w-100" />
+								{/if}
+								<Col>
+									{#if isDebug}
+										<div class="text-wrap text-break">{JSON.stringify(kvar)}</div>
 									{/if}
-								</FormGroup>
-							</Col>
-						{/each}
-					</Row>
-				</Container>
-			{/if}
-			{#if is_doable && work.status === 'ST_RUN'}
-				<Container class="mt-3">
+									<FormGroup>
+										<Label>{kvar.label}{kvar.required ? '*' : ''}</Label>
+										{#if ['select', 'checkbox', 'radio'].includes(kvar.type) === false}
+											<Input
+												type={['dt', 'datetime'].includes(kvar.type) ? 'datetime-local' : kvar.type}
+												name={kvar.name}
+												bind:value={work.kvarsArr[i].value}
+												id={kvar.id}
+												placeholder={kvar.placeholder}
+												required={kvar.required}
+											/>
+										{:else if kvar.type === 'checkbox'}
+											<div class="form-check form-switch">
+												<input
+													class="form-check-input"
+													type="checkbox"
+													role="switch"
+													bind:checked={kvar.value}
+													id={'chk-' + kvar.id ? kvar.id : kvar.name}
+												/>
+											</div>
+										{:else if kvar.type === 'radio'}
+											{#each kvar.options as option}
+												<Input type="radio" bind:group={kvar.value} value={option} label={option} />
+											{/each}
+										{:else if kvar.type === 'select'}
+											<List
+												{kvar}
+												{whichtoChange}
+												{serverListKey}
+												on:changelist={(e) => {
+													console.log('parent ', e.detail);
+													let tmp = e.detail.split('/');
+													if (tmp[0].length > 0) {
+														whichtoChange = tmp[0];
+														serverListKey = tmp[1];
+														console.log(
+															'Change select component:',
+															whichtoChange,
+															'with key',
+															serverListKey
+														);
+													}
+												}}
+											/>
+										{/if}
+									</FormGroup>
+								</Col>
+							{/each}
+						</Row>
+					{/if}
 					<input type="hidden" name="todoid" value={work.todoid} />
 					{#if work.status === 'ST_RUN'}
 						<Input type="textarea" placeholder="Comments: " bind:value={comment} />
@@ -440,7 +424,7 @@
 		</form>
 		{#if work.wf.kvarsArr.length > 0}
 			<Container class="mt-3 kfk-highlight-2">
-				Workflow Data:
+				Workflow Context:
 				<Row cols={{ lg: 3, md: 2, xs: 1 }}>
 					{#each work.wf.kvarsArr as kvar}
 						{#if kvar.breakrow}
@@ -478,7 +462,7 @@
 		bind:wfid={work.wfid}
 		bind:workid={work.workid}
 		bind:todoid={work.todoid}
-		bind:print={printProcessTrack}
+		{onPrint}
 		{TimeTool}
 		{_refreshWork}
 		{iframeMode}

@@ -237,6 +237,7 @@ export interface FilterPicks {
 	settingTab2nd: string;
 	try_with_teamid?: string;
 	try_with_email?: string;
+	debug: string;
 }
 export interface EmpResponse {
 	error?: Record;

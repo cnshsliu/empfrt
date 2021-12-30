@@ -25,29 +25,29 @@ export function StatusLabel(status: string): string {
 	}
 	return ret;
 }
-export function StatusClass(status: string): string {
+export function StatusClass(status: string, border = false): string {
 	let ret = status;
 	switch (status) {
 		case 'ST_RUN':
-			ret = 'text-primary';
+			ret = border ? 'text-info border border-info' : 'text-info';
 			break;
 		case 'ST_DONE':
-			ret = 'text-success';
+			ret = border ? 'text-success border border-success' : 'text-success';
 			break;
 		case 'ST_REVOKED':
-			ret = 'text-warning';
+			ret = border ? 'text-warning border border-warining' : 'text-warning';
 			break;
 		case 'ST_RETURNED':
-			ret = 'text-warning';
+			ret = border ? 'text-warning border border-warining' : 'text-warning';
 			break;
 		case 'ST_PAUSE':
-			ret = 'text-secondary';
+			ret = border ? 'text-secondary border border-secondary' : 'text-secondary';
 			break;
 		case 'ST_STOP':
-			ret = 'text-danger';
+			ret = border ? 'text-danger border border-danger' : 'text-danger';
 			break;
 		case 'ST_IGNORE':
-			ret = 'text-info';
+			ret = border ? 'text-black-50 border border-black-50' : 'text-black-50';
 			break;
 	}
 	return ret;

@@ -2027,21 +2027,18 @@ div.pbo {
 }
 .kfk-tag a {
 	text-decoration: none;
-	color: white;
 }
 .kfk-tag a:hover {
 	text-decoration: none;
-	color: white;
 }
+
 .kfk-highlight-2 {
 	background-color: rgba(255, 255, 255, 0.5);
-	border-radius: 10px;
-	box-shadow: 0 0 0 0.125em rgba(200, 200, 255, 0.5);
+	border-radius: 5px;
 }
-.kfk-highlight-current {
-	background-color: #e5dbff;
-	border-radius: 10px;
-	box-shadow: 0 0 0 0.125em rgba(255, 255, 255, 0.9);
+.kfk-highlight-track-current .card-header {
+	background-color: #2726ff;
+	color: white;
 }
 .kfk-bottom-10 {
 	padding-bottom: 10px;
@@ -2269,14 +2266,17 @@ div.pbo {
 	100% {
 		background-image: url('/svg/spinner/spinner00.svg');
 	}
-	25% {
-		background-image: url('/svg/spinner/spinner25.svg');
+	20% {
+		background-image: url('/svg/spinner/spinner20.svg');
 	}
-	50% {
-		background-image: url('/svg/spinner/spinner50.svg');
+	40% {
+		background-image: url('/svg/spinner/spinner40.svg');
 	}
-	75% {
-		background-image: url('/svg/spinner/spinner75.svg');
+	60% {
+		background-image: url('/svg/spinner/spinner00.svg');
+	}
+	80% {
+		background-image: url('/svg/spinner/spinner40.svg');
 	}
 }
 @keyframes loadingCircle {
@@ -2284,14 +2284,17 @@ div.pbo {
 	100% {
 		background-image: url('/svg/spinner/spinner00.svg');
 	}
-	25% {
-		background-image: url('/svg/spinner/spinner25.svg');
+	20% {
+		background-image: url('/svg/spinner/spinner20.svg');
 	}
-	50% {
-		background-image: url('/svg/spinner/spinner50.svg');
+	40% {
+		background-image: url('/svg/spinner/spinner40.svg');
 	}
-	75% {
-		background-image: url('/svg/spinner/spinner75.svg');
+	60% {
+		background-image: url('/svg/spinner/spinner00.svg');
+	}
+	80% {
+		background-image: url('/svg/spinner/spinner40.svg');
 	}
 }
 
@@ -2309,12 +2312,10 @@ div.pbo {
 }
 .input_circle:before,
 .input_circle {
-	padding-right: 25px;
+	padding-right: calc(1.5em + 0.75rem);
 	background: url('/svg/spinner/spinner00.svg') no-repeat right;
 	background-size: 20px;
-	background-color: white;
-	-webkit-animation: loadingCircle 1s infinite linear;
-	animation: loadingCircle 1s infinite linear;
+	animation: 1.5s linear 0s infinite normal none running loadingCircle;
 }
 .input_spinning:before,
 .input_spinning {

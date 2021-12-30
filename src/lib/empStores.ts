@@ -2,6 +2,7 @@ import storage from '$lib/store';
 import type { WorkStatus, WhichTab, FilterPicks } from '$lib/types';
 
 export const WorkStatusStore = storage<WorkStatus>('work_status', { status: 'ST_DONE' });
+export const debugOption = storage<string>('debugOption', 'no');
 
 export const whichTabStore = storage<WhichTab>('whichtab', {
 	template: 'home',

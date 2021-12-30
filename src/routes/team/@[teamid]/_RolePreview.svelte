@@ -3,6 +3,7 @@
 	import * as api from '$lib/api';
 	import type { User, Team, TmapEntry } from '$lib/types';
 	import { Container, Row, Col, Icon } from 'sveltestrap';
+	import Spinner from '$lib/Spinner.svelte';
 	import { Button, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Badge } from 'sveltestrap';
 	import { enhance, enhanceAddOneRoleMember } from '$lib/form';
 	import type { Perm } from '$lib/types';
@@ -18,7 +19,8 @@
 	export let form_id = '';
 	export let user: User;
 
-	let findUserMsg = '';
+	let checkingMsg = '';
+	let checkingStatus = '';
 	let newuid;
 	let urls = {
 		role_member_add: `${API_SERVER}/team/role/member/add`,
@@ -39,26 +41,25 @@
 	}
 
 	let check_timer;
-	let status = '';
 	let ok_user = {};
 	const onInputNewUid = function (e) {
-		findUserMsg = 'looking up...';
-		status = 'checking';
+		checkingMsg = 'Checking...';
+		checkingStatus = 'LOADING';
 		if (check_timer) clearTimeout(check_timer);
 		check_timer = setTimeout(async () => {
 			let ret = await api.post('check/coworker', { whom: newuid }, user.sessionToken);
 			if (ret) {
 				if (ret.error) {
-					findUserMsg = ret.message;
-					status = 'wrong';
+					checkingMsg = ret.message;
+					checkingStatus = 'wrong';
 				} else {
 					ok_user = { uid: ret.email, cn: ret.username };
-					findUserMsg = `${ret.username}(${ret.email})`;
-					status = 'good';
+					checkingMsg = `${ret.username}(${ret.email})`;
+					checkingStatus = 'good';
 				}
 			} else {
-				status = 'wrong';
-				findUserMsg = `${newuid} does not exist`;
+				checkingStatus = 'wrong';
+				checkingMsg = `${newuid} does not exist`;
 			}
 			check_timer = null;
 		}, 1000);
@@ -124,27 +125,29 @@
 							size="sm"
 							on:click={async (e) => {
 								e.preventDefault();
-								if (status !== 'good') return;
+								if (checkingStatus !== 'good') return;
 								let retObj = await api.post(
 									'team/role/member/add',
 									{ teamid: team.teamid, role: aRole, members: [ok_user] },
 									user.sessionToken
 								);
 								if (retObj.error) {
-									findUserMsg = retObj.message;
+									checkingMsg = retObj.message;
 									console.error(retObj.message);
-									status = 'wrong';
+									checkingStatus = 'wrong';
 								} else {
 									team = retObj;
-									findUserMsg = 'Success';
-									status = 'waiting';
+									checkingMsg = 'Success';
+									checkingStatus = 'waiting';
 								}
 								newuid = '';
 							}}
-							disabled={status !== 'good'}>Add</Button
+							disabled={checkingStatus !== 'good'}
 						>
+							Add
+						</Button>
 						{#if errmsg !== ''}{errmsg}{/if}
-						{findUserMsg}
+						<Spinner bind:status={checkingStatus} bind:msg={checkingMsg} />
 					</form>
 				{/if}
 				{#if form_id === `copy_${aRole}`}
@@ -183,7 +186,7 @@
 			<div style="margin-bottom:10px;">
 				{#if team.tmap[aRole]}
 					{#each team.tmap[aRole] as aMember (aMember.uid)}
-						<Badge pill color="info" class="kfk-tag">
+						<Badge pill color="light" class="kfk-tag border border-primary text-primary">
 							{aMember.cn} &lt;{aMember.uid}&gt;
 							{#if ClientPermControl(user.perms, user.email, 'team', team, 'update')}
 								<a

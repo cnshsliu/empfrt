@@ -16,19 +16,21 @@
 	import CommentEntry from '$lib/CommentEntry.svelte';
 	import { StatusClass, StatusLabel } from '$lib/lang';
 	import { goto } from '$app/navigation';
+	import { Badge } from 'sveltestrap';
 	export let wfid;
 	export let wf;
 	export let workid;
 	export let todoid;
 	export let TimeTool;
 	export let iframeMode;
-	export let print = false;
 	export let user;
 	export let _refreshWork;
+	export let onPrint;
 	function gotoWorkflowMonitor(wfid: string) {
 		goto(iframeMode ? `/workflow/@${wfid}/monitor?iframe` : `/workflow/@${wfid}/monitor`);
 	}
-	function printWindow() {
+	async function printWindow() {
+		if (onPrint) await onPrint();
 		window.print();
 	}
 	function gotoWorkflow(wfid) {
@@ -44,7 +46,8 @@
 	<div class="fs-3">
 		<Icon name="bar-chart-steps" />
 		{#if wf.rehearsal}
-			Process Rehearsal <i class="bi-patch-check" />
+			Process Rehearsal
+			<i class="bi-patch-check-fill" />
 		{:else}
 			Process
 		{/if}
@@ -94,7 +97,8 @@
 	<Container class="my-0">
 		{#each wf.history as entry}
 			<Card
-				class={'mt-2 ' + (workid === entry.workid ? 'kfk-highlight-current ' : 'kfk-highlight-2 ')}
+				class={'mt-2 ' +
+					(workid === entry.workid ? 'kfk-highlight-track-current ' : 'kfk-highlight-track ')}
 			>
 				<CardHeader>
 					<CardTitle>
@@ -103,10 +107,27 @@
 								<div class="w-100">
 									<span class="fs-5">{entry.title}</span>
 									<sup>
-										{#if entry.nodeid === 'ADHOC'}
-											/ ADHOC
+										{#if workid === entry.workid}
+											{#if entry.nodeid === 'ADHOC'}
+												<Badge pill color={'light'}>
+													<span class="text-primary">Adhoc</span>
+												</Badge>
+											{/if}
+											<Badge pill color={'light'}>
+												<span class="text-primary">{StatusLabel(entry.status)}</span>
+											</Badge>
+										{:else}
+											{#if entry.nodeid === 'ADHOC'}
+												<Badge pill class="bg-white border border-primary">
+													<span class={StatusClass(entry.status)}> ADHOC </span>
+												</Badge>
+											{/if}
+											<Badge pill class="bg-white border border-primary">
+												<span class={StatusClass(entry.status)}>
+													{StatusLabel(entry.status)}
+												</span>
+											</Badge>
 										{/if}
-										/ <span class={StatusClass(entry.status)}>{StatusLabel(entry.status)}</span>
 									</sup>
 								</div>
 								<div class="flex-shringk-1">
@@ -172,13 +193,13 @@
 				</CardBody>
 			</Card>
 		{/each}
-		{#if print}
-			<Row>
-				<Col class="d-flex justify-content-end">
-					<NavLink on:click={printWindow}>Print</NavLink>
-				</Col>
-			</Row>
-		{/if}
+		<Row>
+			<Col class="d-flex justify-content-end">
+				<NavLink on:click={printWindow}>
+					<i class="bi bi-printer" alt="Printer" />&nbsp;Print
+				</NavLink>
+			</Col>
+		</Row>
 	</Container>
 </Container>
 

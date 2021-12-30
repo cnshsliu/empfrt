@@ -216,8 +216,10 @@
 							<Col class="d-flex justify-content-center">
 								{#each allTags.org as tag}
 									<Button
-										color={currentTags.includes(tag) ? 'primary' : 'secondary'}
-										class="mx-1 badge text-white"
+										color={currentTags.includes(tag) ? 'primary' : 'light'}
+										class={`mx-1 badge  border border-primary ${
+											currentTags.includes(tag) ? 'text-white' : 'text-primary'
+										}`}
 										on:click={(e) => {
 											e.preventDefault();
 											useThisTag(tag, e.shiftKey);
@@ -233,8 +235,10 @@
 								{#each allTags.mine as tag}
 									<Button
 										size="sm"
-										color={currentTags.includes(tag) ? 'primary' : 'secondary'}
-										class="mx-1 badge kfk-round text-white"
+										color={currentTags.includes(tag) ? 'primary' : 'light'}
+										class={`mx-1 badge kfk-round border border-primary ${
+											currentTags.includes(tag) ? 'text-white' : 'text-primary'
+										}`}
 										on:click={(e) => {
 											e.preventDefault();
 											useThisTag(tag, e.shiftKey);

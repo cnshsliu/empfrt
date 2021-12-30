@@ -149,7 +149,7 @@
 								/ adhoc
 							{/if}
 							{#if row.rehearsal}
-								/ <i class="bi-patch-check" />
+								/ <i class="bi-patch-check-fill" />
 								{row.doer}
 							{/if}
 						</sup>

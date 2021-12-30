@@ -312,7 +312,7 @@
 					<span>Recent used team:</span>
 					{#each recentTeams as ateam, index (ateam)}
 						<Button
-							class="mx-1 badge bg-info text-dark"
+							class="mx-1 badge bg-light text-primary border border-primary"
 							on:click={(e) => {
 								e.preventDefault();
 								console.log(ateam);
@@ -335,7 +335,7 @@
 				<CardBody>
 					<CardText>
 						{#each theTeam.tmap[aRole] as aMember (aMember.uid)}
-							<Badge pill color="info" class="kfk-tag">
+							<Badge pill color="light" class="kfk-tag border border-primary text-primary">
 								{aMember.cn} &lt;{aMember.uid}&gt;
 							</Badge>
 						{/each}

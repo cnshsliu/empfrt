@@ -322,17 +322,19 @@
 								</InputGroup>
 							</Row>
 							{#each row.tags as tag, tagIndex}
-								<Badge pill color="secondary" class="kfk-tag">
-									{tag.text}
-									<a
-										href={'#'}
-										on:click|preventDefault={() => {
-											deleteATag(index, row.tplid, row.tags, tag.text);
-										}}
-									>
-										<Icon name="x" />
-									</a>
-								</Badge>
+								{#if tag.owner === user.email}
+									<Badge pill color="light" class="kfk-tag text-primary border border-primary">
+										{tag.text}
+										<a
+											href={'#'}
+											on:click|preventDefault={() => {
+												deleteATag(index, row.tplid, row.tags, tag.text);
+											}}
+										>
+											<Icon name="x" />
+										</a>
+									</Badge>
+								{/if}
 							{/each}
 						</Container>
 					</td>

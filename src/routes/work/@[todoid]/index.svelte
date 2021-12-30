@@ -44,6 +44,7 @@
 	import { title } from '$lib/title';
 	import { onMount } from 'svelte';
 	import WorkPage from './workpage.svelte';
+	import { StatusClass, StatusLabel } from '$lib/lang';
 	import { Container, Row, Col } from 'sveltestrap';
 	import { ClientPermControl } from '$lib/clientperm';
 	export let work: Work;
@@ -51,6 +52,7 @@
 	export let delegators;
 
 	let radioGroup;
+	let printing = false;
 
 	let browser_locale = window.navigator.userLanguage || window.navigator.language;
 	console.log(browser_locale);
@@ -115,12 +117,34 @@ let WORKITEM_HTML = await axios.post(
 		</div>
 	</div>
 </Container>
-<Container>
-	{#if ClientPermControl(user.perms, user.email, '*', '', 'admin') && iframeMode === false}
+<Container class="mt-3 kfk-highlight-2">
+	<Row>
+		<!--Col>
+						<span class="fw-bold fs-5">Starter:</span>
+						<div class="fw-light">{work.wf.starter}</div>
+					</Col-->
+		<Col>
+			<span class="fw-bold fs-5">Task Status:</span>
+			<div class={'fw-light ' + StatusClass(work.status)}>{StatusLabel(work.status)}</div>
+		</Col>
+		<Col>
+			<span class="fw-bold fs-5">Task Owner:</span>
+			<div class="fw-light">{work.doer}</div>
+		</Col>
+		<Col>
+			{#if work.doneat}
+				<span class="fw-bold fs-5">Complete at:</span>
+				<div class="fw-light">{work.doneat ? TimeTool.format(work.doneat, 'LLL') : ''}</div>
+			{/if}
+		</Col>
+		<Col />
+	</Row>
+	<WorkPage {work} {user} {iframeMode} {TimeTool} />
+</Container>
+<Container class="mt-5">
+	{#if printing === false && ClientPermControl(user.perms, user.email, '*', '', 'admin') && iframeMode === false}
 		<TabContent>
-			<TabPane tabId="work" tab="Work" active>
-				<WorkPage {work} {user} {iframeMode} {TimeTool} />
-			</TabPane>
+			<TabPane tabId="developer" tab="For Developers" active />
 			<TabPane tabId="json" tab="JSON">
 				<Row class="mt-3">
 					<Col>
@@ -223,7 +247,5 @@ let WORKITEM_HTML = await axios.post(
 				</Row>
 			</TabPane>
 		</TabContent>
-	{:else}
-		<WorkPage {work} {user} {delegators} {iframeMode} {TimeTool} />
 	{/if}
 </Container>
