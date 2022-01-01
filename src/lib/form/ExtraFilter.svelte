@@ -16,10 +16,11 @@
 	import type { User, radioOption } from '$lib/types';
 	import { createEventDispatcher } from 'svelte';
 	import { onMount } from 'svelte';
-	import { filterStore } from '$lib/empstores';
-	import { session } from '$app/stores';
+	import { filterStorage } from '$lib/empstores';
 	export let object_type: string;
 	let filter_doer: string;
+	let filter_starter: string;
+	let filter_tspan: string;
 	export let filter_template: string;
 	export let user: User;
 	export let delegators;
@@ -44,12 +45,16 @@
 		tplChangedTo((e.target as HTMLInputElement).value);
 	}
 	function tplChangedTo(value) {
-		$filterStore.tplid = value;
+		$filterStorage.tplid = value;
 		dispatch('filterTemplateChange');
+	}
+	function starterChanged() {
+		$filterStorage.starter = filter_starter;
+		dispatch('filterStarterChange');
 	}
 
 	function doerChanged() {
-		$filterStore.doer = filter_doer;
+		$filterStorage.doer = filter_doer;
 		dispatch('filterDoerChange');
 	}
 
@@ -71,16 +76,20 @@
 	}
 
 	export function reload() {
-		if (object_type === 'work items') filter_status = $filterStore.workStatus;
-		else filter_status = $filterStore.wfStatus;
-		filter_template = $filterStore.tplid;
-		filter_doer = $filterStore.doer;
+		if (object_type === 'work items') filter_status = $filterStorage.workStatus;
+		else filter_status = $filterStorage.wfStatus;
+		filter_template = $filterStorage.tplid;
+		filter_doer = $filterStorage.doer;
+		filter_tspan = $filterStorage.tspan;
+		filter_starter = $filterStorage.starter;
 		statusMessage = getStatusMessage(filter_status);
 	}
 	export function reset() {
 		filter_status = 'All';
 		filter_template = '';
 		filter_doer = user.email;
+		filter_starter = user.email;
+		filter_tspan = '';
 		statusMessage = getStatusMessage(filter_status);
 	}
 	onMount(async () => {
@@ -89,9 +98,8 @@
 </script>
 
 {#if fields.indexOf('statuses') > -1}
-	<Container class="kfk-tab-menu">
-		<Row>
-			<Col xs="auto"><Icon name="ui-radios" />&nbsp; {statuses_label}</Col>
+	<Container>
+		<Row class="d-flex justify-content-center">
 			{#each statuses as status, index (status)}
 				<Col xs="auto">
 					<Input
@@ -104,82 +112,112 @@
 				</Col>
 			{/each}
 		</Row>
-		<Row><Col class="mx-3">{statusMessage}</Col></Row>
 	</Container>
 {/if}
-{#if fields.indexOf('templatepicker') > -1}
-	<Row class="mt-1">
-		<InputGroup>
-			<InputGroupText>Template:</InputGroupText>
-			<Input
-				type="select"
-				name="selectTpl"
-				id="tplSelect"
-				bind:value={filter_template}
-				on:change={tplChanged}
-			>
-				<option value="">--All Template--</option>
-				{#each templates as tpl, index (tpl)}
-					{#if tpl !== $filterStore.tplid}
-						<option value={tpl}>{tpl}</option>
-					{:else}
-						<option value={tpl} selected>--&gt;&gt; {tpl}</option>
-					{/if}
-				{/each}
-			</Input>
-			<Button
-				on:click={(e) => {
-					e.preventDefault;
-					filter_template = '';
-					tplChangedTo('');
-				}}>All</Button
-			>
-		</InputGroup>
-	</Row>
-{/if}
-{#if fields.indexOf('doer') > -1}
-	<Row class="mt-0">
+{#if fields.includes('templatepicker') || fields.includes('doer')}
+	<Row cols={{ xs: 1, md: 2 }}>
 		<Col>
-			{#if user.group === 'ADMIN'}
+			<InputGroup>
+				<InputGroupText>Template:</InputGroupText>
+				<Input
+					type="select"
+					name="selectTpl"
+					id="tplSelect"
+					bind:value={filter_template}
+					on:change={tplChanged}
+				>
+					<option value="">--All Template--</option>
+					{#each templates as tpl, index (tpl)}
+						{#if tpl !== $filterStorage.tplid}
+							<option value={tpl}>{tpl}</option>
+						{:else}
+							<option value={tpl} selected>--&gt;&gt; {tpl}</option>
+						{/if}
+					{/each}
+				</Input>
+				<Button
+					on:click={(e) => {
+						e.preventDefault;
+						filter_template = '';
+						tplChangedTo('');
+					}}
+				>
+					All
+				</Button>
+			</InputGroup>
+		</Col>
+		{#if fields.indexOf('starter') > -1}
+			<Col>
 				<InputGroup class="kfk-input-template-name d-flex">
-					<InputGroupText>
-						<Icon name="person-badge" />&nbsp; List workitems assigned to
-					</InputGroupText>
+					<InputGroupText>Starter:</InputGroupText>
 					<input
 						class="flex-fill"
 						name="other_doer"
-						bind:value={filter_doer}
+						bind:value={filter_starter}
 						aria-label="User Email"
 						placeholder="Input user email to query his/her workitems"
 					/>
-					<Button on:click={doerChanged} color="primary">List&gt;</Button>
+					<Button on:click={starterChanged} color="primary">List</Button>
 					<Button
 						on:click={() => {
-							filter_doer = user.email;
-							doerChanged();
+							filter_starter = user.email;
+							starterChanged();
 						}}
 						color="secondary"
 					>
-						Mine&gt;
+						Me
+					</Button>
+					<Button
+						on:click={() => {
+							filter_starter = '';
+							starterChanged();
+						}}
+						color="secondary"
+					>
+						Any
 					</Button>
 				</InputGroup>
-			{:else if delegators.length > 0}
-				<InputGroup>
-					<InputGroupText>
-						<Icon name="person-badge" />&nbsp; View works for delegator:
-					</InputGroupText>
-					<Input type="select" name="select" id="exampleSelect" bind:value={filter_doer}>
-						{#each delegators as delegator, index (delegator)}
-							{#if delegator === $filterStore.doer}
-								<option value={delegator} selected>{delegator}</option>
-							{:else}
-								<option value={delegator}>{delegator}</option>
-							{/if}
-						{/each}
-					</Input>
-					<Button on:click={doerChanged} color="primary">List&gt;</Button>
-				</InputGroup>
-			{/if}
-		</Col>
+			</Col>
+		{/if}
+		{#if fields.indexOf('doer') > -1}
+			<Col>
+				{#if user.group === 'ADMIN'}
+					<InputGroup class="kfk-input-template-name d-flex">
+						<InputGroupText>Owner</InputGroupText>
+						<input
+							class="flex-fill"
+							name="other_doer"
+							bind:value={filter_doer}
+							aria-label="User Email"
+							placeholder="Input user email to query his/her workitems"
+						/>
+						<Button on:click={doerChanged} color="primary">List&gt;</Button>
+						<Button
+							on:click={() => {
+								filter_doer = user.email;
+								doerChanged();
+							}}
+							color="secondary"
+						>
+							Mine&gt;
+						</Button>
+					</InputGroup>
+				{:else if delegators.length > 0}
+					<InputGroup>
+						<InputGroupText>Delegator:</InputGroupText>
+						<Input type="select" name="select" id="exampleSelect" bind:value={filter_doer}>
+							{#each delegators as delegator, index (delegator)}
+								{#if delegator === $filterStorage.doer}
+									<option value={delegator} selected>{delegator}</option>
+								{:else}
+									<option value={delegator}>{delegator}</option>
+								{/if}
+							{/each}
+						</Input>
+						<Button on:click={doerChanged} color="primary">List</Button>
+					</InputGroup>
+				{/if}
+			</Col>
+		{/if}
 	</Row>
 {/if}

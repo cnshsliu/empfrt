@@ -24,12 +24,13 @@
 	import { onMount } from 'svelte';
 	import RemoteTable from './RemoteTable.svelte';
 	import ErrorProcessor from '$lib/errorProcessor';
+	import TagPicker from '$lib/TagPicker.svelte';
 	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation';
 	import * as api from '$lib/api';
 	import type { WhichTab } from '$lib/types';
-	import { whichTabStore } from '$lib/empstores';
-	import { filterStore } from '$lib/empstores';
+	import { whichTabStorage } from '$lib/empstores';
+	import { filterStorage } from '$lib/empstores';
 	import { ClientPermControl } from '$lib/clientperm';
 	import { TabContent, Badge, Fade, Card, TabPane, FormGroup, Label, Input } from 'sveltestrap';
 	import type { User } from '$lib/types';
@@ -94,12 +95,12 @@
 		org: [],
 		mine: []
 	};
-	let whichTab: WhichTab = get(whichTabStore);
+	let whichTab: WhichTab = get(whichTabStorage);
 	async function showTab(tabId) {
-		whichTab = get(whichTabStore);
+		whichTab = get(whichTabStorage);
 		if (whichTab) {
 			whichTab['template'] = tabId;
-			whichTabStore.set(whichTab);
+			whichTabStorage.set(whichTab);
 		}
 		if (tabId === 'tags') {
 			await reloadTags();
@@ -126,13 +127,13 @@
 	let currentTags = [];
 	const clearTag = function () {
 		currentTags = [];
-		$filterStore.tplTag = '';
+		$filterStorage.tplTag = '';
 		theRemoteTable.tagsForFilter = [];
 		theRemoteTable.refresh();
 	};
 	const useThisTag = function (tag, appendMode = false) {
 		if (appendMode) {
-			let existingTags = $filterStore.tplTag;
+			let existingTags = $filterStorage.tplTag;
 			if (Parser.isEmpty(existingTags)) {
 				existingTags = '';
 			}
@@ -147,7 +148,7 @@
 			if (tag.trim().length > 0) currentTags = [tag];
 			else currentTags = [];
 		}
-		$filterStore.tplTag = currentTags.join(';');
+		$filterStorage.tplTag = currentTags.join(';');
 		theRemoteTable.tagsForFilter = currentTags;
 		theRemoteTable.refresh();
 	};
@@ -159,14 +160,14 @@
 	});
 </script>
 
-<Container class="mt-1">
+<Container class="p-2">
 	<div class="d-flex">
 		<div class="flex-shrink-0 fs-3">Templates</div>
-		<div class="ms-5 align-self-center flex-grow-1">Defines how workflow would be running</div>
+		<div class="ms-5 align-self-center flex-grow-1">&nbsp;</div>
 		<div class="justify-content-end flex-shrink-0">
 			<Button
 				on:click={async () => {
-					$filterStore.tplTitlePattern = '';
+					$filterStorage.tplTitlePattern = '';
 					await theRemoteTable.reset();
 					clearTag();
 				}}
@@ -176,6 +177,7 @@
 			</Button>
 		</div>
 	</div>
+	<TagPicker {currentTags} {useThisTag} {clearTag} />
 </Container>
 <Container>
 	<TabContent
@@ -202,66 +204,6 @@
 						{aTplid}
 					</Button>
 				{/each}
-			</Container>
-		</TabPane>
-		<TabPane tabId="tags" active={whichTab && whichTab['template'] === 'tags'}>
-			<span slot="tab">
-				<Icon name="tags" />
-				Tags
-			</span>
-			<Container>
-				<div class="d-flex">
-					<div class="w-100">
-						<Row class="mb-2">
-							<Col class="d-flex justify-content-center">
-								{#each allTags.org as tag}
-									<Button
-										color={currentTags.includes(tag) ? 'primary' : 'light'}
-										class={`mx-1 badge  border border-primary ${
-											currentTags.includes(tag) ? 'text-white' : 'text-primary'
-										}`}
-										on:click={(e) => {
-											e.preventDefault();
-											useThisTag(tag, e.shiftKey);
-										}}
-									>
-										{tag}
-									</Button>
-								{/each}
-							</Col>
-						</Row>
-						<Row>
-							<Col class="d-flex justify-content-center">
-								{#each allTags.mine as tag}
-									<Button
-										size="sm"
-										color={currentTags.includes(tag) ? 'primary' : 'light'}
-										class={`mx-1 badge kfk-round border border-primary ${
-											currentTags.includes(tag) ? 'text-white' : 'text-primary'
-										}`}
-										on:click={(e) => {
-											e.preventDefault();
-											useThisTag(tag, e.shiftKey);
-										}}
-									>
-										{tag}
-									</Button>
-								{/each}
-							</Col>
-						</Row>
-					</div>
-					<div class="flex-shrink-1">
-						<Button
-							color="primary"
-							on:click={(e) => {
-								e.preventDefault();
-								clearTag('');
-							}}
-						>
-							See All
-						</Button>
-					</div>
-				</div>
 			</Container>
 		</TabPane>
 		{#if user.perms && ClientPermControl(user.perms, user.email, 'template', '', 'create')}
@@ -357,7 +299,7 @@
 		{/if}
 	</TabContent>
 </Container>
-<Container class="mt-3 kfk-result-list">
+<Container class="mt-1 kfk-result-list">
 	<Row>
 		<Col>
 			<RemoteTable

@@ -26,6 +26,9 @@
 	let whichtoChange = '';
 	let serverListKey = '';
 	let creatingAdhoc = false;
+	let adhocTaskDoerConfirmed = false;
+	let checkingTimer = null;
+	let checkingAdhocResult = [];
 	import { getNotificationsContext } from 'svelte-notifications';
 	const { addNotification } = getNotificationsContext();
 
@@ -59,6 +62,8 @@
 		goto(iframeMode ? '/work?iframe' : '/work');
 	}
 	function _toggleAdhoc() {
+		adhocTaskDoerConfirmed = false;
+		checkingAdhocResult = [];
 		showAdhocForm = !showAdhocForm;
 	}
 	function setFadeMessage(message: string, type = 'warning', pos = 'bottom-right', time = 2000) {
@@ -69,6 +74,31 @@
 			removeAfter: time
 		});
 	}
+	const checkAdhocTaskDoer = async function (evt, atonce = false) {
+		if (adhocTaskDoer.trim().length === 0) return;
+		creatingAdhoc = true;
+
+		if (atonce || checkingTimer) {
+			clearTimeout(checkingTimer);
+			checkingTimer = null;
+		}
+		checkingTimer = setTimeout(
+			async () => {
+				checkingAdhocResult = (await api.post(
+					'work/explain/pds',
+					{
+						wfid: work.wfid,
+						rds: adhocTaskDoer
+					},
+					user.sessionToken
+				)) as unknown as any[];
+				console.log(checkingAdhocResult);
+				checkingTimer = null;
+			},
+			atonce ? 1 : 1000
+		);
+	};
+
 	const createAdhoc = async function () {
 		console.log(adhocTaskTitle);
 		console.log(adhocTaskDoer);
@@ -367,15 +397,25 @@
 									/>
 									<label for="input-adhoc-doer">Who should do it (in PDS format)?</label>
 								</div>
+								<Button
+									color="primary"
+									on:click={async (e) => {
+										e.preventDefault();
+										await checkAdhocTaskDoer(e, true);
+									}}
+								>
+									Check
+								</Button>
 							</Col>
 							<Container class="mt-2">
 								<span>Recent started:</span>
 								{#each recentUsers as aUser}
 									<Button
 										class="mx-1 badge bg-info text-dark"
-										on:click={(e) => {
+										on:click={async (e) => {
 											e.preventDefault();
 											adhocTaskDoer = aUser;
+											await checkAdhocTaskDoer(e, true);
 										}}
 									>
 										{aUser}
@@ -394,28 +434,53 @@
 									<label for="input-adhoc-comment">Any extra comments?</label>
 								</div>
 							</Col>
-							<Col class="d-flex justify-content-end my-1">
+							{#if adhocTaskDoerConfirmed}
+								<Col class="d-flex justify-content-end my-1">
+									<Button
+										color="primary"
+										disabled={creatingAdhoc}
+										on:click={async (e) => {
+											e.preventDefault();
+											await createAdhoc();
+										}}
+									>
+										Send it out
+									</Button>
+									<Button
+										color="secondary"
+										class="mx-1"
+										on:click={async (e) => {
+											e.preventDefault();
+											showAdhocForm = false;
+										}}
+									>
+										Cancel
+									</Button>
+								</Col>
+							{:else if Array.isArray(checkingAdhocResult) && checkingAdhocResult.length > 0}
+								There are {checkingAdhocResult.length} users, are you sure to continue?
+								{#each checkingAdhocResult as aUser}
+									{aUser.cn}({aUser.uid})
+								{/each}
 								<Button
+									class="mt-1"
 									color="primary"
-									disabled={creatingAdhoc}
 									on:click={async (e) => {
 										e.preventDefault();
 										await createAdhoc();
-									}}
+									}}>Yes, send task to above people</Button
 								>
-									Send it out
-								</Button>
 								<Button
+									class="mt-1"
 									color="secondary"
-									class="mx-1"
 									on:click={async (e) => {
 										e.preventDefault();
 										showAdhocForm = false;
 									}}
 								>
-									Cancel
+									No, let me re-considerate
 								</Button>
-							</Col>
+							{/if}
 						</Row>
 					{/if}
 					<!-- Transfer --->

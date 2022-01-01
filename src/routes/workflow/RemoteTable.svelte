@@ -1,14 +1,19 @@
+<svelte:options accessors />
+
 <script type="ts">
 	import * as api from '$lib/api';
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
-	import { filterStore } from '$lib/empstores';
+	import { filterStorage } from '$lib/empstores';
+	import { tspans } from '$lib/variables';
+	import Parser from '$lib/parser';
 	import { onMount } from 'svelte';
 	import type { Workflow } from '$lib/types';
 	import { StatusLabel } from '$lib/lang';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
 	import { goto } from '$app/navigation';
-	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, NavLink, Icon } from 'sveltestrap';
+	import { Row, Col, InputGroup, InputGroupText, Input, Icon } from 'sveltestrap';
+	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, NavLink } from 'sveltestrap';
 	import { getData } from '$lib/pagination/Server.js';
 	import { ClientPermControl } from '$lib/clientperm';
 
@@ -25,19 +30,44 @@
 	let loading = true;
 	let rowsCount = 0;
 	let input_search;
+	let filter_tspan = '24h';
+	export let tagsForFilter;
 	let sorting = { dir: 'desc', key: 'updatedAt' };
-	let storeSorting = $filterStore.wfSorting;
+	let storeSorting = $filterStorage.wfSorting;
 	if (storeSorting) {
 		if (storeSorting.dir && storeSorting.key) {
 			sorting = storeSorting;
 		} else {
-			$filterStore.wfSorting = sorting;
+			$filterStorage.wfSorting = sorting;
 		}
+	}
+	let storeTspan = $filterStorage.tspan;
+	if (storeTspan && Object.keys(tspans).includes(storeTspan)) {
+		filter_tspan = storeTspan;
+	} else {
+		filter_tspan = '24h';
 	}
 
 	async function load(_page: number) {
 		loading = true;
-		console.log('getData....', JSON.stringify(payload_extra));
+		let fltSt = $filterStorage;
+		let payload_extra = {
+			status: fltSt.workStatus,
+			starter: fltSt.starter,
+			tspan: fltSt.tspan
+		};
+		if (fltSt.tplTag) {
+			payload_extra['tagsForFilter'] = fltSt.tplTag.split(';');
+		}
+		if (fltSt.tplid && fltSt.tplid.trim().length > 0) {
+			payload_extra['tplid'] = fltSt.tplid.trim();
+		}
+
+		if (Parser.isEmpty(payload_extra.starter)) {
+			delete payload_extra.starter;
+		} else if (Parser.isEmpty(payload_extra.starter.trim())) {
+			delete payload_extra.starter;
+		}
 		const data = await getData(
 			endpoint,
 			token,
@@ -47,11 +77,13 @@
 			sorting,
 			payload_extra
 		);
-		rows = data.rows;
-		for (let i = 0; i < rows.length; i++) {
-			rows[i].statusLabel = StatusLabel(rows[i].status);
+		if (data && data.rows) {
+			rows = data.rows;
+			for (let i = 0; i < rows.length; i++) {
+				rows[i].statusLabel = StatusLabel(rows[i].status);
+			}
+			rowsCount = data.rowsCount;
 		}
-		rowsCount = data.rowsCount;
 		loading = false;
 	}
 
@@ -62,7 +94,7 @@
 
 	async function onSearch(event) {
 		input_search = event.detail.text;
-		$filterStore.wfTitlePattern = input_search;
+		$filterStorage.wfTitlePattern = input_search;
 		await load(page);
 		page = 0;
 	}
@@ -70,14 +102,12 @@
 	export async function refresh(detail) {
 		if (detail && detail.page) page = detail.page;
 		if (detail && detail.sorting) sorting = detail.sorting;
-		if (detail && detail.payload_extra) payload_extra = detail.payload_extra;
-		console.log('REmote table refresh', payload_extra);
 		await load(page);
 	}
 
 	async function onSort(event) {
 		sorting = { dir: event.detail.dir, key: event.detail.key };
-		$filterStore.wfSorting = sorting;
+		$filterStorage.wfSorting = sorting;
 		await load(page);
 	}
 
@@ -86,20 +116,20 @@
 			goto(`/template/start?tplid=${workflow.tplid}`);
 			return;
 		} else if (op === 'works') {
-			$filterStore.tplid = workflow.tplid;
-			$filterStore.workTitlePattern = 'wf:' + workflow.wfid;
+			$filterStorage.tplid = workflow.tplid;
+			$filterStorage.workTitlePattern = 'wf:' + workflow.wfid;
 			goto('/work');
 			return;
 		} else if (op === 'works_running') {
-			$filterStore.tplid = workflow.tplid;
-			$filterStore.workTitlePattern = 'wf:' + workflow.wfid;
-			$filterStore.workStatus = 'ST_RUN';
+			$filterStorage.tplid = workflow.tplid;
+			$filterStorage.workTitlePattern = 'wf:' + workflow.wfid;
+			$filterStorage.workStatus = 'ST_RUN';
 			goto('/work');
 			return;
 		} else if (op === 'works_all') {
-			$filterStore.tplid = workflow.tplid;
-			$filterStore.workTitlePattern = 'wf:' + workflow.wfid;
-			$filterStore.workStatus = 'All';
+			$filterStorage.tplid = workflow.tplid;
+			$filterStorage.workTitlePattern = 'wf:' + workflow.wfid;
+			$filterStorage.workStatus = 'All';
 			goto('/work');
 			return;
 		} else if (op === 'viewTemplate') {
@@ -139,7 +169,7 @@
 				rowsCount = rowsCount - 1;
 			}
 		}
-		$filterStore.workTitlePattern = 'wf:' + ret.wfid;
+		$filterStorage.workTitlePattern = 'wf:' + ret.wfid;
 		console.log('Come to refresh', op);
 		await refresh({});
 	};
@@ -148,7 +178,7 @@
 		input_search = '';
 	}
 	export function reload() {
-		input_search = $filterStore.wfTitlePattern;
+		input_search = $filterStorage.wfTitlePattern;
 	}
 
 	onMount(async () => {
@@ -158,7 +188,31 @@
 
 <Table {loading} {rows} {pageIndex} {pageSize}>
 	<div slot="top">
-		<Search on:search={onSearch} text={input_search} />
+		<Row cols={{ xs: 1, md: 2 }}>
+			<Col>
+				<Search on:search={onSearch} text={input_search} />
+			</Col>
+			<Col>
+				<InputGroup>
+					<InputGroupText>In:</InputGroupText>
+					<Input
+						type="select"
+						id="timespanSelect"
+						bind:value={filter_tspan}
+						on:change={async (e) => {
+							e.preventDefault();
+							filter_tspan = e.target.value;
+							$filterStorage.tspan = filter_tspan;
+							await load(page);
+						}}
+					>
+						{#each Object.keys(tspans) as key}
+							<option value={key}>{tspans[key]}</option>
+						{/each}
+					</Input>
+				</InputGroup>
+			</Col>
+		</Row>
 	</div>
 	<thead slot="head">
 		<tr>

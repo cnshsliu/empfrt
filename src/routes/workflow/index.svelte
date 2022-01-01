@@ -13,8 +13,10 @@
 <script lang="ts">
 	import * as Utils from '$lib/utils';
 	import { API_SERVER } from '$lib/Env';
+	import TagPicker from '$lib/TagPicker.svelte';
+	import Parser from '$lib/parser';
 	import { onMount } from 'svelte';
-	import { filterStore } from '$lib/empstores';
+	import { filterStorage } from '$lib/empstores';
 	import * as api from '$lib/api';
 	import RemoteTable from './RemoteTable.svelte';
 	import ExtraFilter from '$lib/form/ExtraFilter.svelte';
@@ -34,6 +36,58 @@
 	let theSearchForm;
 	let tplidImport;
 	let payload_extra = { filter: { status: '', tplid: '' } };
+	let currentTags = [];
+
+	const setTemplates = async function () {
+		let existingTags = $filterStorage.tplTag;
+		if (Parser.isEmpty(existingTags)) {
+			existingTags = '';
+		}
+		let existingArr = existingTags.split(';');
+		currentTags = existingArr;
+		let tmp = await api.post(
+			'template/tplid/list',
+			{ tagsForFilter: currentTags },
+			user.sessionToken
+		);
+		templates = tmp.map((x) => x.tplid);
+	};
+
+	const clearTag = function () {
+		currentTags = [];
+		$filterStorage.tplTag = '';
+		theRemoteTable.tagsForFilter = [];
+		theRemoteTable.refresh();
+	};
+
+	const useThisTag = async function (tag, appendMode = false) {
+		if (appendMode) {
+			let existingTags = $filterStorage.tplTag;
+			if (Parser.isEmpty(existingTags)) {
+				existingTags = '';
+			}
+			let existingArr = existingTags.split(';');
+			if (existingArr.includes(tag)) {
+				currentTags = existingArr.filter((x) => x !== tag);
+			} else {
+				let newTags = existingTags + ';' + tag;
+				currentTags = newTags.split(';').filter((x) => x.length > 0);
+			}
+		} else {
+			if (tag.trim().length > 0) currentTags = [tag];
+			else currentTags = [];
+		}
+		$filterStorage.tplTag = currentTags.join(';');
+		$filterStorage.tplid = '';
+		theRemoteTable.tagsForFilter = currentTags;
+		let tmp = await api.post(
+			'template/tplid/list',
+			{ tagsForFilter: currentTags },
+			user.sessionToken
+		);
+		templates = tmp.map((x) => x.tplid);
+		theRemoteTable.refresh();
+	};
 
 	function hide_all_form() {
 		Object.keys(form_status).forEach((key) => {
@@ -48,55 +102,59 @@
 	}
 
 	function checkStore() {
-		if (Utils.isBlank($filterStore.doer)) {
-			$filterStore.doer = user.email;
+		if (Utils.isBlank($filterStorage.doer)) {
+			$filterStorage.doer = user.email;
 		}
-		if (Utils.isBlank($filterStore.wfStatus)) {
-			$filterStore.wfStatus = 'ST_RUN';
+		if (Utils.isBlank($filterStorage.wfStatus)) {
+			$filterStorage.wfStatus = 'ST_RUN';
 		}
-		if (Utils.isBlank($filterStore.workStatus)) {
-			$filterStore.workStatus = 'ST_RUN';
+		if (Utils.isBlank($filterStorage.workStatus)) {
+			$filterStorage.workStatus = 'ST_RUN';
 		}
-		if ($filterStore.workTitlePattern === undefined) {
-			$filterStore.workTitlePattern = '';
+		if ($filterStorage.workTitlePattern === undefined) {
+			$filterStorage.workTitlePattern = '';
 		}
-		if ($filterStore.wfTitlePattern === undefined) {
-			$filterStore.wfTitlePattern = '';
+		if ($filterStorage.wfTitlePattern === undefined) {
+			$filterStorage.wfTitlePattern = '';
 		}
 	}
 
 	function refreshList() {
 		checkStore();
-		payload_extra.filter.status = $filterStore.wfStatus;
-
-		payload_extra.filter.tplid = $filterStore.tplid;
-		//payload_extra.doer = $filterStore.doer;
-		theRemoteTable && theRemoteTable.refresh({ payload_extra });
+		theRemoteTable && theRemoteTable.refresh();
 	}
 
 	let templates = [];
 	onMount(async () => {
-		let tmp = await api.post('template/tplid/list', {}, user.sessionToken);
-		templates = tmp.map((x) => x.tplid);
+		let existingTags = $filterStorage.tplTag;
+		if (Parser.isEmpty(existingTags)) {
+			existingTags = '';
+		}
+		let existingArr = existingTags.split(';');
+		currentTags = existingArr;
+		theRemoteTable.tagsForFilter = currentTags;
+
+		await setTemplates();
 		refreshList();
 	});
 
 	function filterStatusChanged(event) {
-		$filterStore.wfStatus = event.detail;
+		$filterStorage.wfStatus = event.detail;
 		refreshList();
 	}
 </script>
 
-<Container class="mt-1">
+<Container class="p-2">
 	<div class="d-flex">
 		<div class="flex-shrink-0 fs-3">Processes</div>
-		<div class="ms-5 align-self-center flex-grow-1">Instantiated workflow processes</div>
+		<div class="ms-5 align-self-center flex-grow-1">&nbsp;</div>
 		<div class="justify-content-end flex-shrink-0">
 			<Button
 				on:click={() => {
-					$filterStore.wfStatus = 'All';
-					$filterStore.tplid = '';
-					$filterStore.wfTitlePattern = '';
+					$filterStorage.wfStatus = 'All';
+					$filterStorage.tplid = '';
+					$filterStorage.wfTitlePattern = '';
+					clearTag();
 					theExtraFilter.reset();
 					theRemoteTable.reset();
 					refreshList();
@@ -107,6 +165,7 @@
 			</Button>
 		</div>
 	</div>
+	<TagPicker {currentTags} {useThisTag} {clearTag} />
 </Container>
 <Container class="mb-3">
 	<svelte:component
@@ -115,8 +174,9 @@
 		{user}
 		on:filterStatusChange={filterStatusChanged}
 		on:filterTemplateChange={refreshList}
+		on:filterStarterChange={refreshList}
 		statuses_label="Workflow status:"
-		fields="{['statuses', 'templatepicker']},"
+		fields="{['starter', 'statuses', 'templatepicker']},"
 		object_type="processes"
 		statuses={[
 			{ value: 'All', label: 'All' },
@@ -127,16 +187,12 @@
 		]}
 		{templates}
 	/>
-	<Row class="mt-1">
-		<Col>
-			<RemoteTable
-				endpoint="workflow/search"
-				{token}
-				{user}
-				{payload_extra}
-				bind:this={theRemoteTable}
-				{TimeTool}
-			/>
-		</Col>
-	</Row>
+	<RemoteTable
+		endpoint="workflow/search"
+		{token}
+		{user}
+		{payload_extra}
+		bind:this={theRemoteTable}
+		{TimeTool}
+	/>
 </Container>

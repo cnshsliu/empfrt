@@ -30,7 +30,7 @@
 <script lang="ts">
 	import type { User, Template, Workflow } from '$lib/types';
 	import { session } from '$app/stores';
-	import { filterStore } from '$lib/empstores';
+	import { filterStorage } from '$lib/empstores';
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
 	import { goto } from '$app/navigation';
 	import { title } from '$lib/title';
@@ -54,7 +54,7 @@
 	export let user: User;
 	const opWorkflow = (wfid: string, op: string): void => {
 		if (op === 'works') {
-			$filterStore.workTitlePattern = 'wf:' + wfid;
+			$filterStorage.workTitlePattern = 'wf:' + wfid;
 			goto('/work');
 		}
 		setTimeout(async () => {

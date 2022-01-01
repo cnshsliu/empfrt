@@ -9,6 +9,9 @@ const Parser = {
 		if (str === '') return true;
 		return false;
 	},
+	hasValue: function (str: string | number): boolean {
+		return !this.isEmpty(str);
+	},
 	kvarsToArray: function (kvars: KVars, workid: string): Record<string, unknown>[] {
 		const kvarsArr = [];
 		for (const [name, valueDef] of Object.entries(kvars)) {

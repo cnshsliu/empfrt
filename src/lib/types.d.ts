@@ -223,6 +223,10 @@ export interface FilterPicks {
 	tplTag: string;
 	tplid: string;
 	doer: string;
+	starter: string;
+	author: string;
+	calendar_from: string;
+	calendar_to: string;
 	workTitlePattern: string;
 	wfTitlePattern: string;
 	tplTitlePattern: string;
@@ -236,6 +240,7 @@ export interface FilterPicks {
 	settingTab2nd: string;
 	try_with_teamid?: string;
 	try_with_email?: string;
+	tspan: string;
 	debug: string;
 }
 export interface EmpResponse {

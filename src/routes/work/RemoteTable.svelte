@@ -1,22 +1,25 @@
+<svelte:options accessors />
+
 <script type="ts">
 	import * as api from '$lib/api';
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
-	import { filterStore } from '$lib/empstores';
+	import { filterStorage } from '$lib/empstores';
+	import { tspans } from '$lib/variables';
 	import { onMount } from 'svelte';
 	import { StatusLabel } from '$lib/lang';
 	import type { Workflow, Work } from '$lib/types';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
 	import { goto } from '$app/navigation';
-	import { Button, InputGroup, Icon } from 'sveltestrap';
+	import { Row, Col, Button, InputGroup, InputGroupText, Input, Icon } from 'sveltestrap';
 	import { getData } from '$lib/pagination/Server.js';
 
 	export let token;
 	export let iframeMode;
 	export let endpoint;
-	export let payload_extra;
 	export let TimeTool;
 	let rows = [];
+	export let tagsForFilter;
 	let page = 0; //first page
 	let pageIndex = 0; //first row
 	let pageSize = 10; //optional, 10 by default
@@ -24,18 +27,39 @@
 	let loading = true;
 	let rowsCount = 0;
 	let input_search;
+	let filter_tspan = '24h';
 	let sorting = { dir: 'desc', key: 'lastdays' };
-	let storeSorting = $filterStore.workSorting;
+	let storeSorting = $filterStorage.workSorting;
 	if (storeSorting) {
 		if (storeSorting.dir && storeSorting.key) {
 			sorting = storeSorting;
 		} else {
-			$filterStore.workSorting = sorting;
+			$filterStorage.workSorting = sorting;
 		}
+	}
+	let storeTspan = $filterStorage.tspan;
+	if (storeTspan && Object.keys(tspans).includes(storeTspan)) {
+		filter_tspan = storeTspan;
+	} else {
+		filter_tspan = '24h';
+		$filterStorage.tspan = filter_tspan;
 	}
 
 	async function load(_page, reason) {
 		loading = true;
+		let fltSt = $filterStorage;
+		let payload_extra = {
+			status: fltSt.workStatus,
+			doer: fltSt.doer,
+			tspan: fltSt.tspan
+		};
+		if (fltSt.tplTag) {
+			payload_extra['tagsForFilter'] = fltSt.tplTag.split(';');
+		}
+		if (fltSt.tplid && fltSt.tplid.trim().length > 0) {
+			payload_extra['tplid'] = fltSt.tplid.trim();
+		}
+
 		const data = await getData(
 			endpoint,
 			token,
@@ -45,9 +69,12 @@
 			sorting,
 			payload_extra
 		);
-		console.log('load', payload_extra);
-		rows = data.rows;
-		rowsCount = data.rowsCount;
+		if (data && data.rows) {
+			rows = data.rows;
+			rowsCount = data.rowsCount;
+		} else {
+			console.warn(JSON.stringify(data));
+		}
 		loading = false;
 	}
 
@@ -63,7 +90,7 @@
 
 	async function onSearch(event) {
 		input_search = event.detail.text;
-		$filterStore.workTitlePattern = input_search;
+		$filterStorage.workTitlePattern = input_search;
 		await load(page, 'onSearch');
 		page = 0;
 	}
@@ -71,7 +98,6 @@
 	export async function refresh(detail) {
 		if (detail && detail.page) page = detail.page;
 		if (detail && detail.sorting) sorting = detail.sorting;
-		if (detail && detail.payload_extra) payload_extra = detail.payload_extra;
 		await load(page, 'refresh');
 	}
 
@@ -79,7 +105,7 @@
 		input_search = '';
 	}
 	export function reload() {
-		input_search = $filterStore.workTitlePattern;
+		input_search = $filterStorage.workTitlePattern;
 	}
 
 	onMount(async () => {
@@ -88,7 +114,7 @@
 
 	async function onSort(event) {
 		sorting = { dir: event.detail.dir, key: event.detail.key };
-		$filterStore.workSorting = sorting;
+		$filterStorage.workSorting = sorting;
 		await load(page, 'onSort');
 	}
 	function gotoWorkitem(work: Work) {
@@ -103,7 +129,32 @@
 
 <Table hover {loading} {rows} {pageIndex} {pageSize} let:rows={rows2}>
 	<div slot="top">
-		<Search on:search={onSearch} text={input_search} />
+		<Row cols={{ xs: 1, md: 2 }}>
+			<Col>
+				<Search on:search={onSearch} text={input_search} />
+			</Col>
+			<Col>
+				<InputGroup>
+					<InputGroupText>In:</InputGroupText>
+					<Input
+						type="select"
+						id="timespanSelect"
+						bind:value={filter_tspan}
+						on:change={async (e) => {
+							e.preventDefault();
+							filter_tspan = e.target.value;
+							console.log(filter_tspan, e.target.value);
+							$filterStorage.tspan = filter_tspan;
+							await load(page, 'onTspan');
+						}}
+					>
+						{#each Object.keys(tspans) as key}
+							<option value={key}>{tspans[key]}</option>
+						{/each}
+					</Input>
+				</InputGroup>
+			</Col>
+		</Row>
 	</div>
 	<thead slot="head">
 		<tr>

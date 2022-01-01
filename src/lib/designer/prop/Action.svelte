@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Parser from '$lib/parser';
-	import { filterStore } from '$lib/empstores';
+	import { filterStorage } from '$lib/empstores';
 	import { goto } from '$app/navigation';
 	import * as api from '$lib/api';
 	import { session } from '$app/stores';
@@ -50,14 +50,14 @@
 		}
 	}
 
-	let theTab = $filterStore.tabs;
+	let theTab = $filterStorage.tabs;
 	if (['participant', 'instruct', 'variables'].includes(theTab) === false) {
-		$filterStore.tabs = 'participant';
+		$filterStorage.tabs = 'participant';
 	}
 
 	const setTab = function (tabname, firstLevel = true) {
-		if (firstLevel) $filterStore.tabs = tabname;
-		else $filterStore.tabs2nd = tabname;
+		if (firstLevel) $filterStorage.tabs = tabname;
+		else $filterStorage.tabs2nd = tabname;
 
 		if (tabname === 'tasks') {
 			if (typeof workid === 'string' && workid !== '') {
@@ -76,17 +76,17 @@
 	};
 	const isActive = function (tabname, firstLevel = true) {
 		if (firstLevel) {
-			let tabs = $filterStore.tabs;
+			let tabs = $filterStorage.tabs;
 			if (!tabs) {
 				tabs = 'participant';
-				$filterStore.tabs = 'participant';
+				$filterStorage.tabs = 'participant';
 			}
 			return tabs.indexOf(tabname) > -1;
 		} else {
-			let tabs2nd = $filterStore.tabs2nd;
+			let tabs2nd = $filterStorage.tabs2nd;
 			if (!tabs2nd) {
 				tabs2nd = 'basic';
-				$filterStore.tabs2nd = 'basic';
+				$filterStorage.tabs2nd = 'basic';
 			}
 			return tabs2nd.indexOf(tabname) > -1;
 		}

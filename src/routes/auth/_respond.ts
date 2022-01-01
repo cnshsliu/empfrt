@@ -1,4 +1,4 @@
-import storage from '$lib/store';
+import storage from '$lib/storage';
 import { authStore } from '$lib/authstore';
 import { writable, get } from 'svelte/store';
 

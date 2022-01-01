@@ -21,7 +21,7 @@ export async function getData(
 		payload.sort_field = sorting.key;
 	}
 	payload = { ...payload, ...payload_extra };
-	console.log('Server.getData', endpoint, payload);
+	console.log('Server.post', endpoint, JSON.stringify(payload, null, 2));
 	const ret = await api.post(endpoint, payload, token);
 
 	//服务端需要返回对象{objs:[], total: number}

@@ -19,7 +19,7 @@
 	import RemoteTable from './RemoteTable.svelte';
 	import { get } from 'svelte/store';
 	import type { WhichTab } from '$lib/types';
-	import { whichTabStore } from '$lib/empstores';
+	import { whichTabStorage } from '$lib/empstores';
 	import { ClientPermControl } from '$lib/clientperm';
 	import Parser from '$lib/parser';
 	import * as api from '$lib/api';
@@ -99,12 +99,12 @@
 				console.error('Error:', error);
 			});
 	}
-	let whichTab: WhichTab = get(whichTabStore);
+	let whichTab: WhichTab = get(whichTabStorage);
 	async function showTab(tabId) {
-		whichTab = get(whichTabStore);
+		whichTab = get(whichTabStorage);
 		if (whichTab) {
 			whichTab['team'] = tabId;
-			whichTabStore.set(whichTab);
+			whichTabStorage.set(whichTab);
 		}
 	}
 

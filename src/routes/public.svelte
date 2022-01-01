@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { whichTabStore } from '$lib/empstores';
+	import { whichTabStorage } from '$lib/empstores';
 	import { get } from 'svelte/store';
 	import { title } from '$lib/title';
 	import type { WhichTab } from '$lib/types';
@@ -8,12 +8,12 @@
 	export let user;
 	let tplid;
 
-	let whichTab: WhichTab = get(whichTabStore);
+	let whichTab: WhichTab = get(whichTabStorage);
 	async function showTab(tabId) {
-		whichTab = get(whichTabStore);
+		whichTab = get(whichTabStorage);
 		if (whichTab) {
 			whichTab['home'] = tabId;
-			whichTabStore.set(whichTab);
+			whichTabStorage.set(whichTab);
 		}
 	}
 

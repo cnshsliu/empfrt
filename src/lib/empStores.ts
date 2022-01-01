@@ -1,10 +1,11 @@
-import storage from '$lib/store';
+import storage from '$lib/storage';
 import type { WorkStatus, WhichTab, FilterPicks } from '$lib/types';
 
-export const WorkStatusStore = storage<WorkStatus>('work_status', { status: 'ST_DONE' });
+export const TagStorage = storage('tags', {});
+export const WorkStatusStorage = storage<WorkStatus>('work_status', { status: 'ST_DONE' });
 export const debugOption = storage<string>('debugOption', 'no');
 
-export const whichTabStore = storage<WhichTab>('whichtab', {
+export const whichTabStorage = storage<WhichTab>('whichtab', {
 	template: 'home',
 	team: 'search',
 	worklist: 'ST_RUN',
@@ -12,7 +13,7 @@ export const whichTabStore = storage<WhichTab>('whichtab', {
 	setting: 'personal'
 });
 
-export const filterStore = storage<FilterPicks>('filter', {
+export const filterStorage = storage<FilterPicks>('filter', {
 	wfStatus: 'ST_RUN',
 	workStatus: 'ST_RUN',
 	tplTag: '',

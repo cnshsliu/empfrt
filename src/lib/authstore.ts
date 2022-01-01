@@ -1,4 +1,4 @@
-import storage from '$lib/store';
+import storage from '$lib/storage';
 
 interface Auth {
 	jwt: string;

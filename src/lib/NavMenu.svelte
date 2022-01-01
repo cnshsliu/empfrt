@@ -32,7 +32,7 @@
 	import { goto } from '$app/navigation';
 	import { post } from '$lib/utils';
 	import { DEPLOY_MODE } from '$lib/Env';
-	import { whichTabStore } from '$lib/empstores';
+	import { whichTabStorage } from '$lib/empstores';
 	import { onMount } from 'svelte';
 
 	let isMenuOpen = true;
@@ -40,7 +40,11 @@
 	const toggle = () => (isMenuOpen = !isMenuOpen);
 	async function logout() {
 		await post(`/auth/logout`);
-		whichTabStore.set(null);
+
+		whichTabStorage.set(null);
+		try {
+			localStorage.clear();
+		} catch (e) {}
 
 		// this will trigger a redirect, because it
 		// causes the `load` function to run again

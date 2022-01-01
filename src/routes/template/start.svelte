@@ -24,7 +24,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { filterStore } from '$lib/empstores';
+	import { filterStorage } from '$lib/empstores';
 	import type { User, Template, Team, oneArgFunc } from '$lib/types';
 	import { getNotificationsContext } from 'svelte-notifications';
 	const { addNotification } = getNotificationsContext();
@@ -144,8 +144,8 @@
 			console.log('recentTemplates:>>', recentTemplates, '<<');
 			console.log('recentTeams>>', recentTeams, '<<');
 		}
-		$filterStore.tplid = tplid;
-		$filterStore.workTitlePattern = '';
+		$filterStorage.tplid = tplid;
+		$filterStorage.workTitlePattern = '';
 
 		let res = await api.post('template/basic', { tplid: tplid }, user.sessionToken);
 		desc = res.desc ? res.desc : '';
@@ -235,9 +235,9 @@
 						class="w-100"
 						on:click={(e) => {
 							e.preventDefault();
-							$filterStore.tplid = startedWorkflow.tplid;
-							$filterStore.workTitlePattern = 'wf:' + startedWorkflow.wfid;
-							$filterStore.workStatus = 'ST_RUN';
+							$filterStorage.tplid = startedWorkflow.tplid;
+							$filterStorage.workTitlePattern = 'wf:' + startedWorkflow.wfid;
+							$filterStorage.workStatus = 'ST_RUN';
 							goto('/work');
 							//goto(`/workflow/@${startedWorkflow.wfid}`);
 						}}

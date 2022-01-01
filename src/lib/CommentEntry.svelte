@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { filterStore } from '$lib/empstores';
+	import { filterStorage } from '$lib/empstores';
 	export let comment;
 
 	const gotoUser = function (uid) {
 		uid = uid.substring(1);
 		//去掉uid后面的标点符号
 		uid = uid.replace(/\W+$/, '');
-		$filterStore.gotoUID = uid;
+		$filterStorage.gotoUID = uid;
 		goto('/work');
 	};
 </script>

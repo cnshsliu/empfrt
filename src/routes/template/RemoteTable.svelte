@@ -6,8 +6,9 @@
 	import { scale } from 'svelte/transition';
 	import * as api from '$lib/api';
 	import { onMount } from 'svelte';
+	import Parser from '$lib/parser';
 	import { session } from '$app/stores';
-	import { filterStore } from '$lib/empstores';
+	import { filterStorage } from '$lib/empstores';
 	import { ClientPermControl } from '$lib/clientperm';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
 	import { goto } from '$app/navigation';
@@ -21,6 +22,7 @@
 		Row,
 		Col,
 		InputGroup,
+		InputGroupText,
 		Button,
 		Badge
 	} from 'sveltestrap';
@@ -31,7 +33,6 @@
 	export let token;
 	export let endpoint;
 	export let rows = [];
-	export let tagsForFilter;
 	export let user;
 	let page = 0; //first page
 	let pageIndex = 0; //first row
@@ -40,31 +41,48 @@
 	let loading = true;
 	export let rowsCount = 0;
 	let setTagForTplid = '';
+	let filter_author = user.email;
 	let addDescForTplid = '';
 	let input_search: String = '';
 	let sorting = { dir: 'desc', key: 'updatedAt' };
-	let storeSorting = $filterStore.tplSorting;
+	let storeSorting = $filterStorage.tplSorting;
 	if (storeSorting) {
 		if (storeSorting.dir && storeSorting.key) {
 			sorting = storeSorting;
 		} else {
-			$filterStore.tplSorting = sorting;
+			$filterStorage.tplSorting = sorting;
 		}
 	}
 
 	export function reset() {
+		filter_author = '';
+		$filterStorage.author = '';
 		input_search = '';
 	}
 	export async function reload() {
-		input_search = $filterStore.tplTitlePattern;
+		input_search = $filterStorage.tplTitlePattern;
 		await load(page);
 	}
 
+	const authorChanged = async function () {
+		if (Parser.isEmpty(filter_author)) {
+		} else {
+			if (filter_author[0] === '@') {
+				filter_author = filter_author.substring(1);
+			}
+			if (filter_author.indexOf('@') < 0) {
+				filter_author += user.email.substring(user.email.indexOf('@'));
+			}
+		}
+		$filterStorage.author = filter_author;
+		await load(page);
+	};
 	async function load(_page) {
 		loading = true;
-		console.log('Remote load', new Date());
+		let tagsForFilter = $filterStorage.tplTag.split(';');
 		const data = await getData(endpoint, token, _page, pageSize, input_search, sorting, {
-			tagsForFilter: tagsForFilter
+			tagsForFilter: tagsForFilter,
+			author: $filterStorage.author
 		});
 		rows = data.rows;
 		rowsCount = data.rowsCount;
@@ -83,7 +101,7 @@
 
 	async function onSearch(event) {
 		input_search = event.detail.text;
-		$filterStore.tplTitlePattern = input_search.toString();
+		$filterStorage.tplTitlePattern = input_search.toString();
 		await load(page);
 		page = 0;
 	}
@@ -96,7 +114,7 @@
 
 	async function onSort(event) {
 		sorting = { dir: event.detail.dir, key: event.detail.key };
-		$filterStore.tplSorting = sorting;
+		$filterStorage.tplSorting = sorting;
 		await load(page);
 	}
 
@@ -139,6 +157,12 @@
 			rowsCount = rowsCount - 1;
 		}
 	}
+
+	onMount(async () => {
+		filter_author = $filterStorage.author;
+		if (Parser.isEmpty(filter_author)) filter_author = user.email;
+		$filterStorage.author = filter_author;
+	});
 	/*
 <code>
 	<pre>
@@ -158,7 +182,42 @@
 
 <Table {loading} {rows} {pageIndex} {pageSize} let:rows={rows2}>
 	<div slot="top">
-		<Search on:search={onSearch} text={input_search} />
+		<Row cols={{ xs: 1, md: 2 }}>
+			<Col>
+				<Search on:search={onSearch} text={input_search} />
+			</Col>
+			<Col>
+				<InputGroup class="kfk-input-template-name d-flex">
+					<InputGroupText>Author:</InputGroupText>
+					<input
+						class="flex-fill"
+						name="other_doer"
+						bind:value={filter_author}
+						aria-label="User Email"
+						placeholder=""
+					/>
+					<Button on:click={authorChanged} color="primary">List</Button>
+					<Button
+						on:click={async () => {
+							filter_author = user.email;
+							await authorChanged();
+						}}
+						color="secondary"
+					>
+						Me
+					</Button>
+					<Button
+						on:click={async () => {
+							filter_author = '';
+							await authorChanged();
+						}}
+						color="secondary"
+					>
+						Any
+					</Button>
+				</InputGroup>
+			</Col>
+		</Row>
 	</div>
 	<thead slot="head">
 		<tr>
@@ -239,7 +298,7 @@
 								<a
 									href={'#'}
 									on:click|preventDefault={async () => {
-										$filterStore.tplid = row.tplid;
+										$filterStorage.tplid = row.tplid;
 										goto('/workflow');
 									}}
 									class="nav-link "
@@ -251,7 +310,7 @@
 								<a
 									href={'#'}
 									on:click|preventDefault={async () => {
-										$filterStore.tplid = row.tplid;
+										$filterStorage.tplid = row.tplid;
 										goto('/work');
 									}}
 									class="nav-link "

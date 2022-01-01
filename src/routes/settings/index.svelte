@@ -39,7 +39,7 @@
 	import { API_SERVER } from '$lib/Env';
 	import { session } from '$app/stores';
 	import { dev } from '$app/env';
-	import { filterStore } from '$lib/empstores';
+	import { filterStorage } from '$lib/empstores';
 	import { get } from 'svelte/store';
 	import { getNotificationsContext } from 'svelte-notifications';
 	const { addNotification } = getNotificationsContext();
@@ -320,14 +320,14 @@
 
 	async function showTab(tabId: string, firstLevel = true) {
 		if (firstLevel) {
-			$filterStore.settingTab = tabId;
+			$filterStorage.settingTab = tabId;
 			if (tabId === 'org') {
 				//refreshMyOrg();
 			} else if (tabId === 'members') {
 				refreshMembers();
 			}
 		} else {
-			$filterStore.settingTab2nd = tabId;
+			$filterStorage.settingTab2nd = tabId;
 		}
 	}
 
@@ -336,17 +336,17 @@
 	});
 	const isActive = function (tabname, firstLevel = true) {
 		if (firstLevel) {
-			let tabs = $filterStore.settingTab;
+			let tabs = $filterStorage.settingTab;
 			if (!tabs) {
 				tabs = 'personal';
-				$filterStore.settingTab = 'personal';
+				$filterStorage.settingTab = 'personal';
 			}
 			return tabs.indexOf(tabname) > -1;
 		} else {
-			let tabs = $filterStore.settingTab2nd;
+			let tabs = $filterStorage.settingTab2nd;
 			if (!tabs) {
 				tabs = 'personal';
-				$filterStore.settingTab = 'personal';
+				$filterStorage.settingTab = 'personal';
 			}
 			return tabs.indexOf(tabname) > -1;
 		}
