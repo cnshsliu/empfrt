@@ -31,25 +31,23 @@
 	});
 </script>
 
-{#if allTags && allTags.org && Array.isArray(allTags.org)}
-	<div class="d-flex">
-		<div class="w-100">
-			<Row class="mb-2">
-				<Col class="d-flex justify-content-center">
-					<Button
-						color={currentTags.length === 0 || currentTags[0].length === 0 ? 'primary' : 'light'}
-						class={`mx-1 badge  border border-primary ${
-							currentTags.length === 0 || currentTags[0].length === 0
-								? 'text-white'
-								: 'text-primary'
-						}`}
-						on:click={(e) => {
-							e.preventDefault();
-							clearTag('');
-						}}
-					>
-						All
-					</Button>
+<div class="d-flex">
+	<div class="w-100">
+		<Row class="mb-2">
+			<Col class="d-flex justify-content-center">
+				<Button
+					color={currentTags.length === 0 || currentTags[0].length === 0 ? 'primary' : 'light'}
+					class={`mx-1 badge  border border-primary ${
+						currentTags.length === 0 || currentTags[0].length === 0 ? 'text-white' : 'text-primary'
+					}`}
+					on:click={(e) => {
+						e.preventDefault();
+						clearTag('');
+					}}
+				>
+					All
+				</Button>
+				{#if allTags && allTags.org && Array.isArray(allTags.org)}
 					{#each allTags.org as tag}
 						<Button
 							color={currentTags.includes(tag) ? 'primary' : 'light'}
@@ -64,10 +62,12 @@
 							{tag}
 						</Button>
 					{/each}
-				</Col>
-			</Row>
-			<Row>
-				<Col class="d-flex justify-content-center">
+				{/if}
+			</Col>
+		</Row>
+		<Row>
+			<Col class="d-flex justify-content-center">
+				{#if allTags && allTags.mine && Array.isArray(allTags.mine)}
 					{#each allTags.mine as tag}
 						<Button
 							size="sm"
@@ -83,9 +83,9 @@
 							{tag}
 						</Button>
 					{/each}
-				</Col>
-			</Row>
-		</div>
-		<div class="flex-shrink-1" />
+				{/if}
+			</Col>
+		</Row>
 	</div>
-{/if}
+	<div class="flex-shrink-1" />
+</div>

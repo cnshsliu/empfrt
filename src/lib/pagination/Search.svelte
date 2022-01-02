@@ -7,6 +7,7 @@
 </script>
 
 <script>
+	import { _ } from '$lib/i18n';
 	import { createEventDispatcher, getContext } from 'svelte';
 	import { Button, InputGroup, InputGroupText, Icon } from 'sveltestrap';
 
@@ -27,7 +28,7 @@
 	export let text = '';
 
 	export let labels = {
-		placeholder: ' by name or title',
+		placeholder: $_('remotetable.bywhat'),
 		...globalLabels
 	};
 
@@ -64,7 +65,10 @@
 
 <div class="search d-flex">
 	<InputGroup>
-		<InputGroupText><Icon name="funnel" />&nbsp; Filter</InputGroupText>
+		<InputGroupText
+			><Icon name="funnel" />
+			{$_('remotetable.filter')}
+		</InputGroupText>
 		<input
 			class="flex-fill"
 			type="search"

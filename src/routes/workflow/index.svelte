@@ -11,6 +11,7 @@
 </script>
 
 <script lang="ts">
+	import { _ } from '$lib/i18n';
 	import * as Utils from '$lib/utils';
 	import { API_SERVER } from '$lib/Env';
 	import TagPicker from '$lib/TagPicker.svelte';
@@ -146,10 +147,13 @@
 
 <Container class="p-2">
 	<div class="d-flex">
-		<div class="flex-shrink-0 fs-3">Processes</div>
+		<div class="flex-shrink-0 fs-3">
+			{$_('title.workflow')}
+		</div>
 		<div class="ms-5 align-self-center flex-grow-1">&nbsp;</div>
 		<div class="justify-content-end flex-shrink-0">
 			<Button
+				color="primary"
 				on:click={() => {
 					$filterStorage.wfStatus = 'All';
 					$filterStorage.tplid = '';
@@ -161,7 +165,7 @@
 				}}
 				class="m-0 p-1"
 			>
-				Reset Query
+				{$_('button.resetQuery')}
 			</Button>
 		</div>
 	</div>

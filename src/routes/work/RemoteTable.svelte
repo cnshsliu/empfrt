@@ -1,12 +1,14 @@
 <svelte:options accessors />
 
 <script type="ts">
+	import { _ } from '$lib/i18n';
 	import * as api from '$lib/api';
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import { filterStorage } from '$lib/empstores';
 	import { tspans } from '$lib/variables';
 	import { onMount } from 'svelte';
+	import Parser from '$lib/parser';
 	import { StatusLabel } from '$lib/lang';
 	import type { Workflow, Work } from '$lib/types';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
@@ -27,9 +29,15 @@
 	let loading = true;
 	let rowsCount = 0;
 	let input_search;
-	let filter_tspan = '24h';
+	let filter_tspan = '1w';
+	let show_calendar_select = false;
+	let calendar_begin = '';
+	let calendar_end = '';
 	let sorting = { dir: 'desc', key: 'lastdays' };
 	let storeSorting = $filterStorage.workSorting;
+
+	$filterStorage.calendar_begin = '';
+	$filterStorage.calendar_end = '';
 	if (storeSorting) {
 		if (storeSorting.dir && storeSorting.key) {
 			sorting = storeSorting;
@@ -41,7 +49,7 @@
 	if (storeTspan && Object.keys(tspans).includes(storeTspan)) {
 		filter_tspan = storeTspan;
 	} else {
-		filter_tspan = '24h';
+		filter_tspan = '1w';
 		$filterStorage.tspan = filter_tspan;
 	}
 
@@ -58,6 +66,10 @@
 		}
 		if (fltSt.tplid && fltSt.tplid.trim().length > 0) {
 			payload_extra['tplid'] = fltSt.tplid.trim();
+		}
+		if (Parser.hasValue(fltSt.calendar_begin) && Parser.hasValue(fltSt.calendar_end)) {
+			payload_extra['calendar_begin'] = fltSt.calendar_begin;
+			payload_extra['calendar_end'] = fltSt.calendar_end;
 		}
 
 		const data = await getData(
@@ -87,6 +99,18 @@
 		load(event.detail.page, 'onPageChange');
 		page = event.detail.page;
 	}
+
+	const calendar_changed = function () {
+		console.log(calendar_begin, calendar_end);
+		if (Parser.hasValue(calendar_begin) && Parser.isEmpty(calendar_end)) {
+			calendar_end = calendar_begin;
+		}
+		if (Parser.hasValue(calendar_begin) && Parser.hasValue(calendar_end)) {
+			$filterStorage.calendar_begin = calendar_begin;
+			$filterStorage.calendar_end = calendar_end;
+			refresh(null);
+		}
+	};
 
 	async function onSearch(event) {
 		input_search = event.detail.text;
@@ -129,13 +153,15 @@
 
 <Table hover {loading} {rows} {pageIndex} {pageSize} let:rows={rows2}>
 	<div slot="top">
-		<Row cols={{ xs: 1, md: 2 }}>
+		<Row cols={{ xs: 1, md: 2 }} class="mt-1">
 			<Col>
 				<Search on:search={onSearch} text={input_search} />
 			</Col>
 			<Col>
 				<InputGroup>
-					<InputGroupText>In:</InputGroupText>
+					<InputGroupText>
+						{$_('remotetable.in')}
+					</InputGroupText>
 					<Input
 						type="select"
 						id="timespanSelect"
@@ -152,26 +178,61 @@
 							<option value={key}>{tspans[key]}</option>
 						{/each}
 					</Input>
+					<Button
+						on:click={() => {
+							if (show_calendar_select) {
+								calendar_begin = '';
+								calendar_end = '';
+								$filterStorage.calendar_begin = calendar_begin;
+								$filterStorage.calendar_end = calendar_end;
+								show_calendar_select = false;
+								refresh(null);
+							} else {
+								show_calendar_select = true;
+							}
+						}}
+					>
+						<i class="bi bi-calendar4-week" />
+					</Button>
 				</InputGroup>
 			</Col>
 		</Row>
+		{#if show_calendar_select}
+			<Row cols={{ xs: 1, md: 2 }} class="mt-1">
+				<Col>
+					<InputGroup>
+						<InputGroupText>Begin:</InputGroupText>
+						<Input type="date" bind:value={calendar_begin} on:change={calendar_changed} />
+					</InputGroup>
+				</Col>
+				<Col>
+					<InputGroup>
+						<InputGroupText>End:</InputGroupText>
+						<Input type="date" bind:value={calendar_end} on:change={calendar_changed} />
+						<Button on:click={calendar_changed} color="primary">
+							<i class="bi bi-arrow-return-left" />
+						</Button>
+					</InputGroup>
+				</Col>
+			</Row>
+		{/if}
 	</div>
 	<thead slot="head">
 		<tr>
 			<th>
-				Title
+				{$_('remotetable.title')}
 				<Sort key="title" on:sort={onSort} />
 			</th>
 			<th>
-				Status
+				{$_('remotetable.status')}
 				<Sort key="status" on:sort={onSort} />
 			</th>
 			<th>
-				Updated at
+				{$_('remotetable.updatedAt')}
 				<Sort key="updatedAt" dir="desc" on:sort={onSort} />
 			</th>
 			<th>
-				Lasting days
+				{$_('remotetable.lastingDays')}
 				<Sort key="lastdays" dir="desc" on:sort={onSort} />
 			</th>
 			<th> &nbsp; </th>
@@ -227,7 +288,7 @@
 				<td data-label="Date" style="font-size:0.25rem">
 					<div>
 						<div>{row.doneat ? 'Done at ' + TimeTool.format(row.doneat, 'LLL') : ''}</div>
-						<div>Begin at {TimeTool.format(row.createdAt, 'LLL')}</div>
+						<div>{TimeTool.format(row.createdAt, 'LLL')}</div>
 					</div>
 				</td>
 				<td class="kfk-lastdays">

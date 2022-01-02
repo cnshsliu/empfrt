@@ -14,6 +14,8 @@
 </script>
 
 <script lang="ts">
+	import { setupI18n, isLocaleLoaded, locale, dir } from '$lib/i18n';
+	import { filterStorage } from '$lib/empstores';
 	import { navigating, session } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { DEPLOY_MODE } from '$lib/Env';
@@ -29,7 +31,18 @@
 		console.log('import boostrape...');
 		const module = await import('bootstrap');
 		bootstrap = module.default;
+		let tmp = $filterStorage.locale;
+		if (tmp !== undefined && tmp !== null) {
+			setupI18n({ withLocale: tmp });
+		}
 	});
+
+	$: if (!$isLocaleLoaded) {
+		setupI18n({ withLocale: 'en' });
+	}
+	/* $: {
+		document.dir = $dir;
+	} */
 </script>
 
 <svelte:head>
@@ -55,14 +68,18 @@
 	<PreloadingIndicator />
 {/if}
 <Notifications>
-	<NavMenu />
-	<main>
-		<slot />
-	</main>
-	{#if page.path.startsWith('/template/@') || page.path.startsWith('/workflow/@')}
-		&nbsp;
+	{#if $isLocaleLoaded}
+		<NavMenu />
+		<main>
+			<slot />
+		</main>
+		{#if page.path.startsWith('/template/@') || page.path.startsWith('/workflow/@')}
+			&nbsp;
+		{:else}
+			<EmpFooter value={$locale} on:locale-changed={(e) => setupI18n({ withLocale: e.detail })} />
+		{/if}
 	{:else}
-		<EmpFooter />
+		<p>Loading...</p>
 	{/if}
 </Notifications>
 {#if $session.errors}

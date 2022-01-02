@@ -225,8 +225,9 @@ export interface FilterPicks {
 	doer: string;
 	starter: string;
 	author: string;
-	calendar_from: string;
-	calendar_to: string;
+	locale: string;
+	calendar_begin: string;
+	calendar_end: string;
 	workTitlePattern: string;
 	wfTitlePattern: string;
 	tplTitlePattern: string;

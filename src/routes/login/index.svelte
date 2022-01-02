@@ -13,6 +13,7 @@
 </script>
 
 <script lang="ts">
+	import { _ } from '$lib/i18n';
 	import { Container, Row, Col } from 'sveltestrap';
 	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -87,11 +88,13 @@
 <Container style="max-width: 400px;">
 	<Row cols="1">
 		<Col>
-			<h1 class="text-center">Sign In</h1>
+			<h1 class="text-center">
+				{$_('account.signin')}
+			</h1>
 		</Col>
 		<Col>
 			<p class="text-center">
-				<a href="/register">Need an account?</a>
+				<a href="/register"> {$_('account.needAnAccount')}</a>
 			</p>
 		</Col>
 		<Col>
@@ -106,7 +109,7 @@
 						placeholder="Email"
 						bind:value={email}
 					/>
-					<label for="input-email">Your email: </label>
+					<label for="input-email"> {$_('account.yourEmail')} </label>
 				</div>
 				<div class="form-floating flex-fill">
 					<Input
@@ -118,7 +121,7 @@
 						autocomplete="current-password"
 						bind:value={password}
 					/>
-					<label for="input-password">Password: </label>
+					<label for="input-password"> {$_('account.password')}</label>
 				</div>
 				<div class="w-100 d-flex justify-content-end">
 					<button
@@ -126,7 +129,8 @@
 						type="submit"
 						disabled={login_wait >= 0}
 					>
-						Sign in {login_wait < 0 ? '' : `(${login_wait})`}
+						{$_('account.signin')}
+						{login_wait < 0 ? '' : `(${login_wait})`}
 					</button>
 				</div>
 			</form>
@@ -137,7 +141,8 @@
 					on:click={() => {
 						resendEmailVerification();
 					}}
-					>Resend Verification Email
+				>
+					Resend Verification Email
 				</NavLink>
 			{:else if resendCountdown > 0}
 				<svelte:component this={Countdown} bind:this={theCountdown} bind:resendCountdown />

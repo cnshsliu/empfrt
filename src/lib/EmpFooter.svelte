@@ -1,7 +1,25 @@
 <script lang="ts">
 	import { Input, InputGroup, InputGroupText, Row, Col, Icon, Container } from 'sveltestrap';
+	import { createEventDispatcher } from 'svelte';
+	import { onMount } from 'svelte';
+	import { filterStorage } from '$lib/empstores';
 
-	let browserLanguage = 'en-US';
+	let locale_value = 'en';
+
+	const dispatch = createEventDispatcher();
+
+	function switchLocale(event) {
+		event.preventDefault();
+		$filterStorage.locale = event.target.value;
+
+		dispatch('locale-changed', event.target.value);
+	}
+	onMount(async () => {
+		let tmp = $filterStorage.locale;
+		if (tmp !== undefined && tmp !== null) {
+			locale_value = tmp;
+		}
+	});
 </script>
 
 <div class="container emp-footer tnt-footer">
@@ -24,18 +42,19 @@
 						</InputGroupText>
 						<Input
 							type="select"
-							bind:value={browserLanguage}
+							bind:value={locale_value}
 							name="select"
 							style="max-width:200px;"
+							on:change={switchLocale}
 						>
-							<option value="null">Select-</option>
-							<option value="en-US">English</option>
-							<!--option value="zh-CN">中文</option -->
+							<option value="en">English</option>
+							<option value="zh-CN">中文</option>
 						</Input>
 					</InputGroup>
 				</div>
 			</Container>
 		</div>
+
 		<div class="col-sm-6">
 			<Row>
 				<Col class="col-sm">

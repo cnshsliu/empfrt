@@ -13,6 +13,7 @@
 		FormGroup,
 		Label
 	} from 'sveltestrap';
+	import { _ } from '$lib/i18n';
 	import type { User, radioOption } from '$lib/types';
 	import { createEventDispatcher } from 'svelte';
 	import { onMount } from 'svelte';
@@ -49,11 +50,23 @@
 		dispatch('filterTemplateChange');
 	}
 	function starterChanged() {
+		if (filter_starter[0] === '@') {
+			filter_starter = filter_starter.substring(1);
+		}
+		if (filter_starter !== '' && filter_starter.indexOf('@') < 0) {
+			filter_starter += user.email.substring(user.email.indexOf('@'));
+		}
 		$filterStorage.starter = filter_starter;
 		dispatch('filterStarterChange');
 	}
 
 	function doerChanged() {
+		if (filter_doer[0] === '@') {
+			filter_doer = filter_doer.substring(1);
+		}
+		if (filter_doer.indexOf('@') < 0) {
+			filter_doer += user.email.substring(user.email.indexOf('@'));
+		}
 		$filterStorage.doer = filter_doer;
 		dispatch('filterDoerChange');
 	}
@@ -118,7 +131,7 @@
 	<Row cols={{ xs: 1, md: 2 }}>
 		<Col>
 			<InputGroup>
-				<InputGroupText>Template:</InputGroupText>
+				<InputGroupText>{$_('extrafilter.template')}</InputGroupText>
 				<Input
 					type="select"
 					name="selectTpl"
@@ -126,7 +139,9 @@
 					bind:value={filter_template}
 					on:change={tplChanged}
 				>
-					<option value="">--All Template--</option>
+					<option value="">
+						{$_('extrafilter.allTemplate')}
+					</option>
 					{#each templates as tpl, index (tpl)}
 						{#if tpl !== $filterStorage.tplid}
 							<option value={tpl}>{tpl}</option>
@@ -141,23 +156,26 @@
 						filter_template = '';
 						tplChangedTo('');
 					}}
+					color="primary"
 				>
-					All
+					<i class="bi bi-arrow-return-left" />
 				</Button>
 			</InputGroup>
 		</Col>
 		{#if fields.indexOf('starter') > -1}
 			<Col>
 				<InputGroup class="kfk-input-template-name d-flex">
-					<InputGroupText>Starter:</InputGroupText>
-					<input
+					<InputGroupText>{$_('extrafilter.starter')}</InputGroupText>
+					<Input
 						class="flex-fill"
 						name="other_doer"
 						bind:value={filter_starter}
 						aria-label="User Email"
-						placeholder="Input user email to query his/her workitems"
+						placeholder="email"
 					/>
-					<Button on:click={starterChanged} color="primary">List</Button>
+					<Button on:click={starterChanged} color="primary">
+						<i class="bi bi-arrow-return-left" />
+					</Button>
 					<Button
 						on:click={() => {
 							filter_starter = user.email;
@@ -165,7 +183,7 @@
 						}}
 						color="secondary"
 					>
-						Me
+						{$_('extrafilter.me')}
 					</Button>
 					<Button
 						on:click={() => {
@@ -174,7 +192,7 @@
 						}}
 						color="secondary"
 					>
-						Any
+						{$_('extrafilter.any')}
 					</Button>
 				</InputGroup>
 			</Col>
@@ -182,9 +200,11 @@
 		{#if fields.indexOf('doer') > -1}
 			<Col>
 				{#if user.group === 'ADMIN'}
-					<InputGroup class="kfk-input-template-name d-flex">
-						<InputGroupText>Owner</InputGroupText>
-						<input
+					<InputGroup class="d-flex">
+						<InputGroupText>
+							{$_('extrafilter.owner')}
+						</InputGroupText>
+						<Input
 							class="flex-fill"
 							name="other_doer"
 							bind:value={filter_doer}
@@ -199,7 +219,7 @@
 							}}
 							color="secondary"
 						>
-							Mine&gt;
+							{$_('extrafilter.mine')}
 						</Button>
 					</InputGroup>
 				{:else if delegators.length > 0}
@@ -214,7 +234,9 @@
 								{/if}
 							{/each}
 						</Input>
-						<Button on:click={doerChanged} color="primary">List</Button>
+						<Button on:click={doerChanged} color="primary">
+							<i class="bi bi-arrow-return-left" />
+						</Button>
 					</InputGroup>
 				{/if}
 			</Col>

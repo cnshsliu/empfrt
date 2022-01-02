@@ -1,6 +1,7 @@
 <svelte:options accessors />
 
 <script type="ts">
+	import { _ } from '$lib/i18n';
 	import * as api from '$lib/api';
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
@@ -12,7 +13,7 @@
 	import { StatusLabel } from '$lib/lang';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
 	import { goto } from '$app/navigation';
-	import { Row, Col, InputGroup, InputGroupText, Input, Icon } from 'sveltestrap';
+	import { Row, Col, InputGroup, InputGroupText, Input, Icon, Button } from 'sveltestrap';
 	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, NavLink } from 'sveltestrap';
 	import { getData } from '$lib/pagination/Server.js';
 	import { ClientPermControl } from '$lib/clientperm';
@@ -30,7 +31,10 @@
 	let loading = true;
 	let rowsCount = 0;
 	let input_search;
-	let filter_tspan = '24h';
+	let filter_tspan = '1w';
+	let show_calendar_select = false;
+	let calendar_begin = '';
+	let calendar_end = '';
 	export let tagsForFilter;
 	let sorting = { dir: 'desc', key: 'updatedAt' };
 	let storeSorting = $filterStorage.wfSorting;
@@ -45,7 +49,7 @@
 	if (storeTspan && Object.keys(tspans).includes(storeTspan)) {
 		filter_tspan = storeTspan;
 	} else {
-		filter_tspan = '24h';
+		filter_tspan = '1w';
 	}
 
 	async function load(_page: number) {
@@ -67,6 +71,11 @@
 			delete payload_extra.starter;
 		} else if (Parser.isEmpty(payload_extra.starter.trim())) {
 			delete payload_extra.starter;
+		}
+
+		if (Parser.hasValue(fltSt.calendar_begin) && Parser.hasValue(fltSt.calendar_end)) {
+			payload_extra['calendar_begin'] = fltSt.calendar_begin;
+			payload_extra['calendar_end'] = fltSt.calendar_end;
 		}
 		const data = await getData(
 			endpoint,
@@ -91,6 +100,18 @@
 		load(event.detail.page);
 		page = event.detail.page;
 	}
+
+	const calendar_changed = function () {
+		console.log(calendar_begin, calendar_end);
+		if (Parser.hasValue(calendar_begin) && Parser.isEmpty(calendar_end)) {
+			calendar_end = calendar_begin;
+		}
+		if (Parser.hasValue(calendar_begin) && Parser.hasValue(calendar_end)) {
+			$filterStorage.calendar_begin = calendar_begin;
+			$filterStorage.calendar_end = calendar_end;
+			refresh(null);
+		}
+	};
 
 	async function onSearch(event) {
 		input_search = event.detail.text;
@@ -188,13 +209,13 @@
 
 <Table {loading} {rows} {pageIndex} {pageSize}>
 	<div slot="top">
-		<Row cols={{ xs: 1, md: 2 }}>
+		<Row cols={{ xs: 1, md: 2 }} class="mt-1">
 			<Col>
 				<Search on:search={onSearch} text={input_search} />
 			</Col>
 			<Col>
 				<InputGroup>
-					<InputGroupText>In:</InputGroupText>
+					<InputGroupText>{$_('remotetable.in')}</InputGroupText>
 					<Input
 						type="select"
 						id="timespanSelect"
@@ -210,26 +231,63 @@
 							<option value={key}>{tspans[key]}</option>
 						{/each}
 					</Input>
+					<Button
+						on:click={() => {
+							if (show_calendar_select) {
+								calendar_begin = '';
+								calendar_end = '';
+								$filterStorage.calendar_begin = calendar_begin;
+								$filterStorage.calendar_end = calendar_end;
+								show_calendar_select = false;
+								refresh(null);
+							} else {
+								show_calendar_select = true;
+							}
+						}}
+					>
+						<i class="bi bi-calendar4-week" />
+					</Button>
 				</InputGroup>
 			</Col>
 		</Row>
+		{#if show_calendar_select}
+			<Row cols={{ xs: 1, md: 2 }} class="mt-1">
+				<Col>
+					<InputGroup>
+						<InputGroupText>{$_('remotetable.calendarBegin')}</InputGroupText>
+						<Input type="date" bind:value={calendar_begin} on:change={calendar_changed} />
+					</InputGroup>
+				</Col>
+				<Col>
+					<InputGroup>
+						<InputGroupText>
+							{$_('remotetable.calendarEnd')}
+						</InputGroupText>
+						<Input type="date" bind:value={calendar_end} on:change={calendar_changed} />
+						<Button on:click={calendar_changed} color="primary">
+							<i class="bi bi-arrow-return-left" />
+						</Button>
+					</InputGroup>
+				</Col>
+			</Row>
+		{/if}
 	</div>
 	<thead slot="head">
 		<tr>
 			<th>
-				Title
+				{$_('remotetable.title')}
 				<Sort key="wftitle" on:sort={onSort} />
 			</th>
 			<th>
-				Status
+				{$_('remotetable.status')}
 				<Sort key="status" on:sort={onSort} />
 			</th>
 			<th>
-				Starter
+				{$_('remotetable.starter')}
 				<Sort key="starter" on:sort={onSort} />
 			</th>
 			<th>
-				Updated at
+				{$_('remotetable.updatedAt')}
 				<Sort key="updatedAt" dir="desc" on:sort={onSort} />
 			</th>
 			<th> &nbsp; </th>
@@ -258,7 +316,9 @@
 				<td data-label="Updated at">{TimeTool.format(row.updatedAt, 'LLL')}</td>
 				<td>
 					<Dropdown>
-						<DropdownToggle caret color="notexist" class="btn-sm">Actions</DropdownToggle>
+						<DropdownToggle caret color="notexist" class="btn-sm">
+							{$_('remotetable.actions')}
+						</DropdownToggle>
 						<DropdownMenu>
 							<DropdownItem>
 								<a
@@ -266,7 +326,8 @@
 									href={'#'}
 									on:click|preventDefault={() => opWorkflow(row, 'works_running')}
 								>
-									<Icon name="list-check" /> Running Works
+									<Icon name="list-check" />
+									{$_('remotetable.wfa.runningWorks')}
 								</a>
 							</DropdownItem>
 							<DropdownItem>
@@ -275,35 +336,40 @@
 									href={'#'}
 									on:click|preventDefault={() => opWorkflow(row, 'works_all')}
 								>
-									<Icon name="list-check" /> All Works
+									<Icon name="list-check" />
+									{$_('remotetable.wfa.allWorks')}
 								</a>
 							</DropdownItem>
 							{#if ClientPermControl(user.perms, user.email, 'workflow', row, 'update')}
 								{#if row.status === 'ST_RUN'}
 									<DropdownItem>
 										<NavLink on:click={() => opWorkflow(row, 'pause')}>
-											<Icon name="pause-btn" /> Pause
+											<Icon name="pause-btn" />
+											{$_('remotetable.wfa.pause')}
 										</NavLink>
 									</DropdownItem>
 								{/if}
 								{#if row.status === 'ST_PAUSE'}
 									<DropdownItem>
 										<NavLink on:click={() => opWorkflow(row, 'resume')}>
-											<Icon name="arrow-counterclockwise" /> Resume
+											<Icon name="arrow-counterclockwise" />
+											{$_('remotetable.wfa.resume')}
 										</NavLink>
 									</DropdownItem>
 								{/if}
 								{#if row.status === 'ST_PAUSE' || row.status === 'ST_RUN'}
 									<DropdownItem>
 										<NavLink on:click={() => opWorkflow(row, 'stop')}>
-											<Icon name="slash-square" /> Stop
+											<Icon name="slash-square" />
+											{$_('remotetable.wfa.stop')}
 										</NavLink>
 									</DropdownItem>
 								{/if}
 								{#if ['ST_RUN', 'ST_PAUSE', 'ST_STOP'].indexOf(row.status) > -1}
 									<DropdownItem>
 										<NavLink on:click={() => opWorkflow(row, 'restart')}>
-											<Icon name="caret-right-square" /> Restart
+											<Icon name="caret-right-square" />
+											{$_('remotetable.wfa.restart')}
 										</NavLink>
 									</DropdownItem>
 								{/if}
@@ -311,28 +377,32 @@
 								{#if row.status === 'ST_RUN'}
 									<DropdownItem>
 										<NavLink disabled>
-											<Icon name="pause-btn" /> Pause
+											<Icon name="pause-btn" />
+											{$_('remotetable.wfa.pause')}
 										</NavLink>
 									</DropdownItem>
 								{/if}
 								{#if row.status === 'ST_PAUSE'}
 									<DropdownItem>
 										<NavLink disabled>
-											<Icon name="arrow-counterclockwise" /> Resume
+											<Icon name="arrow-counterclockwise" />
+											{$_('remotetable.wfa.resume')}
 										</NavLink>
 									</DropdownItem>
 								{/if}
 								{#if row.status === 'ST_PAUSE' || row.status === 'ST_RUN'}
 									<DropdownItem>
 										<NavLink disabled>
-											<Icon name="slash-square" /> Stop
+											<Icon name="slash-square" />
+											{$_('remotetable.wfa.stop')}
 										</NavLink>
 									</DropdownItem>
 								{/if}
 								{#if ['ST_RUN', 'ST_PAUSE', 'ST_STOP'].indexOf(row.status) > -1}
 									<DropdownItem>
 										<NavLink disabled>
-											<Icon name="caret-right-square" /> Restart
+											<Icon name="caret-right-square" />
+											{$_('remotetable.wfa.restart')}
 										</NavLink>
 									</DropdownItem>
 								{/if}
@@ -341,37 +411,38 @@
 								{#if ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
 									<NavLink on:click={() => opWorkflow(row, 'startAnother')}>
 										<Icon name="caret-right-fill" />
-										Start Another
+										{$_('remotetable.wfa.startAnother')}
 									</NavLink>
 								{:else}
 									<NavLink disabled>
 										<Icon name="caret-right-fill" />
 										Start Another
+										{$_('remotetable.wfa.startAnother')}
 									</NavLink>
 								{/if}
 							</DropdownItem>
 							<DropdownItem>
 								<NavLink on:click={() => opWorkflow(row, 'viewTemplate')}>
 									<Icon name="code-square" />
-									View Template
+									{$_('remotetable.wfa.viewTemplate')}
 								</NavLink>
 							</DropdownItem>
 							<DropdownItem>
 								<NavLink on:click={() => opWorkflow(row, 'viewInstanceTemplate')}
 									><Icon name="code" />
-									View Instance Template
+									{$_('remotetable.wfa.viewInstanceTemplate')}
 								</NavLink>
 							</DropdownItem>
 							<DropdownItem>
 								{#if ClientPermControl(user.perms, user.email, 'workflow', row, 'delete')}
 									<NavLink on:click={() => opWorkflow(row, 'destroy')}>
 										<Icon name="trash" />
-										Delete this workflow
+										{$_('remotetable.wfa.deleteThisWorkflow')}
 									</NavLink>
 								{:else}
 									<NavLink disabled>
 										<Icon name="trash" />
-										Delete this workflow
+										{$_('remotetable.wfa.deleteThisWorkflow')}
 									</NavLink>
 								{/if}
 							</DropdownItem>

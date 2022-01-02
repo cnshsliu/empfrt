@@ -11,6 +11,7 @@
 </script>
 
 <script lang="ts">
+	import { _ } from '$lib/i18n';
 	import { session } from '$app/stores';
 	import { Container, Row, Col } from 'sveltestrap';
 	import type { EmpResponse } from '$lib/types';
@@ -25,7 +26,6 @@
 	let password: string = '';
 	let password2: string = '';
 	let errors = null;
-	let fade_message = '';
 	let fade_timer;
 
 	function setFadeMessage(message: string, type = 'warning', pos = 'bottom-right', time = 2000) {
@@ -65,11 +65,11 @@
 <Container style="max-width: 400px;">
 	<Row cols="1">
 		<Col>
-			<h1 class="text-center">Sign up</h1>
+			<h1 class="text-center">{$_('account.signup')}</h1>
 		</Col>
 		<Col>
 			<p class="text-center">
-				<a href="/login">Have an account?</a>
+				<a href="/login"> {$_('account.haveAnAccount')}</a>
 			</p>
 		</Col>
 		<Col>
@@ -83,7 +83,7 @@
 						placeholder="Email"
 						bind:value={email}
 					/>
-					<label for="input-email">Your email: </label>
+					<label for="input-email"> {$_('account.yourEmail')}</label>
 				</div>
 				<div class="form-floating">
 					<input
@@ -94,7 +94,7 @@
 						placeholder="Your display name"
 						bind:value={username}
 					/>
-					<label for="input-username">Your display name: </label>
+					<label for="input-username"> {$_('account.yourDisplayName')}</label>
 				</div>
 				<div class="form-floating">
 					<input
@@ -105,7 +105,7 @@
 						placeholder="Password"
 						bind:value={password}
 					/>
-					<label for="input-password">Choose a password: </label>
+					<label for="input-password"> {$_('account.choosePassword')}</label>
 				</div>
 				<div class="form-floating">
 					<input
@@ -116,17 +116,12 @@
 						placeholder="Password Repeat"
 						bind:value={password2}
 					/>
-					<label for="input-password-repeat">Repeat password: </label>
+					<label for="input-password-repeat"> {$_('account.verifyPassword')}</label>
 				</div>
-				<button class="w-100 btn btn-lg btn-primary pull-xs-right mt-3"> Sign up </button>
+				<button class="w-100 btn btn-lg btn-primary pull-xs-right mt-3">
+					{$_('account.signup')}</button
+				>
 			</form>
-		</Col>
-		<Col>
-			<Fade isOpen={fade_message != ''}>
-				<Card body>
-					{fade_message}
-				</Card>
-			</Fade>
 		</Col>
 	</Row>
 </Container>

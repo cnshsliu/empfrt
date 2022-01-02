@@ -10,6 +10,7 @@
 </script>
 
 <script lang="ts">
+	import { _ } from '$lib/i18n';
 	import { page, session } from '$app/stores';
 	import * as api from '$lib/api';
 	import { scale } from 'svelte/transition';
@@ -89,6 +90,7 @@
 					class="d-inline-block col-6 mx-1 align-self-center kfk-header-username tnt-header-username"
 				>
 					{$session.user ? $session.user.username : 'Metatocome'}
+					{$_('home.topic')}
 				</div>
 			</div>
 			<button
@@ -105,27 +107,29 @@
 			<div class="collapse navbar-collapse" id="navbarSupportedContent">
 				<Nav class="ms-auto">
 					<NavItem>
-						<NavLink href="/" class="py-2 ps-0 pe-3" active={$page.path === '/'}>Home</NavLink>
+						<NavLink href="/" class="py-2 ps-0 pe-3" active={$page.path === '/'}>
+							{$_('navmenu.home')}
+						</NavLink>
 					</NavItem>
 					<NavItem>
-						<NavLink href="/docs" class="py-2 ps-0 pe-3" active={$page.path === '/docs'}
-							>Docs</NavLink
-						>
+						<NavLink href="/docs" class="py-2 ps-0 pe-3" active={$page.path === '/docs'}>
+							{$_('navmenu.doc')}
+						</NavLink>
 					</NavItem>
 					{#if $session.user}
 						<NavItem>
 							<NavLink class="py-2 ps-0 pe-3" href="/template" active={$page.path === '/template'}>
-								Template
+								{$_('navmenu.template')}
 							</NavLink>
 						</NavItem>
 						<NavItem>
 							<NavLink class="py-2 ps-0 pe-3" href="/workflow" active={$page.path === '/workflow'}>
-								Workflow
+								{$_('navmenu.workflow')}
 							</NavLink>
 						</NavItem>
 						<NavItem>
 							<NavLink class="py-2 ps-0 pe-3" href="/work" active={$page.path === '/work'}>
-								Worklist
+								{$_('navmenu.worklist')}
 							</NavLink>
 						</NavItem>
 						<Dropdown>
@@ -182,7 +186,7 @@
 										goto('/settings');
 									}}
 								>
-									Settings
+									{$_('navmenu.settings')}
 								</DropdownItem>
 								<DropdownItem
 									class="text-center"
@@ -190,7 +194,7 @@
 										goto('/team');
 									}}
 								>
-									Teaming
+									{$_('navmenu.teaming')}
 								</DropdownItem>
 								<DropdownItem
 									class="text-center"
@@ -198,23 +202,24 @@
 										goto('/comment');
 									}}
 								>
-									Messages
+									{$_('navmenu.messages')}
 								</DropdownItem>
 								<DropdownItem divider />
 								<DropdownItem class="text-center" on:click={logout}>
-									<Icon name="door-open" /> Logout
+									<Icon name="door-open" />
+									{$_('account.signout')}
 								</DropdownItem>
 							</DropdownMenu>
 						</Dropdown>
 					{:else}
 						<NavItem>
-							<NavLink href="/login" class="nav-link" active={$page.path === '/login'}
-								>Sign in</NavLink
-							>
+							<NavLink href="/login" class="nav-link" active={$page.path === '/login'}>
+								{$_('account.signin')}
+							</NavLink>
 						</NavItem>
 						<NavItem>
 							<NavLink href="/register" class="nav-link" active={$page.path === '/register'}>
-								Sign up
+								{$_('account.signup')}
 							</NavLink>
 						</NavItem>
 					{/if}

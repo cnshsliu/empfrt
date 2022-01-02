@@ -3,6 +3,7 @@
 <script lang="ts">
 	//Row component is optional and only serves to render odd/even row, you can use <tr> instead.
 	//Sort component is optional
+	import { _ } from '$lib/i18n';
 	import { scale } from 'svelte/transition';
 	import * as api from '$lib/api';
 	import { onMount } from 'svelte';
@@ -23,6 +24,7 @@
 		Col,
 		InputGroup,
 		InputGroupText,
+		Input,
 		Button,
 		Badge
 	} from 'sveltestrap';
@@ -41,7 +43,7 @@
 	let loading = true;
 	export let rowsCount = 0;
 	let setTagForTplid = '';
-	let filter_author = user.email;
+	let filter_author = '';
 	let addDescForTplid = '';
 	let input_search: String = '';
 	let sorting = { dir: 'desc', key: 'updatedAt' };
@@ -56,7 +58,7 @@
 
 	export function reset() {
 		filter_author = '';
-		$filterStorage.author = '';
+		$filterStorage.author = filter_author;
 		input_search = '';
 	}
 	export async function reload() {
@@ -160,8 +162,10 @@
 
 	onMount(async () => {
 		filter_author = $filterStorage.author;
-		if (Parser.isEmpty(filter_author)) filter_author = user.email;
-		$filterStorage.author = filter_author;
+		if (filter_author === null || filter_author === undefined) {
+			filter_author = '';
+			$filterStorage.author = filter_author;
+		}
 	});
 	/*
 <code>
@@ -187,14 +191,15 @@
 				<Search on:search={onSearch} text={input_search} />
 			</Col>
 			<Col>
-				<InputGroup class="kfk-input-template-name d-flex">
-					<InputGroupText>Author:</InputGroupText>
-					<input
+				<InputGroup>
+					<InputGroupText>
+						{$_('remotetable.author')}
+					</InputGroupText>
+					<Input
 						class="flex-fill"
-						name="other_doer"
 						bind:value={filter_author}
-						aria-label="User Email"
-						placeholder=""
+						aria-label="Author"
+						placeholder="author email"
 					/>
 					<Button on:click={authorChanged} color="primary">List</Button>
 					<Button
@@ -204,7 +209,7 @@
 						}}
 						color="secondary"
 					>
-						Me
+						{$_('remotetable.me')}
 					</Button>
 					<Button
 						on:click={async () => {
@@ -213,7 +218,7 @@
 						}}
 						color="secondary"
 					>
-						Any
+						{$_('remotetable.any')}
 					</Button>
 				</InputGroup>
 			</Col>
@@ -222,11 +227,11 @@
 	<thead slot="head">
 		<tr>
 			<th>
-				Name
+				{$_('remotetable.name')}
 				<Sort key="tplid" on:sort={onSort} />
 			</th>
 			<th>
-				Author
+				{$_('remotetable.author')}
 				<Sort key="author" on:sort={onSort} />
 			</th>
 			<!-- th>
@@ -267,8 +272,9 @@
 								goto(`template/start?tplid=${row.tplid}`, { replaceState: false });
 							}}
 							class="nav-link "
-							><Icon name="caret-right-square" />
-							Start it
+						>
+							<Icon name="caret-right-square" />
+							{$_('remotetable.startIt')}
 						</a>
 					{:else}
 						&nbsp;
@@ -276,10 +282,12 @@
 				</td>
 				<td>
 					<Dropdown>
-						<DropdownToggle caret color="notexist" class="btn-sm">Actions</DropdownToggle>
+						<DropdownToggle caret color="notexist" class="btn-sm">
+							{$_('remotetable.actions')}
+						</DropdownToggle>
 						<DropdownMenu>
 							<DropdownItem>
-								Last update:{TimeTool.format(row.updatedAt, 'lll')}
+								{$_('remotetable.tplaction.lastUpdate')}: {TimeTool.format(row.updatedAt, 'lll')}
 							</DropdownItem>
 							{#if user.perms && ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
 								<DropdownItem>
@@ -290,7 +298,7 @@
 										}}
 										class="nav-link "
 										><Icon name="caret-right-square" />
-										Start it
+										{$_('remotetable.tplaction.startIt')}
 									</a>
 								</DropdownItem>
 							{/if}
@@ -303,7 +311,7 @@
 									}}
 									class="nav-link "
 									><Icon name="bar-chart-steps" />
-									See Workflows
+									{$_('remotetable.tplaction.seeWorkflows')}
 								</a>
 							</DropdownItem>
 							<DropdownItem>
@@ -315,7 +323,7 @@
 									}}
 									class="nav-link "
 									><Icon name="bar-chart-steps" />
-									See Worklist
+									{$_('remotetable.tplaction.seeWorklist')}
 								</a>
 							</DropdownItem>
 							<DropdownItem>
@@ -328,7 +336,7 @@
 									class="nav-link "
 								>
 									<Icon name="tags" />
-									Add Description
+									{$_('remotetable.tplaction.addDesc')}
 								</a>
 							</DropdownItem>
 							<DropdownItem>
@@ -340,7 +348,7 @@
 									class="nav-link "
 								>
 									<Icon name="tags" />
-									Set TAGS
+									{$_('remotetable.tplaction.setTags')}
 								</a>
 							</DropdownItem>
 							{#if user.perms && ClientPermControl(user.perms, user.email, 'template', row, 'delete')}
@@ -350,7 +358,7 @@
 										on:click|preventDefault={() => deleteRow(row.tplid)}
 										class="nav-link "
 										><Icon name="trash" />
-										Delete this template
+										{$_('remotetable.tplaction.deleteThisTempalte')}
 									</a>
 								</DropdownItem>
 							{/if}
@@ -385,7 +393,7 @@
 											await addDesc(index, row.tplid, desc_input);
 										}}
 									>
-										Set
+										{$_('button.set')}
 									</Button>
 									<Button
 										on:click={(e) => {
@@ -394,7 +402,7 @@
 											desc_input = '';
 										}}
 									>
-										Close
+										{$_('button.close')}
 									</Button>
 								</InputGroup>
 							</Row>
@@ -434,7 +442,7 @@
 											tag_input = '';
 										}}
 									>
-										Set
+										{$_('button.set')}
 									</Button>
 									<Button
 										on:click={(e) => {
@@ -442,7 +450,7 @@
 											setTagForTplid = '';
 										}}
 									>
-										Close
+										{$_('button.close')}
 									</Button>
 								</InputGroup>
 							</Row>

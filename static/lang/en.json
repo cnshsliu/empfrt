@@ -1,0 +1,117 @@
+{
+	"navmenu": {
+		"home": "Home",
+		"doc": "Doc",
+		"template": "Template",
+		"workflow": "Workflow",
+		"worklist": "Worklsit",
+		"settings": "Settings",
+		"teaming": "Teaming",
+		"messages": "Messages"
+	},
+	"account": {
+		"signin": "Sign In",
+		"signup": "Sign Up",
+		"signout": "Sign Out",
+		"logout": "Log out",
+		"register": "Register",
+		"needAnAccount": "Need an account?",
+		"yourEmail": "Your email",
+		"password": "Password",
+		"haveAnAccount": "Have an account?",
+		"yourDisplayName": "Your display name",
+		"choosePassword": "Choose your password",
+		"verifyPassword": "Verify your password"
+	},
+	"extrafilter": {
+		"template": "Template",
+		"allTemplate": "--All Templates--",
+		"me": "Me",
+		"any": "Any",
+		"mine": "Mine",
+		"starter": "Starter",
+		"owner": "Owner",
+		"in": "In"
+	},
+	"remotetable": {
+		"filter": "Filter",
+		"bywhat": "by name or title",
+		"in": "In",
+		"calendarBegin": "Begin",
+		"calendarEnd": "End",
+		"title": "Title",
+		"name": "Name",
+		"status": "Status",
+		"starter": "Starter",
+		"updatedAt": "Updated at",
+		"startedAt": "Started at",
+		"lastingDays": "Lasting Days",
+		"actions": "Actions",
+		"author": "Author",
+		"me": "Me",
+		"any": "Any",
+		"startIt": "Start it",
+		"wfa": {
+			"runningWorks": "Running Works",
+			"allWorks": "All Works",
+			"pause": "Pause",
+			"resume": "Resume",
+			"stop": "Stop",
+			"restart": "Restart",
+			"startAnother": "Start Another",
+			"viewTemplate": "View Template",
+			"viewInstanceTemplate": "View Instance Template",
+			"deleteThisWorkflow": "Delete This Workflow"
+		},
+		"tplaction": {
+			"startIt": "Start It",
+			"seeWorkflows": "See Workflows",
+			"seeWorklist": "See Worklist",
+			"addDesc": "Add Description",
+			"setTags": "Set TAGS",
+			"deleteThisTempalte": "Delete This Template",
+			"lastUpdate": "Last Update "
+		}
+	},
+	"title": {
+		"template": "Template",
+		"workflow": "Workflow",
+		"worklist": "Work list"
+	},
+	"button": {
+		"resetQuery": "Reset Query",
+		"create": "Create",
+		"import": "Import",
+		"cancel": "Cancel",
+		"set": "Set",
+		"close": "Close"
+	},
+	"template": {
+		"create": {
+			"name": "Template name",
+			"tags": "Tags delimitered by spaces/;/,"
+		},
+		"import": {
+			"name": "Template name",
+			"tags": "Tags delimitered by spaces/;/,"
+		}
+	},
+	"home": {
+		"topic": "Svelte Localization Tutorial",
+		"subtopic": "Internationalization and Localization"
+	},
+	"header": {
+		"home": "Home",
+		"contact": "Contact Us",
+		"about": "About"
+	},
+	"framework": {
+		"languages": "There {n, plural, =0 {are no languages} one {# is one languages} other {# are several languages}} in this tutorial",
+		"rtl": "{n, plural, =0 {No languages are} one {# Only one language is} other {# Several languages are}} written from left to right ",
+		"released_at": "Released {date}"
+	},
+	"footer": {
+		"line1": "Companion to a <a href=\"{phraseUrl}\">localise</a> article.",
+		"line2": "Made with <a href=\"{svelteUrl}\">Svelte</a> &amp; <a href=\"{bulmaUrl}\">Materialize</a>."
+	}
+}

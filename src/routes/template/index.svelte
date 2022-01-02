@@ -19,6 +19,7 @@
 </script>
 
 <script lang="ts">
+	import { _ } from '$lib/i18n';
 	import { API_SERVER } from '$lib/Env';
 	import Parser from '$lib/parser';
 	import { onMount } from 'svelte';
@@ -59,6 +60,7 @@
 
 	let files;
 	let tplidImport;
+	let showform = '';
 
 	let urls = {
 		create: `${API_SERVER}/template/create`,
@@ -128,8 +130,10 @@
 	const clearTag = function () {
 		currentTags = [];
 		$filterStorage.tplTag = '';
-		theRemoteTable.tagsForFilter = [];
-		theRemoteTable.refresh();
+		if (theRemoteTable) {
+			theRemoteTable.tagsForFilter = [];
+			theRemoteTable.refresh();
+		}
 	};
 	const useThisTag = function (tag, appendMode = false) {
 		if (appendMode) {
@@ -162,142 +166,202 @@
 
 <Container class="p-2">
 	<div class="d-flex">
-		<div class="flex-shrink-0 fs-3">Templates</div>
+		<div class="flex-shrink-0 fs-3">
+			{$_('title.template')}
+		</div>
 		<div class="ms-5 align-self-center flex-grow-1">&nbsp;</div>
 		<div class="justify-content-end flex-shrink-0">
 			<Button
 				on:click={async () => {
-					$filterStorage.tplTitlePattern = '';
-					await theRemoteTable.reset();
-					clearTag();
+					showform = 'create';
 				}}
 				class="m-0 p-1"
 			>
-				Reset Query
+				{$_('button.create')}
+			</Button>
+			<Button
+				on:click={async () => {
+					showform = 'import';
+				}}
+				class="m-0 p-1"
+			>
+				{$_('button.import')}
+			</Button>
+			<Button
+				color="primary"
+				on:click={async () => {
+					$filterStorage.tplTitlePattern = '';
+					showform = '';
+					clearTag();
+					if (theRemoteTable) await theRemoteTable.reset();
+				}}
+				class="m-0 p-1"
+			>
+				{$_('button.resetQuery')}
 			</Button>
 		</div>
 	</div>
-	<TagPicker {currentTags} {useThisTag} {clearTag} />
 </Container>
-<Container>
-	<TabContent
-		class="kfk-tab-menu pb-2"
-		on:tab={(e) => {
-			showTab(e.detail);
-		}}
-	>
-		<TabPane tabId="home" active={!whichTab || whichTab['template'] === 'home'}>
-			<span slot="tab">
-				<Icon name="code-square" />
-				Recent
-			</span>
-			<Container class="my-2">
-				<span>Recent started:</span>
-				{#each recentTemplates as aTplid}
-					<Button
-						class="mx-1 badge bg-info text-dark"
-						on:click={(e) => {
-							e.preventDefault();
-							goto(`template/start?tplid=${aTplid}`, { replaceState: false });
-						}}
-					>
-						{aTplid}
-					</Button>
-				{/each}
+{#if showform === 'create'}
+	{#if user.perms && ClientPermControl(user.perms, user.email, 'template', '', 'create')}
+		<form
+			class="new"
+			action={urls.create}
+			method="post"
+			use:enhance={{
+				preCheck: () => {
+					return ClientPermControl(user.perms, user.email, 'template', '', 'create');
+				},
+				token: user.sessionToken,
+				result: async (res, form) => {
+					const created = await res.json();
+					lastSearchCondition = created.tplid;
+					theRemoteTable.rows = [created, ...theRemoteTable.rows];
+					theRemoteTable.rowsCount = theRemoteTable.rowsCount + 1;
+					form.reset();
+					$filterStorage.author = user.email;
+					$filterStorage.tplTitlePattern = '';
+					//clearTag();
+					//if (theRemoteTable) await theRemoteTable.reload();
+				},
+				error: async (res, error, form) => {
+					let retError = await res.json();
+					let tmp = ErrorProcessor.setError(retError.errors, '<br />');
+					$session.errors = tmp;
+					setTimeout(() => {
+						$session.errors = '';
+					}, 2000);
+				}
+			}}
+		>
+			<Container class="my-3" style="max-width:400px;">
+				<Row cols="1" class="mb-5">
+					<Col>
+						<div class="form-floating flex-fill">
+							<input
+								name="tplid"
+								class="form-control"
+								id="input-tplid"
+								aria-label="Create template"
+								placeholder="New template name"
+							/>
+							<label for="input-tplid">
+								{$_('template.create.name')}
+							</label>
+						</div>
+					</Col>
+					<Col class="mt-2">
+						<div class="form-floating flex-fill">
+							<input
+								name="tags"
+								id="input-tags"
+								class="w-100 form-control"
+								aria-label="template tags"
+								placeholder="tags delimiter with space/;/,"
+							/>
+							<label for="input-tags">
+								{$_('template.create.tags')}
+							</label>
+						</div>
+					</Col>
+					<Col class="mb-5">
+						<Row>
+							<Col class="col-8">
+								<Button type="submit" class="h-100 w-100 mt-3" color="primary">
+									{$_('button.create')}
+								</Button>
+							</Col>
+							<Col class="col-4">
+								<Button
+									class="h-100 w-100 mt-3"
+									color="secondary"
+									on:click={(e) => {
+										e.preventDefault();
+										e.stopPropagation();
+										showform = '';
+									}}
+								>
+									{$_('button.cancel')}
+								</Button>
+							</Col>
+						</Row>
+					</Col>
+				</Row>
 			</Container>
-		</TabPane>
-		{#if user.perms && ClientPermControl(user.perms, user.email, 'template', '', 'create')}
-			<TabPane tabId="create" active={whichTab && whichTab['template'] === 'create'}>
-				<span slot="tab">
-					<Icon name="plus-circle" />
-					Create
-				</span>
-				<form
-					class="new"
-					action={urls.create}
-					method="post"
-					use:enhance={{
-						preCheck: () => {
-							return ClientPermControl(user.perms, user.email, 'template', '', 'create');
-						},
-						token: user.sessionToken,
-						result: async (res, form) => {
-							const created = await res.json();
-							/* templates = [created, ...templates]; */
-							lastSearchCondition = created.tplid;
-							theRemoteTable.rows = [created, ...theRemoteTable.rows];
-							theRemoteTable.rowsCount = theRemoteTable.rowsCount + 1;
-							form.reset();
-							//form_status['create'] = false;
-						},
-						error: async (res, error, form) => {
-							let retError = await res.json();
-							let tmp = ErrorProcessor.setError(retError.errors, '<br />');
-							$session.errors = tmp;
-							setTimeout(() => {
-								$session.errors = '';
-							}, 2000);
-						}
+		</form>
+	{:else}
+		No Create Tempalte Permission
+	{/if}
+{:else if showform === 'import'}
+	{#if user.perms && ClientPermControl(user.perms, user.email, 'template', '', 'create')}
+		<form class="new" enctype="multipart/form-data">
+			<Container class="my-3" style="max-width:400px;">
+				<Row cols="1" class="mb-5">
+					<Col>
+						<div class="form-floating flex-fill">
+							<input
+								name="tplid"
+								id="input-tplid"
+								placeholder="New template name"
+								class="form-control"
+								bind:value={tplidImport}
+							/>
+							<label for="input-tplid">
+								{$_('template.import.name')}
+							</label>
+						</div>
+					</Col>
+					<Col class="mt-2">
+						<div class="form-floating flex-fill">
+							<input name="file" id="input-file" type="file" bind:files />
+						</div>
+					</Col>
+					<Col class="mb-5">
+						<Row>
+							<Col class="col-8">
+								<Button on:click={upload} color="primary" class="h-100 w-100 mt-3">
+									{$_('button.import')}
+								</Button>
+							</Col>
+							<Col class="col-4">
+								<Button
+									class="h-100 w-100 mt-3"
+									color="secondary"
+									on:click={(e) => {
+										e.preventDefault();
+										e.stopPropagation();
+										showform = '';
+									}}
+								>
+									{$_('button.cancel')}
+								</Button>
+							</Col>
+						</Row>
+					</Col>
+				</Row>
+			</Container>
+		</form>
+	{:else}
+		No Create Tempalte Permission
+	{/if}
+{/if}
+<Container class="p-2">
+	<TagPicker {currentTags} {useThisTag} {clearTag} />
+	<Row class="my-2">
+		<Col class="d-flex justify-content-center">
+			{#each recentTemplates as aTplid}
+				<Button
+					class="mx-1 badge bg-info text-dark"
+					on:click={(e) => {
+						e.preventDefault();
+						goto(`template/start?tplid=${aTplid}`, { replaceState: false });
 					}}
 				>
-					<Container class="my-3">
-						<div class="d-flex">
-							<div class="form-floating">
-								<input
-									name="tplid"
-									class="form-control"
-									id="input-tplid"
-									aria-label="Create template"
-									placeholder="New template name"
-								/>
-								<label for="input-tplid">Template Name</label>
-							</div>
-							<div class=" form-floating flex-grow-1">
-								<input
-									name="tags"
-									id="input-tags"
-									class="w-100 form-control"
-									aria-label="template tags"
-									placeholder="tags delimiter with space/;/,"
-								/>
-								<label for="input-tags">Tags delimitered by spaces/;/,</label>
-							</div>
-							<div>
-								<Button type="submit" class="h-100" color="primary">Create</Button>
-							</div>
-						</div>
-					</Container>
-				</form>
-			</TabPane>
-			<TabPane tabId="import" active={whichTab && whichTab['template'] === 'import'}>
-				<span slot="tab">
-					<Icon name="cloud-upload" />
-					Import
-				</span>
-				<form class="new" enctype="multipart/form-data">
-					<Container class="mt-3">
-						<div class="d-flex">
-							<div class="form-floating flex-grow-1">
-								<input
-									name="tplid"
-									id="input-tplid"
-									placeholder="New template name"
-									class="form-control"
-									bind:value={tplidImport}
-								/>
-								<label for="input-tplid">Template Name</label>
-							</div>
-							<div class="form-floating">
-								<input name="file" id="input-file" type="file" class="form-control" bind:files />
-								<label for="input-file">Select file</label>
-							</div>
-							<Button on:click={upload} color="primary">Import</Button>
-						</div>
-					</Container>
-				</form>
-			</TabPane>
-		{/if}
-	</TabContent>
+					{aTplid}
+				</Button>
+			{/each}
+		</Col>
+	</Row>
 </Container>
 <Container class="mt-1 kfk-result-list">
 	<Row>
@@ -313,8 +377,3 @@
 		</Col>
 	</Row>
 </Container>
-<Fade isOpen={fade_message != ''}>
-	<Card body>
-		{fade_message}
-	</Card>
-</Fade>

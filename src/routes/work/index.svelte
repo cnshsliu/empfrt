@@ -26,6 +26,7 @@
 </script>
 
 <script lang="ts">
+	import { _ } from '$lib/i18n';
 	import RemoteTable from './RemoteTable.svelte';
 	import ExtraFilter from '$lib/form/ExtraFilter.svelte';
 	import * as api from '$lib/api';
@@ -156,10 +157,13 @@
 
 <Container class="p-2">
 	<div class="d-flex">
-		<div class="flex-shrink-0 fs-3">Work list</div>
+		<div class="flex-shrink-0 fs-3">
+			{$_('title.worklist')}
+		</div>
 		<div class="ms-5 align-self-center flex-grow-1">&nbsp;</div>
 		<div class="justify-content-end flex-shrink-0">
 			<Button
+				color="primary"
 				on:click={() => {
 					$filterStorage.workStatus = 'All';
 					$filterStorage.tplid = '';
@@ -172,7 +176,7 @@
 				}}
 				class="m-0 p-1"
 			>
-				Reset Query
+				{$_('button.resetQuery')}
 			</Button>
 		</div>
 	</div>
