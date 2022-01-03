@@ -158,9 +158,9 @@
 					$filterStorage.wfStatus = 'All';
 					$filterStorage.tplid = '';
 					$filterStorage.wfTitlePattern = '';
+					$filterStorage.tspan = '1w';
 					clearTag();
 					theExtraFilter.reset();
-					theRemoteTable.reset();
 					refreshList();
 				}}
 				class="m-0 p-1"
@@ -183,11 +183,11 @@
 		fields="{['starter', 'statuses', 'templatepicker']},"
 		object_type="processes"
 		statuses={[
-			{ value: 'All', label: 'All' },
-			{ value: 'ST_RUN', label: 'Running' },
-			{ value: 'ST_PAUSE', label: 'Paused' },
-			{ value: 'ST_DONE', label: 'Finished' },
-			{ value: 'ST_STOP', label: 'Stopped' }
+			{ value: 'All', label: $_('status.All') },
+			{ value: 'ST_RUN', label: $_('status.ST_RUN') },
+			{ value: 'ST_PAUSE', label: $_('status.ST_PAUSE') },
+			{ value: 'ST_DONE', label: $_('status.ST_DONE') },
+			{ value: 'ST_STOP', label: $_('status.ST_STOP') }
 		]}
 		{templates}
 	/>

@@ -347,11 +347,12 @@
 {/if}
 <Container class="p-2">
 	<TagPicker {currentTags} {useThisTag} {clearTag} />
-	<Row class="my-2">
+	<Row class="mt-2">
 		<Col class="d-flex justify-content-center">
+			{$_('recent')}
 			{#each recentTemplates as aTplid}
 				<Button
-					class="mx-1 badge bg-info text-dark"
+					class="mx-1 badge bg-info text-dark border-info"
 					on:click={(e) => {
 						e.preventDefault();
 						goto(`template/start?tplid=${aTplid}`, { replaceState: false });

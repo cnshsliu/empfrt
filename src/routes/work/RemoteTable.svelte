@@ -1,10 +1,9 @@
 <svelte:options accessors />
 
 <script type="ts">
-	import { _ } from '$lib/i18n';
+	import { _, date, time } from '$lib/i18n';
 	import * as api from '$lib/api';
-	import { scale } from 'svelte/transition';
-	import { flip } from 'svelte/animate';
+	import { session } from '$app/stores';
 	import { filterStorage } from '$lib/empstores';
 	import { tspans } from '$lib/variables';
 	import { onMount } from 'svelte';
@@ -35,6 +34,7 @@
 	let calendar_end = '';
 	let sorting = { dir: 'desc', key: 'lastdays' };
 	let storeSorting = $filterStorage.workSorting;
+	let user = $session.user;
 
 	$filterStorage.calendar_begin = '';
 	$filterStorage.calendar_end = '';
@@ -149,6 +149,9 @@
 	function gotoWorkflow(wfid: string) {
 		goto(iframeMode ? `/workflow/@${wfid}?iframe` : `/workflow/@${wfid}`, { replaceState: false });
 	}
+	$: if ($filterStorage) {
+		filter_tspan = $filterStorage.tspan;
+	}
 </script>
 
 <Table hover {loading} {rows} {pageIndex} {pageSize} let:rows={rows2}>
@@ -169,7 +172,6 @@
 						on:change={async (e) => {
 							e.preventDefault();
 							filter_tspan = e.target.value;
-							console.log(filter_tspan, e.target.value);
 							$filterStorage.tspan = filter_tspan;
 							await load(page, 'onTspan');
 						}}
@@ -262,7 +264,7 @@
 							{/if}
 							{#if row.rehearsal}
 								/ <i class="bi-patch-check-fill" />
-								{row.doer}
+								{Parser.userDisplay(row.doer, user.email)}
 							{/if}
 						</sup>
 					</a>
@@ -287,8 +289,13 @@
 				</td>
 				<td data-label="Date" style="font-size:0.25rem">
 					<div>
-						<div>{row.doneat ? 'Done at ' + TimeTool.format(row.doneat, 'LLL') : ''}</div>
-						<div>{TimeTool.format(row.createdAt, 'LLL')}</div>
+						{#if row.doneat}
+							{$date(new Date(row.doneat))}
+							{$time(new Date(row.doneat))}
+						{:else}
+							{$date(new Date(row.createdAt))}
+							{$time(new Date(row.createdAt))}
+						{/if}
 					</div>
 				</td>
 				<td class="kfk-lastdays">

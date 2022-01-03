@@ -93,6 +93,16 @@ const Parser = {
 			ret.unshift('STARTER');
 		}
 		return ret;
+	},
+
+	userDisplay: function (email: string, myEmail: string): string {
+		let ret = email;
+		let domain = email.substring(email.indexOf('@'));
+		let myDomain = myEmail.substring(myEmail.indexOf('@'));
+		if (domain === myDomain) {
+			ret = ret.substring(0, ret.indexOf('@'));
+		}
+		return ret;
 	}
 };
 export default Parser;

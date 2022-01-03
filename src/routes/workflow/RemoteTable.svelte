@@ -1,10 +1,8 @@
 <svelte:options accessors />
 
 <script type="ts">
-	import { _ } from '$lib/i18n';
+	import { _, date, time } from '$lib/i18n';
 	import * as api from '$lib/api';
-	import { scale } from 'svelte/transition';
-	import { flip } from 'svelte/animate';
 	import { filterStorage } from '$lib/empstores';
 	import { tspans } from '$lib/variables';
 	import Parser from '$lib/parser';
@@ -205,6 +203,10 @@
 	onMount(async () => {
 		reload();
 	});
+	$: if ($filterStorage) {
+		filter_tspan = $filterStorage.tspan;
+		input_search = $filterStorage.wfTitlePattern;
+	}
 </script>
 
 <Table {loading} {rows} {pageIndex} {pageSize}>
@@ -296,8 +298,6 @@
 	<tbody>
 		{#each rows as row, index (row)}
 			<tr
-				transition:scale|local={{ start: 0.7 }}
-				animate:flip={{ duration: 1000 }}
 				class:kfk-odd={index % 2 !== 0}
 				class:tnt-odd={index % 2 !== 0}
 				class:kfk-even={index % 2 === 0}
@@ -312,8 +312,11 @@
 					</a>
 				</td>
 				<td data-label="Status">{row.statusLabel}</td>
-				<td data-label="Starter">{row.starter}</td>
-				<td data-label="Updated at">{TimeTool.format(row.updatedAt, 'LLL')}</td>
+				<td data-label="Starter">{Parser.userDisplay(row.starter, user.email)}</td>
+				<td data-label="Updated at">
+					{$date(new Date(row.updatedAt))}
+					{$time(new Date(row.updatedAt))}
+				</td>
 				<td>
 					<Dropdown>
 						<DropdownToggle caret color="notexist" class="btn-sm">

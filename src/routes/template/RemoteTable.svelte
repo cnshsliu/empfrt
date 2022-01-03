@@ -4,7 +4,6 @@
 	//Row component is optional and only serves to render odd/even row, you can use <tr> instead.
 	//Sort component is optional
 	import { _ } from '$lib/i18n';
-	import { scale } from 'svelte/transition';
 	import * as api from '$lib/api';
 	import { onMount } from 'svelte';
 	import Parser from '$lib/parser';
@@ -245,7 +244,6 @@
 	<tbody>
 		{#each rows2 as row, index (row)}
 			<tr
-				transition:scale|local={{ start: 0.7 }}
 				class:kfk-odd={index % 2 !== 0}
 				class:kfk-even={index % 2 === 0}
 				class:tnt-odd={index % 2 !== 0}

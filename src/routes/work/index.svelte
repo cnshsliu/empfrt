@@ -169,6 +169,7 @@
 					$filterStorage.tplid = '';
 					$filterStorage.doer = user.email;
 					$filterStorage.workTitlePattern = '';
+					$filterStorage.tspan = '1w';
 					clearTag();
 					theExtraFilter.reset();
 					theRemoteTable.reset();
@@ -195,10 +196,10 @@
 		object_type="work items"
 		statuses_label="Work status:"
 		statuses={[
-			{ value: 'All', label: 'All' },
-			{ value: 'ST_RUN', label: 'Running' },
-			{ value: 'ST_PAUSE', label: 'Paused' },
-			{ value: 'ST_DONE', label: 'Finished' }
+			{ value: 'All', label: $_('status.All') },
+			{ value: 'ST_RUN', label: $_('status.ST_RUN') },
+			{ value: 'ST_PAUSE', label: $_('status.ST_PAUSE') },
+			{ value: 'ST_DONE', label: $_('status.ST_DONE') }
 		]}
 		{templates}
 	/>

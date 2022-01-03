@@ -96,9 +96,31 @@
 			"tags": "Tags delimitered by spaces/;/,"
 		}
 	},
+	"recent": "Recent: ",
 	"home": {
 		"topic": "Svelte Localization Tutorial",
 		"subtopic": "Internationalization and Localization"
+	},
+	"status": {
+		"All": "All",
+		"ST_RUN": "Running",
+		"ST_PAUSE": "Paused",
+		"ST_DONE": "Finished",
+		"ST_STOP": "Stopped"
+	},
+
+	"start": {
+		"startWorkflow": "Start Workflow",
+		"startIt": "Start It",
+		"rehearsal": "Rehearsal",
+		"context": "Optional Workflow Context",
+		"pbo": "Primary Business Object",
+		"title": "Workflow title",
+		"teamid": "Start with team",
+		"recentTeam": "Recent used team",
+		"checkitout": "Check it out",
+		"dismiss": "Dismiss",
+		"OR": "Or"
 	},
 	"header": {
 		"home": "Home",

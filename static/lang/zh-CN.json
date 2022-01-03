@@ -96,9 +96,30 @@
 			"tags": "用spaces或;或,分割的标签"
 		}
 	},
+	"recent": "最近使用: ",
 	"home": {
 		"topic": "Svelte Localization Tutorial",
 		"subtopic": "Internationalization and Localization"
+	},
+	"status": {
+		"All": "全部",
+		"ST_RUN": "进行中",
+		"ST_PAUSE": "已暂停",
+		"ST_DONE": "已结束",
+		"ST_STOP": "已中止"
+	},
+	"start": {
+		"startWorkflow": "启动这个流程",
+		"startIt": "马上启动",
+		"rehearsal": "先演练一下",
+		"context": "流程上下文信息(可选)",
+		"pbo": "主要业务对象URL",
+		"title": "给它一个独特的标题",
+		"teamid": "匹配一个工作小组",
+		"recentTeam": "最近使用的工作小组",
+		"checkitout": "已启动, 去看一下",
+		"dismiss": "先放一边",
+		"OR": "或者,你也可以"
 	},
 	"header": {
 		"home": "Home",

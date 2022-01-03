@@ -22,6 +22,7 @@
 </script>
 
 <script lang="ts">
+	import { _ } from '$lib/i18n';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { filterStorage } from '$lib/empstores';
@@ -180,7 +181,9 @@
 <Container class="mt-3">
 	<Row cols="1">
 		<Col class="d-flex justify-content-center">
-			<span class="text-xs-center fs-3">Start Workflow</span>
+			<span class="text-xs-center fs-3">
+				{$_('start.startWorkflow')}
+			</span>
 		</Col>
 		<Col class="d-flex justify-content-center">
 			<span class="text-xs-center fs-5">
@@ -208,11 +211,16 @@
 						e.preventDefault();
 						_startWorkflow(false);
 					}}
-					>Start it
+				>
+					{$_('start.startIt')}
 				</Button>
 			</Col>
 		</Row>
-		<div class="mt-3 w-100 text-center"><div>OR</div></div>
+		<div class="mt-3 w-100 text-center">
+			<div>
+				{$_('start.OR')}
+			</div>
+		</div>
 		<Row cols="1">
 			<Col>
 				<Button
@@ -224,7 +232,7 @@
 						_startWorkflow(true);
 					}}
 				>
-					Rehearsal
+					{$_('start.rehearsal')}
 				</Button>
 			</Col>
 		</Row>
@@ -242,7 +250,7 @@
 							//goto(`/workflow/@${startedWorkflow.wfid}`);
 						}}
 					>
-						Check it out
+						{$_('start.checkitout')}
 					</Button>
 				</Col>
 				<Col>
@@ -254,24 +262,21 @@
 							startedWorkflow = null;
 						}}
 					>
-						Dismiss
+						{$_('start.dismiss')}
 					</Button>
 				</Col>
 			{/if}
 		</Row>
 		<Row cols="1" class="mt-5">
-			<Col>Optional Workflow Context:</Col>
+			<Col>
+				{$_('start.context')}
+			</Col>
 			<Col>
 				<div class="form-floating">
-					<Input
-						type="url"
-						name="pbo"
-						id="input-pbo"
-						class="form-control"
-						bind:value={pbo}
-						placeholder="URL of Primary Business Object"
-					/>
-					<Label for="input-pbo">Primary Business Object</Label>
+					<Input type="url" name="pbo" id="input-pbo" class="form-control" bind:value={pbo} />
+					<Label for="input-pbo">
+						{$_('start.pbo')}
+					</Label>
 				</div>
 			</Col>
 			<Col>
@@ -282,9 +287,10 @@
 						id="input-wftitle"
 						class="form-control"
 						bind:value={wftitle}
-						placeholder="Give it a title, or keep empty to use one auto-generated"
 					/>
-					<Label for="input-wftitle">Workflow title</Label>
+					<Label for="input-wftitle">
+						{$_('start.title')}
+					</Label>
 				</div>
 			</Col>
 			<Col>
@@ -298,7 +304,10 @@
 								class="w-100 form-control"
 								id="input-team"
 							/>
-							<Label for="input-team">Start with team {theTeam ? theTeam.teamid : ''}</Label>
+							<Label for="input-team">
+								{$_('start.teamid')}
+								{theTeam ? theTeam.teamid : ''}</Label
+							>
 						</div>
 					</DropdownToggle>
 					<DropdownMenu>
@@ -315,7 +324,9 @@
 					</DropdownMenu>
 				</Dropdown>
 				<div class="mt-2">
-					<span>Recent used team:</span>
+					<span>
+						{$_('start.recentTeam')}
+					</span>
 					{#each recentTeams as ateam, index (ateam)}
 						<Button
 							class="mx-1 badge bg-light text-primary border border-primary"
