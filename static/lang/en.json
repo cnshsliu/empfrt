@@ -114,7 +114,7 @@
 		"startIt": "Start It",
 		"rehearsal": "Rehearsal",
 		"context": "Optional Workflow Context",
-		"pbo": "Primary Business Object",
+		"pbo": "Primary Business Object URL",
 		"title": "Workflow title",
 		"teamid": "Start with team",
 		"recentTeam": "Recent used team",
