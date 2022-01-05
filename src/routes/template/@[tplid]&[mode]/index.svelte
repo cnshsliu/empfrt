@@ -30,18 +30,21 @@
 </script>
 
 <script lang="ts">
+	import { _ } from '$lib/i18n';
 	import { API_SERVER } from '$lib/Env';
 	import type { User, Template, Team } from '$lib/types';
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
 	import { filterStorage } from '$lib/empstores';
-	import { get } from 'svelte/store';
+	import { getNotificationsContext } from 'svelte-notifications';
+	const { addNotification } = getNotificationsContext();
+	import type { oneArgFunc } from '$lib/types';
 	import { ClientPermControl } from '$lib/clientperm';
 	import Parser from '$lib/parser';
 	import { goto } from '$app/navigation';
 	import { session } from '$app/stores';
 	import { title } from '$lib/title';
 	import * as api from '$lib/api';
-	import { Container, Row, Col, Nav, NavLink } from 'sveltestrap';
+	import { Row, Col, Nav, NavLink } from 'sveltestrap';
 	import { Icon, Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'sveltestrap';
 	import { onMount } from 'svelte';
 	import { enhance } from '$lib/form';
@@ -100,7 +103,6 @@
 	};
 	export let form_name = '';
 	export let export_to_filename = template.tplid;
-	export let errmsg = '';
 	export let user: User;
 
 	$: topmenu_class = form_name === '' ? '' : 'whiteback';
@@ -109,7 +111,6 @@
 			form_status[key] = false;
 		});
 		form_name = '';
-		errmsg = '';
 		theDesigner.documentEventOn();
 	}
 	function show_form(what: string) {
@@ -162,7 +163,7 @@
 		if (export_to_filename.endsWith('.xml'))
 			export_to_filename = export_to_filename.substring(0, export_to_filename.lastIndexOf('.xml'));
 		api.post('template/download', { tplid: template.tplid }, user.sessionToken).then((response) => {
-			const url = window.URL.createObjectURL(new Blob([response]));
+			const url = window.URL.createObjectURL(new Blob([response as unknown as BlobPart]));
 			removeElementsByClass('tempLink');
 			const link = document.createElement('a');
 			link.href = url;
@@ -183,14 +184,13 @@
 		return;
 	}
 
-	let fade_message = '';
-	let fade_timer: any;
-	function setFadeMessage(message: string, time = 2000) {
-		fade_message = message;
-		if (fade_timer) clearTimeout(fade_timer);
-		fade_timer = setTimeout(() => {
-			fade_message = '';
-		}, time);
+	function setFadeMessage(message: string, type = 'warning', pos = 'bottom-right', time = 2000) {
+		(addNotification as oneArgFunc)({
+			text: message,
+			position: pos,
+			type: type,
+			removeAfter: time
+		});
 	}
 </script>
 
@@ -236,12 +236,12 @@
 							}}
 						>
 							<Icon name="plus-circle" />
-							New
+							{$_('tpl.new')}
 						</NavLink>
 					{:else}
 						<NavLink disabled>
 							<Icon name="plus-circle" />
-							New
+							{$_('tpl.new')}
 						</NavLink>
 					{/if}
 					<NavLink
@@ -251,7 +251,7 @@
 						}}
 					>
 						<Icon name="cloud-download" />
-						Export
+						{$_('tpl.export')}
 					</NavLink>
 					{#if ClientPermControl(user.perms, user.email, 'template', template, 'create')}
 						<NavLink
@@ -261,12 +261,12 @@
 							}}
 						>
 							<Icon name="files" />
-							Copy to
+							{$_('tpl.copyto')}
 						</NavLink>
 					{:else}
 						<NavLink class="kfk-link" disabled>
 							<Icon name="files" />
-							Copy to
+							{$_('tpl.copyto')}
 						</NavLink>
 					{/if}
 					{#if template.ins === false}
@@ -278,12 +278,12 @@
 								}}
 							>
 								<Icon name="input-cursor-text" />
-								Rename
+								{$_('tpl.rename')}
 							</NavLink>
 						{:else}
 							<NavLink class="kfk-link" disabled>
 								<Icon name="input-cursor-text" />
-								Rename
+								{$_('tpl.rename')}
 							</NavLink>
 						{/if}
 						{#if ClientPermControl(user.perms, user.email, 'template', template, 'delete')}
@@ -294,12 +294,12 @@
 								}}
 							>
 								<Icon name="trash" />
-								Delete
+								{$_('tpl.delete')}
 							</NavLink>
 						{:else}
 							<NavLink class="kfk-link" disabled>
 								<Icon name="trash" />
-								Delete
+								{$_('tpl.delete')}
 							</NavLink>
 						{/if}
 						{#if ClientPermControl(user.perms, user.email, 'template', template, 'update')}
@@ -315,12 +315,12 @@
 								}}
 							>
 								<Icon name={readonly ? 'pen' : 'eye'} />
-								{readonly ? 'Edit it' : 'View it'}
+								{readonly ? $_('tpl.editit') : $_('tpl.viewit')}
 							</NavLink>
 						{:else}
 							<NavLink disabled>
 								<Icon name={readonly ? 'pen' : 'eye'} />
-								{readonly ? 'Edit it' : 'View it'}
+								{readonly ? $_('tpl.editit') : $_('tpl.viewit')}
 							</NavLink>
 						{/if}
 						{#if ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
@@ -331,12 +331,12 @@
 								}}
 							>
 								<Icon name="trash" />
-								Start it
+								{$_('tpl.startit')}
 							</NavLink>
 						{:else}
 							<NavLink disabled>
 								<Icon name="trash" />
-								Start it
+								{$_('tpl.startit')}
 							</NavLink>
 						{/if}
 					{/if}
@@ -369,7 +369,6 @@
 									await theDesigner.loadTemplate(template, tpl_mode);
 									form_status['create'] = false;
 									form.reset();
-									errmsg = '';
 								}
 								hide_all_form();
 							}
@@ -377,7 +376,9 @@
 					>
 						<table class="form-table">
 							<tr>
-								<td> New template name: </td>
+								<td>
+									{$_('tpl.form.newtplname')}
+								</td>
 								<td>
 									<input
 										name="tplid"
@@ -388,7 +389,9 @@
 									/>
 								</td>
 								<td>
-									<Button type="submit" color="primary">Create</Button>
+									<Button type="submit" color="primary">
+										{$_('button.create')}
+									</Button>
 								</td>
 								<td>
 									<Button
@@ -398,18 +401,19 @@
 										}}
 										color="secondary"
 									>
-										Cancel
+										{$_('button.cancel')}
 									</Button>
 								</td>
 							</tr>
 						</table>
-						{#if errmsg !== ''}{errmsg}{/if}
 					</form>
 				{:else if form_status.export}
 					<form>
 						<table class="form-table">
 							<tr>
-								<td> Export current template to: </td>
+								<td>
+									{$_('tpl.form.exportto')}
+								</td>
 								<td>
 									<input
 										name="exorttoname"
@@ -425,8 +429,10 @@
 											e.preventDefault();
 											export_template();
 										}}
-										color="primary">Export</Button
+										color="primary"
 									>
+										{$_('button.export')}
+									</Button>
 								</td>
 								<td>
 									<Button
@@ -434,12 +440,13 @@
 											e.preventDefault();
 											hide_all_form();
 										}}
-										color="secondary">Cancel</Button
+										color="secondary"
 									>
+										{$_('button.cancel')}
+									</Button>
 								</td>
 							</tr>
 						</table>
-						{#if errmsg !== ''}{errmsg}{/if}
 					</form>
 				{:else if form_status.rename}
 					<form
@@ -452,10 +459,11 @@
 								console.log(newTemplate);
 								if (newTemplate.error) {
 									console.log(newTemplate.error);
-									errmsg = newTemplate.errMsg;
+									let errmsg = newTemplate.errMsg;
 									if (errmsg.indexOf('MongoError: E11000 duplicate key error') >= 0) {
 										errmsg = '同名模板已存在, 请重新录入';
 									}
+									setFadeMessage(errmsg, 'warning');
 								} else {
 									template = newTemplate;
 									goto(`/template/@${template.tplid}&${tpl_mode}`, {
@@ -466,7 +474,6 @@
 									await theDesigner.loadTemplate(template, tpl_mode);
 									form_status['rename'] = false;
 									form.reset();
-									errmsg = '';
 								}
 								hide_all_form();
 							}
@@ -475,7 +482,7 @@
 						<table class="form-table">
 							<tr>
 								<td>
-									Rename {template.tplid} to:
+									{$_('tpl.form.renameto')}
 								</td>
 								<td>
 									<input
@@ -488,7 +495,9 @@
 									<input type="hidden" name="fromid" value={template.tplid} />
 								</td>
 								<td>
-									<Button type="submit" color="primary">Rename</Button>
+									<Button type="submit" color="primary">
+										{$_('button.rename')}
+									</Button>
 								</td>
 								<td>
 									<Button
@@ -496,12 +505,13 @@
 											e.preventDefault();
 											hide_all_form();
 										}}
-										color="secondary">Cancel</Button
+										color="secondary"
 									>
+										{$_('button.cancel')}
+									</Button>
 								</td>
 							</tr>
 						</table>
-						{#if errmsg !== ''}{errmsg}{/if}
 					</form>
 				{:else if form_status.copyto}
 					<form
@@ -515,10 +525,11 @@
 								console.log(created);
 								if (created.error) {
 									console.log(created.error);
-									errmsg = created.errMsg;
+									let errmsg = created.errMsg;
 									if (errmsg.indexOf('MongoError: E11000 duplicate key error') >= 0) {
 										errmsg = '同名模板已存在, 请重新录入';
 									}
+									setFadeMessage(errmsg, 'warning');
 								} else {
 									template = created;
 									goto(`/template/@${template.tplid}&${tpl_mode}`, {
@@ -530,7 +541,6 @@
 									form_status['copyto'] = false;
 									$title = template.tplid;
 									form.reset();
-									errmsg = '';
 								}
 								hide_all_form();
 							}
@@ -539,7 +549,7 @@
 						<table class="form-table">
 							<tr>
 								<td>
-									Copy {template.tplid} to:
+									{$_('tpl.form.copyto')}
 								</td>
 								<td>
 									<input
@@ -552,7 +562,9 @@
 									<input type="hidden" name="fromid" value={template.tplid} />
 								</td>
 								<td>
-									<Button type="submit" color="primary">Copy</Button>
+									<Button type="submit" color="primary">
+										{$_('button.copy')}
+									</Button>
 								</td>
 								<td>
 									<Button
@@ -562,21 +574,22 @@
 										}}
 										color="secondary"
 									>
-										Cancel
+										{$_('button.cancel')}
 									</Button>
 								</td>
 							</tr>
 						</table>
-						{#if errmsg !== ''}{errmsg}{/if}
 					</form>
 				{:else if form_status.delete}
 					<table class="form-table">
 						<tr>
 							<td>
-								Delete: &nbsp; {template.tplid}?&nbsp;
+								{$_('tpl.delete')}
 							</td>
 							<td>
-								<Button on:click={() => delete_template()} color="primary">Delete</Button>
+								<Button on:click={() => delete_template()} color="primary">
+									{$_('button.delete')}
+								</Button>
 							</td>
 							<td>
 								<Button
@@ -586,12 +599,11 @@
 									}}
 									color="secondary"
 								>
-									Cancel
+									{$_('button.cancel')}
 								</Button>
 							</td>
 						</tr>
 					</table>
-					{#if errmsg !== ''}{errmsg}{/if}
 				{:else if form_status.start}
 					<table class="form-table">
 						<tr>
@@ -605,7 +617,7 @@
 									}}
 									color="primary"
 								>
-									Start now
+									{$_('button.startnow')}
 								</Button>
 							</td>
 							<td>
@@ -616,12 +628,11 @@
 									}}
 									color="secondary"
 								>
-									Cancel
+									{$_('button.cancel')}
 								</Button>
 							</td>
 						</tr>
 					</table>
-					{#if errmsg !== ''}{errmsg}{/if}
 				{/if}
 			</Col>
 		</Row>

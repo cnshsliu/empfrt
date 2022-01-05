@@ -1,10 +1,10 @@
 <script lang="ts">
+	import { _ } from '$lib/i18n';
 	import { Button, FormGroup, Input, Label, InputGroup, InputGroupText } from 'sveltestrap';
 	import { session } from '$app/stores';
 	import * as api from '$lib/api';
 	import { goto } from '$app/navigation';
 	export let work;
-	export let _transferWork;
 	export let iframeMode;
 	let transferee = '';
 	let valid_tansferee = false;
@@ -42,9 +42,12 @@
 </script>
 
 {#if work.transferable}
-	This task is permitted to transfer.
+	{$_('todo.transferable')}
 	<InputGroup>
-		<InputGroupText>Transfer to</InputGroupText>
+		<InputGroupText>
+			Transfer to
+			{$_('todo.transferto')}
+		</InputGroupText>
 		<Input
 			type="text"
 			placeholder="whom? "
@@ -65,10 +68,12 @@
 					$session.user.sessionToken
 				);
 				goto(iframeMode ? '/work?iframe' : '/work');
-			}}>Transfer</Button
+			}}
 		>
+			{$_('todo.transfer')}
+		</Button>
 	</InputGroup>
 	{msg}
 {:else}
-	This task is not transferable
+	{$_('todo.notTransferable')}
 {/if}

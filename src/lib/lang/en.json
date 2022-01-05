@@ -82,9 +82,23 @@
 		"resetQuery": "Reset Query",
 		"create": "Create",
 		"import": "Import",
+		"okay": "Okay",
 		"cancel": "Cancel",
 		"set": "Set",
-		"close": "Close"
+		"close": "Close",
+		"done": "Done",
+		"adhoc": "New Adhoc",
+		"sendback": "Push back",
+		"revoke": "Revoke",
+		"check": "Check",
+		"sendadhoc": "Send it out",
+		"sendadhocConfirm": "Yes, send task to above people",
+		"sendadhocReconsider": "No, let me re-considerate",
+		"export": "Export",
+		"copy": "Copy",
+		"rename": "Rename",
+		"delete": "Delte",
+		"startnow": "Start Now"
 	},
 	"template": {
 		"create": {
@@ -122,18 +136,103 @@
 		"dismiss": "Dismiss",
 		"OR": "Or"
 	},
-	"header": {
-		"home": "Home",
-		"contact": "Contact Us",
-		"about": "About"
+	"todo": {
+		"status": "Task Status",
+		"owner": "Task Owner",
+		"doneat": "Completed",
+		"decision": "Decision",
+		"pbo": "Primary Business Object",
+		"instruction": "Instruction",
+		"nodeInput": "Task Variables",
+		"transferable": "This task is transferable",
+		"notTransferable": "This task is not transferable",
+		"transferto": "Transfer to",
+		"transfer": "Transfer",
+		"rehearsalInformation": "Rehearsal Information",
+		"process": "Process",
+		"processRehearsal": "Process Rehearsal",
+		"worklog": "Work log",
+		"monitor": "Monitor",
+		"print": "Print",
+		"startat": "Start at",
+		"startby": "Start by"
 	},
-	"framework": {
-		"languages": "There {n, plural, =0 {are no languages} one {# is one languages} other {# are several languages}} in this tutorial",
-		"rtl": "{n, plural, =0 {No languages are} one {# Only one language is} other {# Several languages are}} written from left to right ",
-		"released_at": "Released {date}"
+	"tpl": {
+		"new": "New",
+		"export": "Export",
+		"copyto": "Copy to",
+		"rename": "Rename",
+		"delete": "Delete",
+		"editit": "Edit it",
+		"viewit": "View it",
+		"startit": "Start it",
+		"form": {
+			"newtplname": "New template name",
+			"exportto": "Export curent template to",
+			"copyto": "Copy to",
+			"renameto": "Rename to",
+			"delete": "Delete",
+			"start": "Start"
+		}
 	},
-	"footer": {
-		"line1": "Companion to a <a href=\"{phraseUrl}\">localise</a> article.",
-		"line2": "Made with <a href=\"{svelteUrl}\">Svelte</a> &amp; <a href=\"{bulmaUrl}\">Materialize</a>."
+	"prop": {
+		"label": "Label",
+		"action": {
+			"tab": {
+				"participant": "Participant",
+				"instruction": "Instruction",
+				"variables": "Variables"
+			},
+			"placeholder": {
+				"instruct": "may use simple HTML format and Handlebars to include Kvars"
+			},
+			"p10t": {
+				"alldone": "Done only when All-Done",
+				"transferable": "Transferable",
+				"rds": "Role Definition String",
+				"pick": "Pick an existing RDS",
+				"try": "Try a RDS",
+				"tryteam": "with Team",
+				"tryuser": "with User",
+				"tryresult": "Result"
+			},
+			"kvar": {
+				"basic": "Basic",
+				"extra": "Extra",
+				"name": "Name",
+				"options": "Options",
+				"value": "Value",
+				"label": "Label",
+				"placeholder": "Placeholder",
+				"breakrow": "Break row",
+				"ID": "ID",
+				"required": "Required"
+			},
+			"button": {
+				"addnewvar": "+ Add new variable",
+				"tryit": "Try it"
+			}
+		},
+		"script": {
+			"syncmode": "Sync Mode",
+			"asyncmode": "Async Mode",
+			"tryrun": "Try Run"
+		},
+		"timer": {
+			"code": "Code",
+			"type": "Type",
+			"fromstart": "From Start",
+			"fromnow": "From Now",
+			"fix": "Fix"
+		},
+		"inform": {
+			"recipient": "Recipient",
+			"content": "Content",
+			"subject": "Subject"
+		},
+		"sub": {
+			"SUB": "Sub TPLID",
+			"standalone": "Standalone"
+		}
 	}
 }

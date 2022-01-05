@@ -13,15 +13,14 @@
 		NavLink,
 		Icon
 	} from 'sveltestrap';
+	import { _, mtcDate } from '$lib/i18n';
 	import CommentEntry from '$lib/CommentEntry.svelte';
-	import { StatusClass, StatusLabel } from '$lib/lang';
+	import { StatusClass, StatusLabel } from '$lib/status';
 	import { goto } from '$app/navigation';
 	import { Badge } from 'sveltestrap';
 	export let wfid;
 	export let wf;
 	export let workid;
-	export let todoid;
-	export let TimeTool;
 	export let iframeMode;
 	export let user;
 	export let _refreshWork;
@@ -46,10 +45,10 @@
 	<div class="fs-3">
 		<Icon name="bar-chart-steps" />
 		{#if wf.rehearsal}
-			Process Rehearsal
+			{$_('todo.processRehearsal')}
 			<i class="bi-patch-check-fill" />
 		{:else}
-			Process
+			{$_('todo.process')}
 		{/if}
 		<hr />
 	</div>
@@ -72,26 +71,26 @@
 					on:click={(e) => {
 						e.preventDefault();
 						gotoWorkflowMonitor(wfid);
-					}}><Icon name="kanban" />&nbsp;Monitor</NavLink
-				>
+					}}
+					><Icon name="kanban" />&nbsp;
+					{$_('todo.monitor')}
+				</NavLink>
 			</Col>
 		</Row>
 		<Row cols={{ lg: 2, md: 2, sm: 1 }}>
-			<Col>Started at: {TimeTool.format(wf.createdAt, 'LLL')}</Col>
+			<Col>
+				{$_('todo.startat')}: {mtcDate(wf.beginat)}
+			</Col>
 			<Col>
 				{@html wf.status === 'ST_DONE'
-					? `<span class='${StatusClass('ST_DONE')}'>Completed at ${TimeTool.format(
-							wf.updatedAt,
-							'LLL'
-					  )}</span>`
+					? `<span class='${StatusClass('ST_DONE')}'>Completed at ${mtcDate(wf.updatedAt)}</span>`
 					: `<span class='${StatusClass(wf.status)}'>${StatusLabel(wf.status)}</span>`}
 			</Col>
-			<Col>Started by: {user.email === wf.starter ? 'Me' : wf.starter}</Col>
+			<Col>{$_('todo.startby')}: {user.email === wf.starter ? 'Me' : wf.starter}</Col>
 		</Row>
 	</Container>
 	<div class="fs-3 mt-3">
-		<Icon name="clock-history" />
-		Work log
+		<Icon name="clock-history" />{$_('todo.worklog')}
 		<hr />
 	</div>
 	<Container class="my-0">
@@ -132,14 +131,15 @@
 								</div>
 								<div class="flex-shringk-1">
 									{#if entry.doneat}
-										Done at: <br />{TimeTool.format(entry.doneat, 'LLL')}
+										{$_('todo.doneat')}
+										: <br />{mtcDate(entry.doneat)}
 									{/if}
 								</div>
 							</Col>
 							{#if entry.route}
 								<hr />
 								<Col>
-									<span class="kfk-kvar-key-display">Decision:</span>
+									<span class="kfk-kvar-key-display">{$_('todo.decision')}:</span>
 									<span class="kfk-kvar-value-display">{entry.route}</span>
 								</Col>
 							{/if}
@@ -175,7 +175,7 @@
 									<a href={`/work/@${aDoer.todoid}`} class="clickable text-primary btn btn-sm">
 										{#if aDoer.status === 'ST_DONE'}
 											<i class="bi bi-emoji-sunglasses" alt="Done" />{aDoer.cn}({aDoer.uid}); &nbsp;
-											<sup>{TimeTool.format(aDoer.doneat, 'LLL')}</sup>
+											<sup>{mtcDate(aDoer.doneat)}</sup>
 										{:else if aDoer.status === 'ST_IGNORE'}
 											<i
 												class="bi bi-emoji-smile-upside-down"
@@ -196,7 +196,8 @@
 		<Row>
 			<Col class="d-flex justify-content-end">
 				<NavLink on:click={printWindow}>
-					<i class="bi bi-printer" alt="Printer" />&nbsp;Print
+					<i class="bi bi-printer" alt="Printer" />&nbsp;
+					{$_('todo.print')}
 				</NavLink>
 			</Col>
 		</Row>

@@ -1,6 +1,7 @@
 <svelte:options accessors={true} />
 
 <script lang="ts">
+	import { _ } from '$lib/i18n';
 	import Parser from '$lib/parser';
 	import { Status } from '$lib/status';
 	import * as api from '$lib/api';
@@ -340,7 +341,6 @@
 							{roleOptions}
 							{showHelp}
 							{readonly}
-							{setFadeMessage}
 							bind:scenario={KFK.scenario}
 							{workid}
 						/>
@@ -362,10 +362,16 @@
 	</ModalBody>
 	<ModalFooter>
 		{#if !readonly}
-			<Button color="primary" on:click={setNodeOrConnectProperties}>Set</Button>
-			<Button color="secondary" on:click={toggle}>Cancel</Button>
+			<Button color="primary" on:click={setNodeOrConnectProperties}>
+				{$_('button.set')}
+			</Button>
+			<Button color="secondary" on:click={toggle}>
+				{$_('button.cancel')}
+			</Button>
 		{:else}
-			<Button color="primary" on:click={toggle}>Okay</Button>
+			<Button color="primary" on:click={toggle}>
+				{$_('button.okay')}
+			</Button>
 		{/if}
 	</ModalFooter>
 </Modal>

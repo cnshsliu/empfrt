@@ -82,9 +82,23 @@
 		"resetQuery": "重置查询",
 		"create": "新建",
 		"import": "导入",
+		"okay": "确定",
 		"cancel": "取消",
 		"set": "设置",
-		"close": "关闭"
+		"close": "关闭",
+		"done": "完成",
+		"adhoc": "新建独立任务",
+		"sendback": "打回",
+		"revoke": "撤回",
+		"check": "检查",
+		"sendadhoc": "送出任务",
+		"sendadhocConfirm": "确定，将任务发送给上述人员",
+		"sendadhocReconsider": "取消，让我再考虑一下",
+		"export": "导出",
+		"copy": "拷贝",
+		"rename": "重命名",
+		"delete": "删除",
+		"startnow": "现在启动"
 	},
 	"template": {
 		"create": {
@@ -121,18 +135,103 @@
 		"dismiss": "先放一边",
 		"OR": "或者,你也可以"
 	},
-	"header": {
-		"home": "Home",
-		"contact": "Contact Us",
-		"about": "About"
+	"todo": {
+		"status": "任务状态",
+		"owner": "任务负责人",
+		"doneat": "完成时间",
+		"decision": "节点决策",
+		"pbo": "主要业务对象",
+		"instruction": "操作指引",
+		"nodeInput": "任务参数",
+		"transferable": "当前任务可被转办",
+		"notTransferable": "当前任务不能被转办",
+		"transferto": "转办给",
+		"transfer": "转办",
+		"rehearsalInformation": "演练信息",
+		"process": "进程信息",
+		"processRehearsal": "进程演练信息",
+		"worklog": "任务历史记录",
+		"monitor": "监控",
+		"print": "打印",
+		"startat": "启动于",
+		"startby": "启动者"
 	},
-	"framework": {
-		"languages": "There {n, plural, =0 {are no languages} one {# is one languages} other {# are several languages}} in this tutorial",
-		"rtl": "{n, plural, =0 {No languages are} one {# Only one language is} other {# Several languages are}} written from left to right ",
-		"released_at": "Released {date}"
+	"tpl": {
+		"new": "新建",
+		"export": "导出",
+		"copyto": "复制",
+		"rename": "重命名",
+		"delete": "删除",
+		"editit": "编辑模式",
+		"viewit": "只读模式",
+		"startit": "启动",
+		"form": {
+			"newtplname": "新模版名称",
+			"exportto": "导出为",
+			"copyto": "复制为",
+			"renameto": "重命名为",
+			"delete": "删除",
+			"start": "启动"
+		}
 	},
-	"footer": {
-		"line1": "Companion to a <a href=\"{phraseUrl}\">localise</a> article.",
-		"line2": "Made with <a href=\"{svelteUrl}\">Svelte</a> &amp; <a href=\"{bulmaUrl}\">Materialize</a>."
+	"prop": {
+		"label": "标识",
+		"action": {
+			"tab": {
+				"participant": "参与人",
+				"instruction": "操作指引",
+				"variables": "节点参数"
+			},
+			"placeholder": {
+				"instruct": "可以使用简单HTML格式，也可使用Handlebars嵌入流程变量,like {{varname.label}}, {{varname.value}}"
+			},
+			"p10t": {
+				"alldone": "只有当所有人完成才完成",
+				"transferable": "可转办",
+				"rds": "参与者定义字符串",
+				"pick": "可参考定义",
+				"try": "测试参与者定义字符串",
+				"tryteam": "使用组队",
+				"tryuser": "使用用户",
+				"tryresult": "结果"
+			},
+			"kvar": {
+				"basic": "基础",
+				"extra": "附加",
+				"name": "名称",
+				"options": "选项",
+				"value": "初始",
+				"label": "标识",
+				"placeholder": "提示",
+				"breakrow": "换行",
+				"ID": "编号",
+				"required": "必须"
+			},
+			"button": {
+				"addnewvar": "+ 增加新变量",
+				"tryit": "开始测试"
+			}
+		},
+		"script": {
+			"syncmode": "同步模式",
+			"asyncmode": "异步模式",
+			"tryrun": "检查代码"
+		},
+		"timer": {
+			"code": "时间代码",
+			"type": "控制类型",
+			"fromstart": "从流程开始起",
+			"fromnow": "从现在起",
+			"fix": "固定时间"
+		},
+		"inform": {
+			"recipient": "收件人",
+			"content": "内容",
+			"subject": "标题"
+		},
+		"sub": {
+			"SUB": "子流程ID",
+			"standalone": "独立运行"
+		}
 	}
 }

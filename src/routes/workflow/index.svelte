@@ -1,7 +1,5 @@
 <script context="module" lang="ts">
-	let TimeTool = null;
 	export async function load({ page, fetch, session }) {
-		TimeTool = (await import('$lib/TimeTool')).default;
 		return {
 			props: {
 				user: session.user
@@ -36,7 +34,6 @@
 	let files;
 	let theSearchForm;
 	let tplidImport;
-	let payload_extra = { filter: { status: '', tplid: '' } };
 	let currentTags = [];
 
 	const setTemplates = async function () {
@@ -57,7 +54,6 @@
 	const clearTag = function () {
 		currentTags = [];
 		$filterStorage.tplTag = '';
-		theRemoteTable.tagsForFilter = [];
 		theRemoteTable.refresh();
 	};
 
@@ -80,7 +76,6 @@
 		}
 		$filterStorage.tplTag = currentTags.join(';');
 		$filterStorage.tplid = '';
-		theRemoteTable.tagsForFilter = currentTags;
 		let tmp = await api.post(
 			'template/tplid/list',
 			{ tagsForFilter: currentTags },
@@ -133,7 +128,6 @@
 		}
 		let existingArr = existingTags.split(';');
 		currentTags = existingArr;
-		theRemoteTable.tagsForFilter = currentTags;
 
 		await setTemplates();
 		refreshList();
@@ -191,12 +185,5 @@
 		]}
 		{templates}
 	/>
-	<RemoteTable
-		endpoint="workflow/search"
-		{token}
-		{user}
-		{payload_extra}
-		bind:this={theRemoteTable}
-		{TimeTool}
-	/>
+	<RemoteTable endpoint="workflow/search" {token} {user} bind:this={theRemoteTable} />
 </Container>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { _ } from '$lib/i18n';
 	import Parser from '$lib/parser';
 	import { filterStorage } from '$lib/empstores';
 	import { goto } from '$app/navigation';
@@ -26,7 +27,6 @@
 	export let roleOptions = [];
 	export let showHelp;
 	export let readonly;
-	export let setFadeMessage;
 	export let scenario;
 	export let workid;
 	let todos = [];
@@ -102,7 +102,9 @@
 	<Row cols="1">
 		<Col>
 			<InputGroup size="sm">
-				<InputGroupText>Label</InputGroupText>
+				<InputGroupText>
+					{$_('prop.label')}
+				</InputGroupText>
 				<Input bind:value={nodeInfo.nodeProps.ACTION.label} disabled={readonly} />
 			</InputGroup>
 		</Col>
@@ -113,13 +115,17 @@
 			setTab(e.detail);
 		}}
 	>
-		<TabPane tabId="participant" tab="Participant" active={isActive('participant')}>
+		<TabPane
+			tabId="participant"
+			tab={$_('prop.action.tab.participant')}
+			active={isActive('participant')}
+		>
 			<Col>
 				<InputGroup size="sm">
 					<Input
 						id="c1"
 						type="checkbox"
-						label="Only finish on ALL-Done?"
+						label={$_('prop.action.p10t.alldone')}
 						bind:checked={nodeInfo.nodeProps.ACTION.byall}
 						disabled={readonly}
 					/>
@@ -130,7 +136,7 @@
 					<Input
 						id="t1"
 						type="checkbox"
-						label="Transferable"
+						label={$_('prop.action.p10t.transferable')}
 						bind:checked={nodeInfo.nodeProps.ACTION.transferable}
 						disabled={readonly}
 					/>
@@ -142,7 +148,6 @@
 						bind:role={nodeInfo.nodeProps.ACTION.role}
 						bind:existingRoles={roleOptions}
 						{readonly}
-						{setFadeMessage}
 					/>
 				</div>
 			</Col>
@@ -152,17 +157,17 @@
 				</Col>
 			{/if}
 		</TabPane>
-		<TabPane tabId="instruct" tab="Instruction" active={isActive('instruct')}>
+		<TabPane tabId="instruct" tab={$_('prop.action.tab.instruction')} active={isActive('instruct')}>
 			<InputGroup size="sm">
 				<Input
 					type="textarea"
-					placeholder="support simple HTML and Handlebars"
+					placeholder={$_('prop.action.placeholder.instruct')}
 					bind:value={nodeInfo.nodeProps.ACTION.instruct}
 					disabled={readonly}
 				/>
 			</InputGroup>
 		</TabPane>
-		<TabPane tabId="variables" tab="Variables" active={isActive('variables')}>
+		<TabPane tabId="variables" tab={$_('prop.action.tab.variables')} active={isActive('variables')}>
 			{#if !readonly}
 				<InputGroup size="sm">
 					<Button
@@ -182,7 +187,7 @@
 							kvarsArr = kvarsArr;
 						}}
 					>
-						+ Add new variable
+						{$_('prop.action.button.addnewvar')}
 					</Button>
 				</InputGroup>
 			{/if}
@@ -196,41 +201,65 @@
 								setTab(e.detail, false);
 							}}
 						>
-							<TabPane tabId="basic" tab="Basic" active={isActive('basic', false)}>
+							<TabPane
+								tabId="basic"
+								tab={$_('prop.action.kvar.basic')}
+								active={isActive('basic', false)}
+							>
 								<InputGroup size="sm">
-									<InputGroupText>Name</InputGroupText>
+									<InputGroupText>
+										{$_('prop.action.kvar.name')}
+									</InputGroupText>
 									<Input bind:value={kvar.name} disabled={readonly} />
 								</InputGroup>
 								{#if kvar.name.startsWith('select_') || kvar.name.startsWith('radio_')}
 									<InputGroup size="sm">
-										<InputGroupText>Options</InputGroupText>
+										<InputGroupText>
+											{$_('prop.action.kvar.options')}
+										</InputGroupText>
 										<Input bind:value={kvar.options} disabled={readonly} placeholder="a;b;c" />
 									</InputGroup>
 								{/if}
 								<InputGroup size="sm">
-									<InputGroupText>Value</InputGroupText>
+									<InputGroupText>
+										{$_('prop.action.kvar.value')}
+									</InputGroupText>
 									<Input bind:value={kvar.value} disabled={readonly} />
 								</InputGroup>
 								<InputGroup size="sm">
-									<InputGroupText>Label</InputGroupText>
+									<InputGroupText>
+										{$_('prop.action.kvar.label')}
+									</InputGroupText>
 									<Input bind:value={kvar.label} disabled={readonly} />
 								</InputGroup>
 							</TabPane>
-							<TabPane tabId="extra" tab="Extra" active={isActive('extra', false)}>
+							<TabPane
+								tabId="extra"
+								tab={$_('prop.action.kvar.extra')}
+								active={isActive('extra', false)}
+							>
 								<InputGroup size="sm">
-									<InputGroupText>Placeholder</InputGroupText>
+									<InputGroupText>
+										{$_('prop.action.kvar.placeholder')}
+									</InputGroupText>
 									<Input bind:value={kvar.placeholder} disabled={readonly} />
 								</InputGroup>
 								<InputGroup size="sm">
-									<InputGroupText>Break row</InputGroupText>
+									<InputGroupText>
+										{$_('prop.action.kvar.breakrow')}
+									</InputGroupText>
 									<Input type="checkbox" bind:checked={kvar.breakrow} disabled={readonly} />
 								</InputGroup>
 								<InputGroup size="sm">
-									<InputGroupText>ID</InputGroupText>
+									<InputGroupText>
+										{$_('prop.action.kvar.ID')}
+									</InputGroupText>
 									<Input bind:value={kvar.id} disabled={readonly} />
 								</InputGroup>
 								<InputGroup size="sm">
-									<InputGroupText>Required</InputGroupText>
+									<InputGroupText>
+										{$_('prop.action.kvar.required')}
+									</InputGroupText>
 									<Input type="checkbox" bind:checked={kvar.required} disabled={readonly} />
 								</InputGroup>
 							</TabPane>
@@ -355,7 +384,8 @@
 								<i class="bi bi-emoji-sunglasses" />{todo.cn}
 								<sup>{TimeTool.format(todo.doneat, 'LLL')}</sup>
 							{:else}
-								<i class="bi bi-emoji-expressionless" />{todo.cn}
+								<i class="bi bi-emoji-expressionless" />
+								{todo.cn}
 							{/if}
 						</a>
 					</Row>

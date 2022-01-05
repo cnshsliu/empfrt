@@ -39,17 +39,17 @@
 
 <script lang="ts">
 	import { API_SERVER, MTC_SERVER } from '$lib/Env';
+	import { _, mtcDate } from '$lib/i18n';
 	import type { User, Work } from '$lib/types';
 	import { TabContent, TabPane } from 'sveltestrap';
 	import { title } from '$lib/title';
 	import { onMount } from 'svelte';
 	import WorkPage from './workpage.svelte';
-	import { StatusClass, StatusLabel } from '$lib/lang';
+	import { StatusClass, StatusLabel } from '$lib/status';
 	import { Container, Row, Col } from 'sveltestrap';
 	import { ClientPermControl } from '$lib/clientperm';
 	export let work: Work;
 	export let user: User;
-	export let delegators;
 
 	let radioGroup;
 	let printing = false;
@@ -124,22 +124,29 @@ let WORKITEM_HTML = await axios.post(
 						<div class="fw-light">{work.wf.starter}</div>
 					</Col-->
 		<Col>
-			<span class="fw-bold fs-5">Task Status:</span>
+			<span class="fw-bold fs-5">
+				{$_('todo.status')}
+			</span>
 			<div class={'fw-light ' + StatusClass(work.status)}>{StatusLabel(work.status)}</div>
 		</Col>
 		<Col>
-			<span class="fw-bold fs-5">Task Owner:</span>
+			<span class="fw-bold fs-5">
+				{$_('todo.owner')}
+			</span>
 			<div class="fw-light">{work.doer}</div>
 		</Col>
 		<Col>
 			{#if work.doneat}
-				<span class="fw-bold fs-5">Complete at:</span>
-				<div class="fw-light">{work.doneat ? TimeTool.format(work.doneat, 'LLL') : ''}</div>
+				<span class="fw-bold fs-5">
+					{$_('todo.doneat')}
+				</span>
+
+				<div class="fw-light">{mtcDate(work.doneat)}</div>
 			{/if}
 		</Col>
 		<Col />
 	</Row>
-	<WorkPage {work} {user} {iframeMode} {TimeTool} />
+	<WorkPage {work} {user} {iframeMode} />
 </Container>
 <Container class="mt-5">
 	{#if printing === false && ClientPermControl(user.perms, user.email, '*', '', 'admin') && iframeMode === false}

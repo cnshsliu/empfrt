@@ -1,8 +1,6 @@
 <script context="module" lang="ts">
 	import * as Utils from '$lib/utils';
-	let TimeTool = null;
 	export async function load({ page, session }) {
-		TimeTool = (await import('$lib/TimeTool')).default;
 		let iframeMode = false;
 		if (page.query.has('iframe')) {
 			iframeMode = true;
@@ -71,7 +69,6 @@
 	const clearTag = async function () {
 		currentTags = [];
 		$filterStorage.tplTag = '';
-		theRemoteTable.tagsForFilter = [];
 		let tmp = await api.post('template/tplid/list', {}, user.sessionToken);
 		templates = tmp.map((x) => x.tplid);
 		console.log(templates);
@@ -96,7 +93,6 @@
 		}
 		$filterStorage.tplTag = currentTags.join(';');
 		$filterStorage.tplid = '';
-		theRemoteTable.tagsForFilter = currentTags;
 		let tmp = await api.post(
 			'template/tplid/list',
 			{ tagsForFilter: currentTags },
@@ -143,7 +139,6 @@
 			let existingArr = existingTags.split(';');
 			currentTags = existingArr;
 		}
-		theRemoteTable.tagsForFilter = currentTags;
 
 		if ($filterStorage.gotoUID) {
 			$filterStorage.doer = $filterStorage.gotoUID + user.email.substring(user.email.indexOf('@'));
@@ -203,5 +198,5 @@
 		]}
 		{templates}
 	/>
-	<RemoteTable endpoint="work/list" {token} {iframeMode} bind:this={theRemoteTable} {TimeTool} />
+	<RemoteTable endpoint="work/list" {token} {iframeMode} bind:this={theRemoteTable} />
 </Container>

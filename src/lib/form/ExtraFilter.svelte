@@ -26,7 +26,6 @@
 	export let user: User;
 	export let delegators;
 	export let filter_status: string;
-	export let statuses_label: string;
 	export let fields: string[] = ['statuses'];
 	export let templates: string[] = [];
 	export let statuses: radioOption[] = [

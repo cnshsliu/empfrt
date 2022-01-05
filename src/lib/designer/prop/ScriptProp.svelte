@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { _ } from '$lib/i18n';
 	import Parser from '$lib/parser';
 	import {
 		NavLink,
@@ -19,7 +20,7 @@
 	export let showHelp;
 	export let readonly;
 	let helpShowing = false;
-	let consoleMsg = 'abcd';
+	let consoleMsg = '';
 	let user = $session.user;
 	let checkingStatus = '';
 	let checkingMsg = '';
@@ -29,7 +30,9 @@
 	<Row cols="1">
 		<Col>
 			<InputGroup size="sm">
-				<InputGroupText>Label</InputGroupText>
+				<InputGroupText>
+					{$_('prop.label')}
+				</InputGroupText>
 				<Input bind:value={nodeInfo.nodeProps.SCRIPT.label} disabled={readonly} />
 			</InputGroup>
 		</Col>
@@ -41,7 +44,7 @@
 				type="radio"
 				bind:group={nodeInfo.nodeProps.SCRIPT.runmode}
 				value="SYNC"
-				label="Sync Mode"
+				label={$_('prop.script.syncmode')}
 				disabled={readonly}
 			/>
 			<Input
@@ -49,7 +52,7 @@
 				type="radio"
 				bind:group={nodeInfo.nodeProps.SCRIPT.runmode}
 				value="ASYNC"
-				label="Async Mode"
+				label={$_('prop.script.asyncmode')}
 				disabled={readonly}
 			/>
 		</Col>
@@ -89,7 +92,7 @@
 								}
 							}}
 						>
-							Try Run
+							{$_('prop.script.tryrun')}
 						</Button>
 					</div>
 				</Col>
@@ -99,7 +102,11 @@
 			<Col>
 				<pre>
 				<code>
-					{consoleMsg}
+					{#if consoleMsg.indexOf("Error:")>-1 }
+					 {consoleMsg}
+					{:else}
+					All good
+					{/if}
 				</code>
 			</pre>
 			</Col>

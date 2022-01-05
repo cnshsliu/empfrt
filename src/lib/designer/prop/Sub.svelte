@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { _ } from '$lib/i18n';
 	import Parser from '$lib/parser';
 	import {
 		NavLink,
@@ -26,19 +27,25 @@
 	<Row cols="1" class="mt-2">
 		<Col>
 			<InputGroup size="sm">
-				<InputGroupText>Label</InputGroupText>
+				<InputGroupText>
+					{$_('prop.label')}
+				</InputGroupText>
 				<Input bind:value={nodeInfo.nodeProps.label} disabled={readonly} />
 			</InputGroup>
 		</Col>
 		<Col>
 			<InputGroup size="sm">
-				<InputGroupText>SUB</InputGroupText>
+				<InputGroupText>
+					{$_('prop.sub.SUB')}
+				</InputGroupText>
 				<Input bind:value={nodeInfo.nodeProps.SUB.sub} disabled={readonly} />
 			</InputGroup>
 		</Col>
 		<Col>
 			<InputGroup size="sm">
-				<InputGroupText>Standalone</InputGroupText>
+				<InputGroupText>
+					{$_('prop.sub.standalone')}
+				</InputGroupText>
 				<Input type="checkbox" bind:checked={nodeInfo.nodeProps.SUB.alone} disabled={readonly} />
 			</InputGroup>
 		</Col>

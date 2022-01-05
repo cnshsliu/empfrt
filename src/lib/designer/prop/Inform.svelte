@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { _ } from '$lib/i18n';
 	import Parser from '$lib/parser';
 	import {
 		NavLink,
@@ -25,13 +26,15 @@
 	<Row cols="1">
 		<Col>
 			<InputGroup size="sm">
-				<InputGroupText>Label</InputGroupText>
+				<InputGroupText>
+					{$_('prop.label')}
+				</InputGroupText>
 				<Input bind:value={nodeInfo.nodeProps.label} disabled={readonly} />
 			</InputGroup>
 		</Col>
 	</Row>
 	<TabContent pills>
-		<TabPane tabId="recipient" tab="Recipient" active>
+		<TabPane tabId="recipient" tab={$_('prop.inform.recipient')}>
 			<Col>
 				<RolePicker
 					bind:role={nodeInfo.nodeProps.INFORM.role}
@@ -40,17 +43,21 @@
 				/>
 			</Col>
 		</TabPane>
-		<TabPane tabId="content" tab="Content" active>
+		<TabPane tabId="content" tab={$_('prop.inform.content')}>
 			<Row cols="1">
 				<Col>
 					<InputGroup size="sm">
-						<InputGroupText>Subject</InputGroupText>
+						<InputGroupText>
+							{$_('prop.inform.subject')}
+						</InputGroupText>
 						<Input bind:value={nodeInfo.nodeProps.INFORM.subject} disabled={readonly} />
 					</InputGroup>
 				</Col>
 				<Col>
 					<InputGroup size="sm">
-						<InputGroupText>Content</InputGroupText>
+						<InputGroupText>
+							{$_('prop.inform.content')}
+						</InputGroupText>
 						<Input
 							bind:value={nodeInfo.nodeProps.INFORM.content}
 							type="textarea"

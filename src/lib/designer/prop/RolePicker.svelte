@@ -1,5 +1,9 @@
 <script lang="ts">
+	import { _ } from '$lib/i18n';
 	import * as api from '$lib/api';
+	import { getNotificationsContext } from 'svelte-notifications';
+	const { addNotification } = getNotificationsContext();
+	import type { oneArgFunc } from '$lib/types';
 	import {
 		InputGroup,
 		InputGroupText,
@@ -23,7 +27,6 @@
 	let pickedQueryString = '';
 	export let existingRoles: any[];
 	export let readonly;
-	export let setFadeMessage;
 	import { filterStorage } from '$lib/empstores';
 	let lstr = 'VP:GM:Director:Leader';
 	let qstr = '/staff&/CEO';
@@ -118,15 +121,32 @@
 			try_doers = res as unknown as string[];
 		}
 	}
+	export function setFadeMessage(
+		message: string,
+		type = 'warning',
+		pos = 'bottom-right',
+		time = 2000
+	) {
+		(addNotification as oneArgFunc)({
+			text: message,
+			position: pos,
+			type: type,
+			removeAfter: time
+		});
+	}
 </script>
 
 <InputGroup size="sm">
-	<InputGroupText>Participant's Role</InputGroupText>
+	<InputGroupText>
+		{$_('prop.action.p10t.rds')}
+	</InputGroupText>
 	<Input bind:value={role} disabled={readonly} />
 </InputGroup>
 {#if !readonly}
 	<InputGroup size="sm">
-		<InputGroupText>Pick an existing role</InputGroupText>
+		<InputGroupText>
+			{$_('prop.action.p10t.pick')}
+		</InputGroupText>
 		<Input
 			type="select"
 			bind:value={pickedRole}
@@ -140,20 +160,30 @@
 			{/each}
 		</Input>
 	</InputGroup>
-	<div class="mt-3 fs-5">Test role string</div>
+	<div class="mt-3 fs-5">
+		{$_('prop.action.p10t.try')}
+	</div>
 	<InputGroup>
-		<InputGroupText>Try with team</InputGroupText>
+		<InputGroupText>
+			{$_('prop.action.p10t.tryteam')}
+		</InputGroupText>
 		<Input type="text" bind:value={try_with_teamid} />
 	</InputGroup>
 	<InputGroup>
-		<InputGroupText>Try with user</InputGroupText>
+		<InputGroupText>
+			{$_('prop.action.p10t.tryuser')}
+		</InputGroupText>
 		<Input type="text" bind:value={try_with_email} />
 	</InputGroup>
-	<Button on:click={testGetDoers} color="primary">Test it</Button>
+	<Button on:click={testGetDoers} color="primary">
+		{$_('prop.action.button.tryit')}
+	</Button>
 	{#if Array.isArray(try_doers) && try_doers.length > 0}
 		<Card>
 			<CardHeader>
-				<CardTitle>Result:</CardTitle>
+				<CardTitle>
+					{$_('prop.action.p10t.tryresult')}
+				</CardTitle>
 			</CardHeader>
 			<CardBody>
 				<ul>

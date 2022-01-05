@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { _, mtcDate } from '$lib/i18n';
 	import * as api from '$lib/api';
 	import { goto } from '$app/navigation';
 	import Parser from '$lib/parser';
@@ -8,7 +9,7 @@
 	import { Container, Row, Col, Icon } from 'sveltestrap';
 	import { onMount } from 'svelte';
 	import { FormGroup, Input, Label, InputGroup, InputGroupText } from 'sveltestrap';
-	import { StatusClass, StatusLabel } from '$lib/lang';
+	import { StatusClass, StatusLabel } from '$lib/status';
 	import { Button } from 'sveltestrap';
 	import { debugOption } from '$lib/empstores';
 	import List from '$lib/input/List.svelte';
@@ -17,7 +18,6 @@
 	export let user: User;
 	export let delegators: String[];
 	export let iframeMode: boolean;
-	export let TimeTool: any;
 	let showAdhocForm = false;
 	let adhocTaskTitle = '';
 	let adhocTaskDoer = '';
@@ -50,7 +50,6 @@
 		api.post('work/sendback', payload, user.sessionToken);
 		goto(iframeMode ? '/work?iframe' : '/work');
 	}
-	function _transferWork() {}
 	function _revokeWork() {
 		if (checkRequired() === false) return;
 		let payload: any = {
@@ -214,7 +213,8 @@
 	<Container id={'workitem_' + work.todoid} class="mt-3">
 		<form>
 			<Container class="mt-3 kfk-highlight-2 text-wrap text-break">
-				<Icon name="vinyl" />&nbsp; Primary Business Object:
+				<Icon name="vinyl" />&nbsp;
+				{$_('todo.pbo')}
 				{#if work.wf.pbo}
 					<a href={work.wf.pbo} target="_blank"
 						>{work.wf.pbo}&nbsp;
@@ -224,7 +224,7 @@
 			</Container>
 			{#if work.instruct}
 				<div class="fs-5">
-					Instruction:
+					{$_('todo.instruction')}
 					<span class="mt-3 fs-3">
 						{@html Parser.base64ToCode(work.instruct)}
 					</span>
@@ -236,7 +236,7 @@
 			{#if checkDoable() && work.status === 'ST_RUN'}
 				<Container class="mt-3 kfk-highlight-2">
 					{#if work.kvarsArr.length > 0}
-						Node Input:
+						{$_('todo.nodeInput')}
 						<Row cols="4">
 							{#each work.kvarsArr as kvar, i}
 								{#if kvar.breakrow}
@@ -313,7 +313,7 @@
 											await _doneWork();
 										}}
 									>
-										Done
+										{$_('button.done')}
 									</Button>
 								</Col>
 							{/if}
@@ -340,7 +340,7 @@
 										_sendbackWork();
 									}}
 								>
-									Sendback
+									{$_('button.sendback')}
 								</Button>
 							</Col>
 						{:else if work.revocable}
@@ -352,7 +352,7 @@
 										_revokeWork();
 									}}
 								>
-									Revoke
+									{$_('button.revoke')}
 								</Button>
 							</Col>
 						{/if}
@@ -366,7 +366,7 @@
 										_toggleAdhoc();
 									}}
 								>
-									{showAdhocForm ? 'Cancel' : 'New Adhoc'}
+									{showAdhocForm ? $_('button.cancel') : $_('button.adhoc')}
 								</Button>
 							</Col>
 						{/if}
@@ -404,7 +404,7 @@
 										await checkAdhocTaskDoer(e, true);
 									}}
 								>
-									Check
+									{$_('button.check')}
 								</Button>
 							</Col>
 							<Container class="mt-2">
@@ -444,7 +444,7 @@
 											await createAdhoc();
 										}}
 									>
-										Send it out
+										{$_('button.sendadhoc')}
 									</Button>
 									<Button
 										color="secondary"
@@ -455,6 +455,7 @@
 										}}
 									>
 										Cancel
+										{$_('button.cancel')}
 									</Button>
 								</Col>
 							{:else if Array.isArray(checkingAdhocResult) && checkingAdhocResult.length > 0}
@@ -468,8 +469,10 @@
 									on:click={async (e) => {
 										e.preventDefault();
 										await createAdhoc();
-									}}>Yes, send task to above people</Button
+									}}
 								>
+									{$_('button.sendadhocConfirm')}
+								</Button>
 								<Button
 									class="mt-1"
 									color="secondary"
@@ -478,13 +481,13 @@
 										showAdhocForm = false;
 									}}
 								>
-									No, let me re-considerate
+									{$_('button.sendadhocReconsider')}
 								</Button>
 							{/if}
 						</Row>
 					{/if}
 					<!-- Transfer --->
-					<TransferWork {work} {_transferWork} {iframeMode} />
+					<TransferWork {work} {iframeMode} />
 				</Container>
 			{/if}
 		</form>
@@ -527,9 +530,7 @@
 		bind:wf={work.wf}
 		bind:wfid={work.wfid}
 		bind:workid={work.workid}
-		bind:todoid={work.todoid}
 		{onPrint}
-		{TimeTool}
 		{_refreshWork}
 		{iframeMode}
 	/>

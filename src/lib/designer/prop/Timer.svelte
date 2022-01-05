@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { _ } from '$lib/i18n';
 	import Parser from '$lib/parser';
 	import {
 		NavLink,
@@ -103,7 +104,9 @@
 	<Row cols="1">
 		<Col>
 			<InputGroup size="sm">
-				<InputGroupText>Label</InputGroupText>
+				<InputGroupText>
+					{$_('prop.label')}
+				</InputGroupText>
 				<Input bind:value={nodeInfo.nodeProps.label} disabled={readonly} />
 			</InputGroup>
 		</Col>
@@ -111,7 +114,9 @@
 	<Row cols="1">
 		<Col>
 			<InputGroup size="sm">
-				<InputGroupText>Code</InputGroupText>
+				<InputGroupText>
+					{$_('prop.timer.code')}
+				</InputGroupText>
 				<span class="kfk-timer-code ms-1"> {nodeInfo.nodeProps.TIMER.code} </span>
 			</InputGroup>
 		</Col>
@@ -126,13 +131,15 @@
 		</Col>
 		<Col class="mt-2">
 			<InputGroup size="sm" disabled={readonly}>
-				<InputGroupText>Type</InputGroupText>
+				<InputGroupText>
+					{$_('prop.timer.type')}
+				</InputGroupText>
 				<Input
 					class="ms-1"
 					type="radio"
 					bind:group={timerCodePrefix}
 					value="start+"
-					label="From Start"
+					label={$_('prop.timer.fromstart')}
 					disabled={readonly}
 				/>
 				<Input
@@ -140,7 +147,7 @@
 					type="radio"
 					bind:group={timerCodePrefix}
 					value="+"
-					label="From Now"
+					label={$_('prop.timer.fromnow')}
 					disabled={readonly}
 				/>
 				<Input
@@ -148,7 +155,7 @@
 					type="radio"
 					bind:group={timerCodePrefix}
 					value=""
-					label="Fix"
+					label={$_('prop.timer.fix')}
 					disabled={readonly}
 				/>
 			</InputGroup>

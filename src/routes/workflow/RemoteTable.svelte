@@ -8,7 +8,7 @@
 	import Parser from '$lib/parser';
 	import { onMount } from 'svelte';
 	import type { Workflow } from '$lib/types';
-	import { StatusLabel } from '$lib/lang';
+	import { StatusLabel } from '$lib/status';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
 	import { goto } from '$app/navigation';
 	import { Row, Col, InputGroup, InputGroupText, Input, Icon, Button } from 'sveltestrap';
@@ -17,10 +17,8 @@
 	import { ClientPermControl } from '$lib/clientperm';
 
 	export let token;
-	export let payload_extra: any;
 	export let endpoint;
 	export let user;
-	export let TimeTool;
 	let rows: Workflow[] = [] as Workflow[];
 	let page = 0; //first page
 	let pageIndex = 0; //first row
@@ -33,7 +31,6 @@
 	let show_calendar_select = false;
 	let calendar_begin = '';
 	let calendar_end = '';
-	export let tagsForFilter;
 	let sorting = { dir: 'desc', key: 'updatedAt' };
 	let storeSorting = $filterStorage.wfSorting;
 	if (storeSorting) {

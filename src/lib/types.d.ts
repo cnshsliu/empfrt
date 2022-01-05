@@ -89,6 +89,7 @@ export interface Work {
 	_id: string;
 	tenant: string;
 	doer: string;
+	role?: string;
 	tplid: string;
 	wfid: string;
 	todoid: string;

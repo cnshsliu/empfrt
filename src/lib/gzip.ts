@@ -21,3 +21,5 @@ export const unzipit = function (input, options?: any) {
 	});
 	return promise;
 };
+
+export default { zipit, unzipit };

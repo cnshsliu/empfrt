@@ -8,7 +8,7 @@
 	import { tspans } from '$lib/variables';
 	import { onMount } from 'svelte';
 	import Parser from '$lib/parser';
-	import { StatusLabel } from '$lib/lang';
+	import { StatusLabel } from '$lib/status';
 	import type { Workflow, Work } from '$lib/types';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
 	import { goto } from '$app/navigation';
@@ -18,9 +18,7 @@
 	export let token;
 	export let iframeMode;
 	export let endpoint;
-	export let TimeTool;
 	let rows = [];
-	export let tagsForFilter;
 	let page = 0; //first page
 	let pageIndex = 0; //first row
 	let pageSize = 10; //optional, 10 by default
