@@ -26,6 +26,10 @@
 		}
 	}
 
+	$: if ($TagStorage) {
+		allTags = $TagStorage;
+	}
+
 	onMount(async () => {
 		await reloadTags();
 	});

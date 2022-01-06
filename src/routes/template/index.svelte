@@ -25,6 +25,7 @@
 	import { onMount } from 'svelte';
 	import RemoteTable from './RemoteTable.svelte';
 	import ErrorProcessor from '$lib/errorProcessor';
+	import { TagStorage } from '$lib/empstores';
 	import TagPicker from '$lib/TagPicker.svelte';
 	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation';
@@ -113,6 +114,8 @@
 		console.log('update my tags');
 		allTags.org = await api.post('tag/org', {}, user.sessionToken);
 		allTags.mine = await api.post('tag/list', { objtype: 'template' }, user.sessionToken);
+		console.log(allTags);
+		$TagStorage = allTags;
 	}
 
 	let fade_message = '';
