@@ -49,9 +49,8 @@
 </script>
 
 <svelte:head>
-	{#if DEPLOY_MODE === 'private'}
+	{#if ['private', 'intranet', 'privatecloud'].includes(new String(DEPLOY_MODE).toLowerCase())}
 		<link href="/css/bootstrap/dist/bootstrap.min.css" rel="stylesheet" />
-		<link rel="stylesheet" href="/css/bootstrap-icons/font/bootstrap-icons.css" />
 	{:else}
 		<link
 			href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
@@ -59,11 +58,11 @@
 			integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
 			crossorigin="anonymous"
 		/>
-		<link
-			rel="stylesheet"
-			href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css"
-		/>
 	{/if}
+	<link
+		rel="stylesheet"
+		href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css"
+	/>
 	<link rel="stylesheet" href="/css/app.css" />
 </svelte:head>
 

@@ -173,7 +173,7 @@
 										<Col
 											>{$session.user && $session.user.tenant ? $session.user.tenant.name : ''}
 										</Col>
-										<Col>{DEPLOY_MODE === 'private' ? 'ENTERPRISE' : 'SaaS'}</Col>
+										<Col>{DEPLOY_MODE}</Col>
 									</Row>
 									<InputGroup>
 										<InputGroupText>

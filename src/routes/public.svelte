@@ -174,15 +174,9 @@
 						Documents for developers, administrators, or users are ready in our libraries.
 						Sometimes, you may find our Discord room is helpful.
 					</p>
-					<a href="https://icons.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">
-						Quick start
-					</a>
-					<a href="https://icons.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">
-						More docs
-					</a>
-					<a href="https://icons.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">
-						Discord room
-					</a>
+					<a href="/template" class="btn btn-lg btn-outline-primary mb-3"> Quick start </a>
+					<a href="/template" class="btn btn-lg btn-outline-primary mb-3"> More docs </a>
+					<a href="/template" class="btn btn-lg btn-outline-primary mb-3"> Discord room </a>
 				</div>
 			</section>
 
@@ -202,9 +196,7 @@
 							<p class="fs-6 mt-3">for small team</p>
 							<p class="fs-4">&lt;5 users</p>
 							<p class="fs-4">&lt;1000 tasks/month</p>
-							<a href="https://icons.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">
-								Start Free
-							</a>
+							<a href="/template" class="btn btn-lg btn-outline-primary mb-3"> Start Free </a>
 						</div>
 					</div>
 				</div>
@@ -222,9 +214,7 @@
 							<p class="fs-6 mt-3">for small team</p>
 							<p class="fs-4">&lt;5 users</p>
 							<p class="fs-4">&lt;200 tasks/month</p>
-							<a href="https://icons.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">
-								Start Free
-							</a>
+							<a href="/template" class="btn btn-lg btn-outline-primary mb-3"> Start Free </a>
 						</div>
 					</div>
 				</div>
@@ -242,9 +232,7 @@
 							<p class="fs-6 mt-3">for small team</p>
 							<p class="fs-4">&lt;5 users</p>
 							<p class="fs-4">&lt;200 tasks/month</p>
-							<a href="https://icons.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">
-								Start Free
-							</a>
+							<a href="/template" class="btn btn-lg btn-outline-primary mb-3"> Start Free </a>
 						</div>
 					</div>
 				</div>
@@ -262,9 +250,7 @@
 							<p class="fs-6 mt-3">for small team</p>
 							<p class="fs-4">&lt;5 users</p>
 							<p class="fs-4">&lt;200 tasks/month</p>
-							<a href="https://icons.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">
-								Start Free
-							</a>
+							<a href="/template" class="btn btn-lg btn-outline-primary mb-3"> Start Free </a>
 						</div>
 					</div>
 				</div>
@@ -276,7 +262,7 @@
 								We could deploy Metatocome full stack to your own server, no matter it's on cloud or
 								on premise
 							</p>
-							<a href="https://icons.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">
+							<a href="/template" class="btn btn-lg btn-outline-primary mb-3">
 								Contact us for details
 							</a>
 						</div>
@@ -303,7 +289,7 @@
 						If it's a private deployment, you will get your 5% order value reward right after the
 						client pay.
 					</p>
-					<a href="https://themes.getbootstrap.com/" class="btn btn-lg btn-outline-primary mb-3">
+					<a href="/referer" class="btn btn-lg btn-outline-primary mb-3">
 						Get your referrer code
 					</a>
 				</div>
