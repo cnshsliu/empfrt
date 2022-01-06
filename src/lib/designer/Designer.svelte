@@ -62,7 +62,6 @@
 		openModal = !openModal;
 		if (openModal === false) {
 			KFK.showingProp = false;
-			console.log('closing...');
 			documentEventOn();
 		}
 	};
@@ -81,7 +80,6 @@
 				if (kvarsArr[i].options) {
 					let arr = kvarsArr[i].options.split(/[\s;,]/).filter((x) => x.length > 0);
 					kvarsArr[i].options = arr.join(';');
-					console.log(kvarsArr[i].options);
 				}
 			}
 			nodeInfo.nodeProps.kvarsArr = kvarsArr;
@@ -122,18 +120,14 @@
 						let kvarsString = nodeInfo.nodeProps.ACTION.kvars;
 						try {
 							kvarsArr = Parser.kvarsToArray(JSON.parse(kvarsString), '') as unknown as KvarInput[];
-							console.log(kvarsArr);
 						} catch (e) {
-							console.log(kvarsString);
 							kvarsString = kvarsString.replace('}{', ',');
-							console.log(kvarsString);
 							kvarsArr = Parser.kvarsToArray(JSON.parse(kvarsString), '') as unknown as KvarInput[];
 						}
 					}
 				} else if (nodeInfo.nodeType === 'INFORM') {
 					roleOptions = Parser.collectRoles(args.nodes);
 				}
-				console.log('opening...', args);
 				documentEventOff();
 				openModal = true;
 				break;
@@ -141,7 +135,6 @@
 				modalSize = undefined;
 				helpId = undefined;
 				nodeInfo = args;
-				console.log('opening...', args);
 				documentEventOff();
 				openModal = true;
 				break;
@@ -159,8 +152,6 @@
 		/* jquery-ui import finished */
 		KFK.designerCallback = designerCallback;
 		KFK.init($session.user);
-		//console.log(workflow);
-		//console.log(template);
 		KFK.scenario = workflow ? 'workflow' : 'template';
 		if (KFK.scenario === 'template') {
 			if (tpl_mode !== 'edit') {
@@ -180,7 +171,6 @@
 	}
 	export async function loadTemplate(tpl: Template, tpl_mode: string) {
 		template = tpl;
-		console.log('loadTemplate ', tpl_mode);
 		await KFK.loadTemplateDoc(template, tpl_mode);
 	}
 
@@ -192,7 +182,6 @@
 	}
 	onDestroy(async () => {
 		jq(document).off();
-		console.log('document event closed');
 	});
 	export function sayHello() {
 		console.log('Hello, I am Designer');
@@ -228,7 +217,6 @@
 	$: readonly = tpl_mode !== 'edit';
 	$: {
 		tmp = currentTool;
-		console.log('Current tool is', currentTool);
 	}
 
 	let user = $session.user;

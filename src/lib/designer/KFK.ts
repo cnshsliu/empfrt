@@ -565,9 +565,7 @@ class KFKclass {
 			const tmpNodeIdPair = that.getNodeIdsFromConnectId(connect_id);
 			const fromNode_id = tmpNodeIdPair[0];
 			const toNode_id = tmpNodeIdPair[1];
-			console.log(`.link[from="${fromNode_id}"][to="${toNode_id}"]`);
 			const aLinkInTemplate = that.tpl.find(`.link[from="${fromNode_id}"][to="${toNode_id}"]`);
-			console.log(aLinkInTemplate);
 			$(aLinkInTemplate).remove();
 
 			const ballConnectAttr = `${fromNode_id}_${toNode_id}`;
@@ -585,14 +583,12 @@ class KFKclass {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		that.onC3 = true;
-		console.log('that.onC3', that.onC3);
 	}
 
 	C3Blur() {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		that.onC3 = false;
-		console.log('that.onC3', that.onC3);
 	}
 
 	getScrollPos() {
@@ -641,12 +637,10 @@ class KFKclass {
 			node_label = jqDIV.find('p').first().text().trim();
 			if (node_label !== label) {
 				isDirty = true;
-				console.log('Dirty: label changed');
 				jqDIV.find('p').first().prop('innerText', label);
 			}
 		} else {
 			jqDIV.append('<p>' + label + '</p>');
-			console.log('Dirty: append p-label');
 			isDirty = true;
 		}
 		return isDirty ? 1 : 0;
@@ -658,13 +652,11 @@ class KFKclass {
 		let isDirty = false;
 		if (jqDIV.attr('id').trim() !== id.trim() && hasValue(id.trim())) {
 			jqDIV.attr('id', id.trim());
-			console.log('Dirty: id changed');
 			isDirty = true;
 		}
 		if (isBlank(id.trim())) {
 			if (isBlank(jqDIV.attr('id').trim())) {
 				jqDIV.attr('id', that.myuid());
-				console.log('Dirty: id changed');
 				isDirty = true;
 			}
 		}
@@ -712,8 +704,6 @@ class KFKclass {
 		});
 		tplDocHtml += '</div>';
 
-		console.log(tplDocHtml);
-		console.log(`Nodes: ${nodes.length} , Links: ${connects.length}`);
 		return tplDocHtml;
 	}
 
@@ -731,7 +721,6 @@ class KFKclass {
 		that.designerCallback('setTemplate', that.template);
 
 		that.templateChangeTimer = setTimeout(async () => {
-			console.log('auto saving..., onChange', reason);
 			//eslint-disable-next-line
 			//Client.putTemplate(tpldoc);
 			const token = that.user.sessionToken;
@@ -741,7 +730,6 @@ class KFKclass {
 				token
 			);
 			//return ret.data;
-			//console.log(ret);
 
 			that.templateChangeTimer = undefined;
 		}, 1000);
@@ -777,11 +765,6 @@ class KFKclass {
 			AND: { id: '', label: '' },
 			label: ''
 		};
-		if (that.workflow) {
-			console.log('Get Node Properties for Workflow');
-		} else {
-			console.log('Get Node Properties for Template');
-		}
 		if (KFKclass.NotSet(jqDIV)) jqDIV = that.currentJqNode;
 		if (jqDIV.hasClass('START')) {
 			ret.label = 'START';
@@ -799,7 +782,6 @@ class KFKclass {
 
 			if (that.workflow) {
 				let theWork = jqDIV.find('.work').first();
-				console.log(theWork.attr('doer'));
 				ret.ACTION.doer = theWork.attr('doer');
 				let kvarsString = blankToDefault(theWork.find('.kvars').text(), 'e30=');
 				kvarsString = that.base64ToCode(kvarsString);
@@ -833,7 +815,6 @@ ret='DEFAULT'; `
 			ret.TIMER.label = blankToDefault(jqDIV.find('p').first().text(), 'Timer').trim();
 			ret.label = ret.TIMER.label;
 			const str = blankToDefault(jqDIV.find('code').first().text(), '').trim();
-			console.log('Get node properties', str);
 			ret.TIMER.code = str;
 		} else if (jqDIV.hasClass('SUB')) {
 			ret.SUB.id = jqDIV.attr('id');
@@ -859,7 +840,6 @@ ret='DEFAULT'; `
 			jqDIV.attr('role', propJSON.role.trim());
 			const kvars_json = Parser.arrayToKvars(props.kvarsArr);
 			const kvars_string = JSON.stringify(kvars_json);
-			console.log('KFK.setNodeProperties', kvars_string);
 			const codeInBase64 = Parser.codeToBase64(kvars_string);
 			let kvarsChildren = jqDIV.find('.kvars');
 			if (kvarsChildren.length === 0) {
@@ -1006,7 +986,6 @@ ret='DEFAULT'; `
 
 	async setConnectText(theConnect: any, caseValue: string) {
 		const that = this;
-		console.log('set connect ', theConnect.attr('id'), 'text to', caseValue);
 		theConnect.attr('case', caseValue);
 		const tplLinks = that.tpl.find(
 			`.link[from="${theConnect.attr('fid')}"][to="${theConnect.attr('tid')}"]`
@@ -1106,7 +1085,6 @@ ret='DEFAULT'; `
 		const divTop = KFKclass.unpx(jqDIV.css('top'));
 		const divWidth = KFKclass.unpx(jqDIV.css('width'));
 		const divHeight = KFKclass.unpx(jqDIV.css('height'));
-		/* console.log(`${jqDIV.attr('id')}: ${divLeft}  ${divTop} ${divWidth} ${divHeight}`); */
 
 		const pos = {
 			center: {
@@ -1521,7 +1499,6 @@ ret='DEFAULT'; `
 		const id1 = jq1.attr('id');
 		const id2 = jq2.attr('id');
 		const filter = `.link[from="${id1}"][to="${id2}"]`;
-		console.log(filter);
 		const links = that.tpl.find(filter);
 		if (links.length > 0) {
 			return;
@@ -1687,7 +1664,6 @@ ret='DEFAULT'; `
 						}
 						*/
 						if (that.updateable(jqNodeDIV) === false) {
-							console.log('upateable === false');
 							return;
 						}
 						if (that.APP.model.viewConfig.snap) {
@@ -1763,7 +1739,6 @@ ret='DEFAULT'; `
 								to: jqNodeDIV
 							});
 						} finally {
-							console.log('END DRAG TRX');
 							that.yarkOpHistory({
 								obj: 'node',
 								from: that.fromJQ.clone(),
@@ -1836,12 +1811,9 @@ ret='DEFAULT'; `
 	/* async undo() {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		console.log('that.undo');
 		if (that.opz < 0) {
-			console.log('undo 到头了');
 			return;
 		}
-		console.log('UNDO....');
 		const pair = that.opstack[that.opz];
 		if (pair.obj === 'node') {
 			if (pair.from !== null && pair.to !== null) {
@@ -1887,7 +1859,6 @@ ret='DEFAULT'; `
 		if (history_pointer - 2 >= 0) {
 			that.template.doc = history[history_pointer - 2];
 			history_pointer--;
-			console.log('UNDO', that.template.doc);
 			await that.resetTemplateDoc();
 			that.designerCallback('setTemplate', that.template);
 			that.onChange('UNDO');
@@ -1898,7 +1869,6 @@ ret='DEFAULT'; `
 		if (history_pointer < history.length) {
 			that.template.doc = history[history_pointer];
 			history_pointer++;
-			console.log('REDO', that.template.doc);
 			await that.resetTemplateDoc();
 			that.designerCallback('setTemplate', that.template);
 			that.onChange('REDO');
@@ -1913,13 +1883,11 @@ ret='DEFAULT'; `
 		//that.template = template;
 		//that.workflow = null;
 		//that.tpl_mode = tplmode;
-		//console.log(that.tpl_mode);
 		/* if (that.tpl_mode === 'read') {
 			that.setTool('POINTER');
 		} */
 		try {
 			//that.tplid = that.template.tplid;
-			//console.log(that.template.doc);
 			that.tpl = $(that.template.doc);
 			const nodes = that.tpl.find('.node');
 			nodes.addClass('kfknode');
@@ -1972,9 +1940,7 @@ ret='DEFAULT'; `
 	/* async redo() {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		console.log('that.redo');
 		if (that.opz >= that.opstack.length - 1) {
-			console.log('redo 到头了');
 			return;
 		}
 		that.opz = that.opz + 1;
@@ -2164,7 +2130,6 @@ ret='DEFAULT'; `
 			}
 		});
 		that.JC3.on('click', async function (evt: MouseEvent) {
-			/* console.log('JC3 onClick'); */
 			if (evt.ctrlKey) {
 				evt.stopPropagation();
 				evt.preventDefault();
@@ -2291,11 +2256,6 @@ ret='DEFAULT'; `
 				const realY = that.scalePoint(that.scrYToJc3Y(evt.clientY));
 				const deltaX = realX - that.shapeDraggingStartPoint.x;
 				const deltaY = realY - that.shapeDraggingStartPoint.y;
-				// if (that.shapeToDrag.array) {
-				//     console.log(typeof that.shapeToDrag.array);
-				//     console.log(typeof that.shapeToDrag.array());
-				//     console.log(that.shapeToDrag.array());
-				// }
 				if (that.shapeToDrag.hasClass('kfkpolyline') || that.shapeToDrag.hasClass('kfkpolygon')) {
 					const arr = that.shapeToDrag.array();
 					that.shapeToDrag.plot(arr);
@@ -2375,7 +2335,6 @@ ret='DEFAULT'; `
 	}
 	selectConnect(jqConnect: myJQuery) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		console.log('=======selectConnect');
 		const that = this;
 		jqConnect.addClass('selected');
 		that.selectedConnects.push(jqConnect);
@@ -2530,26 +2489,20 @@ ret='DEFAULT'; `
 	selectConnectOnClick(jqConnect: myJQuery, shiftKey: boolean) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		console.log('selectConnectOnClick....');
 		const exist = that.selectedConnects.indexOf(jqConnect);
-		console.log('\texist index: ', exist, 'shiftkey:', shiftKey);
 		if (shiftKey) {
 			if (exist >= 0) {
-				console.log('shiftkey: deselect');
 				that.deselectConnect(jqConnect);
 			} else {
-				console.log('shiftkey: select');
 				that.selectConnect(jqConnect);
 			}
 		} else {
 			while (that.selectedDIVs.length > 0) {
 				that.deselectNode(that.selectedDIVs[0]);
 			}
-			console.log('no shiftkey  loop to deselect all');
 			while (that.selectedConnects.length > 0) {
 				that.deselectConnect(that.selectedConnects[0]);
 			}
-			console.log('no shiftkey  select this');
 			that.selectConnect(jqConnect);
 		}
 	}
@@ -2649,7 +2602,6 @@ ret='DEFAULT'; `
 		if (nodeType === 'ACTION') {
 			jqDIV.append('<div class="kvars">e30=</div>');
 		}
-		console.log('placeNode', nodeType);
 		await that.JC3.append(nodeDIV);
 		const nodeCount = that.getKFKNodeNumber();
 		jqDIV.css('top', KFKclass.px(y - that.tplNode_height * 0.5));
@@ -2680,7 +2632,6 @@ ret='DEFAULT'; `
 			that.opArray = [];
 		}
 		that.state.TRX_FLAG += 1;
-		console.log('STARTTRX:', that.state.TRX_FLAG);
 	}
 	/**
 	 * Close operation transaction
@@ -2689,9 +2640,6 @@ ret='DEFAULT'; `
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		that.state.TRX_FLAG -= 1;
-		if (that.state.TRX_FLAG === 0) {
-			console.log('ENDTRX:', that.state.TRX_FLAG);
-		}
 	}
 	/**
 	 * During operation transaction or not
@@ -2717,7 +2665,6 @@ ret='DEFAULT'; `
 			if (that.opz < -1) that.opz = -1;
 		}
 		that.opstack.push(changedPair);
-		console.log(that.opstack.length);
 		that.opz = that.opz + 1;
 	}
 
@@ -3145,7 +3092,6 @@ ret='DEFAULT'; `
 		that.stopNodeBalls();
 		const myId = jqDIV.attr('id');
 		const links = that.tpl.find(`.link[from="${myId}"], .link[to="${myId}"]`);
-		console.log(links);
 		that.yarkOpHistory({
 			obj: 'node',
 			from: jqDIV,
@@ -3297,7 +3243,6 @@ ret='DEFAULT'; `
 		let that = this;
 		//delete connect
 		//最后看鼠标滑过的connect（节点间连接线）
-		console.log('Delete a Connection...');
 		//Find ids of the two nodes connected by this connect.
 		const tmpNodeIdPair = that.getNodeIdsFromConnectId(that.hoveredConnectId);
 		const nid = tmpNodeIdPair[0];
@@ -3328,7 +3273,6 @@ ret='DEFAULT'; `
 	) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		console.log('Here1');
 		//如果有多个节点被选择，则优先进行多项删除
 		if (that.docIsReadOnly()) return;
 		let affectedParentsArray = [];
@@ -3706,11 +3650,9 @@ ret='DEFAULT'; `
 		if (that.YIQColor === 'black') {
 			$('#containerbkg').removeClass('grid1');
 			$('#containerbkg').addClass('grid2');
-			// console.log("Bgcolor is ", bgcolor, 'YIQColor is', that.YIQColor, 'grid is grid2');
 		} else {
 			$('#containerbkg').removeClass('grid2');
 			$('#containerbkg').addClass('grid1');
-			// console.log("Bgcolor is ", bgcolor, 'YIQColor is', that.YIQColor, 'grid is grid1');
 		}
 	}
 
@@ -3901,13 +3843,11 @@ ret='DEFAULT'; `
 		that.template = template;
 		that.workflow = null;
 		that.tpl_mode = tplmode;
-		console.log(that.tpl_mode);
 		if (that.tpl_mode === 'read') {
 			that.setTool('POINTER');
 		}
 		try {
 			that.tplid = that.template.tplid;
-			console.log(that.template.doc);
 			history.splice(history_pointer);
 			history.push(that.template.doc);
 			history_pointer++;
@@ -3916,7 +3856,6 @@ ret='DEFAULT'; `
 			nodes.addClass('kfknode');
 			await that.JC3.append(nodes);
 			const guiNodes = that.JC3.find('.node');
-			console.log(that.tpl.html());
 			for (let i = 0; i < guiNodes.length; i++) {
 				const jqNode = $(guiNodes[i]);
 				await that.setNodeEventHandler(jqNode);
@@ -4023,7 +3962,6 @@ ret='DEFAULT'; `
 			}
 			*/
 			let connectionNumber = await that.setConnectionStatusColor();
-			console.log('Node count: ', guiNodes.length, 'Link count: ', connectionNumber);
 
 			that.myFadeOut($('.loading'));
 			that.myFadeIn(that.JC3, 1000);
@@ -4063,7 +4001,6 @@ ret='DEFAULT'; `
 
 	scrollToFirstPage() {
 		const that = this;
-		console.log('scrollToFirstPage');
 		that.scrollToPos({
 			x: that.LeftB,
 			y: that.TopB
@@ -4223,26 +4160,22 @@ ret='DEFAULT'; `
 				case 'z': //key z
 					//不要移动META-Z代码，一定要在document的key-down里面，
 					//否则，在其他地方没有用。这个问题花了我三个小时时间，FX
-					console.log('PRessed Z');
 					if ((evt.metaKey || evt.ctrlKey) && evt.shiftKey) {
 						that.logKey('META-SHIFT-Z');
 						await that.redo();
 					}
 					if ((evt.metaKey || evt.ctrlKey) && !evt.shiftKey) {
-						console.log('PRessed meta-Z');
 						that.logKey('META-Z');
 						await that.undo();
 					}
 					break;
 				case 'y':
 					if ((evt.metaKey || evt.ctrlKey) && !evt.shiftKey) {
-						console.log('Pressed meta-y');
 						that.logKey('META-Y');
 						await that.redo();
 					}
 					break;
 				case 'Escape':
-					console.log('got Escape');
 					that.onESC();
 					break;
 				case '1':
@@ -4280,7 +4213,6 @@ ret='DEFAULT'; `
 					that.scrollToFirstPage();
 					break;
 				default:
-					console.log('got key', evt.key);
 					break;
 			}
 		});
@@ -4334,7 +4266,6 @@ ret='DEFAULT'; `
 					x: evt.clientX - that.panStartAt.x,
 					y: evt.clientY - that.panStartAt.y
 				};
-				/* console.log('panning...'); */
 				that.JS1.scrollLeft(that.JS1.scrollLeft() - delta.x * 2);
 				that.JS1.scrollTop(that.JS1.scrollTop() - delta.y * 2);
 				that.panStartAt.x = evt.clientX;
@@ -4369,8 +4300,6 @@ ret='DEFAULT'; `
 							x: evt.clientX,
 							y: evt.clientY
 						};
-						/* if (that.onC3) console.log('panStart at', that.panStartAt);
-						else console.log('mouse at', that.panStartAt); */
 					}
 				}
 			}
@@ -4493,8 +4422,6 @@ ret='DEFAULT'; `
 					that.endTrx();
 				}
 
-				console.log('moved div number: ' + that.selectedDIVs.length);
-
 				that.setShapeToRemember(that.shapeToDrag);
 				that.shapeDragging = false;
 				that.shapeToDrag = null;
@@ -4563,7 +4490,6 @@ ret='DEFAULT'; `
 		that.cancelAlreadySelected();
 		if (that.tool === 'CONNECT') {
 			that.cancelLinkNode();
-			console.log('Cancel link..');
 		}
 		if (!that.isEditting && that.tool !== 'line') that.setTool('POINTER');
 		that.cancelTempLine();
@@ -4825,7 +4751,6 @@ ret='DEFAULT'; `
 				}
 			}
 			theConnect.attr('case', caseValue);
-			/* console.log('draw text for ', lineClass, 'case is', caseValue); */
 			const connectText = await that.svgDraw.text(function (add: any) {
 				add.tspan(caseValue).dy(-2);
 			});
@@ -4878,21 +4803,12 @@ ret='DEFAULT'; `
 			theConnect.on('click', (e) => {
 				e.preventDefault();
 				e.stopPropagation();
-				console.log('Click on connnection', theConnect.attr('id'));
 				that.onClickConnect(e, theConnect);
 			});
 			connectText.on('click', (e) => {
 				//click text
 				e.preventDefault();
 				e.stopPropagation();
-				console.log(
-					'Click on conntext',
-					theConnect.attr('id'),
-					'from',
-					theConnect.attr('fid'),
-					'to',
-					theConnect.attr('tid')
-				);
 				that.onClickConnect(e, theConnect);
 			});
 		} catch (error) {
@@ -5377,7 +5293,6 @@ uploadFileToQcloudCOS (file) {
 			}
 		);
 	} else {
-		// console.log( "Bebegin putObject, Bucket", cocoConfig.cos.bucket, "region", cocoConfig.cos.region, "Key", fileKeyName);
 		cos.putObject(
 			{
 				Bucket: cocoConfig.cos.bucket, // Bucket 格式：test-1250000000

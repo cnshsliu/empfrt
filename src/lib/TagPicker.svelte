@@ -17,9 +17,7 @@
 	async function reloadTags() {
 		allTags = $TagStorage;
 		if (allTags && allTags.org && allTags.mine) {
-			console.log('user allTags in session');
 		} else {
-			console.log('refreshTags from server');
 			allTags.org = await api.post('tag/org', {}, user.sessionToken);
 			allTags.mine = await api.post('tag/list', { objtype: 'template' }, user.sessionToken);
 			$TagStorage = allTags;
