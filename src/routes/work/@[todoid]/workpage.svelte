@@ -488,7 +488,7 @@
 					{/if}
 					<!-- Transfer --->
 					<TransferWork {work} {iframeMode} />
-				{:else}
+				{:else if work.revocable}
 					<Row>
 						<Col>
 							<Button
