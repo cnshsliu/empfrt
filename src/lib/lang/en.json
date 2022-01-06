@@ -189,8 +189,8 @@
 			"p10t": {
 				"alldone": "Done only when All-Done",
 				"transferable": "Transferable",
-				"rds": "Role Definition String",
-				"pick": "Pick an existing RDS",
+				"rds": "RDS",
+				"pick": "Pick RDS",
 				"try": "Try a RDS",
 				"tryteam": "with Team",
 				"tryuser": "with User",

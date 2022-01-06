@@ -356,10 +356,11 @@
 								console.log(created);
 								if (created.error) {
 									console.log(created.error);
-									errmsg = created.errMsg;
+									let errmsg = created.errMsg;
 									if (errmsg.indexOf('MongoError: E11000 duplicate key error') >= 0) {
 										errmsg = '同名模板已存在, 请重新录入';
 									}
+									setFadeMessage(errmsg, 'warning');
 								} else {
 									template = created;
 									goto(`/template/@${template.tplid}&${tpl_mode}`, {

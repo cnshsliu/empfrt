@@ -110,7 +110,7 @@
 </script>
 
 {#if fields.indexOf('statuses') > -1}
-	<Container>
+	<Container class="mb-2">
 		<Row class="d-flex justify-content-center">
 			{#each statuses as status, index (status)}
 				<Col xs="auto">

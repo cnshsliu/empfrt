@@ -90,7 +90,6 @@
 					class="d-inline-block col-6 mx-1 align-self-center kfk-header-username tnt-header-username"
 				>
 					{$session.user ? $session.user.username : 'Metatocome'}
-					{$_('home.topic')}
 				</div>
 			</div>
 			<button
