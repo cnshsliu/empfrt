@@ -2834,7 +2834,9 @@ ret='DEFAULT'; `
 			const fromDIV: any = $(`#${fid}`);
 			const toDIV: any = $(`#${tid}`);
 			if (toDIV.hasClass('ST_DONE')) {
-				connect.addClass('ST_DONE');
+				if (fromDIV.hasClass('ST_DONE')) {
+					connect.addClass('ST_DONE');
+				}
 			} else if (toDIV.hasClass('ST_RUN')) {
 				const links = that.tpl.find(`.link[from="${fid}"]`);
 				let hasDone = false;
