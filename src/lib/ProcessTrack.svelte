@@ -82,9 +82,11 @@
 				{$_('todo.startat')}: {mtcDate(wf.beginat)}
 			</Col>
 			<Col>
-				{@html wf.status === 'ST_DONE'
-					? `<span class='${StatusClass('ST_DONE')}'>Completed at ${mtcDate(wf.updatedAt)}</span>`
-					: `<span class='${StatusClass(wf.status)}'>${StatusLabel(wf.status)}</span>`}
+				{#if wf.status === 'ST_DONE'}
+					{$_('todo.doneat')}: {mtcDate(wf.doneat)}
+				{:else}
+					<span class={StatusClass(wf.status)}>{StatusLabel(wf.status)}</span>
+				{/if}
 			</Col>
 			<Col>{$_('todo.startby')}: {user.email === wf.starter ? 'Me' : wf.starter}</Col>
 		</Row>

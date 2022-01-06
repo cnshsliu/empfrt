@@ -233,8 +233,8 @@
 			<!--- div class="w-100">
 				<iframe id="workInstruction" src="/work/instruct" title="YouTube video" width="100%" />
 			</div -->
-			{#if checkDoable() && work.status === 'ST_RUN'}
-				<Container class="mt-3 kfk-highlight-2">
+			<Container class="mt-3 kfk-highlight-2">
+				{#if checkDoable() && work.status === 'ST_RUN'}
 					{#if work.kvarsArr.length > 0}
 						{$_('todo.nodeInput')}
 						<Row cols="4">
@@ -488,8 +488,22 @@
 					{/if}
 					<!-- Transfer --->
 					<TransferWork {work} {iframeMode} />
-				</Container>
-			{/if}
+				{:else}
+					<Row>
+						<Col>
+							<Button
+								class="w-100"
+								on:click={(e) => {
+									e.preventDefault();
+									_revokeWork();
+								}}
+							>
+								{$_('button.revoke')}
+							</Button>
+						</Col>
+					</Row>
+				{/if}
+			</Container>
 		</form>
 		{#if work.wf.kvarsArr.length > 0}
 			<Container class="mt-3 kfk-highlight-2">
@@ -511,18 +525,23 @@
 			<CommentEntry bind:comment={work.comment} />
 		{/if}
 		{#if work.rehearsal}
-			Rehearsal Information:<br />
-			{work.doer === user.email ? '' : `Rehearsal for ${work.doer}`}
-			<Row><Col>Role: {work.role}</Col></Row>
-			{#each JSON.parse(Parser.base64ToCode(work.doer_string)) as aDoer, index}
-				<Row>
-					<Col>
-						{aDoer.cn}({aDoer.uid})
-					</Col>
-				</Row>
-			{/each}
+			<div class="fs-3">Rehearsal Information:</div>
+			<p>Doable: {checkDoable()} status: {work.status} revocable: {work.revocable}</p>
+			<p>{work.doer === user.email ? '' : `Rehearsal for ${work.doer}`}</p>
+			<div>
+				<ul>
+					Role: {work.role}
+					{#each JSON.parse(Parser.base64ToCode(work.doer_string)) as aDoer}
+						<li>
+							{aDoer.cn}({aDoer.uid})
+						</li>
+					{/each}
+				</ul>
+			</div>
 		{:else}
-			{work.doer === user.email ? '' : `Delegated by ${work.doer}`}
+			<div>
+				{work.doer === user.email ? '' : `Delegated by ${work.doer}`}
+			</div>
 		{/if}
 	</Container>
 	<ProcessTrack
