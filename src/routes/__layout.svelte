@@ -40,6 +40,9 @@
 	$: if (!$isLocaleLoaded) {
 		setupI18n({ withLocale: 'en' });
 	}
+	$: if ($filterStorage.locale) {
+		setupI18n({ withLocale: $filterStorage.locale });
+	}
 	/* $: {
 		document.dir = $dir;
 	} */
@@ -76,7 +79,7 @@
 		{#if page.path.startsWith('/template/@') || page.path.startsWith('/workflow/@')}
 			&nbsp;
 		{:else}
-			<EmpFooter value={$locale} on:locale-changed={(e) => setupI18n({ withLocale: e.detail })} />
+			<EmpFooter />
 		{/if}
 	{:else}
 		<p>Loading...</p>

@@ -1,33 +1,30 @@
 <script>
-	import { createEventDispatcher } from 'svelte';
+	import { onMount } from 'svelte';
+	import { Input } from 'sveltestrap';
+	import { filterStorage } from '$lib/empstores';
 
-	export let value = 'en';
-
-	const dispatch = createEventDispatcher();
+	let locale_value = 'en';
 
 	function switchLocale(event) {
 		event.preventDefault();
+		$filterStorage.locale = event.target.value;
 
-		dispatch('locale-changed', event.target.value);
+		//dispatch('locale-changed', event.target.value);
 	}
+	onMount(async () => {
+		let tmp = $filterStorage.locale;
+		if (tmp !== undefined && tmp !== null) {
+			locale_value = tmp;
+		}
+	});
 </script>
 
-<div class="choose-locale">
-	<div class="select">
-		<select {value} on:change={switchLocale}>
-			<option value="en">English</option>
-			<option value="ar">عربي</option>
-			<option value="fr">French</option>
-		</select>
-	</div>
-</div>
+<Input type="select" bind:value={locale_value} on:change={switchLocale}>
+	<option value="en">English</option>
+	<option value="zh-CN">中文</option>
+</Input>
 
 <style>
-	.choose-locale {
-		display: flex;
-		justify-content: center;
-	}
-
 	.select {
 		margin: 0 1rem 1rem;
 	}

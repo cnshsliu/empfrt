@@ -12,11 +12,9 @@
 <script lang="ts">
 	import { _ } from '$lib/i18n';
 	import { page, session } from '$app/stores';
-	import * as api from '$lib/api';
-	import { scale } from 'svelte/transition';
-	import { flip } from 'svelte/animate';
+	import { Input, InputGroup, InputGroupText, Row, Col, Icon, Container } from 'sveltestrap';
+	import LocaleSwitcher from '$lib/LocaleSwitcher.svelte';
 	import {
-		Button,
 		Row,
 		Col,
 		Icon,
@@ -177,6 +175,12 @@
 										</Col>
 										<Col>{DEPLOY_MODE === 'private' ? 'ENTERPRISE' : 'SaaS'}</Col>
 									</Row>
+									<InputGroup>
+										<InputGroupText>
+											<i class="bi-translate" />
+										</InputGroupText>
+										<LocaleSwitcher />
+									</InputGroup>
 								</Container>
 								<DropdownItem divider />
 								<DropdownItem

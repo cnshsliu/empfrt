@@ -20,6 +20,10 @@ let cachedLocale;
 		});
 } */
 function setupI18n({ withLocale: _locale } = { withLocale: 'en' }) {
+	if (!_locale) {
+		return;
+	}
+
 	return import(`./lang/${_locale}.json`).then((messages) => {
 		dictionary.set({ [_locale]: messages });
 
