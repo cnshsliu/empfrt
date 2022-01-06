@@ -23,9 +23,3 @@
 	<option value="en">English</option>
 	<option value="zh-CN">中文</option>
 </Input>
-
-<style>
-	.select {
-		margin: 0 1rem 1rem;
-	}
-</style>
