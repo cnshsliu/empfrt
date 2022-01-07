@@ -51,9 +51,11 @@
 		templates = tmp.map((x) => x.tplid);
 	};
 
-	const clearTag = function () {
+	const clearTag = async function () {
 		currentTags = [];
 		$filterStorage.tplTag = '';
+		let tmp = await api.post('template/tplid/list', {}, user.sessionToken);
+		templates = tmp.map((x) => x.tplid);
 		theRemoteTable.refresh();
 	};
 
@@ -155,6 +157,7 @@
 					$filterStorage.tspan = '1w';
 					clearTag();
 					theExtraFilter.reset();
+					theRemoteTable.reset();
 					refreshList();
 				}}
 				class="m-0 p-1"

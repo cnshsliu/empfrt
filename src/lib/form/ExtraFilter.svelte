@@ -151,9 +151,10 @@
 				</Input>
 				<Button
 					on:click={(e) => {
-						e.preventDefault;
-						filter_template = '';
-						tplChangedTo('');
+						e.preventDefault();
+						//filter_template = '';
+						//tplChangedTo('');
+						dispatch('filterTemplateChange');
 					}}
 					color="primary"
 				>

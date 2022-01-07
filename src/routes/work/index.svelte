@@ -71,7 +71,6 @@
 		$filterStorage.tplTag = '';
 		let tmp = await api.post('template/tplid/list', {}, user.sessionToken);
 		templates = tmp.map((x) => x.tplid);
-		console.log(templates);
 		theRemoteTable.refresh();
 	};
 	const useThisTag = async function (tag, appendMode = false) {

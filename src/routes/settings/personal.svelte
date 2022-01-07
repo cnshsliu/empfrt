@@ -1,7 +1,7 @@
 <script type="ts">
 	import { Button, Container, Row, Col, InputGroup, InputGroupText, Input } from 'sveltestrap';
 	import { session } from '$app/stores';
-	import type { User } from '$lib/types';
+	import type { User, EmpResponse } from '$lib/types';
 	import { post } from '$lib/utils';
 	import * as api from '$lib/api';
 	export let user: User;
@@ -24,7 +24,6 @@
 			value: value,
 			old_password: my_old_password
 		};
-		console.log(payload);
 		const response = (await post('auth/save', payload)) as unknown as EmpResponse;
 		if (response.error) {
 			if (response.error === 'Bad Request' && response.message.indexOf('old_password') > -1) {

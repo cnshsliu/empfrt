@@ -38,7 +38,6 @@
 		return ret;
 	}
 	async function expandOrgChartFromServer(ou, level, include = false) {
-		console.log('refresh org chart', ou);
 		let ret = await api.post('orgchart/expand', { ou: ou, include: include }, user.sessionToken);
 		ret = ret.map((x) => {
 			x.level = level;
@@ -50,19 +49,14 @@
 			else x.icon = 'bi-person-fill text-primary';
 			return x;
 		});
-		console.log(JSON.stringify(ret, null, 2));
 		return ret;
 	}
 	async function expandOu(ou, level, index) {
-		console.log(ou, index);
 		let tmp = orgchartlist.filter((x) => x.ou.startsWith(ou));
 		if (tmp.length > 1) {
-			console.log('>>>', tmp.length);
 			tmp[0].icon = tmp[0].icon === 'bi-caret-right-fill' ? 'bi-caret-down' : 'bi-caret-right-fill';
 			for (let i = 1; i < tmp.length; i++) {
-				console.log(ou, tmp[i].ou, tmp[i].display);
 				tmp[i].display = tmp[i].display === 'block' ? 'none' : 'block';
-				console.log(ou, tmp[i].ou, tmp[i].display);
 			}
 		} else {
 			let ret = await expandOrgChartFromServer(ou, level + 1);
@@ -70,7 +64,6 @@
 			orgchartlist[index].icon = 'bi-caret-down';
 			orgchartlist[index].display = 'block';
 			orgchartlist.splice(index + 1, 0, ...ret);
-			console.log(orgchartlist.length);
 		}
 		orgchartlist = orgchartlist;
 	}

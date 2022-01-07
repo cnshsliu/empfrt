@@ -19,7 +19,6 @@
 				myorg.joinapps[i].checked = true;
 			}
 		}
-		console.log(JSON.stringify(myorg));
 
 		let delegationFromMe: any[] = [];
 		try {
@@ -122,7 +121,6 @@
 			ew: user.ew,
 			old_password: my_old_password
 		};
-		console.log(payload);
 		const response = (await post('auth/save', payload)) as unknown as EmpResponse;
 		if (response.error) {
 			setFadeMessage(response.message);
@@ -200,13 +198,11 @@
 			setFadeMessage(ret.message, 'warning');
 		} else {
 			//eslint-disable-next-line
-			console.log(ret);
 			if (ret.timezone) {
 				setFadeMessage('Orgniazation timezone is set succesfully', 'success');
 				const response = (await post(`auth/refresh`, {})) as unknown as EmpResponse;
 
 				if (response.user) {
-					console.log('Refresh User after Tenant TimeZone');
 					$session.user = response.user;
 				}
 			} else {
@@ -316,7 +312,6 @@
 				orgMembers.members[i].checked = false;
 			}
 		}
-		console.log(orgMembers.members);
 	}
 
 	async function showTab(tabId: string, firstLevel = true) {
@@ -367,7 +362,6 @@
 		if (res.error) {
 			setFadeMessage(res.message, 'warning');
 		} else {
-			console.log('removeSelectedMembers refreshMembers');
 			refreshMembers();
 		}
 	}
@@ -424,7 +418,6 @@
 
 	async function sendInvitation() {
 		let emails = invitation.split(/[ ;,]/).filter((x) => x.length > 0);
-		console.log(emails);
 		let res = await api.post(
 			'tnt/send/invitation',
 			{ ems: emails.join(':'), password: password_for_admin },
@@ -433,7 +426,6 @@
 		if (res.error) {
 			setFadeMessage(res.message, 'warning');
 		} else {
-			console.log('show Invitation refreshMembers');
 			refreshMembers();
 		}
 	}
@@ -443,7 +435,6 @@
 		new_delegation_delegatee: string;
 
 	async function newDelegation() {
-		console.log(new_delegation_delegatee, new_delegation_begindate, new_delegation_enddate);
 		let ret = await api.post(
 			'delegate',
 			{
@@ -464,7 +455,6 @@
 	}
 
 	let tzArray = TimeZone.getTimeZoneArray();
-	console.log(typeof tzArray);
 
 	let files: any;
 	let orgchart_admin_password = '';
