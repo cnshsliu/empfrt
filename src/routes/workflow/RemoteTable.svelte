@@ -51,7 +51,7 @@
 		loading = true;
 		let fltSt = $filterStorage;
 		let payload_extra = {
-			status: fltSt.workStatus,
+			status: fltSt.wfStatus,
 			starter: fltSt.starter,
 			tspan: fltSt.tspan
 		};
