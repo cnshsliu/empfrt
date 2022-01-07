@@ -82,6 +82,7 @@
 	let menu = '';
 	let password_for_admin = '';
 	let set_group_to = '';
+	let set_password_to = '';
 	let in_progress: boolean;
 	let orgname = myorg.orgname;
 	let orgtheme = myorg.css;
@@ -398,8 +399,24 @@
 		if (res.error) {
 			setFadeMessage(res.message, 'warning');
 		} else {
-			console.log('setSelectedGroup refreshMembers');
 			refreshMembers();
+		}
+	}
+	async function setSelectedPassword() {
+		let ems = orgMembers.members
+			.filter((x) => x.email !== user.email)
+			.filter((x) => x.checked)
+			.map((x) => x.email)
+			.join(':');
+		let res = await api.post(
+			'tnt/member/setpassword',
+			{ ems, password: password_for_admin, set_password_to: set_password_to },
+			user.sessionToken
+		);
+		if (res.error) {
+			setFadeMessage(res.message, 'warning');
+		} else {
+			setFadeMessage('Set password successfully', 'success');
 		}
 	}
 
@@ -859,7 +876,7 @@
 						<table class="w-100 mt-3">
 							<thead>
 								<tr>
-									<th> Email</th> <th> Group </th> <th> {orgMembers.adminorg ? 'Remove' : ''} </th>
+									<th> Email</th> <th> Group </th> <th> {orgMembers.adminorg ? 'Select' : ''} </th>
 								</tr>
 							</thead>
 							<tbody>
@@ -925,7 +942,21 @@
 									setSelectedGroup();
 								}}
 							>
-								Set selected group
+								Set
+							</Button>
+						</InputGroup>
+					</Col>
+					<Col class="d-flex justify-content-end mt-2">
+						<InputGroup class="mb-1">
+							<Label for="groupSelect">Set password for selected members</Label>
+							<Input type="password" id="password_for_selected" bind:value={set_password_to} />
+							<Button
+								on:click={(e) => {
+									e.preventDefault();
+									setSelectedPassword();
+								}}
+							>
+								Set
 							</Button>
 						</InputGroup>
 					</Col>
