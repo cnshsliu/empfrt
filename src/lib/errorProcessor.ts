@@ -37,7 +37,6 @@ const ErrorProcessor = {
 						ret.message = 'wfid已存在';
 						break;
 					case 'login_no_user':
-						ret.message = '用户不存在';
 						break;
 					case 'login_failed':
 						ret.message = '登录失败，请检查';
