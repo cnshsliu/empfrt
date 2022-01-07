@@ -102,7 +102,6 @@
 				<div class="form-floating flex-fill">
 					<Input
 						class="form-control form-control-lg"
-						type="email"
 						id="input-email"
 						required
 						autocomplete="username"
