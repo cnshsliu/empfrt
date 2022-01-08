@@ -128,7 +128,7 @@ class KFKclass {
 	tpl: myJQuery = null;
 	tplid: string = '';
 	wfid: string = '';
-	tpl_mode: string = 'edit';
+	tpl_mode: string = 'read';
 	version: string = '1.0';
 	inNoteEditor: boolean = false;
 	config: typeof cocoConfig = cocoConfig;
@@ -320,10 +320,6 @@ class KFKclass {
 	pointAfterResize: Point = null;
 	selectedTodo: any = null;
 	user: User = null;
-	connectionClickContext = {
-		fromNode: null,
-		toNode: null
-	};
 
 	tobeRemovedConnectId: string = null;
 	oldTool = 'POINTER';
@@ -507,8 +503,9 @@ class KFKclass {
 	docIsReadOnly(): boolean {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		return that.tpl_mode !== 'edit' && that.scenario === 'template';
-		//return that.APP.model.cocodoc.readonly;
+		return (
+			(that.tpl_mode !== 'edit' && that.scenario === 'template') || that.scenario === 'workflow'
+		);
 	}
 
 	docIsNotReadOnly(): boolean {
@@ -2400,7 +2397,7 @@ ret='DEFAULT'; `
 			y: that.scrYToJc3Y(evt.clientY)
 		};
 
-		if (that.KEYDOWN.alt) {
+		if (that.KEYDOWN.alt && that.docIsReadOnly() === false) {
 			let length = svgConnect.length();
 			let nearest = 999999999;
 			let nearestIndex = -1;
@@ -2413,10 +2410,6 @@ ret='DEFAULT'; `
 				}
 			}
 
-			that.connectionClickContext = {
-				fromNode: null,
-				toNode: null
-			};
 			let fromId = svgConnect.attr('fid');
 			let toId = svgConnect.attr('tid');
 			let jqFrom = $('#' + fromId);
@@ -4943,7 +4936,7 @@ ret='DEFAULT'; `
 			} else {
 				that.selectNodeOnClick(jqNodeDIV, evt.shiftKey);
 			}
-		} else if (that.tool === 'CONNECT') {
+		} else if (that.tool === 'CONNECT' && that.docIsReadOnly() === false) {
 			if (that.afterDragging === false) {
 				await that.yarkLinkNode(jqNodeDIV, evt.shiftKey);
 			} else {
