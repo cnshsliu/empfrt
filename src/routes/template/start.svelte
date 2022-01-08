@@ -162,8 +162,8 @@
 			recentTemplates.splice(tmp, 1);
 		}
 		recentTemplates.unshift(tplid);
-		if (recentTemplates.length > 10) {
-			recentTemplates.splice(10);
+		if (recentTemplates.length > 15) {
+			recentTemplates.splice(15);
 		}
 		localStorage.setItem('recentTemplates', JSON.stringify(recentTemplates));
 		recentTemplates = recentTemplates;

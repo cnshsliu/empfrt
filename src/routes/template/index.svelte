@@ -347,8 +347,8 @@
 {/if}
 <Container class="p-2">
 	<TagPicker {currentTags} {useThisTag} {clearTag} />
-	<Row class="mt-2">
-		<Col class="d-flex justify-content-center">
+	<div class="mt-2 mx-2">
+		<Col class="justify-content-center">
 			{$_('recent')}
 			{#each recentTemplates as aTplid}
 				<Button
@@ -362,7 +362,7 @@
 				</Button>
 			{/each}
 		</Col>
-	</Row>
+	</div>
 </Container>
 <Container class="mt-1 kfk-result-list">
 	<Row>
