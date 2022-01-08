@@ -234,5 +234,9 @@
 			"SUB": "Sub TPLID",
 			"standalone": "Standalone"
 		}
+	},
+	"designer": {
+		"AthenB": "A->B, Waiting for B",
+		"BthenA": "B->A, Waiting for A"
 	}
 }

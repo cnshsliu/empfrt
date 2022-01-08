@@ -320,8 +320,16 @@ class KFKclass {
 	pointAfterResize: Point = null;
 	selectedTodo: any = null;
 	user: User = null;
+	connectionClickContext = {
+		fromNode: null,
+		toNode: null
+	};
 
+	tobeRemovedConnectId: string = null;
+	oldTool = 'POINTER';
+	movingConnect: boolean = false;
 	designerCallback = null;
+	connectEndFirst = false;
 
 	constructor() {
 		let that = this;
@@ -434,7 +442,7 @@ class KFKclass {
 
 		const shiftKey = event ? event.shiftKey : false;
 
-		const oldTool = that.tool;
+		that.oldTool = that.tool;
 		that.tool = tool;
 		for (const key in that.APP.toolActiveState) {
 			that.APP.toolActiveState[key] = false;
@@ -443,7 +451,10 @@ class KFKclass {
 			console.warn(`APP.toolActiveState[${tool}] does not exist`);
 		else that.APP.toolActiveState[tool] = true;
 
-		if ((oldTool === 'line' && tool !== 'line') || (oldTool === 'CONNECT' && tool !== 'CONNECT')) {
+		if (
+			(that.oldTool === 'line' && tool !== 'line') ||
+			(that.oldTool === 'CONNECT' && tool !== 'CONNECT')
+		) {
 			that.cancelTempLine();
 		}
 
@@ -1206,16 +1217,24 @@ ret='DEFAULT'; `
 		return [AIndex, BIndex];
 	}
 
-	async yarkLinkNode(jqDIV: myJQuery, shiftKey: boolean) {
+	async yarkLinkNode(jqDIV: myJQuery, shiftKey: boolean = false) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		if (that.shapeDragging) return;
 		if (that.nodeLocked(jqDIV)) return;
 		if (that.linkPosNode.length === 0) {
-			if (jqDIV.hasClass('END') || jqDIV.hasClass('GROUND')) return;
+			if (that.connectEndFirst === false) {
+				if (jqDIV.hasClass('END') || jqDIV.hasClass('GROUND')) return;
+			} else {
+				if (jqDIV.hasClass('START')) return;
+			}
 		}
 		if (that.linkPosNode.length > 0) {
-			if (jqDIV.hasClass('START')) return;
+			if (that.connectEndFirst === false) {
+				if (jqDIV.hasClass('START')) return;
+			} else {
+				if (jqDIV.hasClass('END') || jqDIV.hasClass('GROUND')) return;
+			}
 		}
 		that.tmpPos = that.calculateNodeConnectPoints(jqDIV);
 		that.linkPosNode.push(jqDIV);
@@ -1239,18 +1258,44 @@ ret='DEFAULT'; `
 		const that = this;
 		if (that.linkPosNode.length < 2) {
 			//if A is END or GROUND, remove it
-			if (that.linkPosNode[0].hasClass('END') || that.linkPosNode[0].hasClass('GROUND'))
-				that.linkPosNode.splice(0, 1);
-			else that.showNodeMessage(that.linkPosNode[0], 'A点选定，请继续点选B点');
+			if (that.connectEndFirst === false) {
+				if (that.linkPosNode[0].hasClass('END') || that.linkPosNode[0].hasClass('GROUND'))
+					that.linkPosNode.splice(0, 1);
+				else that.showNodeMessage(that.linkPosNode[0], 'A->B,  pick B please');
+			} else {
+				if (that.linkPosNode[0].hasClass('START')) that.linkPosNode.splice(0, 1);
+				else that.showNodeMessage(that.linkPosNode[0], 'B<-A, pick A please ');
+			}
 			return;
 		} else {
+			// two nodes are ready
 			if (that.linkPosNode[0].attr('id') === that.linkPosNode[1].attr('id')) {
 				//If A,B are the same node, remove B
 				that.linkPosNode.splice(1, 1);
 				return;
-			} else if (that.linkPosNode[1].hasClass('START')) {
-				//If B is START, remove B
+			} else if (
+				(that.connectEndFirst === false && that.linkPosNode[1].hasClass('START')) ||
+				(that.connectEndFirst === true &&
+					(that.linkPosNode[1].hasClass('END') || that.linkPosNode[1].hasClass('GROUND')))
+			) {
+				//If B is START, remove B , connectEndFirst === false
+				//If B is END or GROUND, remove B , connectEndFirst === true
 				that.linkPosNode.splice(1, 1);
+				return;
+			} else if (
+				(that.connectEndFirst === false &&
+					that.linkPosNode[0].hasClass('START') &&
+					that.linkPosNode[1].hasClass('END')) ||
+				(that.connectEndFirst === true &&
+					that.linkPosNode[0].hasClass('END') &&
+					that.linkPosNode[1].hasClass('START'))
+			) {
+				that.linkPosNode.splice(0, 2);
+				that.movingConnect = false;
+				that.connectEndFirst = false;
+				that.tobeRemovedConnectId = null;
+				that.cancelTempLine();
+				that.clearNodeMessage();
 				return;
 			}
 		}
@@ -1258,15 +1303,26 @@ ret='DEFAULT'; `
 		that.lineTemping = false;
 		that.cancelAlreadySelected();
 		that.clearNodeMessage();
-		that.buildConnectionBetween(that.linkPosNode[0], that.linkPosNode[1]);
-		await that.redrawLinkLines(that.linkPosNode[0], 'connect');
+		if (that.tobeRemovedConnectId) {
+			await that.removeConnectById(that.tobeRemovedConnectId);
+			that.tobeRemovedConnectId = null;
+			that.setTool('POINTER');
+			that.movingConnect = false;
+		}
+		if (that.connectEndFirst === false) {
+			that.buildConnectionBetween(that.linkPosNode[0], that.linkPosNode[1]);
+			await that.redrawLinkLines(that.linkPosNode[0], 'connect');
+		} else {
+			that.buildConnectionBetween(that.linkPosNode[1], that.linkPosNode[0]);
+			await that.redrawLinkLines(that.linkPosNode[1], 'connect');
+		}
 		//看两个节点的Linkto属性，在添加一个连接线后有没有什么变化，
 		//如果有变化，就上传U， 如果没变化，就不用U
 		//没有变化的情况：之前就有从linkPosNode[0]到 linkPosNode[1]的链接存在
 		//有变化的情况：1. 之前不存在； 2. 之前存在方向相反的链接，从linkPosNode[1]到linkPosNode[0]的
 		//以上两种情况中，1会只导致只U第一个； 2会导致U；两端两个节点
 
-		if (!shiftKey) {
+		if (!shiftKey || that.connectEndFirst === true) {
 			//如果没有按住Shift，则结束连接操作
 			that.linkPosNode.splice(0, 2);
 		} else {
@@ -1282,6 +1338,7 @@ ret='DEFAULT'; `
 				that.linkPosNode.splice(1, 1);
 			}
 		}
+		if (that.connectEndFirst === true) that.connectEndFirst = false;
 		that.onChange('Connect');
 	}
 
@@ -2331,14 +2388,64 @@ ret='DEFAULT'; `
 			that.setSelectedNodesBoundingRect();
 		}
 	}
-	selectConnect(jqConnect: myJQuery) {
+	async selectConnect(svgConnect, evt: MouseEvent) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		jqConnect.addClass('selected');
-		that.selectedConnects.push(jqConnect);
-		let textClass = '.' + jqConnect.attr('id') + '_text';
+		svgConnect.addClass('selected');
+		that.selectedConnects.push(svgConnect);
+		let textClass = '.' + svgConnect.attr('id') + '_text';
 		$(textClass).addClass('selected');
+		let mpoint = {
+			x: that.scrXToJc3X(evt.clientX),
+			y: that.scrYToJc3Y(evt.clientY)
+		};
+
+		if (that.KEYDOWN.alt) {
+			let length = svgConnect.length();
+			let nearest = 999999999;
+			let nearestIndex = -1;
+			for (let i = 0; i <= 20; i++) {
+				let point = svgConnect.pointAt((i / 20) * length);
+				let tmp = that.distance(point, mpoint);
+				if (tmp < nearest) {
+					nearest = tmp;
+					nearestIndex = i;
+				}
+			}
+
+			that.connectionClickContext = {
+				fromNode: null,
+				toNode: null
+			};
+			let fromId = svgConnect.attr('fid');
+			let toId = svgConnect.attr('tid');
+			let jqFrom = $('#' + fromId);
+			let jqTo = $('#' + toId);
+			that.cancelLinkNode();
+			that.setTool('CONNECT');
+			that.tobeRemovedConnectId = svgConnect.attr('id');
+			that.movingConnect = true;
+			if (nearestIndex > 10) {
+				that.connectEndFirst = false;
+				if (that.afterDragging === false) {
+					//doing here
+					await that.yarkLinkNode(jqFrom);
+					//await that.onClickNode(evt, jqFrom);
+				} else {
+					that.afterDragging = true;
+				}
+			} else {
+				if (that.afterDragging === false) {
+					that.connectEndFirst = true;
+					await that.yarkLinkNode(jqTo, false);
+					//await that.onClickNode(evt, jqTo);
+				} else {
+					that.afterDragging = true;
+				}
+			}
+		}
 	}
+
 	deselectConnect(jqConnect: myJQuery) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -2484,15 +2591,16 @@ ret='DEFAULT'; `
 		}
 	}
 
-	selectConnectOnClick(jqConnect: myJQuery, shiftKey: boolean) {
+	async selectConnectOnClick(jqConnect: myJQuery, evt: MouseEvent) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		const exist = that.selectedConnects.indexOf(jqConnect);
+		let shiftKey = evt.shiftKey;
 		if (shiftKey) {
 			if (exist >= 0) {
 				that.deselectConnect(jqConnect);
 			} else {
-				that.selectConnect(jqConnect);
+				await that.selectConnect(jqConnect, evt);
 			}
 		} else {
 			while (that.selectedDIVs.length > 0) {
@@ -2501,7 +2609,7 @@ ret='DEFAULT'; `
 			while (that.selectedConnects.length > 0) {
 				that.deselectConnect(that.selectedConnects[0]);
 			}
-			that.selectConnect(jqConnect);
+			await that.selectConnect(jqConnect, evt);
 		}
 	}
 
@@ -4798,23 +4906,25 @@ ret='DEFAULT'; `
 				});
 				that.hoveredConnectId = null;
 			});
+			//click line
 			theConnect.on('click', (e) => {
 				e.preventDefault();
 				e.stopPropagation();
 				that.onClickConnect(e, theConnect);
 			});
-			connectText.on('click', (e) => {
+			//click text
+			connectText.on('click', async (e) => {
 				//click text
 				e.preventDefault();
 				e.stopPropagation();
-				that.onClickConnect(e, theConnect);
+				await that.onClickConnect(e, theConnect);
 			});
 		} catch (error) {
 			console.error(error);
 		}
 	}
 
-	onClickConnect(evt: MouseEvent, theConnect) {
+	async onClickConnect(evt: MouseEvent, theConnect) {
 		let that = this;
 		if (evt.shiftKey) {
 			if (theConnect.attr('fid') !== 'start') that.showConnectionProperties(theConnect);
@@ -4822,7 +4932,7 @@ ret='DEFAULT'; `
 				that.showHelp('Link from START is not configurable');
 			}
 		} else {
-			that.selectConnectOnClick(theConnect, evt.shiftKey);
+			await that.selectConnectOnClick(theConnect, evt);
 		}
 	}
 	async onClickNode(evt: MouseEvent, jqNodeDIV) {
@@ -5369,10 +5479,6 @@ uploadFileToQcloudCOS (file) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		return that.docIsNotReadOnly();
-	}
-
-	sayHello() {
-		console.log('Hello, I am KFK');
 	}
 }
 const KFK = new KFKclass();

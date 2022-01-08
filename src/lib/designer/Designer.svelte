@@ -183,9 +183,6 @@
 	onDestroy(async () => {
 		jq(document).off();
 	});
-	export function sayHello() {
-		console.log('Hello, I am Designer');
-	}
 	const showDesignerHelp = function () {
 		return;
 	};
