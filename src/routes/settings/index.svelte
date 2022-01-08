@@ -48,8 +48,6 @@
 	import OrgChartCsvFormat from './orgchartcsvformat.svelte';
 	import OrgChart from './orgchart.svelte';
 	import OrgChartRelationTest from '$lib/orgchartrelationtest.svelte';
-	import { scale } from 'svelte/transition';
-	import { flip } from 'svelte/animate';
 	import type { User } from '$lib/types';
 	import { onMount } from 'svelte';
 	import { post } from '$lib/utils';
@@ -866,14 +864,13 @@
 						<table class="w-100 mt-3">
 							<thead>
 								<tr>
-									<th> Email</th> <th> Group </th> <th> {orgMembers.adminorg ? 'Select' : ''} </th>
+									<th> Email</th> <th>Name</th><th> Group </th>
+									<th> {orgMembers.adminorg ? 'Select' : ''} </th>
 								</tr>
 							</thead>
 							<tbody>
 								{#each orgMembers.members as member, index (member)}
 									<tr
-										transition:scale|local={{ start: 0.7 }}
-										animate:flip={{ duration: 200 }}
 										class:kfk-odd={index % 2 !== 0}
 										class:kfk-even={index % 2 === 0}
 										class:tnt-odd={index % 2 !== 0}
@@ -881,6 +878,9 @@
 									>
 										<td data-label="Email">
 											{member.email}
+										</td>
+										<td data-label="Name">
+											{member.username}
 										</td>
 										<td data-label="Group">
 											{member.group}
@@ -955,6 +955,12 @@
 		</TabPane>
 		<TabPane tabId="smtp" tab="SMTP" active={isActive('smtp')}>
 			<SmtpAdmin {user} {myorg} {setFadeMessage} />
+		</TabPane>
+		<TabPane tabId="data" tab="Data" active={isActive('data')}>
+			<ul>
+				<li><a href="/list">List Definitions</a></li>
+				<li><a href="/team">Team Definitions</a></li>
+			</ul>
 		</TabPane>
 	</TabContent>
 </Container>
