@@ -34,6 +34,7 @@
 	import { API_SERVER } from '$lib/Env';
 	import type { User, Template, Team } from '$lib/types';
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
+	import AniIcon from '$lib/AniIcon.svelte';
 	import { filterStorage } from '$lib/empstores';
 	import { getNotificationsContext } from 'svelte-notifications';
 	const { addNotification } = getNotificationsContext();
@@ -234,7 +235,7 @@
 								show_form('create');
 							}}
 						>
-							<Icon name="plus-circle" />
+							<AniIcon icon="plus-circle" ani="aniShake" />
 							{$_('tpl.new')}
 						</NavLink>
 					{:else}
@@ -249,7 +250,7 @@
 							show_form('export');
 						}}
 					>
-						<Icon name="cloud-download" />
+						<AniIcon icon="cloud-download" ani="aniShake" />
 						{$_('tpl.export')}
 					</NavLink>
 					{#if ClientPermControl(user.perms, user.email, 'template', template, 'create')}
@@ -259,7 +260,7 @@
 								show_form('copyto');
 							}}
 						>
-							<Icon name="files" />
+							<AniIcon icon="files" ani="aniShake" />
 							{$_('tpl.copyto')}
 						</NavLink>
 					{:else}
@@ -276,7 +277,7 @@
 									show_form('rename');
 								}}
 							>
-								<Icon name="input-cursor-text" />
+								<AniIcon icon="input-cursor-text" ani="aniShake" />
 								{$_('tpl.rename')}
 							</NavLink>
 						{:else}
@@ -292,7 +293,7 @@
 									show_form('delete');
 								}}
 							>
-								<Icon name="trash" />
+								<AniIcon icon="trash" ani="aniShake" />
 								{$_('tpl.delete')}
 							</NavLink>
 						{:else}
@@ -313,7 +314,7 @@
 									}
 								}}
 							>
-								<Icon name={readonly ? 'pen' : 'eye'} />
+								<AniIcon icon={readonly ? 'pen' : 'eye'} ani="aniShake" />
 								{readonly ? $_('tpl.editit') : $_('tpl.viewit')}
 							</NavLink>
 						{:else}
@@ -329,12 +330,12 @@
 									show_form('start');
 								}}
 							>
-								<Icon name="trash" />
+								<AniIcon icon="hypnotize" ani="aniSpin" />
 								{$_('tpl.startit')}
 							</NavLink>
 						{:else}
 							<NavLink disabled>
-								<Icon name="trash" />
+								<Icon name="hypnotize" />
 								{$_('tpl.startit')}
 							</NavLink>
 						{/if}

@@ -2011,10 +2011,6 @@ div.pbo {
 	font-size: 0.2rem;
 }
 
-.kfk-link:hover {
-	background-color: #e5dbff;
-	border-radius: 10px;
-}
 #tplid_title {
 	font-size: 1.5rem;
 }
@@ -2249,6 +2245,24 @@ div.pbo {
 .toolbox.CONNECT.active {
 	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/CONNECT2.svg');
 }
+@keyframes shaking {
+	25% {
+		-webkit-transform: rotate(30deg);
+		transform: rotate(30deg);
+	}
+	50% {
+		-webkit-transform: rotate(0deg);
+		transform: rotate(0deg);
+	}
+	75% {
+		-webkit-transform: rotate(-30deg);
+		transform: rotate(-30deg);
+	}
+	100% {
+		-webkit-transform: rotate(0deg);
+		transform: rotate(0deg);
+	}
+}
 @-webkit-keyframes spinning {
 	100% {
 		-webkit-transform: rotate(360deg);
@@ -2333,4 +2347,17 @@ div.pbo {
 	background-position: center center;
 	background-repeat: no-repeat;
 	animation: 1.5s linear 0s infinite normal none running spinning;
+}
+.kfk-link:hover {
+	background-color: #e5dbff;
+	border-radius: 10px;
+}
+.iconDiv {
+	display: inline-block;
+}
+.kfk-link:hover .aniSpin {
+	animation: 1.5s linear 0s infinite normal none running spinning;
+}
+.kfk-link:hover .aniShake {
+	animation: 0.5s linear 0s infinite normal none running shaking;
 }
