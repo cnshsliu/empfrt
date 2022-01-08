@@ -30,6 +30,7 @@
 <script lang="ts">
 	import type { User, Template, Workflow } from '$lib/types';
 	import { session } from '$app/stores';
+	import AniIcon from '$lib/AniIcon.svelte';
 	import { filterStorage } from '$lib/empstores';
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
 	import { goto } from '$app/navigation';
@@ -80,7 +81,7 @@
 						opWorkflow(workflow.wfid, 'works');
 					}}
 				>
-					<Icon name="list-check" />
+					<AniIcon icon="list-check" ani="aniShake" />
 					{'Works'}
 				</NavLink>
 				{#if ClientPermControl(user.perms, user.email, 'workflow', workflow, 'update')}
