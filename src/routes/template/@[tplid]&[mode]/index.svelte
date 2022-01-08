@@ -73,7 +73,6 @@
 	};
 
 	onMount(async () => {
-		console.log('import Designer...');
 		const module = await import('$lib/designer/Designer.svelte');
 		Designer = module.default;
 		$filterStorage.tplid = tplid;
@@ -353,9 +352,8 @@
 							token: user.sessionToken,
 							result: async (res, form) => {
 								const created = await res.json();
-								console.log(created);
 								if (created.error) {
-									console.log(created.error);
+									console.error(created.error);
 									let errmsg = created.errMsg;
 									if (errmsg.indexOf('MongoError: E11000 duplicate key error') >= 0) {
 										errmsg = '同名模板已存在, 请重新录入';
@@ -457,9 +455,8 @@
 							token: user.sessionToken,
 							result: async (res, form) => {
 								const newTemplate = await res.json();
-								console.log(newTemplate);
 								if (newTemplate.error) {
-									console.log(newTemplate.error);
+									console.error(newTemplate.error);
 									let errmsg = newTemplate.errMsg;
 									if (errmsg.indexOf('MongoError: E11000 duplicate key error') >= 0) {
 										errmsg = '同名模板已存在, 请重新录入';
@@ -523,9 +520,8 @@
 							token: user.sessionToken,
 							result: async (res, form) => {
 								const created = await res.json();
-								console.log(created);
 								if (created.error) {
-									console.log(created.error);
+									console.error(created.error);
 									let errmsg = created.errMsg;
 									if (errmsg.indexOf('MongoError: E11000 duplicate key error') >= 0) {
 										errmsg = '同名模板已存在, 请重新录入';

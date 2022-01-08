@@ -46,7 +46,6 @@
 	let Designer: any;
 	let theDesigner: any;
 	onMount(async () => {
-		console.log('import Designer...');
 		const module = await import('$lib/designer/Designer.svelte');
 		Designer = module.default;
 	});

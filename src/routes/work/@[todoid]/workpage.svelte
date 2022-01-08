@@ -91,7 +91,6 @@
 					},
 					user.sessionToken
 				)) as unknown as any[];
-				console.log(checkingAdhocResult);
 				checkingTimer = null;
 			},
 			atonce ? 1 : 1000
@@ -99,9 +98,6 @@
 	};
 
 	const createAdhoc = async function () {
-		console.log(adhocTaskTitle);
-		console.log(adhocTaskDoer);
-		console.log(adhocTaskComment);
 		creatingAdhoc = true;
 
 		let res = await api.post(
@@ -123,7 +119,6 @@
 			setFadeMessage(res.message, 'warning');
 		} else {
 			saveOneRecentUser(adhocTaskDoer);
-			console.log(res);
 			setFadeMessage('Adhoc Task created successfully');
 		}
 	};
@@ -186,7 +181,6 @@
 				(work.rehearsal && work.wfstarter === user.email) ||
 				(delegators && Array.isArray(delegators) && delegators.includes(work.doer))) &&
 			work.status === 'ST_RUN';
-		console.log('checkDoable return ', is_doable);
 		return is_doable;
 	};
 	let recentUsers = [];
@@ -277,17 +271,10 @@
 												{whichtoChange}
 												{serverListKey}
 												on:changelist={(e) => {
-													console.log('parent ', e.detail);
 													let tmp = e.detail.split('/');
 													if (tmp[0].length > 0) {
 														whichtoChange = tmp[0];
 														serverListKey = tmp[1];
-														console.log(
-															'Change select component:',
-															whichtoChange,
-															'with key',
-															serverListKey
-														);
 													}
 												}}
 											/>

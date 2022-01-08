@@ -21,7 +21,6 @@
 		let ret = null;
 		let match = str.match(/[r|R|t|T]:\s*([^;\s]+)/g);
 		if (match) {
-			console.log(match);
 			for (let i = 0; i < match.length; i++) {
 				if (match[i].startsWith('R:')) {
 					if (ret === null) ret = {};
@@ -47,10 +46,8 @@
 	};
 
 	let joinedOptions = kvar.options.join(';');
-	console.log(joinedOptions);
 	let rT = getRT(joinedOptions);
 	if (rT) {
-		console.log('reference list:', rT.R, 'update lists', rT.T);
 		serverListName = rT.R;
 		if (rT.T) {
 			tobeTriggeredSelectName = rT.T.join(';');
@@ -65,7 +62,6 @@
 					user.sessionToken
 				)) as unknown as any[];
 				if ((list as EmpResponse).error) {
-					console.log((list as EmpResponse).message);
 					list = listToSelectOptionsPair([]);
 				} else {
 					list = listToSelectOptionsPair(list);
@@ -76,17 +72,13 @@
 		list = kvar.options;
 		list = listToSelectOptionsPair(list);
 	}
-	console.log(list);
 
 	const onListChange = function (e) {
 		let selectedValue = e.target.value;
-		console.log(kvar.name, '=', selectedValue);
 		dispatch('changelist', `${tobeTriggeredSelectName}/${selectedValue}`);
 	};
 
 	const refreshDataFromServerListWithKey = async function (serverListKey) {
-		console.log('refreshing server list with key:', serverListKey);
-		console.log('server list name is:', serverListName);
 		//list = ['new', 'data', 'from', 'server'];
 		list = (await api.post(
 			'list/get/items',
@@ -97,17 +89,14 @@
 			user.sessionToken
 		)) as unknown as any[];
 		if ((list as EmpResponse).error) {
-			console.log((list as EmpResponse).message);
 			list = listToSelectOptionsPair([]);
 		} else {
 			list = listToSelectOptionsPair(list);
 		}
-		console.log('server list returned:', list);
 	};
 
 	$: {
 		if (whichtoChange.split(';').includes(kvar.name)) {
-			console.log(`>>>>>>>Child list triggered ${whichtoChange}-KEY: ${serverListKey}`);
 			setTimeout(async () => {
 				await refreshDataFromServerListWithKey(serverListKey);
 			});

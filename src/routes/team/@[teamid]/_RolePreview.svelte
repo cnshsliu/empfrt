@@ -33,7 +33,6 @@
 	function deleteMember(aTeam: Team, aRole: string, aMember: TmapEntry) {
 		let payload = { teamid: aTeam.teamid, role: aRole, members: [aMember] };
 		const token = user.sessionToken;
-		console.log('Payload:', payload);
 		setTimeout(async () => {
 			//eslint-disable-next-line
 			team = (await api.post('team/role/member/delete', payload, token)) as Team;
@@ -159,7 +158,6 @@
 							result: async (res, form) => {
 								const retObj = await res.json();
 								if (retObj.error) {
-									console.log(retObj.error);
 									errmsg = retObj.errMsg;
 								} else {
 									team = retObj;

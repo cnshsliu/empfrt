@@ -32,7 +32,7 @@
 			user.sessionToken
 		);
 		if (res.error) {
-			console.log(res.message);
+			console.error(res.message);
 		} else {
 			leaders = res as any[];
 		}
@@ -41,7 +41,7 @@
 		e.preventDefault();
 		let res = <EmpResponse>await api.post('orgchart/getstaff', { qstr: qstr }, user.sessionToken);
 		if (res.error) {
-			console.log(res.message);
+			console.error(res.message);
 		} else {
 			staffs = res as any[];
 		}

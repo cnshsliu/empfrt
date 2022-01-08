@@ -41,7 +41,6 @@
 		statusMessage = getStatusMessage(e.target.value);
 	}
 	function tplChanged(e) {
-		console.log('>>>>>>>FilterTemplateChanged');
 		tplChangedTo((e.target as HTMLInputElement).value);
 	}
 	function tplChangedTo(value) {

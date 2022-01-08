@@ -2153,8 +2153,6 @@ ret='DEFAULT'; `
 			}
 			if (that.docIsNotReadOnly()) {
 				await that.placeNodeOnClick(evt);
-			} else {
-				console.log('Not in edit tool: ' + that.tool);
 			}
 		});
 
@@ -4477,7 +4475,7 @@ ret='DEFAULT'; `
 					localStorage.setItem('docPos', JSON.stringify(docPos));
 				}, 1000);
 			} catch (error) {
-				console.log('save docPos error', error);
+				console.error('save docPos error', error);
 			}
 		});
 
@@ -5268,17 +5266,16 @@ uploadFileToQcloudCOS (file) {
 					that.TaskId = tid;
 				},
 				onHashProgress: function (progressData) {
-					console.log('onHashProgress', JSON.stringify(progressData));
+					
 				},
 				onProgress: function (progressData) {
-					console.log('onProgress', JSON.stringify(progressData));
+				
 				}
 			},
 			async function (err, data) {
 				if (err) {
-					console.log('putObject got error:', err);
+					console.error('putObject got error:', err);
 				} else {
-					console.log('putObject success:', data);
 					try {
 						let imgUrl =
 							'https://' +
@@ -5303,23 +5300,19 @@ uploadFileToQcloudCOS (file) {
 					that.TaskId = tid;
 				},
 				onHashProgress: function (progressData) {
-					console.log('onHashProgress', JSON.stringify(progressData));
 				},
 				onProgress: function (progressData) {
-					console.log(JSON.stringify(progressData));
 				}
 			},
 			async function (err, data) {
 				if (err) {
-					console.log('putObject got error:', err);
+					console.error('putObject got error:', err);
 				} else {
-					console.log('putObject success:', data);
 					try {
 						let imgUrl =
 							'https://' +
 							cocoConfig.cos.reverseproxy +
 							data.Location.substr(data.Location.indexOf('/'));
-						// console.log(data); console.log(imgUrl);
 						await that.makeImageDiv(fileId, that.dropAtPos.x, that.dropAtPos.y, imgUrl);
 						await that.refreshMatLibForAll();
 					} catch (error) {

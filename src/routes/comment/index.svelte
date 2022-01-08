@@ -35,7 +35,7 @@
 	onMount(async () => {
 		let ret = (await api.post('comment/list', {}, user.sessionToken)) as unknown as any[] | any;
 		if (ret.error) {
-			console.log(ret.message);
+			console.error(ret.message);
 			//eslint-disable-next-line
 			(addNotification as oneArgFunc)({
 				text: ret.message,

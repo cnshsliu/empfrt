@@ -2,7 +2,6 @@
 	import type { SearchResult } from '$lib/types';
 	export async function load({ page, fetch, session }) {
 		const tplid = page.query.get('tplid');
-		console.log('TPLID = ', tplid);
 		const tpl_mode = 'read';
 		const res_team: SearchResult = (await api.post(
 			'team/search',
@@ -86,15 +85,11 @@
 	};
 	const searchTeam = function () {
 		search_result.splice(0, search_result.length);
-		console.log(team_id_for_search, teams.length);
 		for (let i = 0; i < teams.length; i++) {
-			console.log(teams[i].teamid);
 			if (teams[i].teamid.match(team_id_for_search)) {
-				console.log(teams[i].teamid, 'match', team_id_for_search);
 				search_result = [...search_result, teams[i]];
 			}
 		}
-		console.log(search_result.length);
 
 		if (team_id_for_search === 'show' || search_result.length > 0) {
 			isOpen = true;
@@ -141,9 +136,6 @@
 		if (localStorage) {
 			recentTemplates = JSON.parse(localStorage.getItem('recentTemplates') ?? JSON.stringify([]));
 			recentTeams = JSON.parse(localStorage.getItem('recentTeams') ?? JSON.stringify([]));
-
-			console.log('recentTemplates:>>', recentTemplates, '<<');
-			console.log('recentTeams>>', recentTeams, '<<');
 		}
 		$filterStorage.tplid = tplid;
 		$filterStorage.workTitlePattern = '';
@@ -332,7 +324,6 @@
 							class="mx-1 badge bg-light text-primary border border-primary"
 							on:click={(e) => {
 								e.preventDefault();
-								console.log(ateam);
 								team_id_for_search = ateam;
 								pickTeam(ateam);
 							}}

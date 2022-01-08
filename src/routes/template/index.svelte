@@ -86,7 +86,6 @@
 		})
 			.then((response) => response.json())
 			.then(async (result) => {
-				console.log('Success:', result);
 				//templates = [result, ...templates];
 				theRemoteTable.rows = [result, ...theRemoteTable.rows];
 			})
@@ -111,10 +110,8 @@
 	}
 
 	export async function reloadTags() {
-		console.log('update my tags');
 		allTags.org = await api.post('tag/org', {}, user.sessionToken);
 		allTags.mine = await api.post('tag/list', { objtype: 'template' }, user.sessionToken);
-		console.log(allTags);
 		$TagStorage = allTags;
 	}
 

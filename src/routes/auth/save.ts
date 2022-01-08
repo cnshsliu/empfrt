@@ -15,7 +15,6 @@ export async function post(request) {
 		old_password: request.body.old_password
 	};
 	const ret = await api.post('account/profile/update', payload, token);
-	console.log('auth/save', payload);
 	if (ret.user) {
 		request.locals.user = Parser.codeToBase64(JSON.stringify(ret.user));
 	}

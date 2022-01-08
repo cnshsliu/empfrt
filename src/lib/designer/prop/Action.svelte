@@ -34,8 +34,6 @@
 	let TimeTool = null;
 	let helpShowing = false;
 
-	console.log(nodeInfo.toString());
-
 	let doerHTML = '';
 	if (nodeInfo.nodeProps.ACTION.doer) {
 		let doerCode = Parser.base64ToCode(nodeInfo.nodeProps.ACTION.doer);
@@ -61,7 +59,6 @@
 
 		if (tabname === 'tasks') {
 			if (typeof workid === 'string' && workid !== '') {
-				console.log(workid);
 				setTimeout(async () => {
 					todos = (await api.post(
 						'todos/by/workid',
@@ -94,7 +91,6 @@
 
 	onMount(async () => {
 		TimeTool = (await import('$lib/TimeTool')).default;
-		console.log(workid);
 	});
 </script>
 

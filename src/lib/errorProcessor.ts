@@ -13,13 +13,10 @@ const ErrorProcessor = {
 				}
 			}
 		}
-		console.log('ret ', ret);
-		console.log(ret);
 		return ret;
 	},
 
 	normalizeError: function (ret) {
-		console.log(ret);
 		if (ret.error) {
 			if (ret.statusCode === 400) {
 				switch (ret.error) {

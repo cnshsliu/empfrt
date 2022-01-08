@@ -94,7 +94,7 @@ AdvOps.moveSingleDiv = async function (div, pindex) {
 	// 获得div所在的原始页面
 	let onPage = AdvOps.getDivPage(div);
 	if (onPage === pindex) {
-		console.log('move to the same page, just return');
+		return;
 	}
 	// 计算目标页面与原始页面的位置差距
 	let deltaX = KFK.pageBounding.Pages[pindex].left - KFK.pageBounding.Pages[onPage].left;
@@ -110,7 +110,7 @@ AdvOps.moveSingleDiv = async function (div, pindex) {
 AdvOps.moveSingleShape = async function (aShape, pindex) {
 	let onPage = AdvOps.getShapePage(aShape);
 	if (onPage === pindex) {
-		console.log('move to the same page, just return');
+		return;
 	}
 	let deltaX = KFK.pageBounding.Pages[pindex].left - KFK.pageBounding.Pages[onPage].left;
 	let deltaY = KFK.pageBounding.Pages[pindex].top - KFK.pageBounding.Pages[onPage].top;
@@ -134,7 +134,7 @@ AdvOps.moveAllElements = async function (pindex) {
 		return;
 	}
 	if (onPage === pindex) {
-		console.log('move to the same page, just return');
+		return;
 	}
 
 	KFK.startTrx();
@@ -572,7 +572,6 @@ AdvOps.autoLayoutDescendants = async function (
 		KFK.startTrx();
 		try {
 			for (let divId of AdvOps.allRelayouted.keys()) {
-				console.log(divId);
 				let jqTmp = KFK.getNodeById(divId);
 				await KFK.syncNodePut('U', jqTmp.clone(), 'auto layout', jqTmp.clone(), false);
 			}

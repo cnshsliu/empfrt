@@ -99,7 +99,6 @@
 	}
 
 	const calendar_changed = function () {
-		console.log(calendar_begin, calendar_end);
 		if (Parser.hasValue(calendar_begin) && Parser.isEmpty(calendar_end)) {
 			calendar_end = calendar_begin;
 		}

@@ -97,7 +97,6 @@
 	}
 
 	const calendar_changed = function () {
-		console.log(calendar_begin, calendar_end);
 		if (Parser.hasValue(calendar_begin) && Parser.isEmpty(calendar_end)) {
 			calendar_end = calendar_begin;
 		}
@@ -168,8 +167,6 @@
 					rows[i].status = ret.status;
 				}
 			}
-			console.log('set rows = rows');
-			console.log(JSON.stringify(rows, null, 2));
 			rows = rows;
 		} else if (op === 'destroy') {
 			let deletedIndex = -1;
@@ -186,7 +183,6 @@
 			}
 		}
 		$filterStorage.workTitlePattern = 'wf:' + ret.wfid;
-		console.log('Come to refresh', op);
 		await refresh({});
 	};
 

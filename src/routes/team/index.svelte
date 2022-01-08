@@ -159,11 +159,10 @@
 					token: user.sessionToken,
 					result: async (res, form) => {
 						const created = await res.json();
-						console.log(created);
 						if (created.error) {
 							if (created.errMsg.indexOf('duplicate key error') > 0) {
-								console.log('Dupliated key', '//TODO');
-							} else console.log(created.error);
+								console.warn('Dupliated key', '//TODO');
+							} else console.error(created.error);
 						} else {
 							lastSearchCondition = created.teamid;
 							remoteTable.rows = [created, ...remoteTable.rows];

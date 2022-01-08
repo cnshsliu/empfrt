@@ -78,12 +78,10 @@
 		if (pickedValue.startsWith('Q:')) {
 			pickedQueryString = pickedValue.substring(2);
 			qstr = pickedQueryString;
-			console.log('qstr:', qstr);
 			selectedPickerTab = 'byquery';
 		} else if (pickedValue.startsWith('L:')) {
 			pickedLeaderString = pickedValue.substring(2);
 			lstr = pickedLeaderString;
-			console.log('lstr:', lstr);
 			selectedPickerTab = 'byleader';
 		} else {
 			selectedPickerTab = 'byref';
@@ -115,7 +113,6 @@
 			user.sessionToken
 		);
 		if (res.error) {
-			console.log(res.message);
 			try_doers = [];
 		} else {
 			try_doers = res as unknown as string[];

@@ -147,7 +147,6 @@
 		})
 			.then((response) => response.json())
 			.then((result) => {
-				console.log('Success:', result);
 				team = result;
 			})
 			.catch((error) => {
@@ -234,9 +233,7 @@
 							token: user.sessionToken,
 							result: async (res, form) => {
 								const newTeam = await res.json();
-								console.log(newTeam);
 								if (newTeam.error) {
-									console.log(newTeam.error);
 									errmsg = newTeam.errMsg;
 									if (errmsg.indexOf('MongoError: E11000 duplicate key error') >= 0) {
 										errmsg = '同名模板已存在, 请重新录入';
@@ -285,9 +282,7 @@
 						token: user.sessionToken,
 						result: async (res, form) => {
 							const newTeam = await res.json();
-							console.log(newTeam);
 							if (newTeam.error) {
-								console.log(newTeam.error);
 								errmsg = newTeam.errMsg;
 								if (errmsg.indexOf('MongoError: E11000 duplicate key error') >= 0) {
 									errmsg = '同名Team已存在, 请重新录入';
@@ -347,11 +342,7 @@
 						token: user.sessionToken,
 						result: async (res, form) => {
 							const retObj = await res.json();
-							console.log('--------');
-							console.log(JSON.stringify(retObj, null, 2));
-							console.log('--------');
 							if (retObj.error) {
-								console.log(retObj.error);
 								errmsg = retObj.errMsg;
 							} else {
 								team = retObj;

@@ -7,16 +7,11 @@ const NodeController = {
 			console.warn('lock a no existing node');
 			return;
 		}
-		// console.log("Before", jqNode.prop('outerHTML'));
 		jqNode.addClass('lock');
 		const lockLabel = jqNode.find('.locklabel');
 		if (lockLabel.length === 0) {
-			// console.log('add locklabel for', jqNode.attr('id'));
 			jqNode.append('<div class="locklabel"/>');
-			// }else{
-			//   console.log('locklabel exist..', lockLabel);
 		}
-		// console.log("After", jqNode.prop('outerHTML'));
 
 		NodeController.safeNodeEventModify(jqNode, 'draggable', 'disable');
 		NodeController.safeNodeEventModify(jqNode, 'resizable', 'disable');

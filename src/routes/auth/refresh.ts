@@ -10,7 +10,6 @@ export async function post(request) {
 
 	const token = request.locals.user.sessionToken;
 	const ret = await api.post('session/refresh', {}, token);
-	console.log('Return fromserver', ret);
 	if (ret.user) {
 		request.locals.user = Parser.codeToBase64(JSON.stringify(ret.user));
 	}

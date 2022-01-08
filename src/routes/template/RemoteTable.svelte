@@ -137,7 +137,6 @@
 	const addTags = async function (index, tplid, tags, text) {
 		if (text.trim().length === 0) return;
 		tags = await api.post('tag/add', { objtype: 'template', objid: tplid, text: text }, token);
-		console.log('ret', tags);
 		rows[index].tags = tags;
 		rows = rows;
 		await reloadTags();
@@ -423,7 +422,6 @@
 											bind:value={tag_input}
 											on:change={async (e) => {
 												e.preventDefault();
-												console.log(tag_input);
 												await addTags(index, row.tplid, row.tags, tag_input);
 												tag_input = '';
 											}}

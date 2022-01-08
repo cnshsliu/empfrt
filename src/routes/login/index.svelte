@@ -1,7 +1,6 @@
 <script context="module">
 	export async function load({ session }) {
 		if (session.user) {
-			console.log('Redirect to template');
 			return {
 				status: 302,
 				redirect: '/template'

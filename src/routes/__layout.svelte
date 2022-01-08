@@ -28,7 +28,6 @@
 
 	let bootstrap: any;
 	onMount(async () => {
-		console.log('import boostrape...');
 		const module = await import('bootstrap');
 		bootstrap = module.default;
 		let tmp = $filterStorage.locale;

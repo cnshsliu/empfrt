@@ -8,7 +8,6 @@ export async function handle({ request, resolve }) {
 
 	const response = await resolve(request);
 	response.headers['set-cookie'] = `user=${request.locals.user || ''}; Path=/; HttpOnly`;
-	console.log('SetCookie:', request.locals.user);
 
 	return response;
 	*/

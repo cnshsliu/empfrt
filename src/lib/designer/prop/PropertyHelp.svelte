@@ -11,7 +11,7 @@
 			<li>
 				<b>Participant:</b> who will be responsible for and receive task of this action.<br />
 				Participant's Role: ';' separated PDs (PD: participant definition), each PD can be a team role,
-				a user (@userid), a leader (L:leader definition) or a query (Q: querystring)
+				a user (@userid), a leader (P:position definition) or a query (Q: querystring)
 				<a href="/docs#designer_participant" target="_blank"> Details </a>
 			</li>
 			<li>

@@ -7,7 +7,6 @@ let cachedLocale;
 
 /* function setupI18n({ withLocale: _locale } = { withLocale: 'en' }) {
 	const messsagesFileUrl = MESSAGE_FILE_URL_TEMPLATE.replace('{locale}', _locale);
-	console.log('withLocale', _locale, 'loading', messsagesFileUrl);
 
 	return fetch(messsagesFileUrl)
 		.then((response) => response.json())
