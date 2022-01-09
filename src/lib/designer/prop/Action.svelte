@@ -208,7 +208,7 @@
 									</InputGroupText>
 									<Input bind:value={kvar.name} disabled={readonly} />
 								</InputGroup>
-								{#if kvar.name.startsWith('select_') || kvar.name.startsWith('radio_')}
+								{#if kvar.name.startsWith('select_') || kvar.name.startsWith('sel_') || kvar.name.startsWith('sl_') || kvar.name.startsWith('radio_')}
 									<InputGroup size="sm">
 										<InputGroupText>
 											{$_('prop.action.kvar.options')}
