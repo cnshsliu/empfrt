@@ -382,7 +382,7 @@
 										bind:value={adhocTaskDoer}
 										placeholder="Who should do it"
 									/>
-									<label for="input-adhoc-doer">Who should do it (in PDS format)?</label>
+									<label for="input-adhoc-doer">Who should do it (in RDS format)?</label>
 								</div>
 								<Button
 									color="primary"

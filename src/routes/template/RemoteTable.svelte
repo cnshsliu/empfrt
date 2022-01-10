@@ -426,8 +426,8 @@
 												tag_input = '';
 											}}
 										/>
-										<label for={`input-tplid-${index}`}
-											>input new tags delimitered by space/;/,
+										<label for={`input-tplid-${index}`}>
+											input new tags delimited by space/;/,
 										</label>
 									</div>
 									<Button

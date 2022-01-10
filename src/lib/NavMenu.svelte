@@ -109,7 +109,12 @@
 						</NavLink>
 					</NavItem>
 					<NavItem>
-						<NavLink href="/docs" class="py-2 ps-0 pe-3" active={$page.path === '/docs'}>
+						<NavLink
+							rel="external"
+							href="https://cnshsliu.github.io/mtcdocs/"
+							target="_blank"
+							class="py-2 ps-0 pe-3"
+						>
 							{$_('navmenu.doc')}
 						</NavLink>
 					</NavItem>

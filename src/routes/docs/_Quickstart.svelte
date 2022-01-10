@@ -31,7 +31,6 @@
 	<!-- TODO lose the @next! -->
 	<pre>npm init svelte@next</pre>
 	<img src="/help/architecture.svg" alt="hyper_automation_illustration" />
-
 	<p>
 		Once you have a Metatocome user account (<a href="/register">register now</a>), you may create a
 		workflow template, start it, manage it (monitor it, pause it, resume it or stop it). The

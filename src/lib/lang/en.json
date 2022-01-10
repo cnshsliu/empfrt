@@ -103,11 +103,11 @@
 	"template": {
 		"create": {
 			"name": "Template name",
-			"tags": "Tags delimitered by spaces/;/,"
+			"tags": "Tags delimited by spaces/;/,"
 		},
 		"import": {
 			"name": "Template name",
-			"tags": "Tags delimitered by spaces/;/,"
+			"tags": "Tags delimited by spaces/;/,"
 		}
 	},
 	"recent": "Recent: ",
