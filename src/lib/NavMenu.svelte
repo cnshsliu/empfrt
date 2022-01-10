@@ -112,7 +112,7 @@
 						<NavLink
 							rel="external"
 							href="https://cnshsliu.github.io/mtcdocs/"
-							target="_blank"
+							target="_mtc_docs"
 							class="py-2 ps-0 pe-3"
 						>
 							{$_('navmenu.doc')}
