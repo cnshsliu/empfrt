@@ -109,12 +109,7 @@
 						</NavLink>
 					</NavItem>
 					<NavItem>
-						<NavLink
-							rel="external"
-							href="https://cnshsliu.github.io/mtcdocs/"
-							target="_mtc_docs"
-							class="py-2 ps-0 pe-3"
-						>
+						<NavLink href="/docs" class="py-2 ps-0 pe-3">
 							{$_('navmenu.doc')}
 						</NavLink>
 					</NavItem>
