@@ -70,7 +70,7 @@ export interface Template {
 
 export interface Workflow {
 	_id: string;
-	pbo: string;
+	pbo: [string];
 	wfid: string;
 	tenant: string;
 	wftitle: string;

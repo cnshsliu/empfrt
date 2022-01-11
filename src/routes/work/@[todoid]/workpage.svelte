@@ -209,12 +209,12 @@
 			<Container class="mt-3 kfk-highlight-2 text-wrap text-break">
 				<Icon name="vinyl" />&nbsp;
 				{$_('todo.pbo')}
-				{#if work.wf.pbo}
-					<a href={work.wf.pbo} target="_blank"
-						>{work.wf.pbo}&nbsp;
+				{#each work.wf.pbo as pbo}
+					<a href={pbo} target="_blank">
+						{pbo}&nbsp;
 						<Icon name="box-arrow-up-right" />
 					</a>
-				{/if}
+				{/each}
 			</Container>
 			{#if work.instruct}
 				<div class="fs-5">
