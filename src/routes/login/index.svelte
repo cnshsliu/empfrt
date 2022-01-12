@@ -30,6 +30,9 @@
 	let theCountdown;
 	let login_wait = -1;
 	let login_wait_interval = null;
+	let errResponse: any = { error: '', message: '' };
+	let isUserValid = '';
+	let isPwdValid = '';
 
 	function setFadeMessage(message: string, type = 'warning', pos = 'bottom-right', time = 2000) {
 		(addNotification as oneArgFunc)({
@@ -40,6 +43,9 @@
 		});
 	}
 	async function submit(event) {
+		isUserValid = '';
+		isPwdValid = '';
+		errResponse = { error: '', message: '' };
 		const response = (await post(`auth/login`, { email, password })) as unknown as EmpResponse;
 
 		if (response.error) {
@@ -53,7 +59,14 @@
 					if (login_wait < 0) clearInterval(login_wait_interval);
 				}, 1000);
 			}
-			setFadeMessage(response.message);
+			errResponse = response;
+			if (response.error === 'login_no_user') {
+				isUserValid = ' is-invalid';
+				isPwdValid = '';
+			} else {
+				isUserValid = '';
+				isPwdValid = ' is-invalid';
+			}
 			if (response.error === 'login_emailVerified_false') {
 				show_resend_email_verification = true;
 				//resendCountdown = 0;
@@ -100,26 +113,38 @@
 			<form on:submit|preventDefault={submit}>
 				<div class="form-floating flex-fill">
 					<Input
-						class="form-control form-control-lg"
+						class={'form-control form-control-lg ' + isUserValid}
 						id="input-email"
 						required
 						autocomplete="username"
 						placeholder="Email"
 						bind:value={email}
+						aria-describedby="validationServerUsernameFeedback"
 					/>
 					<label for="input-email"> {$_('account.yourEmail')} </label>
+					<div id="validationServerUsernameFeedback" class="invalid-feedback">
+						{#if errResponse.error && errResponse.message}
+							{errResponse.message}
+						{/if}
+					</div>
 				</div>
-				<div class="form-floating flex-fill">
+				<div class="form-floating flex-fill has-validation">
 					<Input
-						class="form-control form-control-lg mt-2"
+						class={'form-control form-control-lg mt-2 ' + isPwdValid}
 						id="input-password"
 						type="password"
 						required
 						placeholder="Password"
 						autocomplete="current-password"
 						bind:value={password}
+						aria-describedby="validationServerPwdFeedback"
 					/>
 					<label for="input-password"> {$_('account.password')}</label>
+					<div id="validationServerPwdFeedback" class="invalid-feedback">
+						{#if errResponse.error && errResponse.message}
+							{errResponse.message}
+						{/if}
+					</div>
 				</div>
 				<div class="w-100 d-flex justify-content-end">
 					<button
