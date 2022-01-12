@@ -143,6 +143,7 @@ class KFKclass {
 	loadedProjectId: string = null;
 	closeHelpTimer: any = null;
 	keypool: string = '';
+	keypoolCleanTimeout: any = null;
 	svgDraw: any = null; //画svg的画布
 	helpArea: any = null;
 	isFreeHandDrawing: boolean = false;
@@ -267,6 +268,7 @@ class KFKclass {
 	currentMousePos: Point = { x: -1, y: -1 };
 	JCBKG: any = null;
 	hoveredConnectId: string = null;
+	hoveredConnect: any = null;
 	tmpPos: Position = null;
 	shapeToRemember: myJQuery = null;
 	polyId: string = '';
@@ -2869,6 +2871,48 @@ ret='DEFAULT'; `
 		}
 	}
 
+	/**
+	 * Process keypool
+	 *
+	 */
+	async procKeypool(evt) {
+		let that = this;
+		that.log(that.keypool);
+		if (that.keypoolCleanTimeout) {
+			clearTimeout(that.keypoolCleanTimeout);
+		}
+		that.keypoolCleanTimeout = setTimeout(() => {
+			that.keypool = '';
+			that.keypoolCleanTimeout = null;
+		}, 2000);
+		if (that.docIsReadOnly()) return;
+		//Delete node or connect
+		if (that.keypool === 'd') {
+			if (that.hoverJqDiv() || that.hoveredConnect) {
+				that.deleteObjects(evt, false);
+				that.keypool = '';
+			}
+		} else if (['cb', 'ce'].includes(that.keypool) && that.hoveredConnect) {
+			//Change Begin/End node
+			that.cancelLinkNode();
+			that.setTool('CONNECT');
+			that.tobeRemovedConnectId = that.hoveredConnect.attr('id');
+			that.movingConnect = true;
+			let jqFrom = $('#' + that.hoveredConnect.attr('fid'));
+			let jqTo = $('#' + that.hoveredConnect.attr('tid'));
+			//CE: Change END node
+			if (that.keypool === 'ce') {
+				that.connectEndFirst = false;
+				await that.yarkLinkNode(jqFrom);
+			} else {
+				//CB: Change Begin node
+				that.connectEndFirst = true;
+				await that.yarkLinkNode(jqTo, false);
+			}
+			that.keypool = '';
+		}
+	}
+
 	async setConnectionStatusColor() {
 		const that = this;
 		const connectLines = this.svgDraw.find('.connect');
@@ -4262,7 +4306,7 @@ ret='DEFAULT'; `
 			) {
 				that.keypool += evt.key;
 				that.keypool = that.keypool.toLowerCase();
-				that.log(that.keypool);
+				await that.procKeypool(evt);
 			} else {
 				that.keypool = '';
 			}
@@ -4649,9 +4693,18 @@ ret='DEFAULT'; `
 
 	async onCut(evt: Event | JQuery.KeyDownEvent<Document, null, Document, Document>) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		if (that.isShowingModal || that.inNoteEditor) return;
-		that.deleteObjects(evt, true);
+		const that = KFK;
+		if (that.showingProp) return;
+		if (that.hoverJqDiv()) {
+			that.clipboardNode = that.hoverJqDiv();
+		}
+		if (that.hoveredConnectId) {
+			that.clipboardConnectText = $(`.${that.hoveredConnectId}`).attr('case');
+			if (Parser.isEmpty(that.clipboardConnectText)) {
+				that.clipboardConnectText = null;
+			}
+		}
+		that.deleteObjects(evt, false);
 	}
 
 	/**
@@ -4792,7 +4845,11 @@ ret='DEFAULT'; `
 			return;
 		}
 		if (that.showingProp) return;
-		if (
+		if (that.clipboardConnectText && that.hoveredConnectId) {
+			that.setConnectText($(`.${that.hoveredConnectId}`), that.clipboardConnectText);
+			that.onChange('Paste connect');
+		} else if (
+			//如果贴了链接线，就不再贴节点
 			that.clipboardNode &&
 			that.clipboardNode.hasClass('START') === false &&
 			that.clipboardNode.hasClass('END') === false
@@ -4807,12 +4864,9 @@ ret='DEFAULT'; `
 			});
 			newNode.appendTo(KFK.C3);
 			await KFK.setNodeEventHandler(newNode, async function () {});
-		}
-		if (that.clipboardConnectText && that.hoveredConnectId) {
-			that.setConnectText($(`.${that.hoveredConnectId}`), that.clipboardConnectText);
+			that.onChange('Paste node');
 		}
 		that.holdEvent(evt);
-		return;
 	}
 
 	scrCenter() {
@@ -4865,6 +4919,7 @@ ret='DEFAULT'; `
 			})
 			.loop(true);
 		that.hoveredConnectId = theConnect.attr('id');
+		that.hoveredConnect = theConnect;
 		that.onC3 = true;
 	}
 	mouseOutConnect(theConnect: any, cnWidth, cnColor) {
@@ -4877,6 +4932,7 @@ ret='DEFAULT'; `
 			color: cnColor || that.YIQColorAux || that.config.connect.styles[styleid].normal.color
 		});
 		that.hoveredConnectId = null;
+		that.hoveredConnect = null;
 	}
 	async mouseClickConnect(evt: MouseEvent, theConnect) {
 		let that = this;
