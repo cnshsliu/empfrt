@@ -195,6 +195,7 @@ class KFKclass {
 	centerPos: any = { x: 0, y: 0 };
 	lastFocusOnJqNode: myJQuery = null;
 	lastSetNoteJq: myJQuery = null;
+	clipboardNode: myJQuery = null;
 	justCreatedJqNode: any = null;
 	lastCreatedJqNode: any = null;
 	justCreatedShape: any = null;
@@ -4704,19 +4705,90 @@ ret='DEFAULT'; `
 		return true;
 	}
 
+	async copyNodes(evt) {
+		console.log(KFK.selectedDIVs.length);
+		return;
+		if (KFK.selectedDIVs.length > 1) {
+			//优先多选
+			KFK.debug('multiple nodes were selected');
+			//过滤掉TODOLISTDIV/chatmessage 等nocopy DIV
+			let filteredDIVs = KFK.selectedDIVs.filter((div) => {
+				return div.hasClass('nocopy') === false;
+			});
+			KFK.copyCandidateDIVs = filteredDIVs.map((div) => {
+				let jTemp = div.clone();
+				let jTitle = jTemp.find('.coco_title');
+				if (jTitle.length > 0) {
+					jTitle.text(jTitle.text() + '的复制');
+				}
+				return jTemp;
+			});
+			return true;
+		} else if (KFK.getPropertyApplyToJqNode()) {
+			//然后selected
+			//过滤掉TODOLISTDIV
+			if (KFK.getPropertyApplyToJqNode().hasClass('nocopy')) {
+				KFK.copyCandidateDIVs = [];
+				KFK.copyCandidateLines = [];
+			} else {
+				let jTemp = KFK.getPropertyApplyToJqNode().clone();
+				let jTitle = jTemp.find('.coco_title');
+				if (jTitle.length > 0) {
+					jTitle.text(jTitle.text() + '的复制');
+				}
+				KFK.copyCandidateDIVs = [jTemp];
+				KFK.copyCandidateLines = [];
+			}
+			return true;
+		} else if (KFK.hoverSvgLine() && (action === undefined || action === 'copy')) {
+			KFK.hoverSvgLine().attr({
+				'stroke-width': KFK.hoverSvgLine().attr('origin-width')
+			});
+			KFK.copyCandidateLines = [KFK.hoverSvgLine().clone()];
+			KFK.copyCandidateDIVs = [];
+			// KFK.scrLog('对象已复制, 移动鼠标看所需位置再次按META-D或META-V安放')
+			//下面这句代码在第一次按META-D时就粘贴了一条,有些不用,
+			// await KFK.makeACopyOfLine(KFK.lineToCopy, evt.shiftKey);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	async onCopy(evt: Event) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		if (that.isShowingModal) return;
-		if (that.noCopyPaste) return;
-		if (that.inNoteEditor) return;
-		const someDIVcopyed = await that.duplicateHoverObject(evt as MouseEvent, 'copy');
-		if (evt instanceof ClipboardEvent && someDIVcopyed) {
-			evt.clipboardData.setData('text/plain', 'usediv');
-			evt.clipboardData.setData('text/html', 'usediv');
-		}
-		evt.preventDefault();
+		let that = KFK;
+
+		if (that.showingProp) return;
+
+		//console.log(KFK.selectedDIVs.length);
+		let tobeCopied = that.hoverJqDiv();
+		if (!tobeCopied) return;
+		that.clipboardNode = tobeCopied; //tobeCopied.clone();
 		that.holdEvent(evt);
+	}
+
+	async onPaste(evt: Event) {
+		const that = KFK;
+		if (KFK.docIsReadOnly()) {
+			console.log('paste ignored since docIsReadOnly');
+			return;
+		}
+		if (that.showingProp) return;
+		if (!that.clipboardNode) return;
+
+		let newNode = KFK.makeCloneDIV(that.clipboardNode, KFK.myuid(), {
+			left:
+				KFK.scalePoint(KFK.scrXToJc3X(KFK.currentMousePos.x)) -
+				KFK.divWidth(that.clipboardNode) * 0.5,
+			top:
+				KFK.scalePoint(KFK.scrYToJc3Y(KFK.currentMousePos.y)) -
+				KFK.divHeight(that.clipboardNode) * 0.5
+		});
+		newNode.appendTo(KFK.C3);
+		await KFK.setNodeEventHandler(newNode, async function () {});
+		that.holdEvent(evt);
+		return;
 	}
 
 	scrCenter() {
@@ -5476,8 +5548,8 @@ uploadFileToQcloudCOS (file) {
 }
 const KFK = new KFKclass();
 
-//document.onpaste = KFK.onPaste;
-//document.oncopy = KFK.onCopy;
-//document.oncut = KFK.onCut;
+document.onpaste = KFK.onPaste;
+document.oncopy = KFK.onCopy;
+document.oncut = KFK.onCut;
 
 export default KFK;
