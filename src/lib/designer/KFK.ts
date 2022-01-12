@@ -196,6 +196,7 @@ class KFKclass {
 	lastFocusOnJqNode: myJQuery = null;
 	lastSetNoteJq: myJQuery = null;
 	clipboardNode: myJQuery = null;
+	clipboardConnectText: string = null;
 	justCreatedJqNode: any = null;
 	lastCreatedJqNode: any = null;
 	justCreatedShape: any = null;
@@ -2878,13 +2879,21 @@ ret='DEFAULT'; `
 			connectNumber++;
 			let fid = connect.attr('fid');
 			let tid = connect.attr('tid');
+			//这条线是从哪到哪的
 			const fromDIV: any = $(`#${fid}`);
 			const toDIV: any = $(`#${tid}`);
+			//指向节点有没有完成？如果完成，则
 			if (toDIV.hasClass('ST_DONE')) {
-				if (fromDIV.hasClass('ST_DONE')) {
+				//这个完成的toDIV的前序work的ID是哪个？
+				let prevDoneWorkId = toDIV.find('.work').attr('from_nodeid');
+				if (fromDIV.hasClass('ST_DONE') && prevDoneWorkId === fid) {
+					//这个线所链接的两个节点都是ST_DONE
+					//并且，结束节点在结束时所记录的“来自于“节点的ID就是当前from节点
+					//则把这个链接线的状态设置为ST_DONE
 					connect.addClass('ST_DONE');
 				}
 			} else if (toDIV.hasClass('ST_RUN')) {
+				//找兄弟链接, 检查兄弟链接中是否有已经完成了的
 				const links = that.tpl.find(`.link[from="${fid}"]`);
 				let hasDone = false;
 				for (let i = 0; i < links.length; i++) {
@@ -2895,9 +2904,11 @@ ret='DEFAULT'; `
 						break;
 					}
 				}
+				//如果其他兄弟也没有完成，则表示我还在运行中，（其它兄弟链接也在运行中）
 				if (!hasDone) {
 					connect.addClass('ST_RUN');
 				} else {
+					//否则，表示，其它兄弟链接中又一个已经完成，那么，我的状态就应该是IGNORE
 					connect.addClass('ST_IGNORE');
 				}
 			}
@@ -4762,9 +4773,15 @@ ret='DEFAULT'; `
 		if (that.showingProp) return;
 
 		//console.log(KFK.selectedDIVs.length);
-		let tobeCopied = that.hoverJqDiv();
-		if (!tobeCopied) return;
-		that.clipboardNode = tobeCopied; //tobeCopied.clone();
+		if (that.hoverJqDiv()) {
+			that.clipboardNode = that.hoverJqDiv();
+		}
+		if (that.hoveredConnectId) {
+			that.clipboardConnectText = $(`.${that.hoveredConnectId}`).attr('case');
+			if (Parser.isEmpty(that.clipboardConnectText)) {
+				that.clipboardConnectText = null;
+			}
+		}
 		that.holdEvent(evt);
 	}
 
@@ -4775,18 +4792,25 @@ ret='DEFAULT'; `
 			return;
 		}
 		if (that.showingProp) return;
-		if (!that.clipboardNode) return;
-
-		let newNode = KFK.makeCloneDIV(that.clipboardNode, KFK.myuid(), {
-			left:
-				KFK.scalePoint(KFK.scrXToJc3X(KFK.currentMousePos.x)) -
-				KFK.divWidth(that.clipboardNode) * 0.5,
-			top:
-				KFK.scalePoint(KFK.scrYToJc3Y(KFK.currentMousePos.y)) -
-				KFK.divHeight(that.clipboardNode) * 0.5
-		});
-		newNode.appendTo(KFK.C3);
-		await KFK.setNodeEventHandler(newNode, async function () {});
+		if (
+			that.clipboardNode &&
+			that.clipboardNode.hasClass('START') === false &&
+			that.clipboardNode.hasClass('END') === false
+		) {
+			let newNode = KFK.makeCloneDIV(that.clipboardNode, KFK.myuid(), {
+				left:
+					KFK.scalePoint(KFK.scrXToJc3X(KFK.currentMousePos.x)) -
+					KFK.divWidth(that.clipboardNode) * 0.5,
+				top:
+					KFK.scalePoint(KFK.scrYToJc3Y(KFK.currentMousePos.y)) -
+					KFK.divHeight(that.clipboardNode) * 0.5
+			});
+			newNode.appendTo(KFK.C3);
+			await KFK.setNodeEventHandler(newNode, async function () {});
+		}
+		if (that.clipboardConnectText && that.hoveredConnectId) {
+			that.setConnectText($(`.${that.hoveredConnectId}`), that.clipboardConnectText);
+		}
 		that.holdEvent(evt);
 		return;
 	}
@@ -4817,6 +4841,53 @@ ret='DEFAULT'; `
 
 		const pStr: string = `M${p1.x} ${p1.y} H${c1.x} S${c2.x} ${c1.y} ${c2.x} ${c2.y} V${p2.y}`;
 		return pStr;
+	}
+
+	mouseOverConnect(theConnect: any) {
+		let that = this;
+		const styleid = theConnect.attr('styleid');
+		const connect_color = that.YIQColorAux || that.config.connect.styles[styleid].hover.color;
+		theConnect.stroke({
+			width: that.config.connect.styles[styleid].hover.width,
+			color: connect_color
+		});
+		that.ball.removeClass('noshow');
+		that.ball.fill('#2726ff');
+		const length = theConnect.length();
+		//let runner_duration = 500 * length / 100;
+		const runner_duration = 1500;
+		const runner = that.ball.animate({ duration: runner_duration, when: 'now', times: 3 });
+		runner.ease('>');
+		runner
+			.during(function (pos: any) {
+				const p: Point = theConnect.pointAt(pos * length);
+				that.ball.center(p.x, p.y);
+			})
+			.loop(true);
+		that.hoveredConnectId = theConnect.attr('id');
+		that.onC3 = true;
+	}
+	mouseOutConnect(theConnect: any, cnWidth, cnColor) {
+		let that = this;
+		const styleid = theConnect.attr('styleid');
+		that.ball.addClass('noshow');
+		that.ball.timeline().stop();
+		theConnect.stroke({
+			width: cnWidth || that.config.connect.styles[styleid].normal.width,
+			color: cnColor || that.YIQColorAux || that.config.connect.styles[styleid].normal.color
+		});
+		that.hoveredConnectId = null;
+	}
+	async mouseClickConnect(evt: MouseEvent, theConnect) {
+		let that = this;
+		if (evt.shiftKey) {
+			if (theConnect.attr('fid') !== 'start') that.showConnectionProperties(theConnect);
+			else {
+				that.showHelp('Link from START is not configurable');
+			}
+		} else {
+			await that.selectConnectOnClick(theConnect, evt);
+		}
 	}
 
 	/**
@@ -4937,69 +5008,37 @@ ret='DEFAULT'; `
 				tid: tid
 			});
 			theConnect.off('mouseover mouseout click');
-			connectText.off('click');
+			connectText.off('mouseover mouseout click');
 			theConnect.on('mouseover', () => {
-				const styleid = theConnect.attr('styleid');
-				const connect_color = that.YIQColorAux || that.config.connect.styles[styleid].hover.color;
-				theConnect.stroke({
-					width: that.config.connect.styles[styleid].hover.width,
-					color: connect_color
-				});
-				that.ball.removeClass('noshow');
-				that.ball.fill('#2726ff');
-				const length = theConnect.length();
-				//let runner_duration = 500 * length / 100;
-				const runner_duration = 1500;
-				const runner = that.ball.animate({ duration: runner_duration, when: 'now', times: 3 });
-				runner.ease('>');
-				runner
-					.during(function (pos: any) {
-						const p: Point = theConnect.pointAt(pos * length);
-						that.ball.center(p.x, p.y);
-					})
-					.loop(true);
-				that.hoveredConnectId = theConnect.attr('id');
-				that.onC3 = true;
+				that.mouseOverConnect(theConnect);
 			});
 			theConnect.on('mouseout', () => {
-				const styleid = theConnect.attr('styleid');
-				that.ball.addClass('noshow');
-				that.ball.timeline().stop();
-				theConnect.stroke({
-					width: cnWidth || that.config.connect.styles[styleid].normal.width,
-					color: cnColor || that.YIQColorAux || that.config.connect.styles[styleid].normal.color
-				});
-				that.hoveredConnectId = null;
+				that.mouseOutConnect(theConnect, cnWidth, cnColor);
 			});
 			//click line
 			theConnect.on('click', (e) => {
 				e.preventDefault();
 				e.stopPropagation();
-				that.onClickConnect(e, theConnect);
+				that.mouseClickConnect(e, theConnect);
 			});
 			//click text
+			connectText.on('mouseover', async (e) => {
+				that.mouseOverConnect(theConnect);
+			});
+			connectText.on('mouseout', async (e) => {
+				that.mouseOutConnect(theConnect, cnWidth, cnColor);
+			});
 			connectText.on('click', async (e) => {
 				//click text
 				e.preventDefault();
 				e.stopPropagation();
-				await that.onClickConnect(e, theConnect);
+				await that.mouseClickConnect(e, theConnect);
 			});
 		} catch (error) {
 			console.error(error);
 		}
 	}
 
-	async onClickConnect(evt: MouseEvent, theConnect) {
-		let that = this;
-		if (evt.shiftKey) {
-			if (theConnect.attr('fid') !== 'start') that.showConnectionProperties(theConnect);
-			else {
-				that.showHelp('Link from START is not configurable');
-			}
-		} else {
-			await that.selectConnectOnClick(theConnect, evt);
-		}
-	}
 	async onClickNode(evt: MouseEvent, jqNodeDIV) {
 		let that = this;
 		if (that.tool === 'POINTER') {
