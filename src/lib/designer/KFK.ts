@@ -2892,20 +2892,30 @@ ret='DEFAULT'; `
 				that.deleteObjects(evt, false);
 				that.keypool = '';
 			}
-		} else if (['cb', 'ce'].includes(that.keypool) && that.hoveredConnect) {
-			//Change Begin/End node
+		} else if (
+			//GT: Connect to
+			'gt' === that.keypool &&
+			that.hoverJqDiv() &&
+			that.hoverJqDiv().hasClass('END') === false
+		) {
+			that.cancelLinkNode();
+			that.setTool('CONNECT');
+			await that.yarkLinkNode(that.hoverJqDiv());
+			that.keypool = '';
+		} else if (['gb', 'ge'].includes(that.keypool) && that.hoveredConnect) {
+			//Connect Begin/End node
 			that.cancelLinkNode();
 			that.setTool('CONNECT');
 			that.tobeRemovedConnectId = that.hoveredConnect.attr('id');
 			that.movingConnect = true;
 			let jqFrom = $('#' + that.hoveredConnect.attr('fid'));
 			let jqTo = $('#' + that.hoveredConnect.attr('tid'));
-			//CE: Change END node
-			if (that.keypool === 'ce') {
+			//CE: Connect  END node
+			if (that.keypool === 'ge') {
 				that.connectEndFirst = false;
 				await that.yarkLinkNode(jqFrom);
 			} else {
-				//CB: Change Begin node
+				//CB: Connect Begin node
 				that.connectEndFirst = true;
 				await that.yarkLinkNode(jqTo, false);
 			}
