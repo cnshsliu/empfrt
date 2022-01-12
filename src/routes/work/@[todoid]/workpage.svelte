@@ -384,15 +384,6 @@
 									/>
 									<label for="input-adhoc-doer">Who should do it (in RDS format)?</label>
 								</div>
-								<Button
-									color="primary"
-									on:click={async (e) => {
-										e.preventDefault();
-										await checkAdhocTaskDoer(e, true);
-									}}
-								>
-									{$_('button.check')}
-								</Button>
 							</Col>
 							<Container class="mt-2">
 								<span>Recent started:</span>
@@ -421,6 +412,15 @@
 									<label for="input-adhoc-comment">Any extra comments?</label>
 								</div>
 							</Col>
+							<Button
+								color="primary"
+								on:click={async (e) => {
+									e.preventDefault();
+									await checkAdhocTaskDoer(e, true);
+								}}
+							>
+								{$_('button.check')}
+							</Button>
 							{#if adhocTaskDoerConfirmed}
 								<Col class="d-flex justify-content-end my-1">
 									<Button
@@ -470,6 +470,8 @@
 								>
 									{$_('button.sendadhocReconsider')}
 								</Button>
+							{:else}
+								There are {checkingAdhocResult.length} users, are you sure to continue?
 							{/if}
 						</Row>
 					{/if}
