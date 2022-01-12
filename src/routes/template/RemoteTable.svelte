@@ -5,6 +5,7 @@
 	//Sort component is optional
 	import { _ } from '$lib/i18n';
 	import * as api from '$lib/api';
+	import AniIcon from '$lib/AniIcon.svelte';
 	import { onMount } from 'svelte';
 	import Parser from '$lib/parser';
 	import { qtb } from '$lib/utils';
@@ -17,6 +18,7 @@
 		Dropdown,
 		DropdownItem,
 		DropdownMenu,
+		NavLink,
 		DropdownToggle,
 		Icon,
 		Container,
@@ -260,7 +262,17 @@
 						{row.tplid}
 					</a>
 					{#if row.visi}
-						<div class="ms-5">{row.visi}</div>
+						<div
+							class="ms-5 kfk-link"
+							on:click={() => {
+								setVisibilityForTplid = row.tplid;
+								row.checked = false;
+								visi_rds_input = row.visi;
+							}}
+						>
+							<AniIcon icon="people-fill" ani="aniShake" />
+							{row.visi}
+						</div>
 					{/if}
 					{#if setVisibilityForTplid === row.tplid}
 						<div class="ms-5">
@@ -339,7 +351,16 @@
 						</div>
 					{/if}
 					{#if row.desc && row.desc.trim().length > 0}
-						<div class="ms-5">{row.desc}</div>
+						<div
+							class="ms-5 kfk-link"
+							on:click={() => {
+								desc_input = row.desc;
+								addDescForTplid = row.tplid;
+							}}
+						>
+							<AniIcon icon="card-text" ani="aniShake" />
+							{row.desc}
+						</div>
 					{/if}
 					{#if addDescForTplid === row.tplid}
 						<div class="ms-5">
