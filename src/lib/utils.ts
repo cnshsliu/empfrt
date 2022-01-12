@@ -24,8 +24,8 @@ export const hasValue = function (val: string) {
  * 全角转半角
  */
 export const qtb = function (str: string) {
-	str = str.replace('；', ';');
-	str = str.replace('：', ':');
-	str = str.replace('，', ',');
+	str = str.replace(/；/g, ';');
+	str = str.replace(/：/g, ':');
+	str = str.replace(/，/g, ',');
 	return str;
 };

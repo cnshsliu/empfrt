@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { _ } from '$lib/i18n';
 	import * as api from '$lib/api';
+	import { qtb } from '$lib/utils';
 	import { getNotificationsContext } from 'svelte-notifications';
 	const { addNotification } = getNotificationsContext();
 	import type { oneArgFunc } from '$lib/types';
@@ -137,7 +138,13 @@
 	<InputGroupText>
 		{$_('prop.action.p10t.rds')}
 	</InputGroupText>
-	<Input bind:value={role} disabled={readonly} />
+	<Input
+		bind:value={role}
+		on:change={(e) => {
+			role = qtb(role);
+		}}
+		disabled={readonly}
+	/>
 </InputGroup>
 {#if !readonly}
 	<InputGroup size="sm">

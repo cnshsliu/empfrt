@@ -5,6 +5,7 @@
 	import { goto } from '$app/navigation';
 	import * as api from '$lib/api';
 	import { session } from '$app/stores';
+	import { qtb } from '$lib/utils';
 	import {
 		NavLink,
 		Icon,
@@ -213,7 +214,14 @@
 										<InputGroupText>
 											{$_('prop.action.kvar.options')}
 										</InputGroupText>
-										<Input bind:value={kvar.options} disabled={readonly} placeholder="a;b;c" />
+										<Input
+											bind:value={kvar.options}
+											on:change={(e) => {
+												kvar.options = qtb(kvar.options);
+											}}
+											disabled={readonly}
+											placeholder="a;b;c"
+										/>
 									</InputGroup>
 								{/if}
 								<InputGroup size="sm">
