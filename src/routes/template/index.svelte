@@ -374,6 +374,7 @@
 				bind:this={theRemoteTable}
 				{TimeTool}
 				{reloadTags}
+				{setFadeMessage}
 			/>
 		</Col>
 	</Row>

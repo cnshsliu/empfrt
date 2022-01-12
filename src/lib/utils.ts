@@ -19,3 +19,13 @@ export const blankToDefault = function (val: string, defaultValue: string) {
 export const hasValue = function (val: string) {
 	return !isBlank(val);
 };
+
+/**
+ * 全角转半角
+ */
+export const qtb = function (str: string) {
+	str = str.replace('；', ';');
+	str = str.replace('：', ':');
+	str = str.replace('，', ',');
+	return str;
+};

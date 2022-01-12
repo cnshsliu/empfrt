@@ -7,6 +7,7 @@
 	import * as api from '$lib/api';
 	import { onMount } from 'svelte';
 	import Parser from '$lib/parser';
+	import { qtb } from '$lib/utils';
 	import { session } from '$app/stores';
 	import { filterStorage } from '$lib/empstores';
 	import { ClientPermControl } from '$lib/clientperm';
@@ -35,6 +36,7 @@
 	export let endpoint;
 	export let rows = [];
 	export let user;
+	export let setFadeMessage;
 	let page = 0; //first page
 	let pageIndex = 0; //first row
 	let pageSize = user && user.ps ? user.ps : 10; //optional, 10 by default
@@ -44,6 +46,7 @@
 	let setTagForTplid = '';
 	let filter_author = '';
 	let addDescForTplid = '';
+	let setVisibilityForTplid = '';
 	let input_search: String = '';
 	let sorting = { dir: 'desc', key: 'updatedAt' };
 	let storeSorting = $filterStorage.tplSorting;
@@ -121,6 +124,7 @@
 
 	let tag_input = '';
 	let desc_input = '';
+	let visi_rds_input = '';
 	const deleteATag = async function (index, tplid, tags, text) {
 		tags = await api.post('tag/del', { objtype: 'template', objid: tplid, text: text }, token);
 		rows[index].tags = tags;
@@ -255,6 +259,123 @@
 					>
 						{row.tplid}
 					</a>
+					{#if row.visi}
+						<div class="ms-5">{row.visi}</div>
+					{/if}
+					{#if setVisibilityForTplid === row.tplid}
+						<div class="ms-5">
+							<Row>
+								<InputGroup>
+									<div class="form-floating flex-fill">
+										<input
+											class="form-control"
+											id={'input-visi-rds-' + index}
+											placeholder="RDS"
+											bind:value={visi_rds_input}
+										/>
+										<label for={`input-visi-rds-${index}`}> Set Vis: </label>
+									</div>
+									<!-- svelte-ignore missing-declaration -->
+									<Button
+										color="primary"
+										on:click={async (e) => {
+											e.preventDefault();
+											visi_rds_input = qtb(visi_rds_input);
+											let people = await api.post(
+												'work/explain/pds',
+												{ rds: visi_rds_input },
+												token
+											);
+											console.log(people);
+											row.visipeople = people;
+											row.checked = true;
+											rows2[index] = row;
+											rows2 = rows2;
+										}}
+									>
+										{$_('button.check')}
+									</Button>
+									<Button
+										color="success"
+										on:click={async (e) => {
+											e.preventDefault();
+											visi_rds_input = qtb(visi_rds_input);
+											let res = await api.post(
+												'template/setvisi',
+												{ tplid: row.tplid, visi: visi_rds_input },
+												token
+											);
+											if (res.error) {
+												setFadeMessage(res.message, 'warning');
+											} else {
+												row.visi = res.visi;
+												rows2[index] = row;
+												rows2 = rows2;
+											}
+										}}
+										disabled={!row.checked}
+									>
+										{$_('button.set')}
+									</Button>
+									<Button
+										on:click={(e) => {
+											e.preventDefault();
+											row.checked = false;
+											setVisibilityForTplid = '';
+											visi_rds_input = '';
+										}}
+									>
+										{$_('button.close')}
+									</Button>
+								</InputGroup>
+							</Row>
+							{#if Array.isArray(row.visipeople)}
+								<Row>
+									{#each row.visipeople as visiperson}
+										{visiperson.cn}({visiperson.uid})
+									{/each}
+								</Row>
+							{/if}
+						</div>
+					{/if}
+					{#if row.desc && row.desc.trim().length > 0}
+						<div class="ms-5">{row.desc}</div>
+					{/if}
+					{#if addDescForTplid === row.tplid}
+						<div class="ms-5">
+							<Row>
+								<InputGroup>
+									<div class="form-floating flex-fill">
+										<input
+											class="form-control"
+											id={'input-desc-' + index}
+											placeholder="Description"
+											bind:value={desc_input}
+										/>
+										<label for={`input-desc-${index}`}> set description to: </label>
+									</div>
+									<Button
+										color="primary"
+										on:click={async (e) => {
+											e.preventDefault();
+											await addDesc(index, row.tplid, desc_input);
+										}}
+									>
+										{$_('button.set')}
+									</Button>
+									<Button
+										on:click={(e) => {
+											e.preventDefault();
+											addDescForTplid = '';
+											desc_input = '';
+										}}
+									>
+										{$_('button.close')}
+									</Button>
+								</InputGroup>
+							</Row>
+						</div>
+					{/if}
 				</td>
 				<td data-label="Author"
 					>{row.author.indexOf('@') > -1
@@ -327,6 +448,20 @@
 								<a
 									href={'#'}
 									on:click|preventDefault={() => {
+										setVisibilityForTplid = row.tplid;
+										row.checked = false;
+										visi_rds_input = row.visi;
+									}}
+									class="nav-link "
+								>
+									<Icon name="tags" />
+									Set Visibility
+								</a>
+							</DropdownItem>
+							<DropdownItem>
+								<a
+									href={'#'}
+									on:click|preventDefault={() => {
 										desc_input = row.desc;
 										addDescForTplid = row.tplid;
 									}}
@@ -363,50 +498,6 @@
 					</Dropdown>
 				</td>
 			</tr>
-			{#if row.desc && row.desc.trim().length > 0}
-				<tr>
-					<td colspan="4"><div class="ms-5">{row.desc}</div> </td>
-				</tr>
-			{/if}
-			{#if addDescForTplid === row.tplid}
-				<tr>
-					<td colspan="4">
-						<Container>
-							<Row>
-								<InputGroup>
-									<div class="form-floating flex-fill">
-										<input
-											class="form-control"
-											id={'input-desc-' + index}
-											placeholder="Description"
-											bind:value={desc_input}
-										/>
-										<label for={`input-desc-${index}`}> set description to: </label>
-									</div>
-									<Button
-										color="primary"
-										on:click={async (e) => {
-											e.preventDefault();
-											await addDesc(index, row.tplid, desc_input);
-										}}
-									>
-										{$_('button.set')}
-									</Button>
-									<Button
-										on:click={(e) => {
-											e.preventDefault();
-											addDescForTplid = '';
-											desc_input = '';
-										}}
-									>
-										{$_('button.close')}
-									</Button>
-								</InputGroup>
-							</Row>
-						</Container>
-					</td>
-				</tr>
-			{/if}
 			{#if setTagForTplid === row.tplid}
 				<tr>
 					<td colspan="4">
