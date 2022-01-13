@@ -92,7 +92,7 @@
 								opWorkflow(workflow.wfid, 'pause');
 							}}
 						>
-							<Icon name="pause-btn" />
+							<AniIcon icon="pause-btn" ani="aniShake" />
 							{'PAUSE'}
 						</NavLink>
 					{/if}
@@ -103,7 +103,7 @@
 								opWorkflow(workflow.wfid, 'resume');
 							}}
 						>
-							<Icon name="arrow-counterclockwise" />
+							<AniIcon icon="arrow-counterclockwise" ani="aniShake" />
 							{'RESUME'}
 						</NavLink>
 					{/if}
@@ -114,7 +114,7 @@
 								opWorkflow(workflow.wfid, 'stop');
 							}}
 						>
-							<Icon name="slash-square" />
+							<AniIcon icon="slash-square" ani="aniShake" />
 							{'STOP'}
 						</NavLink>
 					{/if}
@@ -127,7 +127,7 @@
 								goto('/workflow');
 							}}
 						>
-							<Icon name="caret-right-square" />
+							<AniIcon icon="caret-right-square" ani="aniShake" />
 							{'RESTART'}
 						</NavLink>
 					{/if}
