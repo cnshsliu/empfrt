@@ -41,7 +41,11 @@
 		CardTitle,
 		Form,
 		Input,
-		Label
+		Label,
+		Modal,
+		ModalFooter,
+		ModalHeader,
+		ModalBody
 	} from 'sveltestrap';
 	import { Badge, DropdownItem, DropdownMenu, DropdownToggle, Dropdown } from 'sveltestrap';
 	//export let template;
@@ -49,6 +53,8 @@
 	export let teams: Team[];
 	export let tplid: string;
 	//export let template: Template;
+	let showConfirmModal = false;
+	let fullscreen = false;
 	let isOpen = false;
 	let roles = [];
 	let fade_message = '';
@@ -61,6 +67,9 @@
 	$title = 'HyperFlow';
 	let search_result = [];
 	let theTeam: Team;
+	const toggle = () => {
+		showConfirmModal = !showConfirmModal;
+	};
 
 	function setFadeMessage(message: string, type = 'warning', pos = 'bottom-right', time = 2000) {
 		(addNotification as oneArgFunc)({
@@ -193,74 +202,8 @@
 </Container>
 <Container class="mt-3 w-50">
 	<Form>
-		<Row cols="1">
-			<Col style="margin-top: 20px;">
-				<Button
-					disabled={starting === 1}
-					color="primary"
-					class="w-100"
-					on:click={(e) => {
-						e.preventDefault();
-						_startWorkflow(false);
-					}}
-				>
-					{$_('start.startIt')}
-				</Button>
-			</Col>
-		</Row>
-		<div class="mt-3 w-100 text-center">
-			<div>
-				{$_('start.OR')}
-			</div>
-		</div>
-		<Row cols="1">
-			<Col>
-				<Button
-					disabled={starting === 1}
-					color="secondary"
-					class="w-100"
-					on:click={(e) => {
-						e.preventDefault();
-						_startWorkflow(true);
-					}}
-				>
-					{$_('start.rehearsal')}
-				</Button>
-			</Col>
-		</Row>
-		<Row cols="2" style="margin-top: 20px;">
-			{#if startedWorkflow !== null}
-				<Col>
-					<Button
-						class="w-100"
-						on:click={(e) => {
-							e.preventDefault();
-							$filterStorage.tplid = startedWorkflow.tplid;
-							$filterStorage.workTitlePattern = 'wf:' + startedWorkflow.wfid;
-							$filterStorage.workStatus = 'ST_RUN';
-							goto('/work');
-							//goto(`/workflow/@${startedWorkflow.wfid}`);
-						}}
-					>
-						{$_('start.checkitout')}
-					</Button>
-				</Col>
-				<Col>
-					<Button
-						class="w-100"
-						on:click={(e) => {
-							e.preventDefault();
-							starting = 0;
-							startedWorkflow = null;
-						}}
-					>
-						{$_('start.dismiss')}
-					</Button>
-				</Col>
-			{/if}
-		</Row>
-		<Row cols="1" class="mt-5">
-			<Col>
+		<Row cols="1" class="mt-2">
+			<Col class="text-center">
 				{$_('start.context')}
 			</Col>
 			<Col>
@@ -334,6 +277,76 @@
 				</div>
 			</Col>
 		</Row>
+		<Row cols="1">
+			<Col style="margin-top: 20px;">
+				<Button
+					disabled={starting === 1}
+					color="primary"
+					class="w-100"
+					on:click={(e) => {
+						e.preventDefault();
+						if (wftitle.trim().length === 0 || pbo.trim().length === 0) {
+							showConfirmModal = true;
+						} else {
+							_startWorkflow(false);
+						}
+					}}
+				>
+					{$_('start.startIt')}
+				</Button>
+			</Col>
+		</Row>
+		<div class="mt-3 w-100 text-center">
+			<div>
+				{$_('start.OR')}
+			</div>
+		</div>
+		<Row cols="1">
+			<Col>
+				<Button
+					disabled={starting === 1}
+					color="secondary"
+					class="w-100"
+					on:click={(e) => {
+						e.preventDefault();
+						_startWorkflow(true);
+					}}
+				>
+					{$_('start.rehearsal')}
+				</Button>
+			</Col>
+		</Row>
+		<Row cols="2" style="margin-top: 20px;">
+			{#if startedWorkflow !== null}
+				<Col>
+					<Button
+						class="w-100"
+						on:click={(e) => {
+							e.preventDefault();
+							$filterStorage.tplid = startedWorkflow.tplid;
+							$filterStorage.workTitlePattern = 'wf:' + startedWorkflow.wfid;
+							$filterStorage.workStatus = 'ST_RUN';
+							goto('/work');
+							//goto(`/workflow/@${startedWorkflow.wfid}`);
+						}}
+					>
+						{$_('start.checkitout')}
+					</Button>
+				</Col>
+				<Col>
+					<Button
+						class="w-100"
+						on:click={(e) => {
+							e.preventDefault();
+							starting = 0;
+							startedWorkflow = null;
+						}}
+					>
+						{$_('start.dismiss')}
+					</Button>
+				</Col>
+			{/if}
+		</Row>
 	</Form>
 	{#if theTeam}
 		<div class="text-center fs-4">Team {theTeam.teamid}</div>
@@ -353,3 +366,27 @@
 		{/each}
 	{/if}
 </Container>
+<div style="height:200px;">&nbsp;</div>
+<Modal isOpen={showConfirmModal} {toggle} {fullscreen}>
+	<ModalHeader {toggle}>{$_('start.pleaseConfirm')}</ModalHeader>
+	<ModalBody>
+		{#if pbo.trim().length === 0}
+			<div>{$_('start.warnNoPbo')}</div>
+		{/if}
+		{#if wftitle.trim().length === 0}
+			<div>{$_('start.warnNoTitle')}</div>
+		{/if}
+	</ModalBody>
+	<ModalFooter>
+		<Button
+			color="primary"
+			on:click={() => {
+				toggle();
+				_startWorkflow(false);
+			}}
+		>
+			{$_('start.startAnyway')}
+		</Button>
+		<Button color="secondary" on:click={toggle}>Cancel</Button>
+	</ModalFooter>
+</Modal>
