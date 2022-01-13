@@ -11,7 +11,7 @@
 	title="help"
 	src="https://cnshsliu.github.io/mtcdocs/"
 	frameBorder="0"
-	style="width:100%"
+	style="width:100%; background: #FFFFFF;"
 	height="100%"
 	width="100%"
 />
