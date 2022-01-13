@@ -212,6 +212,7 @@
 				"value": "Value",
 				"label": "Label",
 				"placeholder": "Placeholder",
+				"visi": "Visible",
 				"breakrow": "Break row",
 				"ID": "ID",
 				"required": "Required"

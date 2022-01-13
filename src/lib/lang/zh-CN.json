@@ -211,6 +211,7 @@
 				"value": "初始",
 				"label": "标识",
 				"placeholder": "提示",
+				"visi": "可见",
 				"breakrow": "换行",
 				"ID": "编号",
 				"required": "必须"

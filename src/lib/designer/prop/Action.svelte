@@ -262,6 +262,12 @@
 								</InputGroup>
 								<InputGroup size="sm">
 									<InputGroupText>
+										{$_('prop.action.kvar.visi')}
+									</InputGroupText>
+									<Input bind:value={kvar.visi} disabled={readonly} />
+								</InputGroup>
+								<InputGroup size="sm">
+									<InputGroupText>
 										{$_('prop.action.kvar.required')}
 									</InputGroupText>
 									<Input type="checkbox" bind:checked={kvar.required} disabled={readonly} />
