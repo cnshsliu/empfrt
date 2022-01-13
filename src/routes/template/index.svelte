@@ -21,6 +21,9 @@
 <script lang="ts">
 	import { _ } from '$lib/i18n';
 	import { API_SERVER } from '$lib/Env';
+	import { getNotificationsContext } from 'svelte-notifications';
+	const { addNotification } = getNotificationsContext();
+	import type { oneArgFunc } from '$lib/types';
 	import Parser from '$lib/parser';
 	import { onMount } from 'svelte';
 	import RemoteTable from './RemoteTable.svelte';
@@ -47,6 +50,19 @@
 	$title = 'HyperFlow';
 	$: token = user.sessionToken;
 	let theRemoteTable;
+	export function setFadeMessage(
+		message: string,
+		type = 'warning',
+		pos = 'bottom-right',
+		time = 2000
+	) {
+		(addNotification as oneArgFunc)({
+			text: message,
+			position: pos,
+			type: type,
+			removeAfter: time
+		});
+	}
 	function hide_all_form() {
 		Object.keys(form_status).forEach((key) => {
 			form_status[key] = false;
@@ -115,15 +131,6 @@
 		$TagStorage = allTags;
 	}
 
-	let fade_message = '';
-	let fade_timer: any;
-	function setFadeMessage(message: string, time = 2000) {
-		fade_message = message;
-		if (fade_timer) clearTimeout(fade_timer);
-		fade_timer = setTimeout(() => {
-			fade_message = '';
-		}, time);
-	}
 	let recentTemplates = [];
 
 	let currentTags = [];

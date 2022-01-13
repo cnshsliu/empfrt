@@ -48,6 +48,7 @@
 		"lastingDays": "持续天数",
 		"actions": "操作",
 		"author": "作者",
+		"setvisito": "对谁可见 (RDS): ",
 		"me": "我",
 		"any": "任何人",
 		"startIt": "启动",
@@ -69,6 +70,7 @@
 			"seeWorklist": "查看相关工作项",
 			"addDesc": "添加备注",
 			"setTags": "设置标签",
+			"setVisi": "设置可见性",
 			"deleteThisTempalte": "删除这个模版",
 			"lastUpdate": "上次更新 "
 		}
@@ -84,6 +86,7 @@
 		"import": "导入",
 		"okay": "确定",
 		"cancel": "取消",
+		"clear": "清除",
 		"set": "设置",
 		"close": "关闭",
 		"done": "完成",
@@ -133,7 +136,12 @@
 		"recentTeam": "最近使用的工作小组",
 		"checkitout": "已启动, 去看一下",
 		"dismiss": "先放一边",
-		"OR": "或者,你也可以"
+		"OR": "或者,你也可以",
+		"needtitle": "请提供标题",
+		"pleaseConfirm": "请确认以下信息",
+		"warnNoPbo": "缺失主业务对象",
+		"warnNoTitle": "缺失提供专用标题",
+		"startAnyway": "确认，请直接启动"
 	},
 	"todo": {
 		"status": "任务状态",

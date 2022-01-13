@@ -4,7 +4,7 @@ const { addNotification } = getNotificationsContext();
 export function setFadeMessage(
 	message: string,
 	type = 'warning',
-	pos = 'bottom-right',
+	pos = 'bottom-center',
 	time = 2000
 ) {
 	(addNotification as oneArgFunc)({

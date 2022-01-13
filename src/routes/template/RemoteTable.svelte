@@ -5,6 +5,7 @@
 	//Sort component is optional
 	import { _ } from '$lib/i18n';
 	import * as api from '$lib/api';
+	import ItemEditor from './TplSearchResultItemEditor.svelte';
 	import AniIcon from '$lib/AniIcon.svelte';
 	import { onMount } from 'svelte';
 	import Parser from '$lib/parser';
@@ -45,10 +46,7 @@
 
 	let loading = true;
 	export let rowsCount = 0;
-	let setTagForTplid = '';
 	let filter_author = '';
-	let addDescForTplid = '';
-	let setVisibilityForTplid = '';
 	let input_search: String = '';
 	let sorting = { dir: 'desc', key: 'updatedAt' };
 	let storeSorting = $filterStorage.tplSorting;
@@ -124,29 +122,8 @@
 		await load(page);
 	}
 
-	let tag_input = '';
 	let desc_input = '';
 	let visi_rds_input = '';
-	const deleteATag = async function (index, tplid, tags, text) {
-		tags = await api.post('tag/del', { objtype: 'template', objid: tplid, text: text }, token);
-		rows[index].tags = tags;
-		rows = rows;
-		await reloadTags();
-	};
-
-	const addDesc = async function (index, tplid, desc) {
-		desc = desc.trim();
-		let ret = await api.post('template/desc', { tplid: tplid, desc: desc }, token);
-		rows[index].desc = desc;
-		rows = rows;
-	};
-	const addTags = async function (index, tplid, tags, text) {
-		if (text.trim().length === 0) return;
-		tags = await api.post('tag/add', { objtype: 'template', objid: tplid, text: text }, token);
-		rows[index].tags = tags;
-		rows = rows;
-		await reloadTags();
-	};
 
 	async function deleteRow(tplid) {
 		await api.post('template/delete/byname', { tplid: tplid }, token);
@@ -261,142 +238,6 @@
 					>
 						{row.tplid}
 					</a>
-					{#if row.visi}
-						<div
-							class="ms-5 kfk-link"
-							on:click={() => {
-								setVisibilityForTplid = row.tplid;
-								row.checked = false;
-								visi_rds_input = row.visi;
-							}}
-						>
-							<AniIcon icon="people-fill" ani="aniShake" />
-							{row.visi}
-						</div>
-					{/if}
-					{#if setVisibilityForTplid === row.tplid}
-						<div class="ms-5">
-							<Row>
-								<InputGroup>
-									<div class="form-floating flex-fill">
-										<input
-											class="form-control"
-											id={'input-visi-rds-' + index}
-											placeholder="RDS"
-											bind:value={visi_rds_input}
-										/>
-										<label for={`input-visi-rds-${index}`}> Set Vis: </label>
-									</div>
-									<!-- svelte-ignore missing-declaration -->
-									<Button
-										color="primary"
-										on:click={async (e) => {
-											e.preventDefault();
-											visi_rds_input = qtb(visi_rds_input);
-											let people = await api.post(
-												'work/explain/pds',
-												{ rds: visi_rds_input },
-												token
-											);
-											console.log(people);
-											row.visipeople = people;
-											row.checked = true;
-											rows2[index] = row;
-											rows2 = rows2;
-										}}
-									>
-										{$_('button.check')}
-									</Button>
-									<Button
-										color="success"
-										on:click={async (e) => {
-											e.preventDefault();
-											visi_rds_input = qtb(visi_rds_input);
-											let res = await api.post(
-												'template/setvisi',
-												{ tplid: row.tplid, visi: visi_rds_input },
-												token
-											);
-											if (res.error) {
-												setFadeMessage(res.message, 'warning');
-											} else {
-												row.visi = res.visi;
-												rows2[index] = row;
-												rows2 = rows2;
-											}
-										}}
-										disabled={!row.checked}
-									>
-										{$_('button.set')}
-									</Button>
-									<Button
-										on:click={(e) => {
-											e.preventDefault();
-											row.checked = false;
-											setVisibilityForTplid = '';
-											visi_rds_input = '';
-										}}
-									>
-										{$_('button.close')}
-									</Button>
-								</InputGroup>
-							</Row>
-							{#if Array.isArray(row.visipeople)}
-								<Row>
-									{#each row.visipeople as visiperson}
-										{visiperson.cn}({visiperson.uid})
-									{/each}
-								</Row>
-							{/if}
-						</div>
-					{/if}
-					{#if row.desc && row.desc.trim().length > 0}
-						<div
-							class="ms-5 kfk-link"
-							on:click={() => {
-								desc_input = row.desc;
-								addDescForTplid = row.tplid;
-							}}
-						>
-							<AniIcon icon="card-text" ani="aniShake" />
-							{row.desc}
-						</div>
-					{/if}
-					{#if addDescForTplid === row.tplid}
-						<div class="ms-5">
-							<Row>
-								<InputGroup>
-									<div class="form-floating flex-fill">
-										<input
-											class="form-control"
-											id={'input-desc-' + index}
-											placeholder="Description"
-											bind:value={desc_input}
-										/>
-										<label for={`input-desc-${index}`}> set description to: </label>
-									</div>
-									<Button
-										color="primary"
-										on:click={async (e) => {
-											e.preventDefault();
-											await addDesc(index, row.tplid, desc_input);
-										}}
-									>
-										{$_('button.set')}
-									</Button>
-									<Button
-										on:click={(e) => {
-											e.preventDefault();
-											addDescForTplid = '';
-											desc_input = '';
-										}}
-									>
-										{$_('button.close')}
-									</Button>
-								</InputGroup>
-							</Row>
-						</div>
-					{/if}
 				</td>
 				<td data-label="Author"
 					>{row.author.indexOf('@') > -1
@@ -465,26 +306,29 @@
 									{$_('remotetable.tplaction.seeWorklist')}
 								</a>
 							</DropdownItem>
-							<DropdownItem>
-								<a
-									href={'#'}
-									on:click|preventDefault={() => {
-										setVisibilityForTplid = row.tplid;
-										row.checked = false;
-										visi_rds_input = row.visi;
-									}}
-									class="nav-link "
-								>
-									<Icon name="tags" />
-									Set Visibility
-								</a>
-							</DropdownItem>
+							{#if row.author === user.email}
+								<DropdownItem>
+									<a
+										href={'#'}
+										on:click|preventDefault={() => {
+											$session.setVisiFor = row.tplid;
+											row.checked = false;
+											visi_rds_input = row.visi;
+											console.log($session.setVisiFor);
+										}}
+										class="nav-link "
+									>
+										<Icon name="tags" />
+										{$_('remotetable.tplaction.setVisi')}
+									</a>
+								</DropdownItem>
+							{/if}
 							<DropdownItem>
 								<a
 									href={'#'}
 									on:click|preventDefault={() => {
 										desc_input = row.desc;
-										addDescForTplid = row.tplid;
+										$session.addDescFor = row.tplid;
 									}}
 									class="nav-link "
 								>
@@ -496,7 +340,7 @@
 								<a
 									href={'#'}
 									on:click|preventDefault={() => {
-										setTagForTplid = row.tplid;
+										$session.setTagFor = row.tplid;
 									}}
 									class="nav-link "
 								>
@@ -519,68 +363,26 @@
 					</Dropdown>
 				</td>
 			</tr>
-			{#if setTagForTplid === row.tplid}
-				<tr>
-					<td colspan="4">
-						<Container>
-							<Row>
-								<InputGroup>
-									<div class="form-floating flex-fill">
-										<input
-											name={'newtag-' + index}
-											class="form-control"
-											id={'input-tplid-' + index}
-											placeholder="New tags"
-											bind:value={tag_input}
-											on:change={async (e) => {
-												e.preventDefault();
-												await addTags(index, row.tplid, row.tags, tag_input);
-												tag_input = '';
-											}}
-										/>
-										<label for={`input-tplid-${index}`}>
-											input new tags delimited by space/;/,
-										</label>
-									</div>
-									<Button
-										color="primary"
-										on:click={async (e) => {
-											e.preventDefault();
-											await addTags(index, row.tplid, row.tags, tag_input);
-											tag_input = '';
-										}}
-									>
-										{$_('button.set')}
-									</Button>
-									<Button
-										on:click={(e) => {
-											e.preventDefault();
-											setTagForTplid = '';
-										}}
-									>
-										{$_('button.close')}
-									</Button>
-								</InputGroup>
-							</Row>
-							{#each row.tags as tag, tagIndex}
-								{#if tag.owner === user.email}
-									<Badge pill color="light" class="kfk-tag text-primary border border-primary">
-										{tag.text}
-										<a
-											href={'#'}
-											on:click|preventDefault={() => {
-												deleteATag(index, row.tplid, row.tags, tag.text);
-											}}
-										>
-											<Icon name="x" />
-										</a>
-									</Badge>
-								{/if}
-							{/each}
-						</Container>
-					</td>
-				</tr>
-			{/if}
+			<tr
+				class:kfk-odd={index % 2 !== 0}
+				class:kfk-even={index % 2 === 0}
+				class:tnt-odd={index % 2 !== 0}
+				class:tnt-even={index % 2 === 0}
+			>
+				<td colspan="4">
+					<ItemEditor
+						{token}
+						{rows2}
+						{row}
+						{visi_rds_input}
+						{user}
+						{index}
+						{desc_input}
+						{setFadeMessage}
+						{reloadTags}
+					/>
+				</td>
+			</tr>
 		{/each}
 	</tbody>
 	<div slot="bottom">

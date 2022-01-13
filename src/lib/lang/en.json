@@ -48,6 +48,7 @@
 		"lastingDays": "Lasting Days",
 		"actions": "Actions",
 		"author": "Author",
+		"setvisito": "Visible for (RDS): ",
 		"me": "Me",
 		"any": "Any",
 		"startIt": "Start it",
@@ -69,6 +70,7 @@
 			"seeWorklist": "See Worklist",
 			"addDesc": "Add Description",
 			"setTags": "Set TAGS",
+			"setVisi": "Set Visibility",
 			"deleteThisTempalte": "Delete This Template",
 			"lastUpdate": "Last Update "
 		}
@@ -84,6 +86,7 @@
 		"import": "Import",
 		"okay": "Okay",
 		"cancel": "Cancel",
+		"clear": "Clear",
 		"set": "Set",
 		"close": "Close",
 		"done": "Done",
@@ -134,7 +137,12 @@
 		"recentTeam": "Recent used team",
 		"checkitout": "Check it out",
 		"dismiss": "Dismiss",
-		"OR": "Or"
+		"OR": "Or",
+		"needtitle": "Please provide title",
+		"pleaseConfirm": "Please confirm",
+		"warnNoPbo": "PBO not set",
+		"warnNoTitle": "Title not specified",
+		"startAnyway": "Start Anyway"
 	},
 	"todo": {
 		"status": "Task Status",
