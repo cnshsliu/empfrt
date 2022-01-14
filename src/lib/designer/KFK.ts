@@ -1305,18 +1305,24 @@ ret='DEFAULT'; `
 		that.cancelAlreadySelected();
 		that.clearNodeMessage();
 		if (that.tobeRemovedConnectId) {
+			that.clipboardConnectText = $(`.${that.tobeRemovedConnectId}`).attr('case');
 			await that.removeConnectById(that.tobeRemovedConnectId);
 			that.tobeRemovedConnectId = null;
 			that.setTool('POINTER');
 			that.movingConnect = false;
 		}
+		let newConnectId = null;
 		if (that.connectEndFirst === false) {
 			that.buildConnectionBetween(that.linkPosNode[0], that.linkPosNode[1]);
+			newConnectId = `connect_${that.linkPosNode[0].attr('id')}_${that.linkPosNode[1].attr('id')}`;
 			await that.redrawLinkLines(that.linkPosNode[0], 'connect');
 		} else {
 			that.buildConnectionBetween(that.linkPosNode[1], that.linkPosNode[0]);
+			newConnectId = `connect_${that.linkPosNode[1].attr('id')}_${that.linkPosNode[0].attr('id')}`;
 			await that.redrawLinkLines(that.linkPosNode[1], 'connect');
 		}
+		if (that.clipboardConnectText.trim().length > 0)
+			that.setConnectText($(`.${newConnectId}`), that.clipboardConnectText);
 		//看两个节点的Linkto属性，在添加一个连接线后有没有什么变化，
 		//如果有变化，就上传U， 如果没变化，就不用U
 		//没有变化的情况：之前就有从linkPosNode[0]到 linkPosNode[1]的链接存在
