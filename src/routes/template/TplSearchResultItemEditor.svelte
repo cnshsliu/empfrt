@@ -63,7 +63,8 @@
 					on:click={async (e) => {
 						e.preventDefault();
 						visi_rds_input = qtb(visi_rds_input);
-						let people = await api.post('work/explain/pds', { rds: visi_rds_input }, token);
+						//will use temaid=""(no specified team, but may use T:team_name in rds), email = current user
+						let people = await api.post('explain/pds', { rds: visi_rds_input }, token);
 						console.log(people);
 						row.visipeople = people;
 						row.checked = true;

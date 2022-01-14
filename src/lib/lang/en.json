@@ -94,6 +94,7 @@
 		"sendback": "Push back",
 		"revoke": "Revoke",
 		"check": "Check",
+		"resolve": "Resolve",
 		"sendadhoc": "Send it out",
 		"sendadhocConfirm": "Yes, send task to above people",
 		"sendadhocReconsider": "No, let me re-considerate",

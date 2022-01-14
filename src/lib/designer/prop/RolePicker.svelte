@@ -3,6 +3,7 @@
 	import * as api from '$lib/api';
 	import { qtb } from '$lib/utils';
 	import { getNotificationsContext } from 'svelte-notifications';
+	import PDSResolver from '$lib/PDSResolver.svelte';
 	const { addNotification } = getNotificationsContext();
 	import type { oneArgFunc } from '$lib/types';
 	import {
@@ -21,6 +22,7 @@
 	import { session } from '$app/stores';
 	import OrgChartRelationTest from '$lib/orgchartrelationtest.svelte';
 
+	let thePdsResolver;
 	export let role: any;
 	let selectedPickerTab = 'byquery';
 	let pickedRole = role;
@@ -102,22 +104,14 @@
 	let try_with_email = $filterStorage.try_with_email ? $filterStorage.try_with_email : user.email;
 	async function testGetDoers(e) {
 		e.preventDefault();
-		if (try_with_teamid === '') {
-			setFadeMessage('Please input a team');
-			return;
-		}
 		$filterStorage.try_with_teamid = try_with_teamid;
 		$filterStorage.try_with_email = try_with_email;
-		let res = await api.post(
-			'action/getdoers',
-			{ try_with_teamid, try_with_email, role },
-			user.sessionToken
-		);
-		if (res.error) {
-			try_doers = [];
-		} else {
-			try_doers = res as unknown as string[];
-		}
+
+		await thePdsResolver.resolve({
+			teamid: try_with_teamid,
+			email: try_with_email,
+			rds: role
+		});
 	}
 	export function setFadeMessage(
 		message: string,
@@ -145,6 +139,9 @@
 		}}
 		disabled={readonly}
 	/>
+	<Button on:click={testGetDoers} color="primary">
+		{$_('prop.action.button.tryit')}
+	</Button>
 </InputGroup>
 {#if !readonly}
 	<InputGroup size="sm">
@@ -179,9 +176,6 @@
 		</InputGroupText>
 		<Input type="text" bind:value={try_with_email} />
 	</InputGroup>
-	<Button on:click={testGetDoers} color="primary">
-		{$_('prop.action.button.tryit')}
-	</Button>
 	{#if Array.isArray(try_doers) && try_doers.length > 0}
 		<Card>
 			<CardHeader>
@@ -211,3 +205,4 @@
 		</TabPane>
 	</TabContent -->
 {/if}
+<PDSResolver bind:this={thePdsResolver} />

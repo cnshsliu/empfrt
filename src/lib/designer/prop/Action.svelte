@@ -6,6 +6,7 @@
 	import * as api from '$lib/api';
 	import { session } from '$app/stores';
 	import { qtb } from '$lib/utils';
+	import PDSResolver from '$lib/PDSResolver.svelte';
 	import {
 		NavLink,
 		Icon,
@@ -34,6 +35,7 @@
 
 	let TimeTool = null;
 	let helpShowing = false;
+	let thePDSResolver;
 
 	let doerHTML = '';
 	if (nodeInfo.nodeProps.ACTION.doer) {
@@ -200,6 +202,7 @@
 						>
 							<TabPane
 								tabId="basic"
+								class="w-100"
 								tab={$_('prop.action.kvar.basic')}
 								active={isActive('basic', false)}
 							>
@@ -239,6 +242,7 @@
 							</TabPane>
 							<TabPane
 								tabId="extra"
+								class="w-100"
 								tab={$_('prop.action.kvar.extra')}
 								active={isActive('extra', false)}
 							>
@@ -265,6 +269,18 @@
 										{$_('prop.action.kvar.visi')}
 									</InputGroupText>
 									<Input bind:value={kvar.visi} disabled={readonly} />
+									{#if kvar.visi && kvar.visi.trim().length > 0}
+										<Button
+											on:click={async (e) => {
+												e.preventDefault();
+												thePDSResolver.resolve({
+													rds: kvar.visi
+												});
+											}}
+										>
+											{$_('button.resolve')}
+										</Button>
+									{/if}
 								</InputGroup>
 								<InputGroup size="sm">
 									<InputGroupText>
@@ -425,3 +441,4 @@
 		</Col>
 	</Row>
 </Container>
+<PDSResolver bind:this={thePDSResolver} />

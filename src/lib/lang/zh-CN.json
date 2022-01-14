@@ -94,6 +94,7 @@
 		"sendback": "打回",
 		"revoke": "撤回",
 		"check": "检查",
+		"resolve": "解析",
 		"sendadhoc": "送出任务",
 		"sendadhocConfirm": "确定，将任务发送给上述人员",
 		"sendadhocReconsider": "取消，让我再考虑一下",

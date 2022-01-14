@@ -84,10 +84,12 @@
 		checkingTimer = setTimeout(
 			async () => {
 				checkingAdhocResult = (await api.post(
-					'work/explain/pds',
+					'explain/pds',
 					{
 						wfid: work.wfid,
 						rds: adhocTaskDoer
+						//teamid:  will use workflow's teamid automatically
+						//email: will use workflow's starter automatically
 					},
 					user.sessionToken
 				)) as unknown as any[];
