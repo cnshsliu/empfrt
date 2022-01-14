@@ -109,7 +109,7 @@
 				currentTool = args;
 				break;
 			case 'showNodeProp':
-				modalSize = undefined;
+				modalSize = 'xl';
 				helpId = undefined;
 				nodeInfo = args;
 				if (nodeInfo.nodeType === 'ACTION') {
@@ -207,7 +207,7 @@
 			helpId = 'NONE';
 		}
 
-		modalSize = hid ? 'xl' : undefined;
+		modalSize = hid ? 'xl' : modalSize;
 	};
 
 	let tmp;
