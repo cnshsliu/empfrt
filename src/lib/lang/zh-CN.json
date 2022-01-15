@@ -48,7 +48,7 @@
 		"lastingDays": "持续天数",
 		"actions": "操作",
 		"author": "作者",
-		"setvisito": "对谁可见 (RDS): ",
+		"setvisito": "对谁可见 (PDS): ",
 		"me": "我",
 		"any": "任何人",
 		"startIt": "启动",
@@ -197,7 +197,7 @@
 			"p10t": {
 				"alldone": "只有当所有人完成才完成",
 				"transferable": "可转办",
-				"rds": "参与者字符串",
+				"pds": "参与者字符串",
 				"pick": "可参考定义",
 				"try": "测试参与者定义字符串",
 				"tryteam": "使用组队",

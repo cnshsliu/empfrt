@@ -48,7 +48,7 @@
 		"lastingDays": "Lasting Days",
 		"actions": "Actions",
 		"author": "Author",
-		"setvisito": "Visible for (RDS): ",
+		"setvisito": "Visible for (PDS): ",
 		"me": "Me",
 		"any": "Any",
 		"startIt": "Start it",
@@ -198,9 +198,9 @@
 			"p10t": {
 				"alldone": "Done only when All-Done",
 				"transferable": "Transferable",
-				"rds": "RDS",
-				"pick": "Pick RDS",
-				"try": "Try a RDS",
+				"pds": "PDS",
+				"pick": "Pick PDS",
+				"try": "Try a PDS",
 				"tryteam": "with Team",
 				"tryuser": "with User",
 				"tryresult": "Result"

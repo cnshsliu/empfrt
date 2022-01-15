@@ -97,7 +97,7 @@
 			<Col>
 				<div>{TimeTool.fromNow(comment.createdAt)}</div>
 				<div class="ms-3">
-					<CommentEntry bind:comment={comment.content} bind:base64={commentIsBase64} />
+					{comment.content}
 					-- {comment.cn}
 					<span
 						class="usertag"

@@ -87,7 +87,7 @@
 					'explain/pds',
 					{
 						wfid: work.wfid,
-						rds: adhocTaskDoer
+						pds: adhocTaskDoer
 						//teamid:  will use workflow's teamid automatically
 						//email: will use workflow's starter automatically
 					},
@@ -222,7 +222,7 @@
 				<div class="fs-5">
 					{$_('todo.instruction')}
 					<span class="mt-3 fs-3">
-						{@html Parser.base64ToCode(work.instruct)}
+						{@html Parser.base64ToCode(work.instruct, '')}
 					</span>
 				</div>
 			{/if}
@@ -384,7 +384,7 @@
 										bind:value={adhocTaskDoer}
 										placeholder="Who should do it"
 									/>
-									<label for="input-adhoc-doer">Who should do it (in RDS format)?</label>
+									<label for="input-adhoc-doer">Who should do it (in PDS format)?</label>
 								</div>
 							</Col>
 							<Container class="mt-2">
@@ -522,7 +522,7 @@
 			<div>
 				<ul>
 					Role: {work.role}
-					{#each JSON.parse(Parser.base64ToCode(work.doer_string)) as aDoer}
+					{#each JSON.parse(Parser.base64ToCode(work.doer_string, '[]')) as aDoer}
 						<li>
 							{aDoer.cn}({aDoer.uid})
 						</li>

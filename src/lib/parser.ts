@@ -64,8 +64,13 @@ const Parser = {
 	codeToBase64: function (code: string): string {
 		return Buffer.from(code).toString('base64');
 	},
-	base64ToCode: function (base64: string): string {
-		return Buffer.from(base64, 'base64').toString('utf-8');
+	base64ToCode: function (base64: string, ifErrorValue = ''): string {
+		try {
+			return Buffer.from(base64, 'base64').toString('utf-8');
+		} catch (error) {
+			console.error(error);
+			return ifErrorValue;
+		}
 	},
 	addUserTag: function (str) {
 		let m = str.match(/(@\S+)/g);

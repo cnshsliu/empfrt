@@ -4,6 +4,7 @@
 	import { Container, Icon } from 'sveltestrap';
 	import BadgeWithDel from '$lib/input/BadgeWithDel.svelte';
 	import InputExandable from '$lib/input/InputExandable.svelte';
+	import PDSResolver from '$lib/PDSResolver.svelte';
 	let orgchartlist = [];
 	let orgchartroot = null;
 	let posValue = '';
@@ -75,9 +76,14 @@
 		orgchartroot = tmp[0];
 		orgchartlist = tmp.splice(1);
 	});
+
+	let resolver_label = 'Role Query:';
 </script>
 
 <Container class="text-nowrap">
+	<PDSResolver class="mt-3" bind:label={resolver_label} embed={true} />
+	<div>Relational query always start from the current user</div>
+
 	{#if orgchartroot && orgchartroot.ou === 'root'}
 		{orgchartroot.cn}
 		<ul>

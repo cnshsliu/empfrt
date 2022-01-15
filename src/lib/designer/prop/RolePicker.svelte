@@ -110,7 +110,7 @@
 		await thePdsResolver.resolve({
 			teamid: try_with_teamid,
 			email: try_with_email,
-			rds: role
+			pds: role
 		});
 	}
 	export function setFadeMessage(
@@ -126,23 +126,18 @@
 			removeAfter: time
 		});
 	}
+
+	let resolver_label = $_('prop.action.p10t.pds');
+	let resolver_btnText = $_('prop.action.button.tryit');
 </script>
 
-<InputGroup size="sm">
-	<InputGroupText>
-		{$_('prop.action.p10t.rds')}
-	</InputGroupText>
-	<Input
-		bind:value={role}
-		on:change={(e) => {
-			role = qtb(role);
-		}}
-		disabled={readonly}
-	/>
-	<Button on:click={testGetDoers} color="primary">
-		{$_('prop.action.button.tryit')}
-	</Button>
-</InputGroup>
+<PDSResolver
+	bind:this={thePdsResolver}
+	bind:value={role}
+	{readonly}
+	bind:label={resolver_label}
+	bind:btnText={resolver_btnText}
+/>
 {#if !readonly}
 	<InputGroup size="sm">
 		<InputGroupText>
@@ -205,4 +200,3 @@
 		</TabPane>
 	</TabContent -->
 {/if}
-<PDSResolver bind:this={thePdsResolver} />

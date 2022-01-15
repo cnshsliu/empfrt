@@ -52,11 +52,11 @@
 				<div class="form-floating flex-fill">
 					<input
 						class="form-control"
-						id={'input-visi-rds-' + index}
-						placeholder="RDS"
+						id={'input-visi-pds-' + index}
+						placeholder="PDS"
 						bind:value={visi_rds_input}
 					/>
-					<label for={`input-visi-rds-${index}`}> {$_('remotetable.setvisito')} </label>
+					<label for={`input-visi-pds-${index}`}> {$_('remotetable.setvisito')} </label>
 				</div>
 				<!-- svelte-ignore missing-declaration -->
 				<Button
@@ -64,8 +64,8 @@
 					on:click={async (e) => {
 						e.preventDefault();
 						visi_rds_input = qtb(visi_rds_input);
-						//will use temaid=""(no specified team, but may use T:team_name in rds), email = current user
-						let people = await api.post('explain/pds', { rds: visi_rds_input }, token);
+						//will use temaid=""(no specified team, but may use T:team_name in pds), email = current user
+						let people = await api.post('explain/pds', { pds: visi_rds_input }, token);
 						console.log(people);
 						row.visipeople = people;
 						row.checked = true;

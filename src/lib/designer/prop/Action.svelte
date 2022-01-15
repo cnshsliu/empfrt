@@ -264,24 +264,7 @@
 									</InputGroupText>
 									<Input bind:value={kvar.id} disabled={readonly} />
 								</InputGroup>
-								<InputGroup size="sm">
-									<InputGroupText>
-										{$_('prop.action.kvar.visi')}
-									</InputGroupText>
-									<Input bind:value={kvar.visi} disabled={readonly} />
-									{#if kvar.visi && kvar.visi.trim().length > 0}
-										<Button
-											on:click={async (e) => {
-												e.preventDefault();
-												thePDSResolver.resolve({
-													rds: kvar.visi
-												});
-											}}
-										>
-											{$_('button.resolve')}
-										</Button>
-									{/if}
-								</InputGroup>
+								<PDSResolver bind:this={thePDSResolver} bind:value={kvar.visi} {readonly} />
 								<InputGroup size="sm">
 									<InputGroupText>
 										{$_('prop.action.kvar.required')}
@@ -441,4 +424,3 @@
 		</Col>
 	</Row>
 </Container>
-<PDSResolver bind:this={thePDSResolver} />
