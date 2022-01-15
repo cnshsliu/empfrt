@@ -2,8 +2,11 @@
 	import { onMount } from 'svelte';
 	import * as api from '$lib/api';
 	import { Container, Icon } from 'sveltestrap';
+	import BadgeWithDel from '$lib/input/BadgeWithDel.svelte';
+	import InputExandable from '$lib/input/InputExandable.svelte';
 	let orgchartlist = [];
 	let orgchartroot = null;
+	let posValue = '';
 	export let user;
 	export let showOuId;
 	function findOu(ocl, ouId) {
@@ -44,7 +47,7 @@
 			x.number_of_children = 0;
 			x.display = 'block';
 			let tmp = x.position.filter((x) => x !== 'staff');
-			x.position = tmp.join(',');
+			x.position = tmp;
 			if (x.uid === 'OU---') x.icon = 'bi-caret-right-fill';
 			else x.icon = 'bi-person-fill text-primary';
 			return x;
@@ -95,9 +98,35 @@
 					{:else}
 						<span style={`padding-left:${20 * oce.level}px;`}>
 							<i class={oce.icon} color="primary" />
-							{oce.position ? `[${oce.position}]` : ''}
 							{oce.cn} ({oce.uid})
 						</span>
+						{#if oce.position && Array.isArray(oce.position)}
+							{#each oce.position as aPos}
+								<BadgeWithDel
+									bind:text={aPos}
+									on:delete={async (e) => {
+										let res = await api.post(
+											'orgchart/delpos',
+											{ ocid: oce._id, pos: aPos },
+											user.sessionToken
+										);
+										if (!res.error) oce.position = res.position;
+									}}
+								/>
+							{/each}
+						{/if}
+						<InputExandable
+							bind:value={posValue}
+							on:input={async (e) => {
+								console.log(e.detail);
+								let res = await api.post(
+									'orgchart/addpos',
+									{ ocid: oce._id, pos: e.detail },
+									user.sessionToken
+								);
+								if (!res.error) oce.position = res.position;
+							}}
+						/>
 					{/if}
 				</li>
 			{/each}

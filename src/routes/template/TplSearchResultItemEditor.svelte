@@ -3,6 +3,7 @@
 	import * as api from '$lib/api';
 	import { qtb } from '$lib/utils';
 	import type { User } from '$lib/types';
+	import BadgeWithDel from '$lib/input/BadgeWithDel.svelte';
 	import AniIcon from '$lib/AniIcon.svelte';
 	import { Badge, Button, Icon, Row, InputGroup } from 'sveltestrap';
 	import { session } from '$app/stores';
@@ -216,24 +217,19 @@
 		<AniIcon icon="tag" ani="aniShake" />
 		{#each row.tags as tag, tagIndex}
 			{#if tag.owner === user.email}
-				<Badge pill color="light" class="kfk-tag text-primary border border-primary">
-					{tag.text}
-					<a
-						href={'#'}
-						on:click|preventDefault|stopPropagation={async () => {
-							let tags = await api.post(
-								'tag/del',
-								{ objtype: 'template', objid: row.tplid, text: tag.text },
-								token
-							);
-							row.tags = tags;
-							row = row;
-							await reloadTags();
-						}}
-					>
-						<Icon name="x" />
-					</a>
-				</Badge>
+				<BadgeWithDel
+					bind:text={tag.text}
+					on:delete={async () => {
+						let tags = await api.post(
+							'tag/del',
+							{ objtype: 'template', objid: row.tplid, text: tag.text },
+							token
+						);
+						row.tags = tags;
+						row = row;
+						await reloadTags();
+					}}
+				/>
 			{/if}
 		{/each}
 	</div>
