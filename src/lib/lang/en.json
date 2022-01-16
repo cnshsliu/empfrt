@@ -203,6 +203,8 @@
 				"try": "Try a PDS",
 				"tryteam": "with Team",
 				"tryuser": "with User",
+				"trykvar": "with KVar",
+				"trywfid": "with Wfid",
 				"tryresult": "Result"
 			},
 			"kvar": {

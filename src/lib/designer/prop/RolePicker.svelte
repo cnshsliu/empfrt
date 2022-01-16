@@ -3,7 +3,7 @@
 	import * as api from '$lib/api';
 	import { qtb } from '$lib/utils';
 	import { getNotificationsContext } from 'svelte-notifications';
-	import PDSResolver from '$lib/PDSResolver.svelte';
+	import PDSResolver from '$lib/input/PDSResolver.svelte';
 	const { addNotification } = getNotificationsContext();
 	import type { oneArgFunc } from '$lib/types';
 	import {
@@ -30,7 +30,6 @@
 	let pickedQueryString = '';
 	export let existingRoles: any[];
 	export let readonly;
-	import { filterStorage } from '$lib/empstores';
 	let lstr = 'VP:GM:Director:Leader';
 	let qstr = '/staff&/CEO';
 	let user = $session.user;
@@ -99,20 +98,6 @@
 		pickedQueryString = query;
 		setRoleTo('Q:' + pickedQueryString);
 	}
-	let try_doers = [];
-	let try_with_teamid = $filterStorage.try_with_teamid;
-	let try_with_email = $filterStorage.try_with_email ? $filterStorage.try_with_email : user.email;
-	async function testGetDoers(e) {
-		e.preventDefault();
-		$filterStorage.try_with_teamid = try_with_teamid;
-		$filterStorage.try_with_email = try_with_email;
-
-		await thePdsResolver.resolve({
-			teamid: try_with_teamid,
-			email: try_with_email,
-			pds: role
-		});
-	}
 	export function setFadeMessage(
 		message: string,
 		type = 'warning',
@@ -156,47 +141,4 @@
 			{/each}
 		</Input>
 	</InputGroup>
-	<div class="mt-3 fs-5">
-		{$_('prop.action.p10t.try')}
-	</div>
-	<InputGroup>
-		<InputGroupText>
-			{$_('prop.action.p10t.tryteam')}
-		</InputGroupText>
-		<Input type="text" bind:value={try_with_teamid} />
-	</InputGroup>
-	<InputGroup>
-		<InputGroupText>
-			{$_('prop.action.p10t.tryuser')}
-		</InputGroupText>
-		<Input type="text" bind:value={try_with_email} />
-	</InputGroup>
-	{#if Array.isArray(try_doers) && try_doers.length > 0}
-		<Card>
-			<CardHeader>
-				<CardTitle>
-					{$_('prop.action.p10t.tryresult')}
-				</CardTitle>
-			</CardHeader>
-			<CardBody>
-				<ul>
-					{#each try_doers as rel, index (rel)}
-						<li>{rel.cn}: {rel.uid}</li>
-					{/each}
-				</ul>
-			</CardBody>
-		</Card>
-	{/if}
-	<!-- TabContent pills on:tab={(e) => toggleTab(e)}>
-		<TabPane tabId="byleader" tab="by Leader">
-			<div class="overflow-scroll w-100 bg-light">
-				<OrgChartRelationTest {user} show={{ leader: true }} {lstr} {useThisLeader} />
-			</div>
-		</TabPane>
-		<TabPane tabId="byquery" tab="by Query">
-			<div class="overflow-scroll w-100 bg-light">
-				<OrgChartRelationTest {user} show={{ query: true }} {qstr} {useThisQuery} />
-			</div>
-		</TabPane>
-	</TabContent -->
 {/if}

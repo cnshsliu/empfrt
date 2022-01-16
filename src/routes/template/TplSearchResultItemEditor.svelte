@@ -7,11 +7,11 @@
 	import AniIcon from '$lib/AniIcon.svelte';
 	import { Badge, Button, Icon, Row, InputGroup } from 'sveltestrap';
 	import { session } from '$app/stores';
-	export let token;
+	export let user: User = $session.user;
+	export let token = user.sessionToken;
 	export let rows2;
 	export let row: any;
 	export let visi_rds_input: string;
-	export let user: User;
 	export let index: any;
 	export let desc_input: string;
 	let tag_input: string = '';

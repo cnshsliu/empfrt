@@ -38,5 +38,7 @@ export const filterStorage = storage<FilterPicks>('filter', {
 	settingTab2nd: '',
 	try_with_teamid: '',
 	try_with_email: '',
+	try_with_kvar: '',
+	try_with_wfid: '',
 	debug: ''
 });

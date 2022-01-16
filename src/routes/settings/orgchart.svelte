@@ -4,7 +4,7 @@
 	import { Container, Icon } from 'sveltestrap';
 	import BadgeWithDel from '$lib/input/BadgeWithDel.svelte';
 	import InputExandable from '$lib/input/InputExandable.svelte';
-	import PDSResolver from '$lib/PDSResolver.svelte';
+	import PDSResolver from '$lib/input/PDSResolver.svelte';
 	let orgchartlist = [];
 	let orgchartroot = null;
 	let posValue = '';
@@ -130,7 +130,9 @@
 									{ ocid: oce._id, pos: e.detail },
 									user.sessionToken
 								);
-								if (!res.error) oce.position = res.position;
+								if (!res.error) {
+									oce.position = res.position.filter((x) => x !== 'staff');
+								}
 							}}
 						/>
 					{/if}

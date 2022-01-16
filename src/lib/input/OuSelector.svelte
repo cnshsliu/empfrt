@@ -2,7 +2,6 @@
 	import { Input } from 'sveltestrap';
 	import { createEventDispatcher } from 'svelte';
 	import { session } from '$app/stores';
-	import Parser from '$lib/parser';
 	import * as api from '$lib/api';
 	import type { EmpResponse } from '$lib/types';
 
@@ -70,48 +69,8 @@
 			});
 		}
 	} else {
-		if (kvar.name.startsWith('ou_')) {
-			let top = kvar.options[0] ? kvar.options[0] : 'root';
-			let withTop = kvar.options[1] ? kvar.options[1] : 'yes';
-			console.log('Refresh ou selector from top: ', top, 'with top', withTop);
-			let ous = [];
-			api
-				.post('orgchart/listou', { top: 'root', withTop: 'yes' }, user.sessionToken)
-				.then((res) => {
-					let topOuLength = res[0].ou === 'root' ? 0 : res[0].ou.length;
-					console.log(topOuLength, res.length, res);
-					let prefix = '';
-					for (let i = 0; i < res.length; i++) {
-						let tmp = '';
-						if (res[i].ou === 'root') tmp = res[i].cn;
-						else {
-							let m = Parser.chunkString(res[i].ou, 5);
-							for (let i = 0; i < m.length; i++) {
-								let tmpou = '';
-								for (let j = 0; j <= i; j++) {
-									tmpou += m[j];
-								}
-								for (let k = 0; k < res.length; k++) {
-									if (res[k].ou === tmpou) {
-										tmp += (tmp.length > 0 ? '-' : '') + res[k].cn;
-									}
-								}
-							}
-							console.log(tmp);
-						}
-						list.push({ value: res[i].ou, display: tmp });
-					}
-					if (list.length === 0) {
-						list.push({ value: '', display: '--Empty--' });
-					} else {
-						list.unshift({ value: '', display: '--Select--' });
-					}
-					list = list;
-				});
-		} else {
-			list = kvar.options;
-			list = listToSelectOptionsPair(list);
-		}
+		list = kvar.options;
+		list = listToSelectOptionsPair(list);
 	}
 
 	const onListChange = function (e) {

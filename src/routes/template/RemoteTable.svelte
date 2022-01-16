@@ -5,6 +5,7 @@
 	//Sort component is optional
 	import { _ } from '$lib/i18n';
 	import * as api from '$lib/api';
+	import { session } from '$app/stores';
 	import ItemEditor from './TplSearchResultItemEditor.svelte';
 	import AniIcon from '$lib/AniIcon.svelte';
 	import { onMount } from 'svelte';
@@ -35,10 +36,9 @@
 
 	export let TimeTool;
 	export let reloadTags;
-	export let token;
 	export let endpoint;
 	export let rows = [];
-	export let user;
+	export let user = $session.user;
 	export let setFadeMessage;
 	let page = 0; //first page
 	let pageIndex = 0; //first row
@@ -84,10 +84,18 @@
 	async function load(_page) {
 		loading = true;
 		let tagsForFilter = $filterStorage.tplTag.split(';');
-		const data = await getData(endpoint, token, _page, pageSize, input_search, sorting, {
-			tagsForFilter: tagsForFilter,
-			author: $filterStorage.author
-		});
+		const data = await getData(
+			endpoint,
+			user.sessionToken,
+			_page,
+			pageSize,
+			input_search,
+			sorting,
+			{
+				tagsForFilter: tagsForFilter,
+				author: $filterStorage.author
+			}
+		);
 		rows = data.rows;
 		rowsCount = data.rowsCount;
 		loading = false;
@@ -126,7 +134,7 @@
 	let visi_rds_input = '';
 
 	async function deleteRow(tplid) {
-		await api.post('template/delete/byname', { tplid: tplid }, token);
+		await api.post('template/delete/byname', { tplid: tplid }, user.sessinToken);
 		let deletedIndex = -1;
 		for (let i = 0; i < rows.length; i++) {
 			if (rows[i].tplid === tplid) {
@@ -371,7 +379,6 @@
 			>
 				<td colspan="4">
 					<ItemEditor
-						{token}
 						{rows2}
 						{row}
 						{visi_rds_input}

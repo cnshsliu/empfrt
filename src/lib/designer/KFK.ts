@@ -1321,7 +1321,7 @@ ret='DEFAULT'; `
 			newConnectId = `connect_${that.linkPosNode[1].attr('id')}_${that.linkPosNode[0].attr('id')}`;
 			await that.redrawLinkLines(that.linkPosNode[1], 'connect');
 		}
-		if (that.clipboardConnectText.trim().length > 0)
+		if (that.clipboardConnectText && that.clipboardConnectText.trim().length > 0)
 			that.setConnectText($(`.${newConnectId}`), that.clipboardConnectText);
 		//看两个节点的Linkto属性，在添加一个连接线后有没有什么变化，
 		//如果有变化，就上传U， 如果没变化，就不用U

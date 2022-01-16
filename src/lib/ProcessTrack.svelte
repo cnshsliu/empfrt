@@ -157,7 +157,9 @@
 										{#each entry.kvarsArr as kvar}
 											<Col>
 												<span class="fs-5">{kvar.label}: </span>
-												<span class="kfk-kvar-value-display">{kvar.value}</span>
+												<span class="kfk-kvar-value-display">
+													{kvar.display ? kvar.display : kvar.value}
+												</span>
 											</Col>
 										{/each}
 									</Row>

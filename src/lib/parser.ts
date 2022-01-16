@@ -61,6 +61,27 @@ const Parser = {
 		}
 		return ret;
 	},
+	splitStringToArray: function (str, deli = null) {
+		if (typeof str !== 'string') str = '';
+		else str = str.trim();
+		if (str === '') return [];
+		let tmp = str.split(deli ? deli : /[\s;,]/);
+		tmp = tmp.map((x) => x.trim()).filter((x) => x.length > 0);
+		return tmp;
+	},
+	chunkString: function (str, len) {
+		const size = Math.ceil(str.length / len);
+		const r = Array(size);
+		let offset = 0;
+
+		for (let i = 0; i < size; i++) {
+			r[i] = str.substr(offset, len);
+			offset += len;
+		}
+
+		return r;
+	},
+
 	codeToBase64: function (code: string): string {
 		return Buffer.from(code).toString('base64');
 	},

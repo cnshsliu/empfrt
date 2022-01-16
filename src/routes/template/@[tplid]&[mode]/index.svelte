@@ -3,6 +3,7 @@
 	export async function load({ page, fetch, session }) {
 		const tplid = page.params.tplid;
 		const tpl_mode = page.params.mode;
+		console.log('readlod............');
 		const jsonUrl = `/template/@${tplid}&${tpl_mode}.json`;
 		try {
 			const res = await fetch(jsonUrl);
@@ -136,7 +137,8 @@
 		});
 		await theDesigner.changeViewMode(tpl_mode);
 	}
-	$: readonly = tpl_mode === 'read';
+	//$: readonly = tpl_mode === 'read';
+	let readonly = true;
 	function show_delete_template_modal() {
 		hide_all_form();
 	}

@@ -14,7 +14,7 @@
 
 {#if showInput === false}
 	<a href={'#'} on:click|preventDefault|stopPropagation={() => (showInput = true)}>
-		<Icon name="plus" />
+		<Icon name="plus-lg" />
 	</a>
 {:else}
 	<InputGroup>

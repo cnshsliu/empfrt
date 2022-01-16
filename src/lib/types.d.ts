@@ -137,6 +137,7 @@ export interface Team {
 export interface kvarDef {
 	name: string;
 	value: string | number | string[] | boolean;
+	display?: string | number | string[] | boolean;
 	type: InputType;
 	label: string;
 	placeholder?: string;
@@ -244,6 +245,8 @@ export interface FilterPicks {
 	settingTab2nd: string;
 	try_with_teamid?: string;
 	try_with_email?: string;
+	try_with_wfid?: string;
+	try_with_kvar?: string;
 	tspan: string;
 	debug: string;
 }

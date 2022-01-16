@@ -48,7 +48,6 @@
 	export let form_status = { create: false, search: false, sort: false, import: false };
 	import { title } from '$lib/title';
 	$title = 'HyperFlow';
-	$: token = user.sessionToken;
 	let theRemoteTable;
 	export function setFadeMessage(
 		message: string,
@@ -234,10 +233,6 @@
 				error: async (res, error, form) => {
 					let retError = await res.json();
 					let tmp = ErrorProcessor.setError(retError.errors, '<br />');
-					$session.errors = tmp;
-					setTimeout(() => {
-						$session.errors = '';
-					}, 2000);
 				}
 			}}
 		>
@@ -376,7 +371,6 @@
 		<Col>
 			<RemoteTable
 				endpoint="template/search"
-				{token}
 				{user}
 				bind:this={theRemoteTable}
 				{TimeTool}
