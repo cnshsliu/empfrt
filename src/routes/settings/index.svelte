@@ -463,25 +463,30 @@
 		formData.append('password', orgchart_admin_password);
 		formData.append('default_user_password', default_user_password);
 		formData.append('file', files[0]);
-		await fetch(`${API_SERVER}/orgchart/import`, {
-			method: 'POST',
-			headers: {
-				Authorization: user.sessionToken
-			},
-			body: formData
-		})
-			.then((response) => response.json())
-			.then(async (result) => {
-				if (result.error) {
-					setFadeMessage(result.message, 'warning');
-				} else {
-					setFadeMessage('Sucess', 'success');
-				}
+		try {
+			await fetch(`${API_SERVER}/orgchart/import`, {
+				method: 'POST',
+				headers: {
+					Authorization: user.sessionToken
+				},
+				body: formData
 			})
-			.catch((error) => {
-				console.error('Error:', error);
-				setFadeMessage(error.message, 'warning');
-			});
+				.then((response) => response.json())
+				.then(async (result) => {
+					console.log(result.logs);
+					if (result.error) {
+						setFadeMessage(result.message, 'warning');
+					} else {
+						setFadeMessage('Sucess', 'success');
+					}
+				})
+				.catch((error) => {
+					console.error('Error:', error);
+					setFadeMessage(error.message, 'warning');
+				});
+		} catch (err) {
+			console.error(err);
+		}
 	}
 </script>
 
@@ -798,6 +803,7 @@
 									<InputGroup>
 										<InputGroupText>Default password for new staff</InputGroupText>
 										<input
+											class="form-control"
 											name="default_user_password"
 											type="password"
 											bind:value={default_user_password}
@@ -805,12 +811,13 @@
 									</InputGroup>
 									<InputGroup>
 										<InputGroupText>Orgchart CSV file</InputGroupText>
-										<input name="file" type="file" bind:files />
+										<input class="form-control" name="file" type="file" bind:files />
 									</InputGroup>
 									<InputGroup>
 										<InputGroupText>Administrator password</InputGroupText>
 										<input
 											name="orgchart_admin_password"
+											class="form-control"
 											type="password"
 											bind:value={orgchart_admin_password}
 										/>

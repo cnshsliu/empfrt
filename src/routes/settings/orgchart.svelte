@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import * as api from '$lib/api';
-	import { Container, Icon } from 'sveltestrap';
+	import { Container, Button } from 'sveltestrap';
 	import BadgeWithDel from '$lib/input/BadgeWithDel.svelte';
 	import InputExandable from '$lib/input/InputExandable.svelte';
 	import PDSResolver from '$lib/input/PDSResolver.svelte';
@@ -43,14 +43,17 @@
 	}
 	async function expandOrgChartFromServer(ou, level, include = false) {
 		let ret = await api.post('orgchart/expand', { ou: ou, include: include }, user.sessionToken);
+		ret = ret.filter((x) => x);
 		ret = ret.map((x) => {
 			x.level = level;
 			x.number_of_children = 0;
 			x.display = 'block';
 			let tmp = x.position.filter((x) => x !== 'staff');
 			x.position = tmp;
-			if (x.uid === 'OU---') x.icon = 'bi-caret-right-fill';
-			else x.icon = 'bi-person-fill text-primary';
+			if (x.uid === 'OU---') {
+				x.icon = 'bi-caret-right-fill';
+				x.expanded = false;
+			} else x.icon = 'bi-person-fill text-primary';
 			return x;
 		});
 		return ret;
@@ -60,22 +63,28 @@
 		if (tmp.length > 1) {
 			tmp[0].icon = tmp[0].icon === 'bi-caret-right-fill' ? 'bi-caret-down' : 'bi-caret-right-fill';
 			for (let i = 1; i < tmp.length; i++) {
-				tmp[i].display = tmp[i].display === 'block' ? 'none' : 'block';
+				tmp[i].display = tmp[0].expanded ? 'none' : 'block';
 			}
+			tmp[0].expanded = !tmp[0].expanded;
 		} else {
 			let ret = await expandOrgChartFromServer(ou, level + 1);
 			orgchartlist[index].number_of_children = ret.length;
 			orgchartlist[index].icon = 'bi-caret-down';
 			orgchartlist[index].display = 'block';
+			orgchartlist[index].expanded = true;
 			orgchartlist.splice(index + 1, 0, ...ret);
 		}
 		orgchartlist = orgchartlist;
 	}
 	onMount(async () => {
+		await refreshOrgChart();
+	});
+
+	const refreshOrgChart = async () => {
 		let tmp = await expandOrgChartFromServer('root', 0, true);
 		orgchartroot = tmp[0];
 		orgchartlist = tmp.splice(1);
-	});
+	};
 
 	let resolver_label = 'Role Query:';
 </script>
@@ -86,6 +95,7 @@
 
 	{#if orgchartroot && orgchartroot.ou === 'root'}
 		{orgchartroot.cn}
+		<Button on:click={refreshOrgChart}>Refresh</Button>
 		<ul>
 			{#each orgchartlist as oce, index (oce)}
 				<li style={`display:${oce.display}`}>
