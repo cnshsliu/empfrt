@@ -505,7 +505,14 @@
 							<div class="w-100" />
 						{/if}
 						<Col>
-							<span class="fs-5">{kvar.label}: </span>
+							<span class="fs-5">
+								{#if kvar.label === 'Starter OU'}
+									{$_('todo.starterOU')}
+								{:else}
+									{kvar.label}
+								{/if}
+								:
+							</span>
 							<span class="kfk-kvar-value-display">
 								{kvar.display ? kvar.display : kvar.value}
 							</span>

@@ -95,7 +95,7 @@
 
 	{#if orgchartroot && orgchartroot.ou === 'root'}
 		{orgchartroot.cn}
-		<Button on:click={refreshOrgChart}>Refresh</Button>
+		<Button on:click={refreshOrgChart} color="primary">Refresh</Button>
 		<ul>
 			{#each orgchartlist as oce, index (oce)}
 				<li style={`display:${oce.display}`}>

@@ -47,6 +47,7 @@
 	import Personal from './personal.svelte';
 	import OrgChartCsvFormat from './orgchartcsvformat.svelte';
 	import OrgChart from './orgchart.svelte';
+	import OrgChartMaintainer from './orgchartMaintainer.svelte';
 	import OrgChartRelationTest from '$lib/orgchartrelationtest.svelte';
 	import type { User } from '$lib/types';
 	import { onMount } from 'svelte';
@@ -454,40 +455,8 @@
 
 	let tzArray = TimeZone.getTimeZoneArray();
 
-	let files: any;
 	let orgchart_admin_password = '';
 	let default_user_password = '';
-	async function uploadOrgChart(e: Event) {
-		e.preventDefault();
-		const formData = new FormData();
-		formData.append('password', orgchart_admin_password);
-		formData.append('default_user_password', default_user_password);
-		formData.append('file', files[0]);
-		try {
-			await fetch(`${API_SERVER}/orgchart/import`, {
-				method: 'POST',
-				headers: {
-					Authorization: user.sessionToken
-				},
-				body: formData
-			})
-				.then((response) => response.json())
-				.then(async (result) => {
-					console.log(result.logs);
-					if (result.error) {
-						setFadeMessage(result.message, 'warning');
-					} else {
-						setFadeMessage('Sucess', 'success');
-					}
-				})
-				.catch((error) => {
-					console.error('Error:', error);
-					setFadeMessage(error.message, 'warning');
-				});
-		} catch (err) {
-			console.error(err);
-		}
-	}
 </script>
 
 <svelte:head>
@@ -791,58 +760,15 @@
 						<div class="overflow-scroll w-100 bg-light">
 							<OrgChart {user} showOuId={true} />
 						</div>
+						<div>
+							<OrgChartMaintainer />
+						</div>
 					</TabPane>
 					<TabPane
 						tabId="zzorgimport"
 						tab="Orgchart Import"
 						active={isActive('orgchart/zzorgimport')}
-					>
-						<form class="new" enctype="multipart/form-data">
-							<Row class="w-100">
-								<Col class="w-100">
-									<InputGroup>
-										<InputGroupText>Default password for new staff</InputGroupText>
-										<input
-											class="form-control"
-											name="default_user_password"
-											type="password"
-											bind:value={default_user_password}
-										/>
-									</InputGroup>
-									<InputGroup>
-										<InputGroupText>Orgchart CSV file</InputGroupText>
-										<input class="form-control" name="file" type="file" bind:files />
-									</InputGroup>
-									<InputGroup>
-										<InputGroupText>Administrator password</InputGroupText>
-										<input
-											name="orgchart_admin_password"
-											class="form-control"
-											type="password"
-											bind:value={orgchart_admin_password}
-										/>
-										<Button size="sm" on:click={uploadOrgChart} color="primary">Import</Button>
-									</InputGroup>
-								</Col>
-							</Row>
-						</form>
-					</TabPane>
-					<TabPane
-						tabId="zzorgtest"
-						tab="Orgchart Relation Test"
-						active={isActive('zzorgtest', false)}
-					>
-						<div class="overflow-scroll w-100 bg-light">
-							<OrgChartRelationTest
-								{user}
-								bind:show={orgchartrelationtest_conf.show}
-								bind:useThisQuery={orgchartrelationtest_conf.useThisQuery}
-								bind:useThisLeader={orgchartrelationtest_conf.useThisLeader}
-								bind:lstr={orgchartrelationtest_conf.lstr}
-								bind:qstr={orgchartrelationtest_conf.qstr}
-							/>
-						</div>
-					</TabPane>
+					/>
 					<TabPane
 						tabId="fileformat"
 						tab="Orgchart File Format"

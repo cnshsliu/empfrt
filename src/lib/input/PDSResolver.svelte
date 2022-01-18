@@ -243,4 +243,6 @@
 	{#each thePeople as person}
 		<div class="text-center">{person.cn} ({person.uid})</div>
 	{/each}
+{:else if thePeople.length == 0}
+	<div class="text-center">NOT FOUND</div>
 {/if}

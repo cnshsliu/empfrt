@@ -146,6 +146,7 @@
 	},
 	"todo": {
 		"status": "任务状态",
+		"starterOU": "发起人部门",
 		"owner": "任务负责人",
 		"doneat": "完成时间",
 		"decision": "节点决策",
