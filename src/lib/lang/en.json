@@ -148,6 +148,7 @@
 	"todo": {
 		"status": "Task Status",
 		"starterOU": "Starter Department",
+		"starterCN": "Starter Name",
 		"owner": "Task Owner",
 		"doneat": "Completed",
 		"decision": "Decision",

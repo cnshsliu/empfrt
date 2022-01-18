@@ -506,8 +506,10 @@
 						{/if}
 						<Col>
 							<span class="fs-5">
-								{#if kvar.label === 'Starter OU'}
+								{#if kvar.label === 'StarterOU'}
 									{$_('todo.starterOU')}
+								{:else if kvar.label === 'StarterCN'}
+									{$_('todo.starterCN')}
 								{:else}
 									{kvar.label}
 								{/if}
