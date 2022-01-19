@@ -1321,8 +1321,10 @@ ret='DEFAULT'; `
 			newConnectId = `connect_${that.linkPosNode[1].attr('id')}_${that.linkPosNode[0].attr('id')}`;
 			await that.redrawLinkLines(that.linkPosNode[1], 'connect');
 		}
+		/*
 		if (that.clipboardConnectText && that.clipboardConnectText.trim().length > 0)
 			that.setConnectText($(`.${newConnectId}`), that.clipboardConnectText);
+			*/
 		//看两个节点的Linkto属性，在添加一个连接线后有没有什么变化，
 		//如果有变化，就上传U， 如果没变化，就不用U
 		//没有变化的情况：之前就有从linkPosNode[0]到 linkPosNode[1]的链接存在
@@ -2926,6 +2928,12 @@ ret='DEFAULT'; `
 				await that.yarkLinkNode(jqTo, false);
 			}
 			that.keypool = '';
+		} else if (['ct'].includes(that.keypool) && that.hoveredConnect) {
+			let tmp = that.hoveredConnect.attr('case');
+			if (Parser.isEmpty(tmp) === false) {
+				that.setConnectText(that.hoveredConnect, '');
+				that.onChange('clear connect text');
+			}
 		}
 	}
 
