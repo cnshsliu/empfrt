@@ -96,7 +96,7 @@
 		statusMessage = getStatusMessage(filter_status);
 	}
 	export function reset() {
-		filter_status = 'All';
+		filter_status = 'ST_RUN';
 		filter_template = '';
 		filter_doer = user.email;
 		filter_starter = user.email;

@@ -151,7 +151,7 @@
 			<Button
 				color="primary"
 				on:click={() => {
-					$filterStorage.wfStatus = 'All';
+					$filterStorage.wfStatus = 'ST_RUN';
 					$filterStorage.tplid = '';
 					$filterStorage.wfTitlePattern = '';
 					$filterStorage.tspan = '1w';
