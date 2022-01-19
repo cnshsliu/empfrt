@@ -290,8 +290,8 @@
 					{#if work.status === 'ST_RUN'}
 						<Input type="textarea" placeholder="Comments: " bind:value={comment} />
 					{/if}
-					<Row class="mt-2">
-						{#if work.status === 'ST_RUN'}
+					{#if work.status === 'ST_RUN'}
+						<Row class="mt-2">
 							{#if work.routingOptions.length === 0}
 								<Col>
 									<Button
@@ -319,7 +319,10 @@
 									</Button>
 								</Col>
 							{/each}
-						{/if}
+						</Row>
+					{/if}
+
+					<Row class="mt-2">
 						{#if work.returnable}
 							<Col>
 								<Button
