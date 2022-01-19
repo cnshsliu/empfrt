@@ -4,12 +4,16 @@
 	export async function load({ page, fetch, session }) {
 		TimeTool = (await import('$lib/TimeTool')).default;
 		const wfid = page.params.wfid;
-		const res = await fetch(`/workflow/@${wfid}.json`);
+		const workflow = await api.post(
+			'workflow/read',
+			{ wfid: wfid, withdoc: false },
+			session.user.sessionToken
+		);
 
 		try {
 			return {
 				props: {
-					workflow: await res.json(),
+					workflow: workflow,
 					wfid: page.params.wfid,
 					user: session.user
 				}
