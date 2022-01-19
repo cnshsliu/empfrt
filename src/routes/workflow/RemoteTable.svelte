@@ -430,6 +430,7 @@
 								</NavLink>
 							</DropdownItem>
 							<DropdownItem>
+								{JSON.stringify(user.perms)}
 								{#if ClientPermControl(user.perms, user.email, 'workflow', row, 'delete')}
 									<NavLink on:click={() => opWorkflow(row, 'destroy')}>
 										<Icon name="trash" />

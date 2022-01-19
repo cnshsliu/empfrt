@@ -7,12 +7,14 @@ export const ClientPermControl = function (perms, who, what, instance, op, debug
 	if (perms) {
 		for (let i = 0; i < perms.length; i++) {
 			let aPerm = perms[i];
+			//Assign to or take back
 			let assign = true;
 			if (aPerm[0] === '-') {
 				assign = false;
 				aPerm = aPerm.substring(1);
 			}
 			let tmp = aPerm.split('-');
+			//不同对象的OwnerField不同
 			let ownerField = 'author';
 			ownerField = ['template', 'team'].includes(what)
 				? 'author'
@@ -33,6 +35,17 @@ export const ClientPermControl = function (perms, who, what, instance, op, debug
 					if (assign) ret = true;
 					else ret = false;
 				}
+			}
+			if (
+				what &&
+				instance &&
+				who &&
+				what === 'workflow' &&
+				instance['starter'] === who &&
+				instance['rehearsal'] === true
+			) {
+				console.log(what, JSON.stringify(instance));
+				return true;
 			}
 		}
 	}
