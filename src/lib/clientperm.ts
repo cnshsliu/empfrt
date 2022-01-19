@@ -44,7 +44,6 @@ export const ClientPermControl = function (perms, who, what, instance, op, debug
 				instance['starter'] === who &&
 				instance['rehearsal'] === true
 			) {
-				console.log(what, JSON.stringify(instance));
 				return true;
 			}
 		}
