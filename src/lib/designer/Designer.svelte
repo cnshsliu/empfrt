@@ -117,13 +117,10 @@
 					//ACTION 是需要有role和kvars的
 					roleOptions = Parser.collectRoles(args.nodes);
 					if (nodeInfo.nodeProps.ACTION.kvars) {
-						let kvarsString = nodeInfo.nodeProps.ACTION.kvars;
-						try {
-							kvarsArr = Parser.kvarsToArray(JSON.parse(kvarsString), '') as unknown as KvarInput[];
-						} catch (e) {
-							kvarsString = kvarsString.replace('}{', ',');
-							kvarsArr = Parser.kvarsToArray(JSON.parse(kvarsString), '') as unknown as KvarInput[];
-						}
+						kvarsArr = Parser.kvarsToArray(
+							nodeInfo.nodeProps.ACTION.kvars,
+							''
+						) as unknown as KvarInput[];
 					}
 				} else if (nodeInfo.nodeType === 'INFORM') {
 					roleOptions = Parser.collectRoles(args.nodes);

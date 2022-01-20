@@ -747,15 +747,13 @@ class KFKclass {
 		}, 1000);
 	}
 
-	Undo;
-
 	/**
 	 * nodeToAppData.
 	 * set App data with Node properties
 	 *
 	 * @param {} jqDIV
 	 */
-	getNodeProperties(jqDIV?: myJQuery) {
+	async getNodeProperties(jqDIV?: myJQuery) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		const ret = {
@@ -785,6 +783,7 @@ class KFKclass {
 			ret.ACTION.role = blankToDefault(jqDIV.attr('role'), 'DEFAULT');
 			ret.ACTION.label = blankToDefault(jqDIV.find('p').first().text(), 'Activity').trim();
 			ret.label = ret.ACTION.label;
+			//TODO: here, read kvars from Mongo for workflow
 			let kvarsString = blankToDefault(jqDIV.find('.kvars').text(), 'e30=');
 			kvarsString = that.base64ToCode(kvarsString);
 			ret.ACTION.kvars = kvarsString;
@@ -794,10 +793,14 @@ class KFKclass {
 
 			if (that.workflow) {
 				let theWork = jqDIV.find('.work').first();
+				ret.ACTION.kvars = await api.post(
+					'workflow/kvars',
+					{ wfid: that.wfid, workid: theWork.attr('id') },
+					that.user.sessionToken
+				);
 				ret.ACTION.doer = theWork.attr('doer');
-				let kvarsString = blankToDefault(theWork.find('.kvars').text(), 'e30=');
-				kvarsString = that.base64ToCode(kvarsString);
-				ret.ACTION.kvars = kvarsString;
+				//let kvarsString = blankToDefault(theWork.find('.kvars').text(), 'e30=');
+				//kvarsString = that.base64ToCode(kvarsString);
 			}
 		} else if (jqDIV.hasClass('SCRIPT')) {
 			ret.SCRIPT.id = jqDIV.attr('id');
@@ -944,11 +947,11 @@ ret='DEFAULT'; `
 		this.onChange('Property Changed');
 	}
 	//on click node, node prop
-	showNodeProperties(jqDIV: myJQuery) {
+	async showNodeProperties(jqDIV: myJQuery) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		that.showingProp = true;
-		const nodeProps = that.getNodeProperties(jqDIV);
+		const nodeProps = await that.getNodeProperties(jqDIV);
 		if (jqDIV.hasClass('SCRIPT')) {
 			that.designerCallback('showNodeProp', {
 				nodeType: 'SCRIPT',
@@ -4085,6 +4088,7 @@ ret='DEFAULT'; `
 	async loadWorkflowDoc(wfobj: any) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
+		that.wfid = wfobj.wfid;
 		await that.cleanupJC3();
 		// clear以后，所有的球都可以正常运行了。
 		// 之前没有这句话，导致workflow状态下的ball只有在刷新页面后才能正常。
@@ -5123,7 +5127,7 @@ ret='DEFAULT'; `
 		let that = this;
 		if (that.tool === 'POINTER') {
 			if (evt.shiftKey) {
-				that.showNodeProperties(jqNodeDIV);
+				await that.showNodeProperties(jqNodeDIV);
 			} else {
 				that.selectNodeOnClick(jqNodeDIV, evt.shiftKey);
 			}

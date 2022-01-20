@@ -2,7 +2,6 @@
 	import { _ } from '$lib/i18n';
 	import Parser from '$lib/parser';
 	import { filterStorage } from '$lib/empstores';
-	import { goto } from '$app/navigation';
 	import * as api from '$lib/api';
 	import { session } from '$app/stores';
 	import { qtb } from '$lib/utils';
