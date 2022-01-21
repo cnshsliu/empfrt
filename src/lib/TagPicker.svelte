@@ -16,11 +16,17 @@
 
 	async function reloadTags() {
 		allTags = $TagStorage;
-		if (allTags && allTags.org && allTags.mine) {
+		if (allTags && allTags.org && Array.isArray(allTags.org)) {
 		} else {
 			allTags.org = await api.post('tag/org', {}, user.sessionToken);
 			allTags.mine = await api.post('tag/list', { objtype: 'template' }, user.sessionToken);
-			$TagStorage = allTags;
+			if (allTags && allTags.org && Array.isArray(allTags.org)) {
+				$TagStorage = allTags;
+			} else {
+				setTimeout(async () => {
+					await reloadTags();
+				}, 1 * 60 * 1000);
+			}
 		}
 	}
 
@@ -30,6 +36,9 @@
 
 	onMount(async () => {
 		await reloadTags();
+		setTimeout(async () => {
+			await reloadTags();
+		}, 5 * 60 * 1000);
 	});
 </script>
 

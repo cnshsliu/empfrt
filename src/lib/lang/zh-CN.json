@@ -91,7 +91,7 @@
 		"close": "关闭",
 		"done": "完成",
 		"adhoc": "新建独立任务",
-		"sendback": "打回",
+		"sendback": "打回上一步",
 		"revoke": "撤回",
 		"check": "检查",
 		"resolve": "解析",

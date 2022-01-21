@@ -83,8 +83,10 @@
 					let prefix = '';
 					for (let i = 0; i < res.length; i++) {
 						let tmp = '';
+						//如果是root，则直接返回去CN
 						if (res[i].ou === 'root') tmp = res[i].cn;
 						else {
+							//否则，每五个字符分割为字符串数组
 							let m = Parser.chunkString(res[i].ou, 5);
 							for (let i = 0; i < m.length; i++) {
 								let tmpou = '';
