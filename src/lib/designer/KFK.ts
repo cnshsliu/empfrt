@@ -785,8 +785,8 @@ class KFKclass {
 			ret.label = ret.ACTION.label;
 			//TODO: here, read kvars from Mongo for workflow
 			let kvarsString = blankToDefault(jqDIV.find('.kvars').text(), 'e30=');
-			kvarsString = that.base64ToCode(kvarsString);
-			ret.ACTION.kvars = kvarsString;
+			kvarsString = that.base64ToCode(kvarsString); //TO JSON.stringified string
+			ret.ACTION.kvars = JSON.parse(kvarsString); //to JSON
 			ret.ACTION.byall = jqDIV.hasClass('BYALL');
 			ret.ACTION.instruct = that.base64ToCode(blankToDefault(jqDIV.find('.instruct').text(), ''));
 			ret.ACTION.transferable = blankToDefault(jqDIV.attr('transferable'), 'false') === 'true';
