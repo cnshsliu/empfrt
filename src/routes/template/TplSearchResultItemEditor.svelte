@@ -7,6 +7,7 @@
 	import AniIcon from '$lib/AniIcon.svelte';
 	import { Badge, Button, Icon, Row, InputGroup } from 'sveltestrap';
 	import { session } from '$app/stores';
+	import { SetFor, filterStorage } from '$lib/empstores';
 	export let user: User = $session.user;
 	export let token = user.sessionToken;
 	export let rows2;
@@ -14,6 +15,7 @@
 	export let visi_rds_input: string;
 	export let index: any;
 	export let desc_input: string;
+	export let author_input: string;
 	let tag_input: string = '';
 	export let setFadeMessage: any;
 	export let reloadTags: any;
@@ -24,15 +26,14 @@
 		<div
 			class="ms-5 kfk-link"
 			on:click={() => {
-				if ($session.setVisiFor !== row.tplid) {
-					$session.setVisiFor = row.tplid;
+				if ($SetFor.setVisiFor !== row.tplid) {
+					$SetFor.setVisiFor = row.tplid;
 					row.checked = false;
 					visi_rds_input = row.visi;
 				} else {
-					$session.setVisiFor = '';
+					$SetFor.setVisiFor = '';
 					visi_rds_input = '';
 				}
-				console.log($session.setVisiFor);
 			}}
 		>
 			<AniIcon icon="people-fill" ani="aniShake" />
@@ -45,7 +46,7 @@
 		</div>
 	{/if}
 {/if}
-{#if $session.setVisiFor === row.tplid}
+{#if $SetFor.setVisiFor === row.tplid}
 	<div class="ms-5">
 		<Row>
 			<InputGroup>
@@ -100,7 +101,7 @@
 				<Button
 					on:click={async (e) => {
 						e.preventDefault();
-						$session.setVisiFor = '';
+						$SetFor.setVisiFor = '';
 						visi_rds_input = '';
 						row.visipeople = null;
 						let res = await api.post('template/clearvisi', { tplid: row.tplid }, token);
@@ -119,9 +120,8 @@
 					on:click={(e) => {
 						e.preventDefault();
 						row.checked = false;
-						$session.setVisiFor = '';
+						$SetFor.setVisiFor = '';
 						visi_rds_input = '';
-						console.log($session.setVisiFor);
 					}}
 				>
 					{$_('button.close')}
@@ -142,12 +142,12 @@
 		<div
 			class="ms-5 kfk-link"
 			on:click={() => {
-				if ($session.addDescFor === row.tplid) {
+				if ($SetFor.setDescFor === row.tplid) {
 					desc_input = '';
-					$session.addDescFor = '';
+					$SetFor.setDescFor = '';
 				} else {
 					desc_input = row.desc;
-					$session.addDescFor = row.tplid;
+					$SetFor.setDescFor = row.tplid;
 				}
 			}}
 		>
@@ -161,7 +161,7 @@
 		</div>
 	{/if}
 {/if}
-{#if $session.addDescFor === row.tplid}
+{#if $SetFor.setDescFor === row.tplid}
 	<div class="ms-5">
 		<Row>
 			<InputGroup>
@@ -193,7 +193,7 @@
 				<Button
 					on:click={(e) => {
 						e.preventDefault();
-						$session.addDescFor = '';
+						$SetFor.setDescFor = '';
 						desc_input = '';
 					}}
 				>
@@ -207,10 +207,10 @@
 	<div
 		class="ms-5 kfk-link"
 		on:click={() => {
-			if ($session.setTagFor !== row.tplid) {
-				$session.setTagFor = row.tplid;
+			if ($SetFor.setTagFor !== row.tplid) {
+				$SetFor.setTagFor = row.tplid;
 			} else {
-				$session.setTagFor = '';
+				$SetFor.setTagFor = '';
 			}
 		}}
 	>
@@ -234,7 +234,7 @@
 		{/each}
 	</div>
 {/if}
-{#if $session.setTagFor === row.tplid}
+{#if $SetFor.setTagFor === row.tplid}
 	<div class="ms-5">
 		<Row>
 			<InputGroup>
@@ -284,7 +284,57 @@
 				<Button
 					on:click={(e) => {
 						e.preventDefault();
-						$session.setTagFor = '';
+						$SetFor.setTagFor = '';
+					}}
+				>
+					{$_('button.close')}
+				</Button>
+			</InputGroup>
+		</Row>
+	</div>
+{/if}
+{#if $SetFor.setAuthorFor === row.tplid}
+	<div class="ms-5">
+		<Row>
+			<InputGroup>
+				<div class="form-floating flex-fill">
+					<input
+						class="form-control"
+						id={'input-owner-' + index}
+						placeholder="User ID"
+						bind:value={author_input}
+					/>
+					<label for={`input-owner-${index}`}> Set author to (user id): </label>
+				</div>
+				<Button
+					color="primary"
+					on:click={async (e) => {
+						e.preventDefault();
+						author_input = author_input.trim();
+						if (author_input.length <= 0) return;
+						let ret = await api.post(
+							'template/set/author',
+							{ tplid: row.tplid, author: author_input },
+							token
+						);
+						if (ret.error) {
+							setFadeMessage(ret.message, 'warning');
+						} else {
+							console.log(JSON.stringify(ret));
+							row.author = ret.author;
+							row.authorName = ret.authorName;
+							rows2[index] = row;
+							rows2 = rows2;
+						}
+					}}
+				>
+					{$_('button.set')}
+				</Button>
+				<Button
+					on:click={(e) => {
+						e.preventDefault();
+						$SetFor.setAuthorFor = '';
+						author_input = '';
 					}}
 				>
 					{$_('button.close')}

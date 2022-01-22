@@ -11,8 +11,7 @@
 	import { onMount } from 'svelte';
 	import Parser from '$lib/parser';
 	import { qtb } from '$lib/utils';
-	import { session } from '$app/stores';
-	import { filterStorage } from '$lib/empstores';
+	import { SetFor, filterStorage } from '$lib/empstores';
 	import { ClientPermControl } from '$lib/clientperm';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
 	import { goto } from '$app/navigation';
@@ -247,8 +246,10 @@
 						{row.tplid}
 					</a>
 				</td>
-				<td data-label="Author"
-					>{row.author.indexOf('@') > -1
+				<td data-label="Author">
+					{row.authorName
+						? row.authorName
+						: row.author.indexOf('@') > -1
 						? row.author.substring(0, row.author.indexOf('@'))
 						: row.author}
 				</td>
@@ -319,10 +320,9 @@
 									<a
 										href={'#'}
 										on:click|preventDefault={() => {
-											$session.setVisiFor = row.tplid;
+											$SetFor.setVisiFor = row.tplid;
 											row.checked = false;
 											visi_rds_input = row.visi;
-											console.log($session.setVisiFor);
 										}}
 										class="nav-link "
 									>
@@ -331,24 +331,26 @@
 									</a>
 								</DropdownItem>
 							{/if}
+							{#if user.perms && ClientPermControl(user.perms, user.email, 'template', row, 'update')}
+								<DropdownItem>
+									<a
+										href={'#'}
+										on:click|preventDefault={() => {
+											desc_input = row.desc;
+											$SetFor.setDescFor = row.tplid;
+										}}
+										class="nav-link "
+									>
+										<Icon name="tags" />
+										{$_('remotetable.tplaction.addDesc')}
+									</a>
+								</DropdownItem>
+							{/if}
 							<DropdownItem>
 								<a
 									href={'#'}
 									on:click|preventDefault={() => {
-										desc_input = row.desc;
-										$session.addDescFor = row.tplid;
-									}}
-									class="nav-link "
-								>
-									<Icon name="tags" />
-									{$_('remotetable.tplaction.addDesc')}
-								</a>
-							</DropdownItem>
-							<DropdownItem>
-								<a
-									href={'#'}
-									on:click|preventDefault={() => {
-										$session.setTagFor = row.tplid;
+										$SetFor.setTagFor = row.tplid;
 									}}
 									class="nav-link "
 								>
@@ -357,6 +359,19 @@
 								</a>
 							</DropdownItem>
 							{#if user.perms && ClientPermControl(user.perms, user.email, 'template', row, 'delete')}
+								<DropdownItem>
+									<a
+										href={'#'}
+										on:click|preventDefault={(e) => {
+											e.preventDefault();
+											$SetFor.setAuthorFor = row.tplid;
+										}}
+										class="nav-link "
+									>
+										<Icon name="tags" />
+										{$_('remotetable.tplaction.setOwner')}
+									</a>
+								</DropdownItem>
 								<DropdownItem>
 									<a
 										href={'#'}

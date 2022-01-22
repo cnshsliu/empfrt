@@ -4,6 +4,12 @@ import type { WorkStatus, WhichTab, FilterPicks } from '$lib/types';
 export const TagStorage = storage('tags', {});
 export const WorkStatusStorage = storage<WorkStatus>('work_status', { status: 'ST_DONE' });
 export const debugOption = storage<string>('debugOption', 'no');
+export const SetFor = storage('idSelect', {
+	setTagFor: '',
+	setDescFor: '',
+	setAuthorFor: '',
+	setVisiFor: ''
+});
 
 export const whichTabStorage = storage<WhichTab>('whichtab', {
 	template: 'home',
