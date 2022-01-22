@@ -5,6 +5,8 @@
 	import type { User } from '$lib/types';
 	import BadgeWithDel from '$lib/input/BadgeWithDel.svelte';
 	import AniIcon from '$lib/AniIcon.svelte';
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher();
 	import { Badge, Button, Icon, Row, InputGroup } from 'sveltestrap';
 	import { session } from '$app/stores';
 	import { SetFor, filterStorage } from '$lib/empstores';
@@ -323,8 +325,8 @@
 							console.log(JSON.stringify(ret));
 							row.author = ret.author;
 							row.authorName = ret.authorName;
-							rows2[index] = row;
-							rows2 = rows2;
+							row = row;
+							dispatch('authorSet', row);
 						}
 					}}
 				>

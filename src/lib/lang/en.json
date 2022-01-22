@@ -71,6 +71,7 @@
 			"addDesc": "Add Description",
 			"setTags": "Set TAGS",
 			"setVisi": "Set Visibility",
+			"setOwner": "Set Owner",
 			"deleteThisTempalte": "Delete This Template",
 			"lastUpdate": "Last Update "
 		}
@@ -150,6 +151,7 @@
 		"Starter": "Starter UID",
 		"StarterOU": "Starter Department",
 		"StarterCN": "Starter Name",
+		"OUof": "OU",
 		"owner": "Task Owner",
 		"doneat": "Completed",
 		"decision": "Decision",

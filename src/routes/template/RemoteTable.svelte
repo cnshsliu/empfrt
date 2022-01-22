@@ -402,6 +402,11 @@
 						{desc_input}
 						{setFadeMessage}
 						{reloadTags}
+						on:authorSet={(e) => {
+							row = e.detail;
+							rows2[index] = row;
+							$SetFor.setAuthorFor = '';
+						}}
 					/>
 				</td>
 			</tr>

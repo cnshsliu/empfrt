@@ -1,6 +1,6 @@
 <script lang="ts">
 	export let status;
-	export let msg;
+	export let msg = '';
 </script>
 
 {#if status === 'LOADING'}
