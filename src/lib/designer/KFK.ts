@@ -4664,6 +4664,12 @@ ret='DEFAULT'; `
 			}
 		});
 
+		$(document).bind({
+			copy: KFK.onCopy,
+			paste: KFK.onPaste,
+			cut: KFK.onCut
+		});
+
 		that.documentEventHandlerSet = true;
 	}
 
@@ -5671,8 +5677,8 @@ uploadFileToQcloudCOS (file) {
 }
 const KFK = new KFKclass();
 
-document.onpaste = KFK.onPaste;
+/* document.onpaste = KFK.onPaste;
 document.oncopy = KFK.onCopy;
-document.oncut = KFK.onCut;
+document.oncut = KFK.onCut; */
 
 export default KFK;

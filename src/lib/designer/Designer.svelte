@@ -180,6 +180,7 @@
 	onDestroy(async () => {
 		jq(document).off();
 	});
+
 	const showDesignerHelp = function () {
 		return;
 	};
