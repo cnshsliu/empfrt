@@ -153,10 +153,10 @@
 						<Row class="pt-3 kfk-work-kvars tnt-work-kvars">
 							<Col>
 								<Container>
-									<Row cols={{ xs: 1, md: 2, lg: 3 }}>
+									<Row cols={{ xs: 1, md: 2, lg: 4 }}>
 										{#each entry.kvarsArr as kvar}
-											<Col>
-												<span class="fs-5">{kvar.label}: </span>
+											<Col class="p-2">
+												<span class="fs-5">{kvar.label} </span><br />
 												<span class="kfk-kvar-value-display">
 													{kvar.display ? kvar.display : kvar.value}
 												</span>

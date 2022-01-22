@@ -263,7 +263,7 @@
 						{$_('todo.nodeInput')}
 						<Row cols="4">
 							{#each work.kvarsArr as kvar, i}
-								{#if !kvar.auto}
+								{#if kvar.ui.includes('input')}
 									{#if kvar.breakrow}
 										<div class="w-100" />
 									{/if}
@@ -557,30 +557,38 @@
 		{#if work.wf.kvarsArr.length > 0}
 			<Container class="mt-3 kfk-highlight-2">
 				Workflow Context:
-				<Row cols={{ lg: 3, md: 2, xs: 1 }}>
+				<Row cols={{ lg: 4, md: 2, xs: 1 }}>
 					{#each work.wf.kvarsArr as kvar}
-						{#if kvar.breakrow}
-							<div class="w-100" />
+						{#if kvar.ui.includes('context') || work.rehearsal}
+							{#if kvar.breakrow}
+								<div class="w-100" />
+							{/if}
+							<Col class="p-2">
+								<span class="fs-5">
+									{#if kvar.label === 'StarterOU'}
+										{$_('todo.StarterOU')}{@html work.rehearsal ? '<br/>' + kvar.name : ''}
+									{:else if kvar.label === 'StarterCN'}
+										{$_('todo.StarterCN')}{@html work.rehearsal ? '<br/>' + kvar.name : ''}
+									{:else if kvar.label === 'Starter'}
+										{$_('todo.Starter')}{@html work.rehearsal ? '<br/>' + kvar.name : ''}
+									{:else if kvar.label.startsWith('OUof_')}
+										{$_('todo.OUof') + '(' + kvar.label.substring(5) + ')'}{@html work.rehearsal
+											? '<br/>' + kvar.name
+											: ''}
+									{:else}
+										{kvar.label}{@html work.rehearsal ? '<br/>' + kvar.name : ''}
+									{/if}
+									<br />
+								</span>
+								<span class="kfk-kvar-value-display">
+									{#if work.rehearsal}
+										{kvar.display ? kvar.value + '(' + kvar.display + ')' : kvar.value}
+									{:else}
+										{kvar.display ? kvar.display : kvar.value}
+									{/if}
+								</span>
+							</Col>
 						{/if}
-						<Col>
-							<span class="fs-5">
-								{#if kvar.label === 'StarterOU'}
-									{$_('todo.StarterOU')}
-								{:else if kvar.label === 'StarterCN'}
-									{$_('todo.StarterCN')}
-								{:else if kvar.label === 'Starter'}
-									{$_('todo.Starter')}
-								{:else if kvar.label.startsWith('OUof_')}
-									{$_('todo.OUof') + '(' + kvar.label.substring(5) + ')'}
-								{:else}
-									{kvar.label}
-								{/if}
-								:
-							</span>
-							<span class="kfk-kvar-value-display">
-								{kvar.display ? kvar.display : kvar.value}
-							</span>
-						</Col>
 					{/each}
 				</Row>
 			</Container>
