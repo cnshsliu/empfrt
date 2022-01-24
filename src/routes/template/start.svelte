@@ -24,6 +24,7 @@
 	import { _ } from '$lib/i18n';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import FileUploader from '$lib/FileUploader.svelte';
 	import { filterStorage } from '$lib/empstores';
 	import type { User, Template, Team, oneArgFunc } from '$lib/types';
 	import { getNotificationsContext } from 'svelte-notifications';
@@ -57,6 +58,7 @@
 	let fullscreen = false;
 	let isOpen = false;
 	let roles = [];
+	let uploadedFiles = [];
 	let fade_message = '';
 	let timeoutID = null;
 	let pbo = '';
@@ -108,6 +110,7 @@
 	};
 
 	let starting = 0;
+	let uploadingFile = false;
 	let startedWorkflow = null;
 	const _startWorkflow = async function (rehearsal = false) {
 		starting = 0;
@@ -116,7 +119,7 @@
 		let teamid = theTeam ? theTeam.teamid : '';
 		const res = await api.post(
 			'workflow/start',
-			{ rehearsal, tplid, teamid, wftitle, pbo },
+			{ rehearsal, tplid, teamid, wftitle, pbo, uploadedFiles },
 			user.sessionToken
 		);
 		if (res.wfid) {
@@ -214,6 +217,17 @@
 					</Label>
 				</div>
 			</Col>
+			<Col class="text-center">
+				<FileUploader
+					{uploadedFiles}
+					on:uploading={(e) => {
+						uploadingFile = true;
+					}}
+					on:uploaded={(e) => {
+						uploadingFile = false;
+					}}
+				/>
+			</Col>
 			<Col>
 				<div class="form-floating">
 					<Input
@@ -277,6 +291,8 @@
 				</div>
 			</Col>
 		</Row>
+	</Form>
+	{#if uploadingFile === false}
 		<Row cols="1">
 			<Col style="margin-top: 20px;">
 				<Button
@@ -347,7 +363,7 @@
 				</Col>
 			{/if}
 		</Row>
-	</Form>
+	{/if}
 	{#if theTeam}
 		<div class="text-center fs-4">Team {theTeam.teamid}</div>
 		{#each roles as aRole (aRole)}

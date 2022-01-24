@@ -16,6 +16,7 @@
 	import { _, mtcDate } from '$lib/i18n';
 	import CommentEntry from '$lib/CommentEntry.svelte';
 	import { StatusClass, StatusLabel } from '$lib/status';
+	import parser from '$lib/parser';
 	import { goto } from '$app/navigation';
 	import { Badge } from 'sveltestrap';
 	export let wfid;
@@ -42,29 +43,31 @@
 </script>
 
 <Container class="mt-5">
-	<div class="fs-3">
-		<Icon name="bar-chart-steps" />
-		{#if wf.rehearsal}
-			{$_('todo.processRehearsal')}
-			<i class="bi-patch-check-fill" />
-		{:else}
-			{$_('todo.process')}
-		{/if}
+	<div class="fs-3 text-center">
+		<div
+			class="clickable text-primary fs-3 text-center"
+			on:click={(e) => {
+				e.preventDefault();
+				gotoWorkflow(wfid);
+			}}
+		>
+			{wf.wftitle}
+		</div>
 		<hr />
 	</div>
 	<Container class="mt-1">
-		<Row>
+		<Row cols={{ lg: 4, md: 2, sm: 1 }}>
 			<Col>
-				<div
-					class="clickable text-primary"
-					on:click={(e) => {
-						e.preventDefault();
-						gotoWorkflow(wfid);
-					}}
-				>
-					{wf.wftitle}
-				</div>
+				{$_('todo.startat')}: {mtcDate(wf.beginat)}
 			</Col>
+			<Col>
+				{#if wf.status === 'ST_DONE'}
+					{$_('todo.doneat')}: {mtcDate(wf.doneat)}
+				{:else}
+					<span class={StatusClass(wf.status)}>{StatusLabel(wf.status)}</span>
+				{/if}
+			</Col>
+			<Col>{$_('todo.startby')}: {user.email === wf.starter ? 'Me' : wf.starter}</Col>
 			<Col class="w-100 d-flex justify-content-end">
 				<NavLink
 					class="m-0 p-0 fs-6"
@@ -77,22 +80,8 @@
 				</NavLink>
 			</Col>
 		</Row>
-		<Row cols={{ lg: 2, md: 2, sm: 1 }}>
-			<Col>
-				{$_('todo.startat')}: {mtcDate(wf.beginat)}
-			</Col>
-			<Col>
-				{#if wf.status === 'ST_DONE'}
-					{$_('todo.doneat')}: {mtcDate(wf.doneat)}
-				{:else}
-					<span class={StatusClass(wf.status)}>{StatusLabel(wf.status)}</span>
-				{/if}
-			</Col>
-			<Col>{$_('todo.startby')}: {user.email === wf.starter ? 'Me' : wf.starter}</Col>
-		</Row>
 	</Container>
 	<div class="fs-3 mt-3">
-		<Icon name="clock-history" />{$_('todo.worklog')}
 		<hr />
 	</div>
 	<Container class="my-0">
@@ -158,7 +147,11 @@
 											<Col class="p-2">
 												<span class="fs-5">{kvar.label} </span><br />
 												<span class="kfk-kvar-value-display">
-													{kvar.display ? kvar.display : kvar.value}
+													{#if kvar.type === 'textarea'}
+														{@html parser.newlineToBreak(kvar.value)}
+													{:else}
+														{kvar.display ? kvar.display : kvar.value}
+													{/if}
 												</span>
 											</Col>
 										{/each}

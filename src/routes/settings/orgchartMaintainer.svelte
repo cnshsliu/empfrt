@@ -46,7 +46,7 @@
 					if (result.error) {
 						setFadeMessage(result.message, 'warning');
 					} else {
-						setFadeMessage('Sucess', 'success');
+						setFadeMessage('Sucess, refresh orgchart please.', 'success');
 					}
 				})
 				.catch((error) => {
@@ -116,7 +116,11 @@
 						},
 						user.sessionToken
 					);
-					if (res.error) errMsg = res.message;
+					if (res.error) {
+						setFadeMessage(res.message, 'warning');
+					} else {
+						setFadeMessage('Success, refresh orgchart please', 'success');
+					}
 				}}
 			>
 				Update

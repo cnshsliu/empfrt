@@ -6,6 +6,21 @@ type OPTS = {
 	headers: unknown;
 	body?: string;
 };
+export async function sendSimple({ method, path, data = null, token = null }) {
+	const opts: OPTS = { method, headers: {} };
+
+	if (data) {
+		opts.headers['Content-Type'] = 'application/json';
+		opts.body = JSON.stringify(data);
+	}
+	//console.debug(path, opts.body);
+
+	if (token) {
+		opts.headers['Authorization'] = token;
+	}
+
+	return await fetch(`${API_SERVER}/${path}`, opts as RequestInit);
+}
 async function send({ method, path, data = null, token = null }) {
 	const opts: OPTS = { method, headers: {} };
 

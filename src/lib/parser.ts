@@ -129,6 +129,10 @@ const Parser = {
 			ret = ret.substring(0, ret.indexOf('@'));
 		}
 		return ret;
+	},
+
+	newlineToBreak: function (txt: string): string {
+		return txt.replace(/\n/g, '<br/>');
 	}
 };
 export default Parser;

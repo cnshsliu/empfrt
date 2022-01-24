@@ -74,13 +74,14 @@
 		<main>
 			<slot />
 		</main>
-		{#if page.path.startsWith('/template/@') || page.path.startsWith('/workflow/@')}
+		{#if page.path.startsWith('/template/@') || page.path.startsWith('/workflow/@') || page.path.startsWith('/work/@')}
 			&nbsp;
 		{:else}
 			<EmpFooter />
 		{/if}
 	{:else}
 		<p>Loading...</p>
+		<div class="spinner">&nbsp;</div>
 	{/if}
 </Notifications>
 {#if $session.errors}

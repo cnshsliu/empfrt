@@ -13,6 +13,7 @@
 	import { StatusClass, StatusLabel } from '$lib/status';
 	import { Button } from 'sveltestrap';
 	import { debugOption } from '$lib/empstores';
+	import WorkPbo from './workpbo.svelte';
 	import List from '$lib/input/List.svelte';
 	import type { User, Work, oneArgFunc } from '$lib/types';
 	export let work: Work;
@@ -180,6 +181,7 @@
 
 	export async function _refreshWork(todoid) {
 		work = (await api.post('work/info', { todoid: todoid }, user.sessionToken)) as unknown as Work;
+		console.log(JSON.stringify(work, null, 2));
 		comment = '';
 	}
 
@@ -237,14 +239,7 @@
 	<Container id={'workitem_' + work.todoid} class="mt-3">
 		<form>
 			<Container class="mt-3 kfk-highlight-2 text-wrap text-break">
-				<Icon name="vinyl" />&nbsp;
-				{$_('todo.pbo')}
-				{#each work.wf.pbo as pbo}
-					<a href={pbo} target="_blank">
-						{pbo}&nbsp;
-						<Icon name="box-arrow-up-right" />
-					</a>
-				{/each}
+				<WorkPbo {work} />
 			</Container>
 			{#if work.instruct}
 				<div class="fs-5">
@@ -261,13 +256,16 @@
 				{#if checkDoable() && work.status === 'ST_RUN'}
 					{#if work.kvarsArr.length > 0}
 						{$_('todo.nodeInput')}
-						<Row cols="4">
+						<Row cols={{ lg: 4, md: 2, xs: 1 }} class="m-2">
 							{#each work.kvarsArr as kvar, i}
 								{#if kvar.ui.includes('input')}
 									{#if kvar.breakrow}
 										<div class="w-100" />
 									{/if}
-									<Col>
+									{#if kvar.type === 'textarea'}
+										<div class="w-100" />
+									{/if}
+									<Col class={' p-1 ' + (kvar.type === 'textarea' ? ' w-100' : '')}>
 										{#if isDebug}
 											<div class="text-wrap text-break">{JSON.stringify(kvar)}</div>
 										{/if}
@@ -337,6 +335,9 @@
 											{/if}
 										</FormGroup>
 									</Col>
+									{#if kvar.type === 'textarea'}
+										<div class="w-100" />
+									{/if}
 								{/if}
 							{/each}
 						</Row>
@@ -563,7 +564,10 @@
 							{#if kvar.breakrow}
 								<div class="w-100" />
 							{/if}
-							<Col class="p-2">
+							{#if kvar.type === 'textarea'}
+								<div class="w-100" />
+							{/if}
+							<Col class={' p-2 ' + (kvar.type === 'textarea' ? ' w-100' : '')}>
 								<span class="fs-5">
 									{#if kvar.label === 'StarterOU'}
 										{$_('todo.StarterOU')}{@html work.rehearsal ? '<br/>' + kvar.name : ''}
@@ -581,13 +585,18 @@
 									<br />
 								</span>
 								<span class="kfk-kvar-value-display">
-									{#if work.rehearsal}
+									{#if kvar.type === 'textarea'}
+										{@html Parser.newlineToBreak(kvar.value)}
+									{:else if work.rehearsal}
 										{kvar.display ? kvar.value + '(' + kvar.display + ')' : kvar.value}
 									{:else}
 										{kvar.display ? kvar.display : kvar.value}
 									{/if}
 								</span>
 							</Col>
+							{#if kvar.type === 'textarea'}
+								<div class="w-100" />
+							{/if}
 						{/if}
 					{/each}
 				</Row>

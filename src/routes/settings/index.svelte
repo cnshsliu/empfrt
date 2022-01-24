@@ -86,6 +86,7 @@
 	let orgtheme = myorg.css;
 	let orgtimezone = myorg.timezone;
 	let orgleveltags = myorg.tags;
+	let orgchartadminpds = myorg.orgchartadminpds;
 
 	let orgchartrelationtest_conf = {
 		show: { leader: true, query: true },
@@ -455,15 +456,16 @@
 
 	let tzArray = TimeZone.getTimeZoneArray();
 
-	let orgchart_admin_password = '';
-	let default_user_password = '';
+	let authorizedAdmin = false;
+	api.post('orgchart/authorized/admin', {}, user.sessionToken).then((res) => {
+		authorizedAdmin = res as unknown as boolean;
+	});
 </script>
 
 <svelte:head>
 	<title>Settings • HyperFlow</title>
 </svelte:head>
 <Container class="mt-3">
-	<div class="spinner">&nbsp;</div>
 	<TabContent
 		on:tab={(e) => {
 			showTab('' + e.detail);
@@ -549,7 +551,7 @@
 				</Card>
 			</Container>
 		</TabPane>
-		<TabPane tabId="orgset" tab="Org" active={isActive('orgset')}>
+		<TabPane tabId="orgset" tab="Tenant" active={isActive('orgset')}>
 			<Container class="mt-3 mb-3">
 				<div class="w-100 text-center fs-3">{orgname}</div>
 				<div class="w-100 text-center fs-6">
@@ -617,6 +619,37 @@
 									on:click={(e) => {
 										e.preventDefault();
 										setMyTenantOrgLevelTags();
+									}}
+								>
+									Set
+								</Button>
+							</InputGroup>
+							<InputGroup class="mb-1">
+								<InputGroupText>Orgchart Admin:</InputGroupText>
+								<Input
+									type="text"
+									bind:value={orgchartadminpds}
+									placeholder="Who can modify orgchart (in PDS format)"
+								/>
+								<Button
+									on:click={async (e) => {
+										e.preventDefault();
+										in_progress = true;
+
+										let ret = await api.post(
+											'tnt/set/orgchartadminpds',
+											{ orgchartadminpds, password: password_for_admin },
+											user.sessionToken
+										);
+										if (ret.error) {
+											setFadeMessage(ret.message, 'warning');
+										} else {
+											setFadeMessage('Success', 'success');
+											myorg.orgchartadminpds = ret.orgchartadminpds;
+											orgchartadminpds = ret.orgchartadminpds;
+										}
+
+										in_progress = false;
 									}}
 								>
 									Set
@@ -758,17 +791,14 @@
 				>
 					<TabPane tabId="zzorg" tab="Orgchart" active={isActive('zzorg', false)}>
 						<div class="overflow-scroll w-100 bg-light">
-							<OrgChart {user} showOuId={true} />
+							<OrgChart {user} {setFadeMessage} {authorizedAdmin} showOuId={true} />
 						</div>
-						<div>
-							<OrgChartMaintainer />
-						</div>
+						{#if authorizedAdmin}
+							<div>
+								<OrgChartMaintainer />
+							</div>
+						{/if}
 					</TabPane>
-					<TabPane
-						tabId="zzorgimport"
-						tab="Orgchart Import"
-						active={isActive('orgchart/zzorgimport')}
-					/>
 					<TabPane
 						tabId="fileformat"
 						tab="Orgchart File Format"

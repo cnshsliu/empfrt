@@ -255,5 +255,10 @@
 	"designer": {
 		"AthenB": "A->B, Waiting for B",
 		"BthenA": "B->A, Waiting for A"
+	},
+	"workpage": {
+		"filepond": {
+			"labelIdle": "Drag local file to here as PBO, or Browse"
+		}
 	}
 }

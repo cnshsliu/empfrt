@@ -10,6 +10,7 @@
 	let posValue = '';
 	export let user;
 	export let showOuId;
+	export let setFadeMessage;
 	function findOu(ocl, ouId) {
 		let ret = null;
 		for (let i = 0; i < ocl.length; i++) {
@@ -87,6 +88,8 @@
 	};
 
 	let resolver_label = 'Role Query:';
+
+	export let authorizedAdmin = false;
 </script>
 
 <Container class="text-nowrap">
@@ -120,31 +123,40 @@
 							{#each oce.position as aPos}
 								<BadgeWithDel
 									bind:text={aPos}
+									withDeleteButton={authorizedAdmin}
 									on:delete={async (e) => {
 										let res = await api.post(
 											'orgchart/delpos',
 											{ ocid: oce._id, pos: aPos },
 											user.sessionToken
 										);
-										if (!res.error) oce.position = res.position;
+										if (res.error) {
+											setFadeMessage(res.message, 'warning');
+										} else {
+											oce.position = res.position;
+										}
 									}}
 								/>
 							{/each}
 						{/if}
-						<InputExandable
-							bind:value={posValue}
-							on:input={async (e) => {
-								console.log(e.detail);
-								let res = await api.post(
-									'orgchart/addpos',
-									{ ocid: oce._id, pos: e.detail },
-									user.sessionToken
-								);
-								if (!res.error) {
-									oce.position = res.position.filter((x) => x !== 'staff');
-								}
-							}}
-						/>
+						{#if authorizedAdmin}
+							<InputExandable
+								bind:value={posValue}
+								on:input={async (e) => {
+									let res = await api.post(
+										'orgchart/addpos',
+										{ ocid: oce._id, pos: e.detail },
+										user.sessionToken
+									);
+									if (res.error) {
+										setFadeMessage(res.message, 'warning');
+									} else {
+										oce.position = res.position.filter((x) => x !== 'staff');
+										setFadeMessage('Success', 'success');
+									}
+								}}
+							/>
+						{/if}
 					{/if}
 				</li>
 			{/each}

@@ -194,14 +194,6 @@
 								<DropdownItem
 									class="text-center"
 									on:click={(e) => {
-										goto('/team');
-									}}
-								>
-									{$_('navmenu.teaming')}
-								</DropdownItem>
-								<DropdownItem
-									class="text-center"
-									on:click={(e) => {
 										goto('/comment');
 									}}
 								>

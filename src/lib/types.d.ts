@@ -147,6 +147,7 @@ export interface kvarDef {
 	required?: boolean;
 	cssClass?: string;
 	hide?: string;
+	ui?: string | string[];
 }
 export interface KvarInput {
 	name: string;

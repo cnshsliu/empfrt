@@ -159,7 +159,7 @@
 			<Button
 				color="primary"
 				on:click={() => {
-					$filterStorage.workStatus = 'All';
+					$filterStorage.workStatus = 'ST_RUN';
 					$filterStorage.tplid = '';
 					$filterStorage.doer = user.email;
 					$filterStorage.workTitlePattern = '';
