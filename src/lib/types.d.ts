@@ -113,6 +113,7 @@ export interface Work {
 	doneby?: string;
 	doneat?: date;
 	comment?: string;
+	routingOptions?: string;
 }
 
 export interface TmapEntry {
@@ -136,8 +137,8 @@ export interface Team {
 
 export interface kvarDef {
 	name: string;
-	value: string | number | string[] | boolean;
-	display?: string | number | string[] | boolean;
+	value: string | number | string[];
+	display?: string | number | string[];
 	type: InputType;
 	label: string;
 	placeholder?: string;

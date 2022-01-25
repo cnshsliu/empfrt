@@ -117,6 +117,7 @@
 		fade_message = '';
 		saveOneRecentTemplate(tplid);
 		let teamid = theTeam ? theTeam.teamid : '';
+
 		const res = await api.post(
 			'workflow/start',
 			{ rehearsal, tplid, teamid, wftitle, pbo, uploadedFiles },
@@ -219,12 +220,23 @@
 			</Col>
 			<Col class="text-center">
 				<FileUploader
-					{uploadedFiles}
 					on:uploading={(e) => {
 						uploadingFile = true;
 					}}
 					on:uploaded={(e) => {
 						uploadingFile = false;
+						uploadedFiles = e.detail;
+						console.log(uploadedFiles);
+					}}
+					on:warning={(e) => {
+						uploadingFile = false;
+						uploadedFiles = e.detail;
+						console.log(uploadedFiles);
+					}}
+					on:error={(e) => {
+						uploadingFile = false;
+						uploadedFiles = e.detail;
+						console.log(uploadedFiles);
 					}}
 				/>
 			</Col>

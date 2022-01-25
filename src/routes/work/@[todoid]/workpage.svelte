@@ -3,6 +3,7 @@
 	import * as api from '$lib/api';
 	import { goto } from '$app/navigation';
 	import Parser from '$lib/parser';
+	import { text_area_resize } from '$lib/autoresize_textarea';
 	import Spinner from '$lib/Spinner.svelte';
 	import CommentEntry from '$lib/CommentEntry.svelte';
 	import ProcessTrack from '$lib/ProcessTrack.svelte';
@@ -271,7 +272,16 @@
 										{/if}
 										<FormGroup>
 											<Label>{kvar.label}{kvar.required ? '*' : ''}</Label>
-											{#if ['select', 'checkbox', 'radio', 'user'].includes(kvar.type) === false}
+											{#if kvar.type === 'textarea'}
+												<textarea
+													name={kvar.name}
+													bind:value={work.kvarsArr[i].value}
+													placeholder={kvar.placeholder}
+													required={kvar.required}
+													use:text_area_resize
+													class="form-control"
+												/>
+											{:else if ['select', 'checkbox', 'radio', 'user'].includes(kvar.type) === false}
 												<Input
 													type={['dt', 'datetime'].includes(kvar.type)
 														? 'datetime-local'
@@ -344,7 +354,12 @@
 					{/if}
 					<input type="hidden" name="todoid" value={work.todoid} />
 					{#if work.status === 'ST_RUN'}
-						<Input type="textarea" placeholder="Comments: " bind:value={comment} />
+						<textarea
+							placeholder="Comments: "
+							bind:value={comment}
+							use:text_area_resize
+							class="form-control"
+						/>
 					{/if}
 					{#if work.status === 'ST_RUN'}
 						<Row class="mt-2">
@@ -568,13 +583,13 @@
 								<div class="w-100" />
 							{/if}
 							<Col class={' p-2 ' + (kvar.type === 'textarea' ? ' w-100' : '')}>
-								<span class="fs-5">
-									{#if kvar.label === 'StarterOU'}
-										{$_('todo.StarterOU')}{@html work.rehearsal ? '<br/>' + kvar.name : ''}
+								<div class="fs-5  border-bottom border-primary border-1">
+									{#if kvar.label === 'Starter'}
+										{$_('todo.Starter')}{@html work.rehearsal ? '<br/>' + kvar.name : ''}
 									{:else if kvar.label === 'StarterCN'}
 										{$_('todo.StarterCN')}{@html work.rehearsal ? '<br/>' + kvar.name : ''}
-									{:else if kvar.label === 'Starter'}
-										{$_('todo.Starter')}{@html work.rehearsal ? '<br/>' + kvar.name : ''}
+									{:else if kvar.label === 'StarterOU'}
+										{$_('todo.StarterOU')}{@html work.rehearsal ? '<br/>' + kvar.name : ''}
 									{:else if kvar.label.startsWith('OUof_')}
 										{$_('todo.OUof') + '(' + kvar.label.substring(5) + ')'}{@html work.rehearsal
 											? '<br/>' + kvar.name
@@ -583,7 +598,7 @@
 										{kvar.label}{@html work.rehearsal ? '<br/>' + kvar.name : ''}
 									{/if}
 									<br />
-								</span>
+								</div>
 								<span class="kfk-kvar-value-display">
 									{#if kvar.type === 'textarea'}
 										{@html Parser.newlineToBreak(kvar.value)}
@@ -594,7 +609,7 @@
 									{/if}
 								</span>
 							</Col>
-							{#if kvar.type === 'textarea'}
+							{#if kvar.type === 'textarea' || kvar.name === 'ou_SOU'}
 								<div class="w-100" />
 							{/if}
 						{/if}

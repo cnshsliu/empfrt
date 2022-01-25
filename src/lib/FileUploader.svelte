@@ -4,6 +4,7 @@
 	import FilePond, { registerPlugin, supported } from 'svelte-filepond';
 	import { setOptions } from 'filepond';
 	import { createEventDispatcher } from 'svelte';
+	import { dispatch } from '@svgdotjs/svg.js';
 	const dispatch = createEventDispatcher();
 	let user = $session.user;
 	export let uploadedFiles = [];
@@ -53,21 +54,32 @@
 
 	function handleAddFile(err, fileItem) {
 		dispatch('uploading', 'Uploading');
-		console.log('A file has been added', fileItem);
-		console.log('A file has been added', fileItem.id, fileItem.serverId);
 	}
 	function handleRemoveFile(err, fileItem) {
-		console.log('A file has been removed', fileItem.id, fileItem.serverId, fileItem);
-		uploadedFiles = uploadedFiles.filter((x) => {
-			return x.id !== fileItem.id;
-		});
+		recheckFiles();
+		dispatch('remove', fileItem);
 	}
 	function handleProcessFile(err, fileItem) {
 		console.log('A file has been processed', fileItem.id, fileItem.serverId, fileItem);
-		uploadedFiles.push({ id: fileItem.id, serverId: fileItem.serverId });
 	}
 	function handleProcessFiles(err) {
-		dispatch('uploaded', 'Uploaded');
+		recheckFiles();
+		dispatch('uploaded', uploadedFiles);
+	}
+	function handleWarning(err) {
+		recheckFiles();
+		dispatch('warning', uploadedFiles);
+	}
+	function handleError(err) {
+		recheckFiles();
+		dispatch('error', uploadedFiles);
+	}
+	function recheckFiles() {
+		let pondFiles = pond.getFiles();
+		uploadedFiles = pondFiles.map((f) => {
+			return { id: f.id, serverId: f.serverId };
+		});
+		uploadedFiles = uploadedFiles.filter((x) => x.serverId);
 	}
 </script>
 
@@ -80,6 +92,8 @@
 	onremovefile={handleRemoveFile}
 	onprocessfile={handleProcessFile}
 	onprocessfiles={handleProcessFiles}
+	onwarning={handleWarning}
+	onerror={handleError}
 />
 
 <style global>

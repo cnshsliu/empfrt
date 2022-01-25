@@ -195,7 +195,8 @@
 							filter_author = user.email;
 							await authorChanged();
 						}}
-						color="secondary"
+						class="btn-outline-primary m-0 py-1 px-3"
+						color={'light'}
 					>
 						{$_('remotetable.me')}
 					</Button>
@@ -204,7 +205,8 @@
 							filter_author = '';
 							await authorChanged();
 						}}
-						color="secondary"
+						class="btn-outline-primary m-0 py-1 px-3"
+						color="light"
 					>
 						{$_('remotetable.any')}
 					</Button>
@@ -326,7 +328,7 @@
 										}}
 										class="nav-link "
 									>
-										<Icon name="tags" />
+										<Icon name="eye" />
 										{$_('remotetable.tplaction.setVisi')}
 									</a>
 								</DropdownItem>
@@ -341,7 +343,7 @@
 										}}
 										class="nav-link "
 									>
-										<Icon name="tags" />
+										<Icon name="card-text" />
 										{$_('remotetable.tplaction.addDesc')}
 									</a>
 								</DropdownItem>
@@ -368,7 +370,7 @@
 										}}
 										class="nav-link "
 									>
-										<Icon name="tags" />
+										<Icon name="person-bounding-box" />
 										{$_('remotetable.tplaction.setOwner')}
 									</a>
 								</DropdownItem>

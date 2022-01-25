@@ -178,18 +178,20 @@
 		<div class="ms-5 align-self-center flex-grow-1">&nbsp;</div>
 		<div class="justify-content-end flex-shrink-0">
 			<Button
+				color={'white'}
 				on:click={async () => {
 					showform = 'create';
 				}}
-				class="m-0 p-1"
+				class="btn-outline-primary m-0  py-1 px-3"
 			>
 				{$_('button.create')}
 			</Button>
 			<Button
+				color={'white'}
 				on:click={async () => {
 					showform = 'import';
 				}}
-				class="m-0 p-1"
+				class="btn-outline-primary m-0 py-1 px-3"
 			>
 				{$_('button.import')}
 			</Button>
@@ -201,7 +203,7 @@
 					clearTag();
 					if (theRemoteTable) await theRemoteTable.reset();
 				}}
-				class="m-0 p-1"
+				class="m-0 py-1 px-3"
 			>
 				{$_('button.resetQuery')}
 			</Button>
