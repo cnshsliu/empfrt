@@ -4,10 +4,12 @@
 	import FilePond, { registerPlugin, supported } from 'svelte-filepond';
 	import { setOptions } from 'filepond';
 	import { createEventDispatcher } from 'svelte';
-	import { dispatch } from '@svgdotjs/svg.js';
 	const dispatch = createEventDispatcher();
 	let user = $session.user;
 	export let uploadedFiles = [];
+	export let allowRemove = false;
+	export let allowMultiple = false;
+	export let maxFiles = 5;
 
 	// Import the Image EXIF Orientation and Image Preview plugins
 	// Note: These need to be installed separately
@@ -81,15 +83,11 @@
 		});
 		uploadedFiles = uploadedFiles.filter((x) => x.serverId);
 	}
-	function handleBeforeRemoveFile() {
-		return false;
-	}
 </script>
 
 <FilePond
 	bind:this={pond}
 	{name}
-	allowMultiple={true}
 	oninit={handleInit}
 	onaddfile={handleAddFile}
 	onremovefile={handleRemoveFile}
@@ -97,9 +95,10 @@
 	onprocessfiles={handleProcessFiles}
 	onwarning={handleWarning}
 	onerror={handleError}
-	beforeRemoveFile={handleBeforeRemoveFile}
-	allowRevert="false"
-	allowRemove="false"
+	allowRevert={allowRemove}
+	{allowRemove}
+	{allowMultiple}
+	{maxFiles}
 />
 
 <style global>

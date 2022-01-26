@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { API_SERVER } from '$lib/Env';
-	import { _, mtcDate } from '$lib/i18n';
+	import { _ } from '$lib/i18n';
 	import * as api from '$lib/api';
-	import { Row, Col, Button, Icon } from 'sveltestrap';
+	import { Row, Col, Icon } from 'sveltestrap';
 	import Confirm from '$lib/confirm.svelte';
 	import { session } from '$app/stores';
 	import FileUploader from '$lib/FileUploader.svelte';
 	let theConfirm;
-	let uploadingFile;
+	let uploadingFile: boolean;
 	let uploadedFiles = [];
 
 	export let work: any;
@@ -105,6 +105,8 @@
 	{#if work.status === 'ST_RUN'}
 		<Col>
 			<FileUploader
+				allowRemove={false}
+				allowMultiple={true}
 				on:uploading={(e) => {
 					uploadingFile = true;
 				}}

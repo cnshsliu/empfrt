@@ -220,6 +220,9 @@
 			</Col>
 			<Col class="text-center">
 				<FileUploader
+					allowRemove={true}
+					allowMultiple={true}
+					maxFiles={1}
 					on:uploading={(e) => {
 						uploadingFile = true;
 					}}
@@ -227,6 +230,11 @@
 						uploadingFile = false;
 						uploadedFiles = e.detail;
 						console.log(uploadedFiles);
+					}}
+					on:remove={async (e) => {
+						//remove has been disabled
+						uploadingFile = false;
+						uploadedFiles = uploadedFiles.filter((x) => x.id !== e.detail.id);
 					}}
 					on:warning={(e) => {
 						uploadingFile = false;
