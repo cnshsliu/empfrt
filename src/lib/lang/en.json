@@ -260,5 +260,19 @@
 		"filepond": {
 			"labelIdle": "Drag local file to here as PBO, or Browse"
 		}
+	},
+	"confirm": {
+		"title": {
+			"areyousure": "Are you sure?"
+		},
+		"body": {
+			"deletefile": "File will be delete permanately, plase confirm"
+		},
+		"button": {
+			"yes": "Yes",
+			"no": "No",
+			"cancel": "Cancel",
+			"delete": "Delete"
+		}
 	}
 }

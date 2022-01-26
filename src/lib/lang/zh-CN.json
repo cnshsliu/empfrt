@@ -257,5 +257,19 @@
 				"labelIdle": "拖放本地文件到这里作为PBO，或浏览选择文件"
 			}
 		}
+	},
+	"confirm": {
+		"title": {
+			"areyousure": "你确定吗？"
+		},
+		"body": {
+			"deletefile": "文件将被永久删除，请确认"
+		},
+		"button": {
+			"yes": "是",
+			"no": "否",
+			"cancel": "取消",
+			"delete": "删除"
+		}
 	}
 }

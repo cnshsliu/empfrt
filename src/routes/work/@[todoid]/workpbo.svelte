@@ -3,13 +3,15 @@
 	import { _, mtcDate } from '$lib/i18n';
 	import * as api from '$lib/api';
 	import { Row, Col, Button, Icon } from 'sveltestrap';
+	import Confirm from '$lib/confirm.svelte';
 	import { session } from '$app/stores';
 	import FileUploader from '$lib/FileUploader.svelte';
+	let theConfirm;
 	let uploadingFile;
 	let uploadedFiles = [];
 
 	export let work: any;
-	function downloadFile(serverId, realName) {
+	function downloadFile(serverId, realName, mode = 'download') {
 		fetch(`${API_SERVER}/filepond/viewer/${serverId}`, {
 			headers: {
 				Authorization: $session.user.sessionToken
@@ -21,7 +23,11 @@
 			.then((data) => {
 				var a = document.createElement('a');
 				a.href = window.URL.createObjectURL(data);
-				a.download = realName;
+				if (mode === 'download') {
+					a.download = realName;
+				} else if (mode === 'newtab') {
+					a.target = '_blank';
+				}
 				a.click();
 			});
 	}
@@ -58,21 +64,37 @@
 					<a
 						href={'#'}
 						on:click|preventDefault={() => {
-							downloadFile(pbo.serverId, pbo.realName);
+							downloadFile(pbo.serverId, pbo.realName, 'newtab');
 						}}
 						>{pbo.realName}
+						<Icon name="box-arrow-up-right" />
 					</a>
 				{:else}
 					<a href={pbo} target="_blank"> {pbo} </a>
 				{/if}
 				({pbo.author ? pbo.author.substring(0, pbo.author.indexOf('@')) : ''})
-				<Icon name="box-arrow-up-right" />
+				<a
+					href={'#'}
+					on:click|preventDefault={() => {
+						downloadFile(pbo.serverId, pbo.realName, 'download');
+					}}
+				>
+					<Icon name="download" />
+				</a>
 				<a
 					href={'#'}
 					on:click|preventDefault={(e) => {
-						removePbo({
-							serverId: pbo.serverId
-						});
+						theConfirm.title = $_('confirm.title.areyousure');
+						theConfirm.body = $_('confirm.body.deletefile');
+						theConfirm.buttons = [$_('confirm.button.delete')];
+						theConfirm.callbacks = [
+							async () => {
+								await removePbo({
+									serverId: pbo.serverId
+								});
+							}
+						];
+						theConfirm.toggle();
 					}}
 				>
 					<i class="bi bi-trash" />
@@ -87,6 +109,7 @@
 					uploadingFile = true;
 				}}
 				on:remove={async (e) => {
+					//remove has been disabled
 					uploadingFile = false;
 					let serverId = null;
 					for (let i = 0; i < uploadedFiles.length; i++) {
@@ -121,3 +144,4 @@
 		</Col>
 	{/if}
 </Row>
+<Confirm bind:this={theConfirm} />

@@ -32,20 +32,24 @@
 </script>
 
 <script lang="ts">
-	import type { User, Template, Workflow } from '$lib/types';
+	import type { User, Template, Workflow, EmpResponse } from '$lib/types';
 	import { session } from '$app/stores';
 	import AniIcon from '$lib/AniIcon.svelte';
 	import { filterStorage } from '$lib/empstores';
+	import Notifier from '$lib/notifier.svelte';
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
 	import { goto } from '$app/navigation';
 	import { title } from '$lib/title';
 	import { onMount } from 'svelte';
 	import * as api from '$lib/api';
-	import { Row, Col, Nav, NavLink } from 'sveltestrap';
+	import { InputGroup, Button, Row, Col, Nav, NavLink, InputGroupText } from 'sveltestrap';
 	import { Icon } from 'sveltestrap';
 	import { ClientPermControl } from '$lib/clientperm';
 	export let workflow: Workflow;
 	export let wfid: string;
+
+	let theNotifier;
+	let showRenameForm = false;
 
 	$title = workflow.wftitle;
 	let Designer: any;
@@ -135,6 +139,16 @@
 							{'RESTART'}
 						</NavLink>
 					{/if}
+					<NavLink
+						class="kfk-link"
+						on:click={(e) => {
+							e.preventDefault();
+							showRenameForm = !showRenameForm;
+						}}
+					>
+						<AniIcon icon="pen" ani="aniShake" />
+						{'Rename'}
+					</NavLink>
 				{:else}
 					{#if workflow.status === 'ST_RUN'}
 						<NavLink class="kfk-link" disabled>
@@ -164,6 +178,37 @@
 			</Nav>
 		</Col>
 	</Row>
+	{#if showRenameForm}
+		<Row class="mt-1 d-flex justify-content-center">
+			<InputGroup>
+				<InputGroupText>Rename it to :</InputGroupText>
+				<input bind:value={workflow.wftitle} class="form-control" />
+				<Button
+					on:click={async (e) => {
+						e.preventDefault();
+						try {
+							let res = await api.post(
+								'workflow/set/title',
+								{
+									wfid: workflow.wfid,
+									wftitle: workflow.wftitle
+								},
+								user.sessionToken
+							);
+							if (res.error) {
+								theNotifier.setFadeMessage(res.message, 'warning');
+							} else {
+								theNotifier.setFadeMessage('Success', 'success');
+							}
+						} catch (err) {
+							theNotifier.setFadeMessage(err.message, 'error');
+						}
+					}}
+					>Rename it
+				</Button>
+			</InputGroup>
+		</Row>
+	{/if}
 </div>
 {#if workflow.wftitle !== 'Not Found'}
 	<svelte:component this={Designer} bind:this={theDesigner} {workflow} />
@@ -178,6 +223,4 @@
 		}}
 	/>
 {/if}
-
-<style>
-</style>
+<Notifier bind:this={theNotifier} />

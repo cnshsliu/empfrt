@@ -57,6 +57,16 @@
 			console.error(err);
 		}
 	}
+
+	async function saveResult(res) {
+		if (fileSaver === null) {
+			fileSaver = await import('file-saver');
+		}
+		res = res.map((x) => x + '\n');
+		var blob = new Blob(res, { type: 'text/csv;charset=utf-8' });
+		fileSaver.saveAs(blob, 'orgchart.csv');
+		//res.map((x) => console.log(x));
+	}
 </script>
 
 <form class="new" enctype="multipart/form-data">
@@ -88,13 +98,7 @@
 					if (res.error) {
 						setFadeMessage(res.message, 'warning');
 					} else {
-						if (fileSaver === null) {
-							fileSaver = await import('file-saver');
-						}
-						res = res.map((x) => x + '\n');
-						var blob = new Blob(res, { type: 'text/csv;charset=utf-8' });
-						fileSaver.saveAs(blob, 'orgchart.csv');
-						//res.map((x) => console.log(x));
+						await saveResult(res);
 					}
 				}}
 			>

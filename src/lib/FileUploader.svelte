@@ -81,6 +81,9 @@
 		});
 		uploadedFiles = uploadedFiles.filter((x) => x.serverId);
 	}
+	function handleBeforeRemoveFile() {
+		return false;
+	}
 </script>
 
 <FilePond
@@ -94,6 +97,9 @@
 	onprocessfiles={handleProcessFiles}
 	onwarning={handleWarning}
 	onerror={handleError}
+	beforeRemoveFile={handleBeforeRemoveFile}
+	allowRevert="false"
+	allowRemove="false"
 />
 
 <style global>
