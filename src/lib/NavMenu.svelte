@@ -91,7 +91,7 @@
 				</div>
 			</div>
 			<button
-				class="navbar-toggler"
+				class="navbar-toggler bg-light border border-primary"
 				type="button"
 				data-bs-toggle="collapse"
 				data-bs-target="#navbarSupportedContent"

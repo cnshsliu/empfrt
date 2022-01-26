@@ -97,7 +97,7 @@
 						theConfirm.toggle();
 					}}
 				>
-					<i class="bi bi-trash" />
+					<i class="bi bi-trash ms-1" />
 				</a>
 			</div>
 		{/each}
