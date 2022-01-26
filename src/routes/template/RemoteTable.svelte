@@ -133,18 +133,22 @@
 	let visi_rds_input = '';
 
 	async function deleteRow(tplid) {
-		await api.post('template/delete/byname', { tplid: tplid }, user.sessinToken);
-		let deletedIndex = -1;
-		for (let i = 0; i < rows.length; i++) {
-			if (rows[i].tplid === tplid) {
-				deletedIndex = i;
-				break;
+		let res = await api.post('template/delete/byname', { tplid: tplid }, user.sessionToken);
+		if (res.error) {
+			setFadeMessage(res.message, 'warning');
+		} else {
+			let deletedIndex = -1;
+			for (let i = 0; i < rows.length; i++) {
+				if (rows[i].tplid === tplid) {
+					deletedIndex = i;
+					break;
+				}
 			}
-		}
-		if (deletedIndex >= 0) {
-			rows.splice(deletedIndex, 1);
-			rows = rows;
-			rowsCount = rowsCount - 1;
+			if (deletedIndex >= 0) {
+				rows.splice(deletedIndex, 1);
+				rows = rows;
+				rowsCount = rowsCount - 1;
+			}
 		}
 	}
 

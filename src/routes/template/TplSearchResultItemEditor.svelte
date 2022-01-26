@@ -186,6 +186,11 @@
 							{ tplid: row.tplid, desc: desc_input },
 							token
 						);
+						if (ret.err) {
+							setFadeMessage(ret.message, 'warning');
+						} else {
+							setFadeMessage('Success', 'success');
+						}
 						row.desc = desc_input;
 						rows2 = rows2;
 					}}
@@ -255,9 +260,13 @@
 									{ objtype: 'template', objid: row.tplid, text: tag_input.trim() },
 									token
 								);
-								row.tags = tags;
-								row = row;
-								await reloadTags();
+								if (tags.error) {
+									setFadeMessage(tags.message, 'warning');
+								} else {
+									row.tags = tags;
+									row = row;
+									await reloadTags();
+								}
 							}
 							tag_input = '';
 						}}
@@ -274,9 +283,13 @@
 								{ objtype: 'template', objid: row.tplid, text: tag_input.trim() },
 								token
 							);
-							row.tags = tags;
-							row = row;
-							await reloadTags();
+							if (tags.error) {
+								setFadeMessage(tags.message, 'warning');
+							} else {
+								row.tags = tags;
+								row = row;
+								await reloadTags();
+							}
 						}
 						tag_input = '';
 					}}
