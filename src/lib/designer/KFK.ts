@@ -4030,9 +4030,9 @@ ret='DEFAULT'; `
 		}
 		try {
 			that.tplid = that.template.tplid;
-			history.splice(history_pointer);
+			history.splice(0);
 			history.push(that.template.doc);
-			history_pointer++;
+			history_pointer = 1;
 			that.tpl = $(that.template.doc);
 			const nodes = that.tpl.find('.node');
 			nodes.addClass('kfknode');
