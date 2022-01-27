@@ -91,7 +91,7 @@
 					>
 						<Icon name="download" />
 					</a>
-					{#if work.status === 'ST_RUN'}
+					{#if attach.stepid === work.todoid && work.status === 'ST_RUN' && attach.author === $session.user.email}
 						<a
 							href={'#'}
 							on:click|preventDefault={(e) => {
@@ -122,6 +122,7 @@
 				{forWhich}
 				{forKey}
 				{forKvar}
+				stepid = {work.todoid}
 				on:uploading={(e) => {
 					uploadingFile = true;
 				}}

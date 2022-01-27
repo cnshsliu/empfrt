@@ -1,21 +1,18 @@
 <script lang="ts">
-	import { _, mtcDate } from '$lib/i18n';
+	import { _ } from '$lib/i18n';
 	import * as api from '$lib/api';
 	import { goto } from '$app/navigation';
 	import Parser from '$lib/parser';
 	import { text_area_resize } from '$lib/autoresize_textarea';
-	import Spinner from '$lib/Spinner.svelte';
 	import CommentEntry from '$lib/CommentEntry.svelte';
 	import ProcessTrack from '$lib/ProcessTrack.svelte';
 	import TransferWork from './_transfer.svelte';
 	import { Container, Row, Col, Icon } from 'sveltestrap';
 	import { onMount } from 'svelte';
 	import { FormGroup, Input, Label, InputGroup, InputGroupText } from 'sveltestrap';
-	import { StatusClass, StatusLabel } from '$lib/status';
 	import { Button } from 'sveltestrap';
 	import { debugOption } from '$lib/empstores';
 	import WorkFile from './workfile.svelte';
-	import TodoFile from './todofile.svelte';
 	import List from '$lib/input/List.svelte';
 	import type { User, Work, oneArgFunc } from '$lib/types';
 	export let work: Work;
@@ -214,6 +211,7 @@
 		return x;
 	});
 	onMount(async () => {
+		console.log(JSON.stringify(work, null, 2));
 		if (localStorage) {
 			recentUsers = JSON.parse(localStorage.getItem('recentUsers') ?? JSON.stringify([]));
 		}

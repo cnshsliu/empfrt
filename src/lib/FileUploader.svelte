@@ -13,6 +13,7 @@
 	export let forWhich;
 	export let forKey;
 	export let forKvar;
+	export let stepid;
 
 	// Import the Image EXIF Orientation and Image Preview plugins
 	// Note: These need to be installed separately
@@ -66,7 +67,8 @@
 				id: f.id,
 				serverId: f.serverId,
 				realName: f.filename,
-				contentType: f.fileType
+				contentType: f.fileType,
+				stepid: stepid
 			};
 		});
 		uploadedFiles = uploadedFiles.filter((x) => x.serverId);
