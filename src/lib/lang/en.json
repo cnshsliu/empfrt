@@ -129,6 +129,7 @@
 	},
 
 	"start": {
+		"canbefile": "You may upload a file as PBO",
 		"startWorkflow": "Start Workflow",
 		"startIt": "Start It",
 		"rehearsal": "Rehearsal",

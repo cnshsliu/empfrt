@@ -61,7 +61,7 @@
 	let uploadedFiles = [];
 	let fade_message = '';
 	let timeoutID = null;
-	let pbo = '';
+	let textPbo = '';
 	let wftitle = '';
 	let team_id_for_search = '';
 	import { title } from '$lib/title';
@@ -120,7 +120,7 @@
 
 		const res = await api.post(
 			'workflow/start',
-			{ rehearsal, tplid, teamid, wftitle, pbo, uploadedFiles },
+			{ rehearsal, tplid, teamid, wftitle, textPbo, uploadedFiles },
 			user.sessionToken
 		);
 		if (res.wfid) {
@@ -212,36 +212,61 @@
 			</Col>
 			<Col>
 				<div class="form-floating">
-					<Input type="url" name="pbo" id="input-pbo" class="form-control" bind:value={pbo} />
-					<Label for="input-pbo">
+					<Input
+						type="url"
+						name="textPbo"
+						id="input-textPbo"
+						class="form-control"
+						bind:value={textPbo}
+					/>
+					<Label for="input-textPbo">
 						{$_('start.pbo')}
 					</Label>
 				</div>
 			</Col>
+			<Col class="text-center">{$_('start.canbefile')}</Col>
 			<Col class="text-center">
 				<FileUploader
+					forWhat={'workflow'}
+					forWhich={'unknown'}
+					forKey={'unknown'}
 					allowRemove={true}
 					allowMultiple={true}
-					maxFiles={1}
 					on:uploading={(e) => {
 						uploadingFile = true;
-					}}
-					on:uploaded={(e) => {
-						uploadingFile = false;
-						uploadedFiles = e.detail;
-						console.log(uploadedFiles);
 					}}
 					on:remove={async (e) => {
 						//remove has been disabled
 						uploadingFile = false;
-						uploadedFiles = uploadedFiles.filter((x) => x.id !== e.detail.id);
+						let serverId = null;
+						for (let i = 0; i < uploadedFiles.length; i++) {
+							if (uploadedFiles[i].id === e.detail.id) {
+								serverId = uploadedFiles[i].serverId;
+								break;
+							}
+						}
+						if (serverId) {
+							let ret = await api.post(
+								'attachment/remove',
+								{ serverId: serverId },
+								user.sessionToken
+							);
+							if (ret.error) {
+								console.log(ret.message);
+							}
+						}
 					}}
-					on:warning={(e) => {
+					on:uploaded={async (e) => {
 						uploadingFile = false;
 						uploadedFiles = e.detail;
 						console.log(uploadedFiles);
 					}}
-					on:error={(e) => {
+					on:warning={async (e) => {
+						uploadingFile = false;
+						uploadedFiles = e.detail;
+						console.log(uploadedFiles);
+					}}
+					on:error={async (e) => {
 						uploadingFile = false;
 						uploadedFiles = e.detail;
 						console.log(uploadedFiles);
@@ -321,7 +346,7 @@
 					class="w-100"
 					on:click={(e) => {
 						e.preventDefault();
-						if (wftitle.trim().length === 0 || pbo.trim().length === 0) {
+						if (wftitle.trim().length === 0 || textPbo.trim().length === 0) {
 							showConfirmModal = true;
 						} else {
 							_startWorkflow(false);
@@ -406,7 +431,7 @@
 <Modal isOpen={showConfirmModal} {toggle} {fullscreen}>
 	<ModalHeader {toggle}>{$_('start.pleaseConfirm')}</ModalHeader>
 	<ModalBody>
-		{#if pbo.trim().length === 0}
+		{#if textPbo.trim().length === 0 && uploadedFiles.length === 0}
 			<div>{$_('start.warnNoPbo')}</div>
 		{/if}
 		{#if wftitle.trim().length === 0}

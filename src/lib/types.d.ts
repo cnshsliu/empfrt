@@ -83,6 +83,7 @@ export interface Workflow {
 	createdAt: string;
 	updatedAt: string;
 	kvarsArr?: kvarDef[];
+	attachments: any[];
 }
 
 export interface Work {

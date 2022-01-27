@@ -128,6 +128,7 @@
 		"ST_STOP": "已中止"
 	},
 	"start": {
+		"canbefile": "你也可以上传一个文件作为PBO",
 		"startWorkflow": "启动这个流程",
 		"startIt": "马上启动",
 		"rehearsal": "先演练一下",

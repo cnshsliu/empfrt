@@ -16,7 +16,7 @@
 
 	const checkTransfeee = async function () {
 		status = 'checking';
-		input_class = 'input_spinning';
+		input_class = '';
 		msg = '';
 		if (check_timer) clearTimeout(check_timer);
 		check_timer = setTimeout(async () => {
@@ -45,7 +45,6 @@
 	{$_('todo.transferable')}
 	<InputGroup>
 		<InputGroupText>
-			Transfer to
 			{$_('todo.transferto')}
 		</InputGroupText>
 		<Input

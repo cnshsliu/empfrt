@@ -14,7 +14,8 @@
 	import { StatusClass, StatusLabel } from '$lib/status';
 	import { Button } from 'sveltestrap';
 	import { debugOption } from '$lib/empstores';
-	import WorkPbo from './workpbo.svelte';
+	import WorkFile from './workfile.svelte';
+	import TodoFile from './todofile.svelte';
 	import List from '$lib/input/List.svelte';
 	import type { User, Work, oneArgFunc } from '$lib/types';
 	export let work: Work;
@@ -44,7 +45,7 @@
 	let isDebug = $debugOption === 'yes';
 
 	function _sendbackWork() {
-		if (checkRequired() === false) return;
+		//if (checkRequired() === false) return;
 		let payload: any = {
 			wfid: work.wfid,
 			todoid: work.todoid,
@@ -59,7 +60,7 @@
 		goto(iframeMode ? '/work?iframe' : '/work');
 	}
 	function _revokeWork() {
-		if (checkRequired() === false) return;
+		//if (checkRequired() === false) return;
 		let payload: any = {
 			wfid: work.wfid,
 			todoid: work.todoid,
@@ -140,6 +141,19 @@
 					if (work.kvarsArr[i].value !== true && work.kvarsArr[i].value !== false) {
 						errMsg = `${work.kvarsArr[i].label} should hava value`;
 						break;
+					}
+				} else if (work.kvarsArr[i].type === 'file') {
+					let file_number = 0;
+					for (let a = 0; a < work.wf.attachments.length; a++) {
+						if (work.wf.attachments[a].forKey === work.kvarsArr[i].name) {
+							file_number++;
+						}
+					}
+					if (file_number === 0) {
+						errMsg = `${work.kvarsArr[i].label} should hava file`;
+						break;
+					} else {
+						console.log(work.kvarsArr[i].label, file_number);
 					}
 				} else {
 					if (!work.kvarsArr[i].value) {
@@ -240,7 +254,13 @@
 	<Container id={'workitem_' + work.todoid} class="mt-3">
 		<form>
 			<Container class="mt-3 kfk-highlight-2 text-wrap text-break">
-				<WorkPbo {work} />
+				<WorkFile
+					{work}
+					title={$_('todo.pbo')}
+					forWhat={'workflow'}
+					forWhich={work.wfid}
+					forKey="pbo"
+				/>
 			</Container>
 			{#if work.instruct}
 				<div class="fs-5">
@@ -280,6 +300,15 @@
 													required={kvar.required}
 													use:text_area_resize
 													class="form-control"
+												/>
+											{:else if kvar.type === 'file'}
+												<WorkFile
+													{work}
+													title={null}
+													forWhat={'workflow'}
+													forWhich={work.wfid}
+													forKey={kvar.name}
+													forKvar={kvar.label}
 												/>
 											{:else if ['select', 'checkbox', 'radio', 'user'].includes(kvar.type) === false}
 												<Input
@@ -602,6 +631,16 @@
 								<span class="kfk-kvar-value-display">
 									{#if kvar.type === 'textarea'}
 										{@html Parser.newlineToBreak(kvar.value)}
+									{:else if kvar.type === 'url'}
+										<a href={kvar.value} target="_blank">{kvar.value}</a>
+									{:else if kvar.type === 'file'}
+										<WorkFile
+											{work}
+											title={null}
+											forWhat={'workflow'}
+											forWhich={work.wfid}
+											forKey={kvar.name}
+										/>
 									{:else if work.rehearsal}
 										{kvar.display ? kvar.value + '(' + kvar.display + ')' : kvar.value}
 									{:else}
