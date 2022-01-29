@@ -9,7 +9,6 @@
 	export let uploadedFiles = [];
 	export let allowRemove = false;
 	export let allowMultiple = false;
-	export let labelIdle = 'Drag file to here as PBO, or Click to browse';
 	export let forWhat;
 	export let forWhich;
 	export let forKey;
