@@ -232,6 +232,8 @@
 					forKey={'unknown'}
 					allowRemove={true}
 					allowMultiple={true}
+					forKvar={null}
+					stepid={'pbo'}
 					on:uploading={(e) => {
 						uploadingFile = true;
 					}}

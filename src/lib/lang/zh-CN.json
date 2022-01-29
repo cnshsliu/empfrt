@@ -252,11 +252,12 @@
 		"designer": {
 			"AthenB": "A->B, 请点选B节点",
 			"BthenA": "B->A, 请点选A节点"
-		},
-		"workpage": {
-			"filepond": {
-				"labelIdle": "拖放本地文件到这里作为PBO，或浏览选择文件"
-			}
+		}
+	},
+	"filepond": {
+		"labelIdle": {
+			"pbo": "拖放到此或浏览",
+			"kvar": "拖放到此或浏览"
 		}
 	},
 	"confirm": {

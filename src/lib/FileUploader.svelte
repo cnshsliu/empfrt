@@ -1,4 +1,5 @@
 <script type="ts">
+	import { _ } from '$lib/i18n';
 	import { session } from '$app/stores';
 	import { API_SERVER } from '$lib/Env';
 	import FilePond, { registerPlugin, supported } from 'svelte-filepond';
@@ -90,10 +91,16 @@
 	{allowMultiple}
 	maxFiles={forKey === 'pbo' ? 100 : 1}
 	labelIdle={forKvar
-		? `File for ${forKvar}`
+		? `<i class='bi bi-cloud-arrow-up fs-3'/><div class='fs-5'>${$_(
+				'filepond.labelIdle.kvar'
+		  )}</div>`
 		: forKey === 'pbo'
-		? `Drag file here or browse`
-		: `Drop here here or browse`}
+		? `<i class='bi bi-cloud-arrow-up fs-3'/><div class="fs-5">${$_(
+				'filepond.labelIdle.pbo'
+		  )}</div>`
+		: `<i class='bi bi-cloud-arrow-up fs-3'/><div class="fs-5">${$_(
+				'filepond.labelIdle.pbo'
+		  )}</div>`}
 	server={{
 		url: serverUrl,
 		process: {

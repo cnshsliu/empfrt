@@ -638,6 +638,8 @@
 											forWhat={'workflow'}
 											forWhich={work.wfid}
 											forKey={kvar.name}
+											forKvar={kvar.label}
+											uploader={false}
 										/>
 									{:else if work.rehearsal}
 										{kvar.display ? kvar.value + '(' + kvar.display + ')' : kvar.value}

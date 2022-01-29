@@ -16,6 +16,7 @@
 	export let forWhich: string = 'unknown';
 	export let forKey: string = 'unknown';
 	export let forKvar: string = null;
+	export let uploader = true;
 	function downloadFile(wfid, serverId, realName, mode = 'download') {
 		fetch(`${API_SERVER}/filepond/viewer/${wfid}/${serverId}`, {
 			headers: {
@@ -68,7 +69,11 @@
 			{title}
 		{/if}
 		{#each work.wf.attachments as attach}
-			{#if attach.forKey === forKey}
+			{#if typeof attach === 'string' && forKey === 'pbo'}
+				<div class=" ms-3 simplehover ">
+					<a href={attach} target="_blank">{attach}</a>
+				</div>
+			{:else if attach.forKey === forKey}
 				<div class=" ms-3 simplehover ">
 					{#if attach.serverId && attach.realName}
 						<a
@@ -113,7 +118,7 @@
 			{/if}
 		{/each}
 	</Col>
-	{#if work.status === 'ST_RUN'}
+	{#if work.status === 'ST_RUN' && uploader}
 		<Col>
 			<FileUploader
 				allowRemove={false}
@@ -122,7 +127,7 @@
 				{forWhich}
 				{forKey}
 				{forKvar}
-				stepid = {work.todoid}
+				stepid={work.todoid}
 				on:uploading={(e) => {
 					uploadingFile = true;
 				}}
