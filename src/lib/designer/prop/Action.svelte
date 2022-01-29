@@ -209,7 +209,13 @@
 									<InputGroupText>
 										{$_('prop.action.kvar.name')}
 									</InputGroupText>
-									<Input bind:value={kvar.name} disabled={readonly} />
+									<Input
+										bind:value={kvar.name}
+										disabled={readonly}
+										on:blur={(e) => {
+											kvar.name = Parser.toValidVarName(kvar.name);
+										}}
+									/>
 								</InputGroup>
 								{#if kvar.name.startsWith('select_') || kvar.name.startsWith('sel_') || kvar.name.startsWith('sl_') || kvar.name.startsWith('radio_') || kvar.name.startsWith('ou_')}
 									<InputGroup size="sm">

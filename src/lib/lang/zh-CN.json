@@ -190,7 +190,7 @@
 		}
 	},
 	"prop": {
-		"label": "标识",
+		"label": "任务描述",
 		"action": {
 			"tab": {
 				"participant": "参与人",

@@ -82,7 +82,14 @@
 		<Navbar id="myNavBar" class="flex-fill" expand="sm">
 			<div class="d-flex">
 				<div class="d-inline-block col-6 p-0 ml-3">
-					<div class="kfk-org-logo org-logo">&nbsp;</div>
+					<div
+						class="kfk-org-logo org-logo"
+						on:click={() => {
+							goto('/');
+						}}
+					>
+						&nbsp;
+					</div>
 				</div>
 				<div
 					class="d-inline-block col-6 mx-1 align-self-center kfk-header-username tnt-header-username"
@@ -90,6 +97,83 @@
 					{$session.user ? $session.user.username : 'Metatocome'}
 				</div>
 			</div>
+			{#if $session.user}
+				<Dropdown class="navbar-expand-sm">
+					{#if $session.user && $session.user.avatar}
+						<DropdownToggle nav>
+							<img
+								src={$session.user.avatar}
+								class="kfk-avatar-small"
+								alt={$session.user.username}
+							/>
+						</DropdownToggle>
+					{:else}
+						<DropdownToggle nav>
+							<div class="kfk-avatar-letter-small text-center">
+								{$session.user ? $session.user.username : 'ME'}
+							</div>
+						</DropdownToggle>
+					{/if}
+					<DropdownMenu end>
+						<Container style="width:300px; text-align:center;">
+							<Row cols="1">
+								<Col style="text-align:center;">
+									{#if $session.user}
+										{#if $session.user.avatar}
+											<img
+												src={$session.user.avatar}
+												class="kfk-avatar-middle  img-thumbnail"
+												alt={$session.user.username}
+											/>
+										{:else}
+											<div class="w-100 d-flex justify-content-center">
+												<div class="kfk-avatar-letter-middle img-thumbnail">
+													{$session.user.username}
+												</div>
+											</div>
+										{/if}
+									{:else}
+										<div class="w-100 d-flex justify-content-center">
+											<div class="kfk-avatar-letter-middle img-thumbnail">ME</div>
+										</div>
+									{/if}
+								</Col>
+								<Col class="fw-bold mt-2">{$session.user ? $session.user.username : ''}</Col>
+								<Col>{$session.user && $session.user.tenant ? $session.user.tenant.name : ''}</Col>
+								<Col>{DEPLOY_MODE}</Col>
+							</Row>
+							<InputGroup>
+								<InputGroupText>
+									<i class="bi-translate" />
+								</InputGroupText>
+								<LocaleSwitcher />
+							</InputGroup>
+						</Container>
+						<DropdownItem divider />
+						<DropdownItem
+							class="text-center"
+							on:click={(e) => {
+								goto('/settings');
+							}}
+						>
+							{$_('navmenu.settings')}
+						</DropdownItem>
+						<DropdownItem
+							class="text-center"
+							on:click={(e) => {
+								goto('/comment');
+							}}
+						>
+							{$_('navmenu.messages')}
+						</DropdownItem>
+						<DropdownItem divider />
+						<DropdownItem class="text-center" on:click={logout}>
+							<Icon name="door-open" />
+							{$_('account.signout')}
+						</DropdownItem>
+					</DropdownMenu>
+				</Dropdown>
+			{/if}
 			<button
 				class="navbar-toggler bg-light border border-primary"
 				type="button"
@@ -129,83 +213,6 @@
 								{$_('navmenu.worklist')}
 							</NavLink>
 						</NavItem>
-						<Dropdown>
-							{#if $session.user && $session.user.avatar}
-								<DropdownToggle nav>
-									<img
-										src={$session.user.avatar}
-										class="kfk-avatar-small"
-										alt={$session.user.username}
-									/>
-								</DropdownToggle>
-							{:else}
-								<DropdownToggle nav>
-									<div class="kfk-avatar-letter-small text-center">
-										{$session.user ? $session.user.username : 'ME'}
-									</div>
-								</DropdownToggle>
-							{/if}
-							<DropdownMenu end>
-								<Container style="width:300px; text-align:center;">
-									<Row cols="1">
-										<Col style="text-align:center;">
-											{#if $session.user}
-												{#if $session.user.avatar}
-													<img
-														src={$session.user.avatar}
-														class="kfk-avatar-middle  img-thumbnail"
-														alt={$session.user.username}
-													/>
-												{:else}
-													<div class="w-100 d-flex justify-content-center">
-														<div class="kfk-avatar-letter-middle img-thumbnail">
-															{$session.user.username}
-														</div>
-													</div>
-												{/if}
-											{:else}
-												<div class="w-100 d-flex justify-content-center">
-													<div class="kfk-avatar-letter-middle img-thumbnail">ME</div>
-												</div>
-											{/if}
-										</Col>
-										<Col class="fw-bold mt-2">{$session.user ? $session.user.username : ''}</Col>
-										<Col
-											>{$session.user && $session.user.tenant ? $session.user.tenant.name : ''}
-										</Col>
-										<Col>{DEPLOY_MODE}</Col>
-									</Row>
-									<InputGroup>
-										<InputGroupText>
-											<i class="bi-translate" />
-										</InputGroupText>
-										<LocaleSwitcher />
-									</InputGroup>
-								</Container>
-								<DropdownItem divider />
-								<DropdownItem
-									class="text-center"
-									on:click={(e) => {
-										goto('/settings');
-									}}
-								>
-									{$_('navmenu.settings')}
-								</DropdownItem>
-								<DropdownItem
-									class="text-center"
-									on:click={(e) => {
-										goto('/comment');
-									}}
-								>
-									{$_('navmenu.messages')}
-								</DropdownItem>
-								<DropdownItem divider />
-								<DropdownItem class="text-center" on:click={logout}>
-									<Icon name="door-open" />
-									{$_('account.signout')}
-								</DropdownItem>
-							</DropdownMenu>
-						</Dropdown>
 					{:else}
 						<NavItem>
 							<NavLink href="/login" class="nav-link" active={$page.path === '/login'}>

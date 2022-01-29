@@ -191,7 +191,7 @@
 		}
 	},
 	"prop": {
-		"label": "Label",
+		"label": "Activity Description",
 		"action": {
 			"tab": {
 				"participant": "Participant",

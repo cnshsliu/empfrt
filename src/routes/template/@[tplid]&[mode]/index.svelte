@@ -57,6 +57,7 @@
 	$title = template.tplid;
 	let Designer: any;
 	let theDesigner: any;
+	let readonly = true;
 	let recentTemplates = [];
 	let recentTeams = [];
 
@@ -122,6 +123,7 @@
 	}
 	async function change_mode(what: string) {
 		tpl_mode = what;
+		readonly = tpl_mode === 'read';
 		goto(`/template/@${template.tplid}&${tpl_mode}`, {
 			replaceState: true,
 			noscroll: true,
@@ -138,7 +140,6 @@
 		await theDesigner.changeViewMode(tpl_mode);
 	}
 	//$: readonly = tpl_mode === 'read';
-	let readonly = true;
 	function show_delete_template_modal() {
 		hide_all_form();
 	}

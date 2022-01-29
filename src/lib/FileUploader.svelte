@@ -90,14 +90,14 @@
 	{allowMultiple}
 	maxFiles={forKey === 'pbo' ? 100 : 1}
 	labelIdle={forKvar
-		? `<i class='bi bi-cloud-arrow-up fs-3'/><div class='fs-5'>${$_(
+		? `<i class='bi bi-cloud-arrow-up fs-5'/><div class='fs-6'>${$_(
 				'filepond.labelIdle.kvar'
 		  )}</div>`
 		: forKey === 'pbo'
-		? `<i class='bi bi-cloud-arrow-up fs-3'/><div class="fs-5">${$_(
+		? `<i class='bi bi-cloud-arrow-up fs-3'/><div class="fs-6">${$_(
 				'filepond.labelIdle.pbo'
 		  )}</div>`
-		: `<i class='bi bi-cloud-arrow-up fs-3'/><div class="fs-5">${$_(
+		: `<i class='bi bi-cloud-arrow-up fs-3'/><div class="fs-6">${$_(
 				'filepond.labelIdle.pbo'
 		  )}</div>`}
 	server={{

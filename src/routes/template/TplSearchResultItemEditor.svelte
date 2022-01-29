@@ -17,7 +17,7 @@
 	export let visi_rds_input: string;
 	export let index: any;
 	export let desc_input: string;
-	export let author_input: string;
+	export let author_input: string = '';
 	let tag_input: string = '';
 	export let setFadeMessage: any;
 	export let reloadTags: any;

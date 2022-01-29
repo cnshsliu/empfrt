@@ -35,7 +35,7 @@
 	import type { KvarInput, NodeInfo } from '$lib/types';
 
 	export let template: Template;
-	export let workflow: Workflow;
+	export let workflow: Workflow = null;
 	export let tpl_mode: string;
 
 	let jQuery: any;

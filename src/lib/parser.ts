@@ -133,6 +133,10 @@ const Parser = {
 
 	newlineToBreak: function (txt: string): string {
 		return txt.replace(/\n/g, '<br/>');
+	},
+
+	toValidVarName: function (tmp: string): string {
+		return tmp.trim().replace(/^[^a-zA-Z_$]|[^\w$]/g, '_');
 	}
 };
 export default Parser;
