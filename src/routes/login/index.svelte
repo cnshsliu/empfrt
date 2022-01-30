@@ -115,6 +115,7 @@
 					<Input
 						class={'form-control form-control-lg ' + isUserValid}
 						id="input-email"
+						name="email"
 						required
 						autocomplete="username"
 						placeholder="Email"

@@ -188,7 +188,6 @@
 		on:filterTemplateChange={filterTemplateChanged}
 		fields="{['doer', 'templatepicker', 'statuses']},"
 		object_type="work items"
-		statuses_label="Work status:"
 		statuses={[
 			{ value: 'All', label: $_('status.All') },
 			{ value: 'ST_RUN', label: $_('status.ST_RUN') },

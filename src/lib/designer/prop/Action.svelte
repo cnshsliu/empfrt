@@ -19,12 +19,12 @@
 		TabPane,
 		TabContent
 	} from 'sveltestrap';
-	import type { KvarInput } from '$lib/types';
+	import type { KVarDef } from '$lib/types';
 	import { onMount } from 'svelte';
 	import RolePicker from '$lib/designer/prop/RolePicker.svelte';
 
 	export let nodeInfo;
-	export let kvarsArr: KvarInput[];
+	export let kvarsArr: KVarDef[];
 	export let roleOptions = [];
 	export let showHelp;
 	export let readonly;
@@ -228,7 +228,9 @@
 												kvar.options = qtb(kvar.options);
 											}}
 											disabled={readonly}
-											placeholder="a;b;c"
+											placeholder={kvar.name.startsWith('ou_')
+												? 'ou_code;yes|no(include this level?)'
+												: 'option 1;option 2;option 3'}
 										/>
 									</InputGroup>
 								{/if}

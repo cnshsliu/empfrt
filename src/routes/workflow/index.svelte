@@ -176,7 +176,6 @@
 		on:filterStatusChange={filterStatusChanged}
 		on:filterTemplateChange={refreshList}
 		on:filterStarterChange={refreshList}
-		statuses_label="Workflow status:"
 		fields="{['starter', 'statuses', 'templatepicker']},"
 		object_type="processes"
 		statuses={[

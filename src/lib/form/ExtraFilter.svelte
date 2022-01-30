@@ -22,10 +22,10 @@
 	let filter_doer: string;
 	let filter_starter: string;
 	let filter_tspan: string;
-	export let filter_template: string;
+	let filter_template: string;
 	export let user: User;
-	export let delegators;
-	export let filter_status: string;
+	export let delegators = [];
+	let filter_status: string;
 	export let fields: string[] = ['statuses'];
 	export let templates: string[] = [];
 	export let statuses: radioOption[] = [

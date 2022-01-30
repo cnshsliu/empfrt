@@ -1,5 +1,6 @@
 <script context="module" lang="ts">
 	import { post } from '$lib/utils';
+	import { Button } from 'sveltestrap';
 	export const ssr = false;
 	let TimeTool = null;
 	export async function load({ page, fetch, session }) {
@@ -37,6 +38,7 @@
 
 <script lang="ts">
 	import { _, mtcDate } from '$lib/i18n';
+	import { goto } from '$app/navigation';
 	import * as api from '$lib/api';
 	import type { User, Work } from '$lib/types';
 	import { title } from '$lib/title';
@@ -79,6 +81,24 @@
 			<div class="mx-3 align-self-center flex-grow-1">
 				{TimeTool.fromNow(work.createdAt)}
 			</div>
+			{#if work.rehearsal}
+				<div class="mx-3 align-self-center flex-grow-1">
+					<Button
+						class="btn-xs"
+						on:click={async (e) => {
+							e.preventDefault();
+							console.log('restart then destroy', work.wfid);
+							api
+								.post('workflow/restart/then/destroy', { wfid: work.wfid }, user.sessionToken)
+								.then((res) => {
+									goto('/work');
+								});
+						}}
+					>
+						Restart
+					</Button>
+				</div>
+			{/if}
 		</div>
 	</Container>
 	<Container class="mt-3 kfk-highlight-2">

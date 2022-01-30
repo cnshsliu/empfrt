@@ -6,13 +6,15 @@
 	import { text_area_resize } from '$lib/autoresize_textarea';
 	import CommentEntry from '$lib/CommentEntry.svelte';
 	import ProcessTrack from '$lib/ProcessTrack.svelte';
+	import KVarInput from '$lib/KVarInput.svelte';
+	import KVarDisplay from '$lib/KVarDisplay.svelte';
 	import TransferWork from './_transfer.svelte';
 	import { Container, Row, Col, Icon } from 'sveltestrap';
 	import { onMount } from 'svelte';
 	import { FormGroup, Input, Label, InputGroup, InputGroupText } from 'sveltestrap';
 	import { Button } from 'sveltestrap';
 	import { debugOption } from '$lib/empstores';
-	import WorkFile from './workfile.svelte';
+	import WorkFile from '$lib/workfile.svelte';
 	import List from '$lib/input/List.svelte';
 	import type { User, Work, oneArgFunc } from '$lib/types';
 	export let work: Work;
@@ -21,8 +23,6 @@
 	export let iframeMode: boolean;
 	let recentUsers = [];
 	let check_timer = null;
-	let checkingMsgs = [];
-	let cssClasses = [];
 	let checkingStatus = '';
 	let showAdhocForm = false;
 	let adhocTaskTitle = '';
@@ -135,6 +135,7 @@
 		for (let i = 0; i < work.kvarsArr.length; i++) {
 			if (work.kvarsArr[i].required) {
 				if (work.kvarsArr[i].type === 'checkbox') {
+					debugger;
 					if (work.kvarsArr[i].value !== true && work.kvarsArr[i].value !== false) {
 						errMsg = `${work.kvarsArr[i].label} should hava value`;
 						break;
@@ -205,35 +206,12 @@
 			work.status === 'ST_RUN';
 		return is_doable;
 	};
-	work.kvarsArr = work.kvarsArr.map((x) => {
-		checkingMsgs.push('');
-		cssClasses.push('');
-		return x;
-	});
 	onMount(async () => {
 		console.log(JSON.stringify(work, null, 2));
 		if (localStorage) {
 			recentUsers = JSON.parse(localStorage.getItem('recentUsers') ?? JSON.stringify([]));
 		}
 	});
-	const onInputUser = function (kvar, ser) {
-		kvar.class = 'LOADING';
-		if (check_timer) clearTimeout(check_timer);
-		check_timer = setTimeout(async () => {
-			let ret = await api.post('check/coworker', { whom: kvar.value }, user.sessionToken);
-			if (ret.error) {
-				cssClasses[ser] = 'is-invalid';
-				checkingMsgs[ser] = ret.message;
-			} else {
-				cssClasses[ser] = 'valid';
-				checkingMsgs[ser] = `${ret.username}(${ret.email})`;
-				kvar.value = ret.email;
-				work.kvarsArr = work.kvarsArr;
-			}
-
-			check_timer = null;
-		}, 1000);
-	};
 	const saveOneRecentUser = function (user) {
 		let tmp = recentUsers.indexOf(user);
 		if (tmp > -1) {
@@ -277,105 +255,7 @@
 						{$_('todo.nodeInput')}
 						<Row cols={{ lg: 4, md: 2, xs: 1 }} class="m-2">
 							{#each work.kvarsArr as kvar, i}
-								{#if kvar.ui.includes('input')}
-									{#if kvar.breakrow}
-										<div class="w-100" />
-									{/if}
-									{#if kvar.type === 'textarea'}
-										<div class="w-100" />
-									{/if}
-									<Col class={' p-1 ' + (kvar.type === 'textarea' ? ' w-100' : '')}>
-										{#if isDebug}
-											<div class="text-wrap text-break">{JSON.stringify(kvar)}</div>
-										{/if}
-										<FormGroup>
-											<Label>{kvar.label}{kvar.required ? '*' : ''}</Label>
-											{#if kvar.type === 'textarea'}
-												<textarea
-													name={kvar.name}
-													bind:value={work.kvarsArr[i].value}
-													placeholder={kvar.placeholder}
-													required={kvar.required}
-													use:text_area_resize
-													class="form-control"
-												/>
-											{:else if kvar.type === 'file'}
-												<WorkFile
-													{work}
-													title={null}
-													forWhat={'workflow'}
-													forWhich={work.wfid}
-													forKey={kvar.name}
-													forKvar={kvar.label}
-												/>
-											{:else if ['select', 'checkbox', 'radio', 'user'].includes(kvar.type) === false}
-												<Input
-													type={['dt', 'datetime'].includes(kvar.type)
-														? 'datetime-local'
-														: kvar.type}
-													name={kvar.name}
-													bind:value={work.kvarsArr[i].value}
-													id={kvar.id}
-													placeholder={kvar.placeholder}
-													required={kvar.required}
-												/>
-											{:else if kvar.type === 'user'}
-												<Input
-													class={cssClasses[i]}
-													name={kvar.name}
-													bind:value={kvar.value}
-													id={kvar.id}
-													placeholder={kvar.placeholder}
-													required={kvar.required}
-													autocomplete="off"
-													on:input={onInputUser(kvar, i)}
-													aria-describedby={'validationServerUsernameFeedback' + i}
-												/>
-												<div id={'validationServerUsernameFeedback' + i} class="invalid-feedback">
-													{checkingMsgs[i]}
-												</div>
-												{#if cssClasses[i] === 'valid'}
-													{checkingMsgs[i]}
-												{/if}
-											{:else if kvar.type === 'checkbox'}
-												<div class="form-check form-switch">
-													<input
-														class="form-check-input"
-														type="checkbox"
-														role="switch"
-														bind:checked={kvar.value}
-														id={'chk-' + kvar.id ? kvar.id : kvar.name}
-													/>
-												</div>
-											{:else if kvar.type === 'radio'}
-												{#each kvar.options as option}
-													<Input
-														type="radio"
-														bind:group={kvar.value}
-														value={option}
-														label={option}
-													/>
-												{/each}
-											{:else if kvar.type === 'select'}
-												<List
-													{kvar}
-													{whichtoChange}
-													{serverListKey}
-													on:changelist={(e) => {
-														let tmp = e.detail.split('/');
-														if (tmp[0].length > 0) {
-															whichtoChange = tmp[0];
-															serverListKey = tmp[1];
-														}
-													}}
-												/>
-											{/if}
-										</FormGroup>
-									</Col>
-									{#if kvar.type === 'textarea'}
-										<div class="w-100" />
-									{/if}
-								{/if}
+								<KVarInput {work} {kvar} {i} />
 							{/each}
 						</Row>
 					{/if}
@@ -602,56 +482,7 @@
 				Workflow Context:
 				<Row cols={{ lg: 4, md: 2, xs: 1 }}>
 					{#each work.wf.kvarsArr as kvar}
-						{#if kvar.ui.includes('context') || work.rehearsal}
-							{#if kvar.breakrow}
-								<div class="w-100" />
-							{/if}
-							{#if kvar.type === 'textarea'}
-								<div class="w-100" />
-							{/if}
-							<Col class={' p-2 ' + (kvar.type === 'textarea' ? ' w-100' : '')}>
-								<div class="fs-5  border-bottom border-primary border-1">
-									{#if kvar.label === 'Starter'}
-										{$_('todo.Starter')}{@html work.rehearsal ? '<br/>' + kvar.name : ''}
-									{:else if kvar.label === 'StarterCN'}
-										{$_('todo.StarterCN')}{@html work.rehearsal ? '<br/>' + kvar.name : ''}
-									{:else if kvar.label === 'StarterOU'}
-										{$_('todo.StarterOU')}{@html work.rehearsal ? '<br/>' + kvar.name : ''}
-									{:else if kvar.label.startsWith('OUof_')}
-										{$_('todo.OUof') + '(' + kvar.label.substring(5) + ')'}{@html work.rehearsal
-											? '<br/>' + kvar.name
-											: ''}
-									{:else}
-										{kvar.label}{@html work.rehearsal ? '<br/>' + kvar.name : ''}
-									{/if}
-									<br />
-								</div>
-								<span class="kfk-kvar-value-display">
-									{#if kvar.type === 'textarea'}
-										{@html Parser.newlineToBreak(kvar.value)}
-									{:else if kvar.type === 'url'}
-										<a href={kvar.value} target="_blank">{kvar.value}</a>
-									{:else if kvar.type === 'file'}
-										<WorkFile
-											{work}
-											title={null}
-											forWhat={'workflow'}
-											forWhich={work.wfid}
-											forKey={kvar.name}
-											forKvar={kvar.label}
-											uploader={false}
-										/>
-									{:else if work.rehearsal}
-										{kvar.display ? kvar.value + '(' + kvar.display + ')' : kvar.value}
-									{:else}
-										{kvar.display ? kvar.display : kvar.value}
-									{/if}
-								</span>
-							</Col>
-							{#if kvar.type === 'textarea' || kvar.name === 'ou_SOU'}
-								<div class="w-100" />
-							{/if}
-						{/if}
+						<KVarDisplay {work} {kvar} />
 					{/each}
 				</Row>
 			</Container>

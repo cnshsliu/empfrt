@@ -32,7 +32,7 @@
 		ListGroupItem,
 		Icon
 	} from 'sveltestrap';
-	import type { KvarInput, NodeInfo } from '$lib/types';
+	import type { KVarDef, NodeInfo } from '$lib/types';
 
 	export let template: Template;
 	export let workflow: Workflow = null;
@@ -43,7 +43,7 @@
 	let jqueryui: any;
 	let that = this;
 	let currentTool = 'POINTER';
-	let kvarsArr: KvarInput[];
+	let kvarsArr: KVarDef[];
 	let errMsg = '';
 	let roleOptions = [];
 	let workid = null;
@@ -77,9 +77,14 @@
 	const setNodeProperties = async () => {
 		if (nodeInfo.nodeType === 'ACTION') {
 			for (let i = 0; i < kvarsArr.length; i++) {
+				kvarsArr[i].value = kvarsArr[i].value.trim();
 				if (kvarsArr[i].options) {
 					let arr = kvarsArr[i].options.split(/[\s;,]/).filter((x) => x.length > 0);
 					kvarsArr[i].options = arr.join(';');
+				}
+				if ((kvarsArr[i].value as unknown as string).startsWith('=')) {
+					kvarsArr[i].formula = kvarsArr[i].value.substring(1);
+					kvarsArr[i].value = '';
 				}
 			}
 			nodeInfo.nodeProps.kvarsArr = kvarsArr;
@@ -98,7 +103,7 @@
 			}
 		}
 		toggle();
-		KFK.setNodeProperties(nodeInfo.jqDiv, nodeInfo.nodeProps);
+		KFK.setNodeDOMProperties(nodeInfo.jqDiv, nodeInfo.nodeProps);
 	};
 	export function designerCallback(cmd: string, args: any): void {
 		switch (cmd) {
@@ -120,7 +125,7 @@
 						kvarsArr = Parser.kvarsToArray(
 							nodeInfo.nodeProps.ACTION.kvars,
 							''
-						) as unknown as KvarInput[];
+						) as unknown as KVarDef[];
 					}
 				} else if (nodeInfo.nodeType === 'INFORM') {
 					roleOptions = Parser.collectRoles(args.nodes);

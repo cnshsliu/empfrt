@@ -429,19 +429,20 @@
 									{$_('remotetable.wfa.viewInstanceTemplate')}
 								</NavLink>
 							</DropdownItem>
-							<DropdownItem>
-								{#if ClientPermControl(user.perms, user.email, 'workflow', row, 'delete')}
+							{#if ClientPermControl(user.perms, user.email, 'workflow', row, 'delete')}
+								<DropdownItem>
 									<NavLink on:click={() => opWorkflow(row, 'destroy')}>
 										<Icon name="trash" />
 										{$_('remotetable.wfa.deleteThisWorkflow')}
 									</NavLink>
-								{:else}
-									<NavLink disabled>
+								</DropdownItem>
+								<DropdownItem>
+									<NavLink on:click={() => opWorkflow(row, 'restartthendestroy')}>
 										<Icon name="trash" />
-										{$_('remotetable.wfa.deleteThisWorkflow')}
+										{$_('remotetable.wfa.restartthendeleteThisWorkflow')}
 									</NavLink>
-								{/if}
-							</DropdownItem>
+								</DropdownItem>
+							{/if}
 						</DropdownMenu>
 					</Dropdown>
 				</td>

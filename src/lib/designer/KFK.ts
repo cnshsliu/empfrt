@@ -846,7 +846,7 @@ ret='DEFAULT'; `
 		return ret;
 	}
 
-	setNodeProperties(jqDIV: myJQuery, props: any) {
+	setNodeDOMProperties(jqDIV: myJQuery, props: any) {
 		let that = this;
 		let propJSON: NodePropJSON;
 		if (jqDIV.hasClass('ACTION')) {

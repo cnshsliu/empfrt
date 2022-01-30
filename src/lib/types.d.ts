@@ -151,7 +151,7 @@ export interface kvarDef {
 	hide?: string;
 	ui?: string | string[];
 }
-export interface KvarInput {
+export interface KVarDef {
 	name: string;
 	value: string | number | string[];
 	label: string;
@@ -162,6 +162,7 @@ export interface KvarInput {
 	id?: string;
 	options?: string;
 	visi?: string;
+	formula?: string;
 }
 
 export interface KFKclass {
@@ -184,7 +185,7 @@ export interface NodeInfo {
 	theConnect: any;
 	caseValue: string;
 	nodeProps: {
-		kvarsArr: KvarInput[];
+		kvarsArr: KVarDef[];
 		label: string;
 		ACTION?: any;
 		SUB?: any;

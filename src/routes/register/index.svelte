@@ -80,6 +80,7 @@
 						id="input-email"
 						type="email"
 						required
+						name="email"
 						placeholder="Email"
 						bind:value={email}
 					/>
@@ -101,8 +102,10 @@
 						class="form-control form-control-lg mt-2"
 						type="password"
 						id="input-password"
+						name="new-password"
 						required
 						placeholder="Password"
+						autocomplete="new-password"
 						bind:value={password}
 					/>
 					<label for="input-password"> {$_('account.choosePassword')}</label>
@@ -114,6 +117,7 @@
 						id="input-password-repeat"
 						required
 						placeholder="Password Repeat"
+						autocomplete="new-password"
 						bind:value={password2}
 					/>
 					<label for="input-password-repeat"> {$_('account.verifyPassword')}</label>
