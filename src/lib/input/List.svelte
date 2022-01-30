@@ -116,8 +116,9 @@
 		}
 	}
 
-	const onListChange = function (e) {
+	const onListChange = function (e: any) {
 		let selectedValue = e.target.value;
+		dispatch('change', { name: kvar.name, value: selectedValue });
 		dispatch('changelist', `${tobeTriggeredSelectName}/${selectedValue}`);
 	};
 

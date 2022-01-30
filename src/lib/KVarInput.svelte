@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher();
 	import * as api from '$lib/api';
 	import { Col, FormGroup, Label, Input } from 'sveltestrap';
 	import { debugOption } from '$lib/empstores';
@@ -52,7 +54,10 @@
 		<FormGroup>
 			<Label>{kvar.label}{kvar.required ? '*' : ''}</Label>
 			{#if kvar.formula && kvar.formula.length > 0}
-				{kvar.formula}= {kvar.value}
+				{#if work.rehearsal}
+					<div>{kvar.formula}</div>
+				{/if}
+				<div>{kvar.value}</div>
 			{:else if kvar.type === 'textarea'}
 				<textarea
 					name={kvar.name}
@@ -61,6 +66,10 @@
 					required={kvar.required}
 					use:text_area_resize
 					class="form-control"
+					on:change={(e) => {
+						e.preventDefault();
+						dispatch('kvar_value_input_changed', kvar);
+					}}
 				/>
 			{:else if kvar.type === 'file'}
 				<WorkFile
@@ -73,12 +82,20 @@
 				/>
 			{:else if ['select', 'checkbox', 'radio', 'user'].includes(kvar.type) === false}
 				<Input
-					type={['dt', 'datetime'].includes(kvar.type) ? 'datetime-local' : kvar.type}
+					type={['dt', 'datetime'].includes(kvar.type)
+						? 'datetime-local'
+						: kvar.type === 'string'
+						? 'text'
+						: kvar.type}
 					name={kvar.name}
-					bind:value={work.kvarsArr[i].value}
-					id={kvar.id}
+					bind:value={kvar.value}
+					id={kvar.id ? kvar.id : `input_${kvar.name}`}
 					placeholder={kvar.placeholder}
 					required={kvar.required}
+					on:change={(e) => {
+						e.preventDefault();
+						dispatch('kvar_value_input_changed', kvar);
+					}}
 				/>
 			{:else if kvar.type === 'user'}
 				<Input
@@ -92,6 +109,10 @@
 					on:input={(e) => {
 						e.preventDefault();
 						onInputUser(kvar, i);
+					}}
+					on:change={(e) => {
+						e.preventDefault();
+						dispatch('kvar_value_input_changed', kvar);
 					}}
 					aria-describedby={'validationServerUsernameFeedback' + i}
 				/>
@@ -108,18 +129,37 @@
 						type="checkbox"
 						role="switch"
 						bind:checked={kvar.value}
-						id={'chk-' + kvar.id ? kvar.id : kvar.name}
+						id={'chk-' + (kvar.id ? kvar.id : kvar.name)}
+						on:change={(e) => {
+							e.preventDefault();
+							dispatch('kvar_value_input_changed', kvar);
+						}}
 					/>
 				</div>
 			{:else if kvar.type === 'radio'}
 				{#each kvar.options as option}
-					<Input type="radio" bind:group={kvar.value} value={option} label={option} />
+					<Input
+						type="radio"
+						bind:group={kvar.value}
+						value={option}
+						label={option}
+						on:change={(e) => {
+							e.preventDefault();
+							//eslint-disable-next-line
+							let selectedValue = e.target.value;
+							dispatch('kvar_value_input_changed', { name: kvar.name, value: selectedValue });
+						}}
+					/>
 				{/each}
 			{:else if kvar.type === 'select'}
 				<List
 					{kvar}
 					{whichtoChange}
 					{serverListKey}
+					on:change={(e) => {
+						e.preventDefault();
+						dispatch('kvar_value_input_changed', e.detail);
+					}}
 					on:changelist={(e) => {
 						let tmp = e.detail.split('/');
 						if (tmp[0].length > 0) {

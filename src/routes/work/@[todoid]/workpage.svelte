@@ -207,7 +207,6 @@
 		return is_doable;
 	};
 	onMount(async () => {
-		console.log(JSON.stringify(work, null, 2));
 		if (localStorage) {
 			recentUsers = JSON.parse(localStorage.getItem('recentUsers') ?? JSON.stringify([]));
 		}
@@ -223,6 +222,22 @@
 		}
 		localStorage.setItem('recentUsers', JSON.stringify(recentUsers));
 		recentUsers = recentUsers;
+	};
+
+	const caculateFormula = function (kvar) {
+		console.log(kvar.name, ' new value: ', kvar.value);
+		if (work.kvarsArr.length <= 0) return;
+		for (let i = 0; i < work.kvarsArr.length; i++) {
+			if (work.kvarsArr[i].formula) {
+				console.log(work.kvarsArr[i].formula);
+				try {
+					let result = Parser.evalFormula(work.kvarsArr, work.kvarsArr[i].formula);
+					work.kvarsArr[i].value = result;
+				} catch (e) {
+					console.warn(e);
+				}
+			}
+		}
 	};
 </script>
 
@@ -255,7 +270,14 @@
 						{$_('todo.nodeInput')}
 						<Row cols={{ lg: 4, md: 2, xs: 1 }} class="m-2">
 							{#each work.kvarsArr as kvar, i}
-								<KVarInput {work} {kvar} {i} />
+								<KVarInput
+									{work}
+									{kvar}
+									{i}
+									on:kvar_value_input_changed={(e) => {
+										caculateFormula(e.detail);
+									}}
+								/>
 							{/each}
 						</Row>
 					{/if}

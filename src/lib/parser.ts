@@ -1,3 +1,4 @@
+import * as ts from 'typescript';
 import { Buffer } from 'buffer';
 interface KVars {
 	name: string;
@@ -12,7 +13,10 @@ const Parser = {
 	hasValue: function (str: string | number): boolean {
 		return !this.isEmpty(str);
 	},
-	kvarsToArray: function (kvars: KVars, workid: string): Record<string, unknown>[] {
+	kvarsToArrayForActionPropertyModal: function (
+		kvars: KVars,
+		workid: string
+	): Record<string, unknown>[] {
 		const kvarsArr = [];
 		for (const [name, valueDef] of Object.entries(kvars)) {
 			//eslint-disable-next-line
@@ -49,6 +53,7 @@ const Parser = {
 					tmp.options = ['DEFAULT'];
 				} */
 			}
+			if (tmp.formula) tmp.value = '=' + tmp.formula;
 			kvarsArr.push(tmp);
 		}
 		return kvarsArr;
@@ -137,6 +142,29 @@ const Parser = {
 
 	toValidVarName: function (tmp: string): string {
 		return tmp.trim().replace(/^[^a-zA-Z_$]|[^\w$]/g, '_');
+	},
+
+	evalFormula: function (kvarArr, formula): any {
+		console.log('formula:', formula);
+		const replaceKvar = function (formula) {
+			for (let i = 0; i < kvarArr.length; i++) {
+				var re = new RegExp(`\\b${kvarArr[i].name}\\b`, 'g');
+				if (kvarArr[i].type === 'number' || kvarArr[i].type === 'range')
+					formula = formula.replace(re, kvarArr[i].value);
+				else formula = formula.replace(re, '"' + kvarArr[i].value + '"');
+			}
+			return formula;
+		};
+
+		let expr = replaceKvar(formula);
+		let result = eval(expr);
+
+		/* let result = ts.transpile(code);
+		let runnable: any = eval(result);
+		runnable. */
+
+		console.log('Formula:', formula, 'Expr:', expr, 'Result:', result);
+		return result;
 	}
 };
 export default Parser;

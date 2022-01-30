@@ -150,8 +150,9 @@ export interface kvarDef {
 	cssClass?: string;
 	hide?: string;
 	ui?: string | string[];
+	formula?: string;
 }
-export interface KVarDef {
+export interface KVarDefInput {
 	name: string;
 	value: string | number | string[];
 	label: string;

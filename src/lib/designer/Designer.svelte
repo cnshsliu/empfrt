@@ -32,7 +32,7 @@
 		ListGroupItem,
 		Icon
 	} from 'sveltestrap';
-	import type { KVarDef, NodeInfo } from '$lib/types';
+	import type { KVarDefInput, NodeInfo } from '$lib/types';
 
 	export let template: Template;
 	export let workflow: Workflow = null;
@@ -43,7 +43,7 @@
 	let jqueryui: any;
 	let that = this;
 	let currentTool = 'POINTER';
-	let kvarsArr: KVarDef[];
+	let kvarsArr: KVarDefInput[];
 	let errMsg = '';
 	let roleOptions = [];
 	let workid = null;
@@ -83,7 +83,8 @@
 					kvarsArr[i].options = arr.join(';');
 				}
 				if ((kvarsArr[i].value as unknown as string).startsWith('=')) {
-					kvarsArr[i].formula = kvarsArr[i].value.substring(1);
+					kvarsArr[i].formula = kvarsArr[i].value as unknown as string;
+					kvarsArr[i].formula = kvarsArr[i].formula.substring(1);
 					kvarsArr[i].value = '';
 				}
 			}
@@ -122,10 +123,10 @@
 					//ACTION 是需要有role和kvars的
 					roleOptions = Parser.collectRoles(args.nodes);
 					if (nodeInfo.nodeProps.ACTION.kvars) {
-						kvarsArr = Parser.kvarsToArray(
+						kvarsArr = Parser.kvarsToArrayForActionPropertyModal(
 							nodeInfo.nodeProps.ACTION.kvars,
 							''
-						) as unknown as KVarDef[];
+						) as unknown as KVarDefInput[];
 					}
 				} else if (nodeInfo.nodeType === 'INFORM') {
 					roleOptions = Parser.collectRoles(args.nodes);

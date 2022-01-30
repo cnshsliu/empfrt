@@ -19,12 +19,12 @@
 		TabPane,
 		TabContent
 	} from 'sveltestrap';
-	import type { KVarDef } from '$lib/types';
+	import type { KVarDefInput } from '$lib/types';
 	import { onMount } from 'svelte';
 	import RolePicker from '$lib/designer/prop/RolePicker.svelte';
 
 	export let nodeInfo;
-	export let kvarsArr: KVarDef[];
+	export let kvarsArr: KVarDefInput[];
 	export let roleOptions = [];
 	export let showHelp;
 	export let readonly;
