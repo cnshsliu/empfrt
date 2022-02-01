@@ -6,6 +6,7 @@
 	import { debugOption } from '$lib/empstores';
 	import { text_area_resize } from '$lib/autoresize_textarea';
 	import List from '$lib/input/List.svelte';
+	import InputTable from '$lib/InputTable.svelte';
 	import { session } from '$app/stores';
 	import WorkFile from '$lib/workfile.svelte';
 
@@ -47,7 +48,7 @@
 	{#if ['textarea', 'tbl'].includes(kvar.type)}
 		<div class="w-100" />
 	{/if}
-	<Col class={' p-1 ' + (kvar.type === 'textarea' ? ' w-100' : '')}>
+	<Col class={' p-1 ' + (['textarea', 'tbl'].includes(kvar.type) ? ' w-100' : '')}>
 		{#if isDebug}
 			<div class="text-wrap text-break">{JSON.stringify(kvar)}</div>
 		{/if}
@@ -72,6 +73,8 @@
 						dispatch('kvar_value_input_changed', kvar);
 					}}
 				/>
+			{:else if kvar.type === 'tbl'}
+				<InputTable {work} {kvar} />
 			{:else if kvar.type === 'file'}
 				<WorkFile
 					{work}
