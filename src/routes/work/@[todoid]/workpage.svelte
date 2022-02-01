@@ -6,7 +6,7 @@
 	import { text_area_resize } from '$lib/autoresize_textarea';
 	import CommentEntry from '$lib/CommentEntry.svelte';
 	import ProcessTrack from '$lib/ProcessTrack.svelte';
-	import KVarInput from '$lib/KVarInput.svelte';
+	import InputKVar from '$lib/InputKVar.svelte';
 	import KVarDisplay from '$lib/KVarDisplay.svelte';
 	import TransferWork from './_transfer.svelte';
 	import { Container, Row, Col, Icon } from 'sveltestrap';
@@ -270,7 +270,7 @@
 						{$_('todo.nodeInput')}
 						<Row cols={{ lg: 4, md: 2, xs: 1 }} class="m-2">
 							{#each work.kvarsArr as kvar, i}
-								<KVarInput
+								<InputKVar
 									{work}
 									{kvar}
 									{i}

@@ -59,7 +59,9 @@
 
 	export let iframeMode;
 
-	onMount(() => {});
+	onMount(() => {
+		console.log('work onMount', JSON.stringify(work, null, 2));
+	});
 </script>
 
 {#if work && work.doer}

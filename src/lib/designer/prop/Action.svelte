@@ -217,10 +217,14 @@
 										}}
 									/>
 								</InputGroup>
-								{#if kvar.name.startsWith('select_') || kvar.name.startsWith('sel_') || kvar.name.startsWith('sl_') || kvar.name.startsWith('radio_') || kvar.name.startsWith('ou_')}
+								{#if kvar.name.startsWith('select_') || kvar.name.startsWith('sel_') || kvar.name.startsWith('sl_') || kvar.name.startsWith('radio_') || kvar.name.startsWith('ou_') || kvar.name.startsWith('tbl_')}
 									<InputGroup size="sm">
 										<InputGroupText>
-											{$_('prop.action.kvar.options')}
+											{kvar.name.startsWith('ou_')
+												? $_('prop.action.kvar.ou_options')
+												: kvar.name.startsWith('tbl_')
+												? $_('prop.action.kvar.tbl_options')
+												: $_('prop.action.kvar.sel_options')}
 										</InputGroupText>
 										<Input
 											bind:value={kvar.options}
@@ -229,8 +233,10 @@
 											}}
 											disabled={readonly}
 											placeholder={kvar.name.startsWith('ou_')
-												? 'ou_code;yes|no(include this level?)'
-												: 'option 1;option 2;option 3'}
+												? $_('prop.action.kvar.ou_placeholder')
+												: kvar.name.startsWith('tbl_')
+												? $_('prop.action.kvar.tbl_placeholder')
+												: $_('prop.action.kvar.sel_placeholder')}
 										/>
 									</InputGroup>
 								{/if}

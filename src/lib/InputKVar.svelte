@@ -44,7 +44,7 @@
 	{#if kvar.breakrow}
 		<div class="w-100" />
 	{/if}
-	{#if kvar.type === 'textarea'}
+	{#if ['textarea', 'tbl'].includes(kvar.type)}
 		<div class="w-100" />
 	{/if}
 	<Col class={' p-1 ' + (kvar.type === 'textarea' ? ' w-100' : '')}>
@@ -53,6 +53,7 @@
 		{/if}
 		<FormGroup>
 			<Label>{kvar.label}{kvar.required ? '*' : ''}</Label>
+			{kvar.type}
 			{#if kvar.formula && kvar.formula.length > 0}
 				{#if work.rehearsal}
 					<div>{kvar.formula}</div>
@@ -84,7 +85,7 @@
 				<Input
 					type={['dt', 'datetime'].includes(kvar.type)
 						? 'datetime-local'
-						: kvar.type === 'string'
+						: ['string', 'plaintext'].includes(kvar.type)
 						? 'text'
 						: kvar.type}
 					name={kvar.name}
@@ -171,7 +172,7 @@
 			{/if}
 		</FormGroup>
 	</Col>
-	{#if kvar.type === 'textarea'}
+	{#if ['textarea', 'tbl'].includes(kvar.type)}
 		<div class="w-100" />
 	{/if}
 {/if}

@@ -24,23 +24,6 @@ const Parser = {
 			if (typeof valueDef === 'string') tmp = { name: name, value: valueDef, type: 'plaintext' };
 			else {
 				tmp = { ...{ name: name }, ...valueDef };
-				//START Speculate variable type
-				//based on prefix_ of name
-				let matchResult = name.match(
-					'(email|password|url|range|number|datetime|dt|date|time|color|search|select|textarea|file|radio|checkbox|cb)_'
-				);
-				tmp.type = 'plaintext';
-				if (matchResult) {
-					tmp.type = matchResult[1];
-				} else {
-					//based on value type if no prefix_ in name
-					//eslint-disable-next-line
-					matchResult = (typeof valueDef.value).match('(number|string)');
-					if (matchResult) {
-						tmp.type = matchResult[1];
-						if (tmp.type === 'string') tmp.type = 'plaintext';
-					}
-				}
 				//END Speculate variable type
 				if (workid && workid.length > 0) {
 					for (const [varKey, varValue] of Object.entries(tmp)) {
@@ -158,10 +141,6 @@ const Parser = {
 
 		let expr = replaceKvar(formula);
 		let result = eval(expr);
-
-		/* let result = ts.transpile(code);
-		let runnable: any = eval(result);
-		runnable. */
 
 		console.log('Formula:', formula, 'Expr:', expr, 'Result:', result);
 		return result;

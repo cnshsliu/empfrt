@@ -77,7 +77,28 @@
 	const setNodeProperties = async () => {
 		if (nodeInfo.nodeType === 'ACTION') {
 			for (let i = 0; i < kvarsArr.length; i++) {
-				kvarsArr[i].value = kvarsArr[i].value.trim();
+				kvarsArr[i].value = (kvarsArr[i].value as unknown as string).trim();
+				//
+				//START Speculate variable type
+				//based on prefix_ of name
+				/*
+				let matchResult = kvarsArr[i].name.match(
+					'(email|password|url|range|number|datetime|dt|date|time|color|search|select|textarea|file|radio|checkbox|cb|tbl)_'
+				);
+				kvarsArr[i].type = 'plaintext';
+				if (matchResult) {
+					kvarsArr[i].type = matchResult[1];
+				} else {
+					//based on value type if no prefix_ in name
+					//eslint-disable-next-line
+					matchResult = (typeof kvarsArr[i].value).match('(number|string)');
+					if (matchResult) {
+						kvarsArr[i].type = matchResult[1];
+						if (kvarsArr[i].type === 'string') kvarsArr[i].type = 'plaintext';
+					}
+				}
+					*/
+
 				if (kvarsArr[i].options) {
 					let arr = kvarsArr[i].options.split(/[\s;,]/).filter((x) => x.length > 0);
 					kvarsArr[i].options = arr.join(';');
