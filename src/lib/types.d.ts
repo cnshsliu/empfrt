@@ -162,6 +162,7 @@ export interface KVarDefInput {
 	required?: boolean;
 	id?: string;
 	options?: string;
+	coldef?: string;
 	visi?: string;
 	formula?: string;
 }

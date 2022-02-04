@@ -217,13 +217,11 @@
 										}}
 									/>
 								</InputGroup>
-								{#if kvar.name.startsWith('select_') || kvar.name.startsWith('sel_') || kvar.name.startsWith('sl_') || kvar.name.startsWith('radio_') || kvar.name.startsWith('ou_') || kvar.name.startsWith('tbl_')}
+								{#if kvar.name.startsWith('select_') || kvar.name.startsWith('sel_') || kvar.name.startsWith('sl_') || kvar.name.startsWith('radio_') || kvar.name.startsWith('ou_')}
 									<InputGroup size="sm">
 										<InputGroupText>
 											{kvar.name.startsWith('ou_')
 												? $_('prop.action.kvar.ou_options')
-												: kvar.name.startsWith('tbl_')
-												? $_('prop.action.kvar.tbl_options')
 												: $_('prop.action.kvar.sel_options')}
 										</InputGroupText>
 										<Input
@@ -234,9 +232,21 @@
 											disabled={readonly}
 											placeholder={kvar.name.startsWith('ou_')
 												? $_('prop.action.kvar.ou_placeholder')
-												: kvar.name.startsWith('tbl_')
-												? $_('prop.action.kvar.tbl_placeholder')
 												: $_('prop.action.kvar.sel_placeholder')}
+										/>
+									</InputGroup>
+								{:else if kvar.name.startsWith('tbl_')}
+									<InputGroup size="sm">
+										<InputGroupText>
+											{$_('prop.action.kvar.tbl_options')}
+										</InputGroupText>
+										<Input
+											bind:value={kvar.coldef}
+											on:change={(e) => {
+												kvar.coldef = qtb(kvar.coldef);
+											}}
+											disabled={readonly}
+											placeholder={$_('prop.action.kvar.tbl_placeholder')}
 										/>
 									</InputGroup>
 								{/if}

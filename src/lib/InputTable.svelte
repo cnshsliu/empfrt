@@ -1,29 +1,203 @@
 <script lang="ts">
+	import { _, date, time } from '$lib/i18n';
 	import { createEventDispatcher } from 'svelte';
+	import Parser from '$lib/parser';
 	const dispatch = createEventDispatcher();
 	import * as api from '$lib/api';
-	import { Col, FormGroup, Label, Input } from 'sveltestrap';
+	import ColDefCompiler from '$lib/coldefcompiler';
+	import { Table, Icon, Row, Col, FormGroup, FormText, Label, Button, Input } from 'sveltestrap';
+	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle } from 'sveltestrap';
 	import { session } from '$app/stores';
 
 	let user = $session.user;
 	export let work: any;
 	export let kvar: any;
 
-	let cols = kvar.options.split(';');
+	let compileResult = ColDefCompiler.compileColDef(kvar);
+	let rows = [];
+	let colDefs = compileResult.colDefs;
+	rows.push(compileResult.row);
+
+	const resetKVarValue = function () {
+		let theTableValue = { rows: rows, avgrow: [], sumrow: [] };
+		for (let c = 0; c < colDefs.length; c++) {
+			if (colDefs[c].avg || colDefs[c].sum) {
+				let tmpSum = 0;
+				for (let i = 0; i < rows.length; i++) {
+					tmpSum += rows[i][c];
+				}
+				colDefs[c].sum_value = tmpSum;
+				colDefs[c].avg_value = tmpSum / rows.length;
+				theTableValue.avgrow.push(tmpSum / rows.length);
+				theTableValue.sumrow.push(tmpSum);
+			} else {
+				theTableValue.avgrow.push(-1);
+				theTableValue.sumrow.push(-1);
+			}
+		}
+
+		console.log(theTableValue);
+		kvar.value = Parser.codeToBase64(JSON.stringify(theTableValue));
+	};
 </script>
 
-<table>
-	<tr>
-		{#each cols as col, colIndex}
-			<th>
-				{col}
-				{colIndex}
-			</th>
-		{/each}
-	</tr>
-	<tr>
-		{#each cols as col, colIndex}
-			<td><input /></td>
-		{/each}
-	</tr>
-</table>
+{#each rows as row, rowIndex}
+	<Row class={'border-bottom ' + (rowIndex ? '' : 'border-top')}>
+		<Col xs="auto">
+			<Dropdown group size="sm">
+				<DropdownToggle caret>{rowIndex + 1}</DropdownToggle>
+				<DropdownMenu>
+					<DropdownItem
+						on:click={() => {
+							rows.splice(rowIndex, 0, JSON.parse(JSON.stringify(rows[rowIndex])));
+							rows = rows;
+							resetKVarValue();
+						}}
+					>
+						{$_('inputtable.copyto.above')}
+					</DropdownItem>
+					<DropdownItem
+						on:click={() => {
+							rows.splice(rowIndex + 1, 0, JSON.parse(JSON.stringify(rows[rowIndex])));
+							rows = rows;
+							resetKVarValue();
+						}}
+					>
+						{$_('inputtable.copyto.below')}
+					</DropdownItem>
+					<DropdownItem
+						on:click={() => {
+							rows.splice(rowIndex, 1);
+							rows = rows;
+							resetKVarValue();
+						}}
+					>
+						{$_('inputtable.delete')}
+					</DropdownItem>
+					<DropdownItem
+						on:click={() => {
+							if (rowIndex > 0) {
+								rows.splice(rowIndex - 1, 0, rows.splice(rowIndex, 1)[0]);
+								rows = rows;
+								resetKVarValue();
+							}
+						}}
+					>
+						{$_('inputtable.move.up')}
+					</DropdownItem>
+					<DropdownItem
+						on:click={() => {
+							if (rowIndex < rows.length - 1) {
+								rows.splice(rowIndex + 1, 0, rows.splice(rowIndex, 1)[0]);
+								rows = rows;
+								resetKVarValue();
+							}
+						}}
+					>
+						{$_('inputtable.move.down')}
+					</DropdownItem>
+					<DropdownItem
+						on:click={() => {
+							if (rowIndex > 0) {
+								rows.splice(0, 0, rows.splice(rowIndex, 1)[0]);
+								rows = rows;
+								resetKVarValue();
+							}
+						}}
+					>
+						{$_('inputtable.move.top')}
+					</DropdownItem>
+					<DropdownItem
+						on:click={() => {
+							if (rowIndex < rows.length - 1) {
+								rows.push(rows.splice(rowIndex, 1)[0]);
+								rows = rows;
+								resetKVarValue();
+							}
+						}}
+					>
+						{$_('inputtable.move.bottom')}
+					</DropdownItem>
+				</DropdownMenu>
+			</Dropdown>
+		</Col>
+		<Col>
+			<Row>
+				{#each colDefs as colDef, colIndex}
+					<Col>
+						<FormGroup>
+							<FormText color="muted">
+								{colDef.label}
+								{#if work.rehearsal}
+									<br />{colIndex}
+									{colDef.type}
+								{/if}
+							</FormText>
+							{#if colDef.type === 'formula'}
+								<div>{row[colIndex]}</div>
+							{:else}
+								<Input
+									type={colDef.type !== 'datetime' ? colDef.type : 'datetime-local'}
+									name={colDef.name + '_' + rowIndex + '_' + colIndex}
+									bind:value={rows[rowIndex][colIndex]}
+									on:change={async (e) => {
+										e.preventDefault();
+										console.log(rows);
+										setTimeout(async () => {
+											row = ColDefCompiler.caculateRow(colDefs, row, rowIndex);
+											resetKVarValue();
+										}, 200);
+									}}
+								>
+									{#if colDef.type === 'select'}
+										{#each colDef.options as anOpt}
+											<option value={anOpt}>{anOpt}</option>
+										{/each}
+									{/if}
+								</Input>
+							{/if}
+						</FormGroup>
+					</Col>
+				{/each}
+			</Row>
+		</Col>
+	</Row>
+{/each}
+{#if compileResult.hasAvgRow}
+	<Row class="border-bottom">
+		<Col xs="auto">AVG</Col>
+		<Col>
+			<Row>
+				{#each colDefs as colDef, colIndex}
+					{#if colDef.avg}
+						<Col>
+							<FormText color="muted">
+								{colDef.label}
+							</FormText>
+							{colDef.avg_value ? colDef.avg_value : ''}
+						</Col>
+					{/if}
+				{/each}
+			</Row>
+		</Col>
+	</Row>
+{/if}
+{#if compileResult.hasSumRow}
+	<Row class="border-bottom">
+		<Col xs="auto">SUM</Col>
+		<Col>
+			<Row>
+				{#each colDefs as colDef, colIndex}
+					{#if colDef.sum}
+						<Col>
+							<FormText color="muted">
+								{colDef.label}
+							</FormText>
+							{colDef.sum_value ? colDef.sum_value : ''}
+						</Col>
+					{/if}
+				{/each}
+			</Row>
+		</Col>
+	</Row>
+{/if}

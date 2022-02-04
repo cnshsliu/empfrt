@@ -8,6 +8,7 @@
 	import List from '$lib/input/List.svelte';
 	import { session } from '$app/stores';
 	import WorkFile from '$lib/workfile.svelte';
+	import DisplayTable from '$lib/display/table.svelte';
 
 	let user = $session.user;
 	let check_timer = null;
@@ -19,10 +20,10 @@
 	{#if kvar.breakrow}
 		<div class="w-100" />
 	{/if}
-	{#if kvar.type === 'textarea'}
+	{#if ['textarea', 'tbl'].includes(kvar.type)}
 		<div class="w-100" />
 	{/if}
-	<Col class={' p-2 ' + (kvar.type === 'textarea' ? ' w-100' : '')}>
+	<Col class={' p-2 ' + (['textarea', 'tbl'].includes(kvar.type) ? ' w-100' : '')}>
 		<div class="fs-5  border-bottom border-primary border-1">
 			{#if kvar.label === 'Starter'}
 				{$_('todo.Starter')}{@html work.rehearsal ? '<br/>' + kvar.name : ''}
@@ -54,6 +55,8 @@
 					forKvar={kvar.label}
 					uploader={false}
 				/>
+			{:else if kvar.type === 'tbl'}
+				<DisplayTable {kvar} />
 			{:else if work.rehearsal}
 				{kvar.display ? kvar.value + '(' + kvar.display + ')' : kvar.value}
 			{:else}
@@ -61,7 +64,7 @@
 			{/if}
 		</span>
 	</Col>
-	{#if kvar.type === 'textarea' || kvar.name === 'ou_SOU'}
+	{#if ['textarea', 'tbl'].includes(kvar.type) || kvar.name === 'ou_SOU'}
 		<div class="w-100" />
 	{/if}
 {/if}

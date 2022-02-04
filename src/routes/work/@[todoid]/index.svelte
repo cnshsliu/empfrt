@@ -60,7 +60,7 @@
 	export let iframeMode;
 
 	onMount(() => {
-		console.log('work onMount', JSON.stringify(work, null, 2));
+		//console.log('work onMount', JSON.stringify(work, null, 2));
 	});
 </script>
 

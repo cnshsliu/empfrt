@@ -14,6 +14,7 @@
 		Icon
 	} from 'sveltestrap';
 	import { _, mtcDate } from '$lib/i18n';
+	import DisplayTable from '$lib/display/table.svelte';
 	import CommentEntry from '$lib/CommentEntry.svelte';
 	import { StatusClass, StatusLabel } from '$lib/status';
 	import parser from '$lib/parser';
@@ -144,16 +145,23 @@
 								<Container>
 									<Row cols={{ xs: 1, md: 2, lg: 4 }}>
 										{#each entry.kvarsArr as kvar}
-											<Col class="p-2">
-												<span class="fs-5">{kvar.label} </span><br />
-												<span class="kfk-kvar-value-display">
-													{#if kvar.type === 'textarea'}
-														{@html parser.newlineToBreak(kvar.value)}
-													{:else}
-														{kvar.display ? kvar.display : kvar.value}
-													{/if}
-												</span>
-											</Col>
+											{#if kvar.type === 'tbl'}
+												<Col class="p-2 w-100">
+													<div class="fs-5">{kvar.label}</div>
+													<DisplayTable {kvar} />
+												</Col>
+											{:else}
+												<Col class="p-2">
+													<div class="fs-5">{kvar.label}</div>
+													<span class="kfk-kvar-value-display">
+														{#if kvar.type === 'textarea'}
+															{@html parser.newlineToBreak(kvar.value)}
+														{:else}
+															{kvar.display ? kvar.display : kvar.value}
+														{/if}
+													</span>
+												</Col>
+											{/if}
 										{/each}
 									</Row>
 								</Container>
