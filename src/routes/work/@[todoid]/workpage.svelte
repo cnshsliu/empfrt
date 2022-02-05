@@ -6,8 +6,8 @@
 	import { text_area_resize } from '$lib/autoresize_textarea';
 	import CommentEntry from '$lib/CommentEntry.svelte';
 	import ProcessTrack from '$lib/ProcessTrack.svelte';
-	import InputKVar from '$lib/InputKVar.svelte';
-	import KVarDisplay from '$lib/KVarDisplay.svelte';
+	import InputKVar from '$lib/input/KVar.svelte';
+	import KVarDisplay from '$lib/display/KVar.svelte';
 	import TransferWork from './_transfer.svelte';
 	import { Container, Row, Col, Icon } from 'sveltestrap';
 	import { onMount } from 'svelte';

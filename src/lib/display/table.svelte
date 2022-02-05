@@ -11,13 +11,18 @@
 	let uploadedFiles = [];
 
 	export let kvar;
-	kvar.value = JSON.parse(Parser.base64ToCode(kvar.value));
 	console.log(kvar);
-	let rows = kvar.value.rows;
-	let avgrow = kvar.value.avgrow;
-	let sumrow = kvar.value.sumrow;
 	let compileResult = ColDefCompiler.compileColDef(kvar);
 	let colDefs = compileResult.colDefs;
+	let rows = [];
+	let avgrow = [];
+	let sumrow = [];
+	try {
+		kvar.value = JSON.parse(Parser.base64ToCode(kvar.value));
+		rows = kvar.value.rows;
+		avgrow = kvar.value.avgrow;
+		sumrow = kvar.value.sumrow;
+	} catch (err) {}
 </script>
 
 {#each rows as row, rowIndex}
@@ -41,13 +46,13 @@
 		</Col>
 	</Row>
 {/each}
-{#if compileResult.hasAvgRow}
+{#if compileResult.hasAvgRow && rows.length > 0 && avgrow.length > 0}
 	<Row class="border-bottom">
 		<Col xs="auto">AVG</Col>
 		<Col>
 			<Row>
 				{#each colDefs as colDef, colIndex}
-					{#if avgrow[colIndex] && avgrow[colIndex] > -1}
+					{#if colDef.avg && avgrow[colIndex] && avgrow[colIndex] > -1}
 						<Col>
 							<FormText color="muted">
 								{colDef.label}
@@ -60,13 +65,13 @@
 		</Col>
 	</Row>
 {/if}
-{#if compileResult.hasSumRow}
+{#if compileResult.hasSumRow && rows.length > 0 && sumrow.length > 0}
 	<Row class="border-bottom">
 		<Col xs="auto">SUM</Col>
 		<Col>
 			<Row>
 				{#each colDefs as colDef, colIndex}
-					{#if sumrow[colIndex] && sumrow[colIndex] > -1}
+					{#if colDef.sum && sumrow[colIndex] && sumrow[colIndex] > -1}
 						<Col>
 							<FormText color="muted">
 								{colDef.label}

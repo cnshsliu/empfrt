@@ -4,11 +4,12 @@
 	import { Col, FormGroup, Label, Input } from 'sveltestrap';
 	import { debugOption } from '$lib/empstores';
 	import Parser from '$lib/parser';
+	import DisplayTable from '$lib/display/Table.svelte';
 	import { text_area_resize } from '$lib/autoresize_textarea';
 	import List from '$lib/input/List.svelte';
 	import { session } from '$app/stores';
 	import WorkFile from '$lib/workfile.svelte';
-	import DisplayTable from '$lib/display/table.svelte';
+	import InputTable from '$lib/input/Table.svelte';
 
 	let user = $session.user;
 	let check_timer = null;

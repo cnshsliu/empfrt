@@ -14,7 +14,7 @@
 		Icon
 	} from 'sveltestrap';
 	import { _, mtcDate } from '$lib/i18n';
-	import DisplayTable from '$lib/display/table.svelte';
+	import DisplayTable from '$lib/display/Table.svelte';
 	import CommentEntry from '$lib/CommentEntry.svelte';
 	import { StatusClass, StatusLabel } from '$lib/status';
 	import parser from '$lib/parser';

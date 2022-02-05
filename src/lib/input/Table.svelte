@@ -10,13 +10,34 @@
 	import { session } from '$app/stores';
 
 	let user = $session.user;
-	export let work: any;
 	export let kvar: any;
-
+	export let rehearsal: boolean = false;
+	export let readonly: boolean = false;
 	let compileResult = ColDefCompiler.compileColDef(kvar);
-	let rows = [];
 	let colDefs = compileResult.colDefs;
-	rows.push(compileResult.row);
+	let rows = [];
+	let avgrow = [];
+	let sumrow = [];
+	console.log('=====', readonly);
+	if (readonly) {
+		console.log(kvar);
+		if (typeof kvar.value === 'string') {
+			try {
+				kvar.value = JSON.parse(Parser.base64ToCode(kvar.value));
+				rows = kvar.value.rows;
+				avgrow = kvar.value.avgrow;
+				sumrow = kvar.value.sumrow;
+			} catch (err) {
+				console.log('base64 parser failed', kvar.value);
+			}
+		}
+	}
+
+	if (readonly) {
+		rows = kvar.value.rows;
+	} else {
+		rows.push(compileResult.row);
+	}
 
 	const resetKVarValue = function () {
 		let theTableValue = { rows: rows, avgrow: [], sumrow: [] };
@@ -44,82 +65,86 @@
 {#each rows as row, rowIndex}
 	<Row class={'border-bottom ' + (rowIndex ? '' : 'border-top')}>
 		<Col xs="auto">
-			<Dropdown group size="sm">
-				<DropdownToggle caret>{rowIndex + 1}</DropdownToggle>
-				<DropdownMenu>
-					<DropdownItem
-						on:click={() => {
-							rows.splice(rowIndex, 0, JSON.parse(JSON.stringify(rows[rowIndex])));
-							rows = rows;
-							resetKVarValue();
-						}}
-					>
-						{$_('inputtable.copyto.above')}
-					</DropdownItem>
-					<DropdownItem
-						on:click={() => {
-							rows.splice(rowIndex + 1, 0, JSON.parse(JSON.stringify(rows[rowIndex])));
-							rows = rows;
-							resetKVarValue();
-						}}
-					>
-						{$_('inputtable.copyto.below')}
-					</DropdownItem>
-					<DropdownItem
-						on:click={() => {
-							rows.splice(rowIndex, 1);
-							rows = rows;
-							resetKVarValue();
-						}}
-					>
-						{$_('inputtable.delete')}
-					</DropdownItem>
-					<DropdownItem
-						on:click={() => {
-							if (rowIndex > 0) {
-								rows.splice(rowIndex - 1, 0, rows.splice(rowIndex, 1)[0]);
+			{#if readonly}
+				{rowIndex + 1}
+			{:else}
+				<Dropdown group size="sm">
+					<DropdownToggle caret>{rowIndex + 1}</DropdownToggle>
+					<DropdownMenu>
+						<DropdownItem
+							on:click={() => {
+								rows.splice(rowIndex, 0, JSON.parse(JSON.stringify(rows[rowIndex])));
 								rows = rows;
 								resetKVarValue();
-							}
-						}}
-					>
-						{$_('inputtable.move.up')}
-					</DropdownItem>
-					<DropdownItem
-						on:click={() => {
-							if (rowIndex < rows.length - 1) {
-								rows.splice(rowIndex + 1, 0, rows.splice(rowIndex, 1)[0]);
+							}}
+						>
+							{$_('inputtable.copyto.above')}
+						</DropdownItem>
+						<DropdownItem
+							on:click={() => {
+								rows.splice(rowIndex + 1, 0, JSON.parse(JSON.stringify(rows[rowIndex])));
 								rows = rows;
 								resetKVarValue();
-							}
-						}}
-					>
-						{$_('inputtable.move.down')}
-					</DropdownItem>
-					<DropdownItem
-						on:click={() => {
-							if (rowIndex > 0) {
-								rows.splice(0, 0, rows.splice(rowIndex, 1)[0]);
+							}}
+						>
+							{$_('inputtable.copyto.below')}
+						</DropdownItem>
+						<DropdownItem
+							on:click={() => {
+								rows.splice(rowIndex, 1);
 								rows = rows;
 								resetKVarValue();
-							}
-						}}
-					>
-						{$_('inputtable.move.top')}
-					</DropdownItem>
-					<DropdownItem
-						on:click={() => {
-							if (rowIndex < rows.length - 1) {
-								rows.push(rows.splice(rowIndex, 1)[0]);
-								rows = rows;
-								resetKVarValue();
-							}
-						}}
-					>
-						{$_('inputtable.move.bottom')}
-					</DropdownItem>
-				</DropdownMenu>
-			</Dropdown>
+							}}
+						>
+							{$_('inputtable.delete')}
+						</DropdownItem>
+						<DropdownItem
+							on:click={() => {
+								if (rowIndex > 0) {
+									rows.splice(rowIndex - 1, 0, rows.splice(rowIndex, 1)[0]);
+									rows = rows;
+									resetKVarValue();
+								}
+							}}
+						>
+							{$_('inputtable.move.up')}
+						</DropdownItem>
+						<DropdownItem
+							on:click={() => {
+								if (rowIndex < rows.length - 1) {
+									rows.splice(rowIndex + 1, 0, rows.splice(rowIndex, 1)[0]);
+									rows = rows;
+									resetKVarValue();
+								}
+							}}
+						>
+							{$_('inputtable.move.down')}
+						</DropdownItem>
+						<DropdownItem
+							on:click={() => {
+								if (rowIndex > 0) {
+									rows.splice(0, 0, rows.splice(rowIndex, 1)[0]);
+									rows = rows;
+									resetKVarValue();
+								}
+							}}
+						>
+							{$_('inputtable.move.top')}
+						</DropdownItem>
+						<DropdownItem
+							on:click={() => {
+								if (rowIndex < rows.length - 1) {
+									rows.push(rows.splice(rowIndex, 1)[0]);
+									rows = rows;
+									resetKVarValue();
+								}
+							}}
+						>
+							{$_('inputtable.move.bottom')}
+						</DropdownItem>
+					</DropdownMenu>
+				</Dropdown>
+			{/if}
 		</Col>
 		<Col>
 			<Row>
@@ -128,12 +153,14 @@
 						<FormGroup>
 							<FormText color="muted">
 								{colDef.label}
-								{#if work.rehearsal}
+								{#if rehearsal}
 									<br />{colIndex}
 									{colDef.type}
 								{/if}
 							</FormText>
-							{#if colDef.type === 'formula'}
+							{#if readonly}
+								<div>{row[colIndex] ? row[colIndex] : ' '}</div>
+							{:else if colDef.type === 'formula'}
 								<div>{row[colIndex]}</div>
 							{:else}
 								<Input
@@ -174,7 +201,11 @@
 							<FormText color="muted">
 								{colDef.label}
 							</FormText>
-							{colDef.avg_value ? colDef.avg_value : ''}
+							{#if readonly}
+								{avgrow[colIndex]}
+							{:else}
+								{colDef.avg_value ? colDef.avg_value : ''}
+							{/if}
 						</Col>
 					{/if}
 				{/each}
@@ -193,7 +224,11 @@
 							<FormText color="muted">
 								{colDef.label}
 							</FormText>
-							{colDef.sum_value ? colDef.sum_value : ''}
+							{#if readonly}
+								{sumrow[colIndex]}
+							{:else}
+								{colDef.sum_value ? colDef.sum_value : ''}
+							{/if}
 						</Col>
 					{/if}
 				{/each}

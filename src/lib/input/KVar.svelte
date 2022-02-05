@@ -6,7 +6,7 @@
 	import { debugOption } from '$lib/empstores';
 	import { text_area_resize } from '$lib/autoresize_textarea';
 	import List from '$lib/input/List.svelte';
-	import InputTable from '$lib/InputTable.svelte';
+	import InputTable from '$lib/input/Table.svelte';
 	import { session } from '$app/stores';
 	import WorkFile from '$lib/workfile.svelte';
 
@@ -74,7 +74,7 @@
 					}}
 				/>
 			{:else if kvar.type === 'tbl'}
-				<InputTable {work} {kvar} />
+				<InputTable {kvar} rehearsal={work.rehearsal} readonly={false} />
 			{:else if kvar.type === 'file'}
 				<WorkFile
 					{work}
