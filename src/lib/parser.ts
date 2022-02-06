@@ -1,5 +1,5 @@
-import * as ts from 'typescript';
 import { Buffer } from 'buffer';
+import * as api from '$lib/api';
 interface KVars {
 	name: string;
 	def: unknown;
@@ -127,7 +127,7 @@ const Parser = {
 		return tmp.trim().replace(/^[^a-zA-Z_$]|[^\w$]/g, '_');
 	},
 
-	evalFormula: function (kvarArr, formula): any {
+	evalFormula: async function (user, kvarArr, formula): Promise<any> {
 		console.log('formula:', formula);
 		const replaceKvar = function (formula) {
 			for (let i = 0; i < kvarArr.length; i++) {
@@ -140,7 +140,7 @@ const Parser = {
 		};
 
 		let expr = replaceKvar(formula);
-		let result = eval(expr);
+		let result = await api.post('formula/eval', { expr: expr }, user.sessionToken);
 
 		console.log('Formula:', formula, 'Expr:', expr, 'Result:', result);
 		return result;

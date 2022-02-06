@@ -281,5 +281,18 @@
 			"cancel": "Cancel",
 			"delete": "Delete"
 		}
+	},
+	"inputtable": {
+		"copyto": {
+			"above": "Copy to Above",
+			"below": "Copy to Below"
+		},
+		"delete": "Delte this row",
+		"move": {
+			"up": "Move up",
+			"down": "Move down",
+			"top": "Move to top",
+			"bottom": "Move to bottom"
+		}
 	}
 }

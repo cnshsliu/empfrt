@@ -1,5 +1,5 @@
 import { derived } from 'svelte/store';
-import { dictionary, locale, _, format, date, time } from 'svelte-i18n';
+import { dictionary, locale, _, date, time } from 'svelte-i18n';
 
 const MESSAGE_FILE_URL_TEMPLATE = 'http://localhost:3000/lang/{locale}.json';
 

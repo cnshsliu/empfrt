@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { _, date, time } from '$lib/i18n';
+	import { _ } from '$lib/i18n';
 	import { createEventDispatcher } from 'svelte';
 	import Parser from '$lib/parser';
 	const dispatch = createEventDispatcher();
@@ -171,7 +171,7 @@
 										e.preventDefault();
 										console.log(rows);
 										setTimeout(async () => {
-											row = ColDefCompiler.caculateRow(colDefs, row, rowIndex);
+											row = await ColDefCompiler.caculateRow(user, colDefs, row, rowIndex);
 											resetKVarValue();
 										}, 200);
 									}}

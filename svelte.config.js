@@ -18,6 +18,9 @@ const config = {
 		vite: {
 			optimizeDeps: {
 				exclude: ['svelte-kit-cookie-session']
+			},
+			build: {
+				chunkSizeWarningLimit: 500
 			}
 		}
 	}

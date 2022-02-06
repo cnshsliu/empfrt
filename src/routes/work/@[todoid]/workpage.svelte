@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { _ } from '$lib/i18n';
+	import { qtb } from '$lib/utils';
 	import * as api from '$lib/api';
 	import { goto } from '$app/navigation';
 	import Parser from '$lib/parser';
@@ -35,10 +36,16 @@
 	let adhocTaskDoerConfirmed = false;
 	let checkingTimer = null;
 	let checkingAdhocResult = [];
+	let printing = false;
 	import { getNotificationsContext } from 'svelte-notifications';
 	const { addNotification } = getNotificationsContext();
 
-	const onPrint = async function () {};
+	const onPrint = async function () {
+		printing = true;
+		setTimeout(async () => {
+			printing = false;
+		}, 3000);
+	};
 	let isDebug = $debugOption === 'yes';
 
 	function _sendbackWork() {
@@ -231,8 +238,9 @@
 			if (work.kvarsArr[i].formula) {
 				console.log(work.kvarsArr[i].formula);
 				try {
-					let result = Parser.evalFormula(work.kvarsArr, work.kvarsArr[i].formula);
-					work.kvarsArr[i].value = result;
+					Parser.evalFormula(user, work.kvarsArr, work.kvarsArr[i].formula).then((result) => {
+						work.kvarsArr[i].value = result;
+					});
 				} catch (e) {
 					console.warn(e);
 				}
@@ -242,7 +250,7 @@
 </script>
 
 {#if work && work.todoid}
-	<Container id={'workitem_' + work.todoid} class="mt-3">
+	<Container id={'workitem_' + work.todoid} class={'mt-3 ' + (printing ? 'nodisplay' : '')}>
 		<form>
 			<Container class="mt-3 kfk-highlight-2 text-wrap text-break">
 				<WorkFile
@@ -274,8 +282,8 @@
 									{work}
 									{kvar}
 									{i}
-									on:kvar_value_input_changed={(e) => {
-										caculateFormula(e.detail);
+									on:kvar_value_input_changed={async (e) => {
+										await caculateFormula(e.detail);
 									}}
 								/>
 							{/each}
@@ -385,6 +393,10 @@
 										id="input-adhoc-doer"
 										class="form-control"
 										bind:value={adhocTaskDoer}
+										on:change={(e) => {
+											e.preventDefault();
+											adhocTaskDoer = qtb(adhocTaskDoer);
+										}}
 										placeholder="Who should do it"
 									/>
 									<label for="input-adhoc-doer">Who should do it (in PDS format)?</label>

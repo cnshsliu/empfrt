@@ -278,5 +278,18 @@
 			"cancel": "取消",
 			"delete": "删除"
 		}
+	},
+	"inputtable": {
+		"copyto": {
+			"above": "向上复制",
+			"below": "向下复制"
+		},
+		"delete": "删除当前行",
+		"move": {
+			"up": "向上移动",
+			"down": "向下移动",
+			"top": "移到最上",
+			"bottom": "移到最下"
+		}
 	}
 }

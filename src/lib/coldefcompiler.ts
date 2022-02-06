@@ -1,4 +1,5 @@
 import Parser from '$lib/parser';
+import * as api from '$lib/api';
 const internals: any = {};
 
 internals.compileColDef = function (kvar) {
@@ -124,7 +125,7 @@ internals.compileColDef = function (kvar) {
 	return { row, colDefs, hasSumRow, hasAvgRow };
 };
 
-internals.caculateRow = function (colDefs, row, whichRow) {
+internals.caculateRow = async function (user, colDefs, row, whichRow) {
 	const replaceColValue = function (formula) {
 		for (let i = 0; i < colDefs.length; i++) {
 			var re = new RegExp(`${colDefs[i].name}`, 'g');
@@ -167,7 +168,7 @@ internals.caculateRow = function (colDefs, row, whichRow) {
 		if (colDefs[i].type === 'formula') {
 			let expr = replaceColValue(colDefs[i].formula);
 			if (expr.startsWith('=')) expr = expr.substring(1);
-			let result = eval(expr);
+			let result = await api.post('formula/eval', { expr: expr }, user.sessionToken);
 			row[i] = result;
 		}
 	}

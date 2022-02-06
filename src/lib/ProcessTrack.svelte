@@ -150,15 +150,18 @@
 													<div class="fs-5">{kvar.label}</div>
 													<DisplayTable {kvar} />
 												</Col>
+											{:else if kvar.type === 'textarea'}
+												<Col class="p-2 w-100">
+													<div class="fs-5">{kvar.label}</div>
+													<span class="kfk-kvar-value-display">
+														{@html parser.newlineToBreak(kvar.value)}
+													</span>
+												</Col>
 											{:else}
 												<Col class="p-2">
 													<div class="fs-5">{kvar.label}</div>
 													<span class="kfk-kvar-value-display">
-														{#if kvar.type === 'textarea'}
-															{@html parser.newlineToBreak(kvar.value)}
-														{:else}
-															{kvar.display ? kvar.display : kvar.value}
-														{/if}
+														{kvar.display ? kvar.display : kvar.value}
 													</span>
 												</Col>
 											{/if}
