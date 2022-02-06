@@ -21,7 +21,7 @@
 </script>
 
 <svelte:head>
-	<title>{user.username} • Templates</title>
+	<title>{user.username} • Processes</title>
 </svelte:head>
 
 <slot />

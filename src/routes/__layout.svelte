@@ -15,6 +15,7 @@
 
 <script lang="ts">
 	import { setupI18n, isLocaleLoaded, locale, dir } from '$lib/i18n';
+	import { printing } from '$lib/printStatus';
 	import { filterStorage } from '$lib/empstores';
 	import { navigating, session } from '$app/stores';
 	import { onMount } from 'svelte';
@@ -70,7 +71,9 @@
 {/if}
 <Notifications>
 	{#if $isLocaleLoaded}
-		<NavMenu />
+		{#if $printing === false}
+			<NavMenu />
+		{/if}
 		<main>
 			<slot />
 		</main>

@@ -26,7 +26,7 @@
 	export let user: User;
 	export let form_status = { create: false, search: false, sort: false, import: false };
 	import { title } from '$lib/title';
-	$title = 'HyperFlow';
+	$title = 'Process';
 	$: token = user.sessionToken;
 	let theExtraFilter: any;
 	let filter_template;

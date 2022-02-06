@@ -17,6 +17,7 @@
 	import { debugOption } from '$lib/empstores';
 	import WorkFile from '$lib/workfile.svelte';
 	import List from '$lib/input/List.svelte';
+	import { printing } from '$lib/printStatus';
 	import type { User, Work, oneArgFunc } from '$lib/types';
 	export let work: Work;
 	export let user: User;
@@ -36,14 +37,13 @@
 	let adhocTaskDoerConfirmed = false;
 	let checkingTimer = null;
 	let checkingAdhocResult = [];
-	let printing = false;
 	import { getNotificationsContext } from 'svelte-notifications';
 	const { addNotification } = getNotificationsContext();
 
 	const onPrint = async function () {
-		printing = true;
+		$printing = true;
 		setTimeout(async () => {
-			printing = false;
+			$printing = false;
 		}, 3000);
 	};
 	let isDebug = $debugOption === 'yes';
@@ -250,7 +250,7 @@
 </script>
 
 {#if work && work.todoid}
-	<Container id={'workitem_' + work.todoid} class={'mt-3 ' + (printing ? 'nodisplay' : '')}>
+	<Container id={'workitem_' + work.todoid} class={'mt-3 ' + ($printing ? 'nodisplay' : '')}>
 		<form>
 			<Container class="mt-3 kfk-highlight-2 text-wrap text-break">
 				<WorkFile

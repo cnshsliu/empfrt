@@ -22,10 +22,10 @@
 	import { Badge } from 'sveltestrap';
 	export let wfid;
 	export let wf;
-	export let workid;
+	export let workid = 'CURRENT_WORK_UNKNOWN';
 	export let iframeMode;
 	export let user;
-	export let _refreshWork;
+	export let _refreshWork = null;
 	export let onPrint;
 	function gotoWorkflowMonitor(wfid: string) {
 		goto(iframeMode ? `/workflow/@${wfid}/monitor?iframe` : `/workflow/@${wfid}/monitor`);

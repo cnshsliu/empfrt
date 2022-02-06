@@ -40,6 +40,7 @@
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
 	import { goto } from '$app/navigation';
 	import { title } from '$lib/title';
+	import { printing } from '$lib/printStatus';
 	import { filterStorage } from '$lib/empstores';
 	import { onMount } from 'svelte';
 	import * as api from '$lib/api';
@@ -79,20 +80,19 @@
 		}, 1);
 	};
 	let hasPrintButton = true;
+	const onPrint = async function () {
+		$printing = true;
+		setTimeout(async () => {
+			$printing = false;
+		}, 3000);
+	};
 </script>
 
 <svelte:head>
 	<title>{workflow.wftitle} • Workflow</title>
 </svelte:head>
 {#if workflow.wftitle !== 'Not Found'}
-	<ProcessTrack
-		{user}
-		bind:wf={workflow}
-		{wfid}
-		{TimeTool}
-		bind:print={hasPrintButton}
-		{iframeMode}
-	/>
+	<ProcessTrack {user} bind:wf={workflow} {wfid} {iframeMode} {onPrint} />
 {:else}
 	<ErrorNotify
 		title="Error Found"
