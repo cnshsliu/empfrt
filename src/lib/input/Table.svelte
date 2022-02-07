@@ -24,9 +24,6 @@
 		if (typeof kvar.value === 'string') {
 			try {
 				kvar.value = JSON.parse(Parser.base64ToCode(kvar.value));
-				rows = kvar.value.rows;
-				avgrow = kvar.value.avgrow;
-				sumrow = kvar.value.sumrow;
 			} catch (err) {
 				console.log('base64 parser failed', kvar.value);
 			}
@@ -35,8 +32,16 @@
 
 	if (readonly) {
 		rows = kvar.value.rows;
+		avgrow = kvar.value.avgrow;
+		sumrow = kvar.value.sumrow;
 	} else {
-		rows.push(compileResult.row);
+		if (kvar.value && kvar.value.rows) {
+			rows = kvar.value.rows;
+			avgrow = kvar.value.avgrow;
+			sumrow = kvar.value.sumrow;
+		} else {
+			rows.push(compileResult.row);
+		}
 	}
 
 	const resetKVarValue = function () {
@@ -58,7 +63,8 @@
 		}
 
 		console.log(theTableValue);
-		kvar.value = Parser.codeToBase64(JSON.stringify(theTableValue));
+		//kvar.value = Parser.codeToBase64(JSON.stringify(theTableValue));
+		kvar.value = theTableValue;
 	};
 </script>
 

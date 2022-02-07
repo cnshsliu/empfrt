@@ -18,11 +18,15 @@
 	let avgrow = [];
 	let sumrow = [];
 	try {
-		kvar.value = JSON.parse(Parser.base64ToCode(kvar.value));
+		if (typeof kvar.value === 'string') {
+			kvar.value = JSON.parse(Parser.base64ToCode(kvar.value));
+		}
+	} catch (err) {}
+	if (kvar.value && kvar.value.rows) {
 		rows = kvar.value.rows;
 		avgrow = kvar.value.avgrow;
 		sumrow = kvar.value.sumrow;
-	} catch (err) {}
+	}
 </script>
 
 {#each rows as row, rowIndex}

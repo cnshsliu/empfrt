@@ -142,7 +142,6 @@
 		for (let i = 0; i < work.kvarsArr.length; i++) {
 			if (work.kvarsArr[i].required) {
 				if (work.kvarsArr[i].type === 'checkbox') {
-					debugger;
 					if (work.kvarsArr[i].value !== true && work.kvarsArr[i].value !== false) {
 						errMsg = `${work.kvarsArr[i].label} should hava value`;
 						break;
@@ -200,8 +199,15 @@
 	}
 
 	export async function _refreshWork(todoid) {
-		work = (await api.post('work/info', { todoid: todoid }, user.sessionToken)) as unknown as Work;
-		console.log(JSON.stringify(work, null, 2));
+		setTimeout(async () => {
+			work = (await api.post(
+				'work/info',
+				{ todoid: todoid },
+				user.sessionToken
+			)) as unknown as Work;
+			console.log(JSON.stringify(work, null, 2));
+			work.wf.kvarsArr = work.wf.kvarsArr;
+		}, 500);
 		comment = '';
 	}
 
