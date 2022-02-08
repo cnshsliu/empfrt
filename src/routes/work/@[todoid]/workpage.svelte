@@ -324,6 +324,7 @@
 								<Col>
 									<Button
 										class="w-100"
+										color="primary"
 										on:click={async (e) => {
 											e.preventDefault();
 											await _doneWork(aChoice);
