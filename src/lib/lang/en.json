@@ -62,7 +62,10 @@
 			"startAnother": "Start Another",
 			"viewTemplate": "View Template",
 			"viewInstanceTemplate": "View Instance Template",
-			"deleteThisWorkflow": "Delete This Workflow"
+			"deleteThisWorkflow": "Delete This Workflow",
+			"setpboat": "Set PBO checkpoint",
+			"setTitle": "Set Title",
+			"restartthendeleteThisWorkflow": "Restart And Delete This"
 		},
 		"tplaction": {
 			"startIt": "Start It",

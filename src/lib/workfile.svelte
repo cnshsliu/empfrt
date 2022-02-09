@@ -6,11 +6,14 @@
 	import Confirm from '$lib/confirm.svelte';
 	import { session } from '$app/stores';
 	import FileUploader from '$lib/FileUploader.svelte';
+	import { ClientPermControl } from '$lib/clientperm';
 	let theConfirm;
 	let uploadingFile: boolean;
 	let uploadedFiles = [];
+	let user = $session.user;
 
-	export let work;
+	export let work = null;
+	export let workflow = null;
 	export let title;
 	export let forWhat: string = 'workflow';
 	export let forWhich: string = 'unknown';
@@ -61,6 +64,8 @@
 			work.wf.attachments = ret;
 		}
 	};
+	let attachments = work ? work.wf.attachments : workflow ? workflow.attachments : [];
+	let theWfid = work ? work.wfid : workflow ? workflow.wfid : '';
 </script>
 
 <Row>
@@ -68,7 +73,7 @@
 		{#if title}
 			{title}
 		{/if}
-		{#each work.wf.attachments as attach}
+		{#each attachments as attach}
 			{#if typeof attach === 'string' && forKey === 'pbo'}
 				<div class=" ms-3 simplehover ">
 					<a href={attach} target="_blank">{attach}</a>
@@ -79,7 +84,7 @@
 						<a
 							href={'#'}
 							on:click|preventDefault={() => {
-								downloadFile(work.wfid, attach.serverId, attach.realName, 'newtab');
+								downloadFile(theWfid, attach.serverId, attach.realName, 'newtab');
 							}}
 							>{attach.realName}
 							<Icon name="box-arrow-up-right" />
@@ -91,12 +96,16 @@
 					<a
 						href={'#'}
 						on:click|preventDefault={() => {
-							downloadFile(work.wfid, attach.serverId, attach.realName, 'download');
+							downloadFile(theWfid, attach.serverId, attach.realName, 'download');
 						}}
 					>
 						<Icon name="download" />
 					</a>
-					{#if attach.stepid === work.todoid && work.status === 'ST_RUN' && attach.author === $session.user.email}
+					<!-- 在当前提交时可以删除，一旦提交不能再删除-->
+					<!-- 管理员可以删除-->
+					<!-- 对当前活动拥有update权限可以删除-->
+					<!-- {#if (attach.stepid === work.todoid && work.status === 'ST_RUN' && attach.author === $session.user.email) || $session.user.group === 'ADMIN' || ClientPermControl(user.perms, user.email, 'work', work, 'update')} -->
+					{#if work && ((attach.stepid === work.todoid && work.status === 'ST_RUN' && attach.author === $session.user.email) || $session.user.group === 'ADMIN')}
 						<a
 							href={'#'}
 							on:click|preventDefault={(e) => {
@@ -118,7 +127,8 @@
 			{/if}
 		{/each}
 	</Col>
-	{#if work.status === 'ST_RUN' && uploader}
+	<!-- 当前活动为Run，则当前用户可以上传，或者只要是对当前活动具有update权限，也可以上传 -->
+	{#if work && (work.status === 'ST_RUN' || ClientPermControl(user.perms, user.email, 'work', work, 'update')) && uploader}
 		<Col>
 			<FileUploader
 				allowRemove={false}

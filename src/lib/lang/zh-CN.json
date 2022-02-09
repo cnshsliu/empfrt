@@ -62,7 +62,10 @@
 			"startAnother": "启动另一个",
 			"viewTemplate": "查看相应模版",
 			"viewInstanceTemplate": "查看实例模版",
-			"deleteThisWorkflow": "删除这个流程"
+			"deleteThisWorkflow": "删除这个流程",
+			"setpboat": "何时可添加PBO",
+			"setTitle": "设置流程名称",
+			"restartthendeleteThisWorkflow": "重启并删除当前流程"
 		},
 		"tplaction": {
 			"startIt": "启动工作流",

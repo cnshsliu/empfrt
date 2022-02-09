@@ -29,6 +29,8 @@
 	let input_search;
 	let filter_tspan = '1w';
 	let show_calendar_select = false;
+	let setPboAtFor = '';
+	let setTitleFor = '';
 	let calendar_begin = '';
 	let calendar_end = '';
 	let sorting = { dir: 'desc', key: 'updatedAt' };
@@ -149,6 +151,15 @@
 			return;
 		} else if (op === 'viewTemplate') {
 			goto(`/template/@${workflow.tplid}&read`);
+			return;
+		}
+
+		if (op === 'setpboat') {
+			setPboAtFor = workflow.wfid;
+			return;
+		}
+		if (op === 'setTitle') {
+			setTitleFor = workflow.wfid;
 			return;
 		}
 
@@ -369,6 +380,18 @@
 										</NavLink>
 									</DropdownItem>
 								{/if}
+								<!-- DropdownItem>
+									<NavLink on:click={() => opWorkflow(row, 'setpboat')}>
+										<Icon name="caret-right-square" />
+										{$_('remotetable.wfa.setpboat')}
+									</NavLink>
+								</DropdownItem -->
+								<DropdownItem>
+									<NavLink on:click={() => opWorkflow(row, 'setTitle')}>
+										<Icon name="caret-right-square" />
+										{$_('remotetable.wfa.setTitle')}
+									</NavLink>
+								</DropdownItem>
 							{:else}
 								{#if row.status === 'ST_RUN'}
 									<DropdownItem>
@@ -447,6 +470,72 @@
 					</Dropdown>
 				</td>
 			</tr>
+			{#if setPboAtFor === row.wfid}
+				<tr
+					class:kfk-odd={index % 2 !== 0}
+					class:kfk-even={index % 2 === 0}
+					class:tnt-odd={index % 2 !== 0}
+					class:tnt-even={index % 2 === 0}
+				>
+					<td colspan="4">
+						<InputGroup>
+							<InputGroupText>Set PBO At:</InputGroupText>
+							<Input type="select" bind:value={row.pboat}>
+								<option value="STARTER_START">At start only</option>
+								<option value="STARTER_RUNNING">STARTER at running task</option>
+								<option value="STARTER_ANY">starter at any task</option>
+								<option value="ANY_RUNNING">anyone at running task</option>
+								<option value="ANY_ANY">anyone at anytime</option>
+							</Input>
+							<Button
+								size="sm"
+								color="primary"
+								on:click={async (e) => {
+									e.preventDefault();
+									await api.post(
+										'workflow/set/pboat',
+										{ wfid: row.wfid, pboat: row.pboat },
+										user.sessionToken
+									);
+									setPboAtFor = '';
+								}}
+							>
+								Set
+							</Button>
+						</InputGroup>
+					</td>
+				</tr>
+			{/if}
+			{#if setTitleFor === row.wfid}
+				<tr
+					class:kfk-odd={index % 2 !== 0}
+					class:kfk-even={index % 2 === 0}
+					class:tnt-odd={index % 2 !== 0}
+					class:tnt-even={index % 2 === 0}
+				>
+					<td colspan="4">
+						<InputGroup>
+							<InputGroupText>Set Title to:</InputGroupText>
+							<Input bind:value={row.wftitle} />
+							<Button
+								size="sm"
+								color="primary"
+								on:click={async (e) => {
+									e.preventDefault();
+									await api.post(
+										'workflow/set/title',
+										{ wfid: row.wfid, wftitle: row.wftitle },
+										user.sessionToken
+									);
+									setTitleFor = '';
+								}}
+							>
+								Set
+							</Button>
+						</InputGroup>
+					</td>
+				</tr>
+			{/if}
 		{/each}
 	</tbody>
 	<div slot="bottom">

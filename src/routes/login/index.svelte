@@ -76,7 +76,7 @@
 			login_wait = -1;
 			if (response.user) {
 				$session.user = response.user;
-				goto('/template');
+				goto('/work');
 			}
 		}
 	}

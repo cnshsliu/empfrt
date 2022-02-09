@@ -231,6 +231,15 @@
 		<Row class="mt-1 d-flex justify-content-center">
 			<Col class="d-flex justify-content-center">
 				<Nav>
+					<!-- NavLink
+						class="kfk-link"
+						on:click={() => {
+							theDesigner.showTplProp();
+						}}
+					>
+						<AniIcon icon="plus-circle" ani="aniShake" />
+						{$_('tpl.prop')}
+					</NavLink -->
 					{#if ClientPermControl(user.perms, user.email, 'template', template, 'create')}
 						<NavLink
 							class="kfk-link"

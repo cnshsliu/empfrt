@@ -35,6 +35,8 @@
 
 <script lang="ts">
 	import type { User, Template, Workflow } from '$lib/types';
+	import { _ } from '$lib/i18n';
+	import WorkFile from '$lib/workfile.svelte';
 	import { session } from '$app/stores';
 	import ProcessTrack from '$lib/ProcessTrack.svelte';
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
@@ -92,6 +94,9 @@
 	<title>{workflow.wftitle} • Workflow</title>
 </svelte:head>
 {#if workflow.wftitle !== 'Not Found'}
+	<Container class="mt-3 kfk-highlight-2 text-wrap text-break">
+		<WorkFile title={$_('todo.pbo')} forWhat={'workflow'} {workflow} forKey="pbo" />
+	</Container>
 	<ProcessTrack {user} bind:wf={workflow} {wfid} {iframeMode} {onPrint} />
 {:else}
 	<ErrorNotify

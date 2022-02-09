@@ -19,6 +19,7 @@
 	const { addNotification } = getNotificationsContext();
 	import type { oneArgFunc } from '$lib/types';
 	import { onMount, onDestroy } from 'svelte';
+	import { Input } from 'sveltestrap';
 	import {
 		Container,
 		Row,
@@ -125,7 +126,16 @@
 			}
 		}
 		toggle();
-		KFK.setNodeDOMProperties(nodeInfo.jqDiv, nodeInfo.nodeProps);
+		if (nodeInfo.nodeType !== 'TPL') {
+			KFK.setNodeDOMProperties(nodeInfo.jqDiv, nodeInfo.nodeProps);
+		} else {
+			console.log('set template properties', template.pboat);
+			await api.post(
+				'template/set/pboat',
+				{ tplid: template.tplid, pboat: template.pboat },
+				user.sessionToken
+			);
+		}
 	};
 	export function designerCallback(cmd: string, args: any): void {
 		switch (cmd) {
@@ -162,6 +172,13 @@
 				documentEventOff();
 				openModal = true;
 				break;
+			case 'showTplProp':
+				modalSize = undefined;
+				helpId = undefined;
+				nodeInfo = args;
+				documentEventOff();
+				openModal = true;
+				break;
 		}
 	}
 
@@ -189,6 +206,14 @@
 		KFK.addDocumentEventHandler(true);
 		currentTool = KFK.tool;
 	});
+
+	export function showTplProp() {
+		console.log('show tpl prop');
+		designerCallback('showTplProp', {
+			nodeType: 'TPL',
+			nodeProps: { label: 'Template Properties' }
+		});
+	}
 
 	export async function changeViewMode(tpl_mode: string) {
 		await KFK.loadTemplateDoc(template, tpl_mode);
@@ -344,7 +369,32 @@
 		<Container>
 			<Row>
 				<Col>
-					{#if nodeInfo.nodeType === 'ACTION'}
+					{#if nodeInfo.nodeType === 'TPL'}
+						<div>TPLID: {template.tplid}</div>
+						<div>Readonly: {readonly}</div>
+						<div>Allow set PBO when</div>
+						{#if readonly}
+							{template.pboat === 'STARTER_START'
+								? 'At start only'
+								: template.pboat === 'STARTER_RUNNING'
+								? 'STARTER at running task'
+								: template.pboat === 'STARTER_ANY'
+								? 'starter at any task'
+								: template.pboat === 'ANY_RUNNING'
+								? 'Anyone at running task'
+								: template.pboat === 'ANY_ANY'
+								? 'Anyone at anytime'
+								: 'Unknown'}
+						{:else}
+							<Input type="select" bind:value={template.pboat}>
+								<option value="STARTER_START">At start only</option>
+								<option value="STARTER_RUNNING">STARTER at running task</option>
+								<option value="STARTER_ANY">starter at any task</option>
+								<option value="ANY_RUNNING">anyone at running task</option>
+								<option value="ANY_ANY">anyone at anytime</option>
+							</Input>
+						{/if}
+					{:else if nodeInfo.nodeType === 'ACTION'}
 						<Action
 							{nodeInfo}
 							bind:kvarsArr

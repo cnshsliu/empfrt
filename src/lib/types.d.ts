@@ -60,6 +60,7 @@ export interface Org {
 export interface Template {
 	_id: string;
 	tenant: string;
+	pboat: string;
 	tplid: string;
 	author: string;
 	doc: string;
@@ -71,6 +72,7 @@ export interface Template {
 export interface Workflow {
 	_id: string;
 	pbo: [string];
+	pboat: string;
 	wfid: string;
 	tenant: string;
 	wftitle: string;
@@ -84,6 +86,7 @@ export interface Workflow {
 	updatedAt: string;
 	kvarsArr?: kvarDef[];
 	attachments: any[];
+	rehearsal: boolean;
 }
 
 export interface Work {
