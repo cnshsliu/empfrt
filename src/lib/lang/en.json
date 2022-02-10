@@ -173,7 +173,9 @@
 		"monitor": "Monitor",
 		"print": "Print",
 		"startat": "Start at",
-		"startby": "Start by"
+		"startby": "Start by",
+		"restartrehearsal": "Restart Rehearsal",
+		"cancelworkflowatfirststep": "Abandon Process"
 	},
 	"tpl": {
 		"new": "New",
@@ -276,11 +278,15 @@
 			"areyousure": "Are you sure?"
 		},
 		"body": {
-			"deletefile": "File will be delete permanately, plase confirm"
+			"deletefile": "File will be delete permanately, plase confirm",
+			"restartthendestroy": "Destroy this rehearsal and start a new one",
+			"cancelworkflowatfirststep": "You have opportunity to cancel this process at its first step. Canceling a running process often makes other people who are involved in the process confused even annonyed, please confirm you are ok with it",
+			"deleteWorkflow": "Canceling a running process often makes other people who are involved in the process confused even annonyed, please confirm you are ok with it"
 		},
 		"button": {
 			"yes": "Yes",
 			"no": "No",
+			"confirm": "Confirm",
 			"cancel": "Cancel",
 			"delete": "Delete"
 		}

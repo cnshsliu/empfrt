@@ -39,6 +39,7 @@
 <script lang="ts">
 	import { _, mtcDate } from '$lib/i18n';
 	import { goto } from '$app/navigation';
+	import Confirm from '$lib/confirm.svelte';
 	import * as api from '$lib/api';
 	import type { User, Work } from '$lib/types';
 	import { title } from '$lib/title';
@@ -51,6 +52,7 @@
 	export let delegators: any[];
 
 	let radioGroup;
+	let theConfirm;
 
 	let browser_locale = window.navigator.language;
 	console.log(browser_locale);
@@ -88,14 +90,47 @@
 						on:click={async (e) => {
 							e.preventDefault();
 							console.log('restart then destroy', work.wfid);
-							api
-								.post('workflow/restart/then/destroy', { wfid: work.wfid }, user.sessionToken)
-								.then((res) => {
-									goto('/work');
-								});
+							theConfirm.title = $_('confirm.title.areyousure');
+							theConfirm.body = $_('confirm.body.restartthendestroy');
+							theConfirm.buttons = [$_('confirm.button.confirm')];
+							theConfirm.callbacks = [
+								async () => {
+									api
+										.post('workflow/restart/then/destroy', { wfid: work.wfid }, user.sessionToken)
+										.then((res) => {
+											goto('/work');
+										});
+								}
+							];
+							theConfirm.toggle();
 						}}
 					>
-						Restart
+						{$_('todo.restartrehearsal')}
+					</Button>
+				</div>
+			{/if}
+			{#if work.rehearsal || (work.wf.starter === user.email && work.from_nodeid === 'start')}
+				<div class="mx-3 align-self-center flex-grow-1">
+					<Button
+						class="btn-xs"
+						on:click={async (e) => {
+							e.preventDefault();
+							theConfirm.title = $_('confirm.title.areyousure');
+							theConfirm.body = $_('confirm.body.cancelworkflowatfirststep');
+							theConfirm.buttons = [$_('confirm.button.confirm')];
+							theConfirm.callbacks = [
+								async () => {
+									api
+										.post('workflow/op', { wfid: work.wfid, op: 'destroy' }, user.sessionToken)
+										.then((res) => {
+											goto('/work');
+										});
+								}
+							];
+							theConfirm.toggle();
+						}}
+					>
+						{$_('todo.cancelworkflowatfirststep')}
 					</Button>
 				</div>
 			{/if}
@@ -135,3 +170,4 @@
 {:else}
 	Work context error
 {/if}
+<Confirm bind:this={theConfirm} />

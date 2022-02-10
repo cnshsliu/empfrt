@@ -5,6 +5,7 @@
 	import * as api from '$lib/api';
 	import { filterStorage } from '$lib/empstores';
 	import { tspans } from '$lib/variables';
+	import Confirm from '$lib/confirm.svelte';
 	import Parser from '$lib/parser';
 	import { onMount } from 'svelte';
 	import type { Workflow } from '$lib/types';
@@ -22,6 +23,7 @@
 	let rows: Workflow[] = [] as Workflow[];
 	let page = 0; //first page
 	let pageIndex = 0; //first row
+	let theConfirm;
 	let pageSize = user && user.ps ? user.ps : 10; //optional, 10 by default
 
 	let loading = true;
@@ -447,20 +449,46 @@
 								</NavLink>
 							</DropdownItem>
 							<DropdownItem>
-								<NavLink on:click={() => opWorkflow(row, 'viewInstanceTemplate')}
-									><Icon name="code" />
+								<NavLink on:click={() => opWorkflow(row, 'viewInstanceTemplate')}>
+									<Icon name="code" />
 									{$_('remotetable.wfa.viewInstanceTemplate')}
 								</NavLink>
 							</DropdownItem>
-							{#if ClientPermControl(user.perms, user.email, 'workflow', row, 'delete')}
+							{#if user.group === 'ADMIN' || (user.email === row.starter && (row.rehearsal || row.pnodeid === 'start'))}
 								<DropdownItem>
-									<NavLink on:click={() => opWorkflow(row, 'destroy')}>
+									<NavLink
+										on:click={(e) => {
+											e.preventDefault();
+											theConfirm.title = $_('confirm.title.areyousure');
+											theConfirm.body = $_('confirm.body.deleteWorkflow');
+											theConfirm.buttons = [$_('confirm.button.confirm')];
+											theConfirm.callbacks = [
+												async () => {
+													opWorkflow(row, 'destroy');
+												}
+											];
+											theConfirm.toggle();
+										}}
+									>
 										<Icon name="trash" />
 										{$_('remotetable.wfa.deleteThisWorkflow')}
 									</NavLink>
 								</DropdownItem>
 								<DropdownItem>
-									<NavLink on:click={() => opWorkflow(row, 'restartthendestroy')}>
+									<NavLink
+										on:click={(e) => {
+											e.preventDefault();
+											theConfirm.title = $_('confirm.title.areyousure');
+											theConfirm.body = $_('confirm.body.deleteWorkflow');
+											theConfirm.buttons = [$_('confirm.button.confirm')];
+											theConfirm.callbacks = [
+												async () => {
+													opWorkflow(row, 'restartthendestroy');
+												}
+											];
+											theConfirm.toggle();
+										}}
+									>
 										<Icon name="trash" />
 										{$_('remotetable.wfa.restartthendeleteThisWorkflow')}
 									</NavLink>
@@ -532,6 +560,16 @@
 							>
 								Set
 							</Button>
+							<Button
+								size="sm"
+								color="secondary"
+								on:click={async (e) => {
+									e.preventDefault();
+									setTitleFor = '';
+								}}
+							>
+								Cancel
+							</Button>
 						</InputGroup>
 					</td>
 				</tr>
@@ -548,3 +586,4 @@
 		/>
 	</div>
 </Table>
+<Confirm bind:this={theConfirm} />

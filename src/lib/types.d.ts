@@ -87,6 +87,9 @@ export interface Workflow {
 	kvarsArr?: kvarDef[];
 	attachments: any[];
 	rehearsal: boolean;
+	pnodeid?: string;
+	pworkid?: string;
+	cselector?: string[];
 }
 
 export interface Work {
@@ -118,6 +121,7 @@ export interface Work {
 	doneat?: date;
 	comment?: string;
 	routingOptions?: string;
+	from_nodeid?: string;
 }
 
 export interface TmapEntry {

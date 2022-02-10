@@ -172,7 +172,9 @@
 		"monitor": "监控",
 		"print": "打印",
 		"startat": "启动于",
-		"startby": "启动者"
+		"startby": "启动者",
+		"restartrehearsal": "重新演练",
+		"cancelworkflowatfirststep": "放弃本流程"
 	},
 	"tpl": {
 		"new": "新建",
@@ -273,11 +275,15 @@
 			"areyousure": "你确定吗？"
 		},
 		"body": {
-			"deletefile": "文件将被永久删除，请确认"
+			"deletefile": "文件将被永久删除，请确认",
+			"restartthendestroy": "放弃当前预演并重新启动一个",
+			"cancelworkflowatfirststep": "当前是你自己所启动流程的第一步，你有机会取消这个流程。根据每个流程的不同定义，即便是第一个活动，也可能已经卷入了其他人参与，取消一个已经启动的流程会给其他参与者带来困惑甚至懊恼，请确定你要取消当前流程。",
+			"deleteWorkflow": "取消一个已经启动的流程会给其他参与者带来困惑甚至懊恼，请确定你要取消当前流程。"
 		},
 		"button": {
 			"yes": "是",
 			"no": "否",
+			"confirm": "确认",
 			"cancel": "取消",
 			"delete": "删除"
 		}
