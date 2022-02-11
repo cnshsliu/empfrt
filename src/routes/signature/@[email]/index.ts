@@ -5,9 +5,8 @@ export async function get({ params, locals }) {
 	let fileSaver = null;
 	const token = locals.user && locals.user.sessionToken;
 	console.log(token);
-	let payload = {};
-	if (params.serverId && params.serverId !== 'null') payload = { serverId: params.serverId };
-	const content = await api.post('wf/attach/viewer', payload, token);
+	let payload = { email: params.email };
+	const content = await api.post('signature', payload, token);
 
 	return {
 		headers: {

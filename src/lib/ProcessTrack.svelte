@@ -182,15 +182,21 @@
 								{#each entry.doers as aDoer}
 									<a href={`/work/@${aDoer.todoid}`} class="clickable text-primary btn btn-sm">
 										{#if aDoer.status === 'ST_DONE'}
-											<i class="bi bi-emoji-sunglasses" alt="Done" />{aDoer.cn}({aDoer.uid}); &nbsp;
-											<sup>{mtcDate(aDoer.doneat)}</sup>
+											{#if aDoer.signature}
+												<img src={aDoer.signature} class="kfk-signature" />
+												<div>{aDoer.cn}({aDoer.uid})</div>
+												<div>{mtcDate(aDoer.doneat)}</div>
+											{:else}
+												<i class="bi bi-emoji-sunglasses" alt="Done" />
+												<div>{aDoer.cn}({aDoer.uid})</div>
+												<div>{mtcDate(aDoer.doneat)}</div>
+											{/if}
 										{:else if aDoer.status === 'ST_IGNORE'}
-											<i
-												class="bi bi-emoji-smile-upside-down"
-												alt="Ignored"
-											/>{aDoer.cn}({aDoer.uid});
+											<i class="bi bi-emoji-smile-upside-down" alt="Ignored" />
+											<div>{aDoer.cn}({aDoer.uid})</div>
 										{:else}
-											<i class="bi bi-emoji-expressionless" alt="Done" />{aDoer.cn}({aDoer.uid});
+											<i class="bi bi-emoji-expressionless" alt="notdone" />
+											<div>{aDoer.cn}({aDoer.uid})</div>
 										{/if}
 									</a>
 								{/each}

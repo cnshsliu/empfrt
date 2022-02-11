@@ -21,7 +21,7 @@
 	export let forKvar: string = null;
 	export let uploader = true;
 	function downloadFile(wfid, serverId, realName, mode = 'download') {
-		fetch(`${API_SERVER}/filepond/viewer/${wfid}/${serverId}`, {
+		fetch(`${API_SERVER}/wf/attach/viewer/${wfid}/${serverId}`, {
 			headers: {
 				Authorization: $session.user.sessionToken
 			}

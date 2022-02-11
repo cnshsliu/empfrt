@@ -10,10 +10,10 @@
 	export let allowRemove = false;
 	export let allowMultiple = false;
 	export let forWhat;
-	export let forWhich;
-	export let forKey;
-	export let forKvar;
-	export let stepid;
+	export let forWhich = '';
+	export let forKey = '';
+	export let forKvar = '';
+	export let stepid = '';
 
 	// Import the Image EXIF Orientation and Image Preview plugins
 	// Note: These need to be installed separately

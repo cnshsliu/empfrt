@@ -30,6 +30,7 @@ export interface User {
 	group: string;
 	email: string;
 	avatar: string;
+	signature?: string;
 	bio: string;
 	ew: boolean;
 	ps: number;

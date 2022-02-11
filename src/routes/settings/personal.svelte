@@ -1,11 +1,14 @@
 <script type="ts">
 	import { Button, Container, Row, Col, InputGroup, InputGroupText, Input } from 'sveltestrap';
 	import { session } from '$app/stores';
+	import FileUploader from '$lib/FileUploader.svelte';
 	import type { User, EmpResponse } from '$lib/types';
 	import { post } from '$lib/utils';
 	import * as api from '$lib/api';
 	export let user: User;
 	export let setFadeMessage: any;
+	let uploadingFile: boolean;
+	let uploadedFiles = [];
 	let joinorgwithcode = '';
 	const joinOrgWithCode = async function () {
 		let res = await api.post('tnt/join', { joincode: joinorgwithcode }, user.sessionToken);
@@ -46,6 +49,16 @@
 
 		in_progress = false;
 	};
+	const removeSignature = async function (serverId) {
+		let ret = await api.post('account/remove/signature', {}, $session.user.sessionToken);
+	};
+	async function setUserSignature() {
+		let ret = await api.post(
+			'account/set/signature',
+			{ pondfiles: uploadedFiles },
+			$session.user.sessionToken
+		);
+	}
 </script>
 
 <form>
@@ -65,7 +78,8 @@
 			</Col>
 			<Col>
 				<InputGroup class="mb-1">
-					<InputGroupText>Your avatar url</InputGroupText>
+					<InputGroupText>Your avatar</InputGroupText>
+					<img src={`${user.avatar}`} class="kfk-avatar-small" />
 					<input
 						class="form-control"
 						type="text"
@@ -76,6 +90,21 @@
 						on:click={async (e) => {
 							e.preventDefault();
 							await setPersonal({ avatar: user.avatar });
+						}}
+					>
+						Set
+					</Button>
+				</InputGroup>
+			</Col>
+			<Col>
+				<InputGroup class="mb-1">
+					<InputGroupText>Signature</InputGroupText>
+					<img src={`${user.signature}`} class="kfk-signature" />
+					<Input bind:value={user.signature} />
+					<Button
+						on:click={async (e) => {
+							e.preventDefault();
+							await setPersonal({ signature: user.signature });
 						}}
 					>
 						Set
