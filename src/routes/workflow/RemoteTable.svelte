@@ -178,6 +178,8 @@
 			for (let i = 0; i < rows.length; i++) {
 				if (rows[i].wfid === workflow.wfid) {
 					rows[i].status = ret.status;
+					rows[i].statusLabel = StatusLabel(rows[i].status);
+					rows[i] = rows[i];
 				}
 			}
 			rows = rows;
@@ -194,9 +196,10 @@
 				rows = rows;
 				rowsCount = rowsCount - 1;
 			}
+		} else {
+			await refresh({});
 		}
 		$filterStorage.workTitlePattern = 'wf:' + ret.wfid;
-		await refresh({});
 	};
 
 	export function reset() {

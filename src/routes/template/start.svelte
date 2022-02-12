@@ -1,6 +1,8 @@
 <script context="module" lang="ts">
 	import type { SearchResult } from '$lib/types';
+	let TimeTool = null;
 	export async function load({ page, fetch, session }) {
+		TimeTool = (await import('$lib/TimeTool')).default;
 		const tplid = page.query.get('tplid');
 		const tpl_mode = 'read';
 		const res_team: SearchResult = (await api.post(
@@ -25,7 +27,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import FileUploader from '$lib/FileUploader.svelte';
-	import { filterStorage } from '$lib/empstores';
+	import { filterStorage, startedWorkflow } from '$lib/empstores';
 	import type { User, Template, Team, oneArgFunc } from '$lib/types';
 	import { getNotificationsContext } from 'svelte-notifications';
 	const { addNotification } = getNotificationsContext();
@@ -111,7 +113,6 @@
 
 	let starting = 0;
 	let uploadingFile = false;
-	let startedWorkflow = null;
 	const _startWorkflow = async function (rehearsal = false) {
 		starting = 0;
 		fade_message = '';
@@ -124,12 +125,13 @@
 			user.sessionToken
 		);
 		if (res.wfid) {
-			startedWorkflow = res;
+			console.log(res);
+			$startedWorkflow = { wfid: res.wfid, tplid: res.tplid, ts: new Date().getTime() };
 			fade_message = `Workflow ${res.wftitle} Started.`;
 			setFadeMessage(fade_message, 'success');
 			starting = 1;
 		} else {
-			startedWorkflow = null;
+			$startedWorkflow = null;
 			if (res.errors && res.errors.MongoError && res.errors.MongoError[0]) {
 				if (res.errors.MongoError[0].indexOf('duplicate') >= 0) {
 					fade_message = `exists already`;
@@ -141,6 +143,21 @@
 			}
 		}
 	};
+
+	if ($startedWorkflow) {
+		if (!$startedWorkflow.tplid || !$startedWorkflow.tplid || !$startedWorkflow.ts)
+			$startedWorkflow = null;
+	}
+	if ($startedWorkflow && $startedWorkflow.tplid && $startedWorkflow.tplid !== tplid) {
+		$startedWorkflow = null;
+	}
+	if ($startedWorkflow && $startedWorkflow.wfid) {
+		api.post('workflow/read', { wfid: $startedWorkflow.wfid }, user.sessionToken).then((wf) => {
+			if (wf.wftitle == 'Not Found') {
+				$startedWorkflow = null;
+			}
+		});
+	}
 
 	let recentTemplates = [];
 	let recentTeams = [];
@@ -204,51 +221,52 @@
 		</Col>
 	</Row>
 </Container>
-<Container class="mt-3 w-50">
-	<Form>
-		<Row cols="1" class="mt-2">
-			<Col class="text-center">
-				{$_('start.context')}
-			</Col>
-			<Col>
-				<div class="form-floating">
-					<Input
-						type="url"
-						name="textPbo"
-						id="input-textPbo"
-						class="form-control"
-						bind:value={textPbo}
-					/>
-					<Label for="input-textPbo">
-						{$_('start.pbo')}
-					</Label>
-				</div>
-			</Col>
-			<Col class="text-center">{$_('start.canbefile')}</Col>
-			<Col class="text-center">
-				<FileUploader
-					forWhat={'workflow'}
-					forWhich={'unknown'}
-					forKey={'unknown'}
-					allowRemove={true}
-					allowMultiple={true}
-					forKvar={null}
-					stepid={'pbo'}
-					on:uploading={(e) => {
-						uploadingFile = true;
-					}}
-					on:remove={async (e) => {
-						//remove has been disabled
-						uploadingFile = false;
-						let serverId = null;
-						for (let i = 0; i < uploadedFiles.length; i++) {
-							if (uploadedFiles[i].id === e.detail.id) {
-								serverId = uploadedFiles[i].serverId;
-								break;
+{#if $startedWorkflow === null}
+	<Container class="mt-3 w-50">
+		<Form>
+			<Row cols="1" class="mt-2">
+				<Col class="text-center">
+					{$_('start.context')}
+				</Col>
+				<Col>
+					<div class="form-floating">
+						<Input
+							type="url"
+							name="textPbo"
+							id="input-textPbo"
+							class="form-control"
+							bind:value={textPbo}
+						/>
+						<Label for="input-textPbo">
+							{$_('start.pbo')}
+						</Label>
+					</div>
+				</Col>
+				<Col class="text-center">{$_('start.canbefile')}</Col>
+				<Col class="text-center">
+					<FileUploader
+						forWhat={'workflow'}
+						forWhich={'unknown'}
+						forKey={'unknown'}
+						allowRemove={true}
+						allowMultiple={true}
+						forKvar={null}
+						stepid={'pbo'}
+						on:uploading={(e) => {
+							uploadingFile = true;
+						}}
+						on:remove={async (e) => {
+							//remove has been disabled
+							uploadingFile = false;
+							let serverId = null;
+							for (let i = 0; i < uploadedFiles.length; i++) {
+								if (uploadedFiles[i].id === e.detail.id) {
+									serverId = uploadedFiles[i].serverId;
+									break;
+								}
 							}
-						}
-						if (serverId) {
-							/* let ret = await api.post(
+							if (serverId) {
+								/* let ret = await api.post(
 								'filepond/remove',
 								{ serverId: serverId },
 								user.sessionToken
@@ -256,179 +274,200 @@
 							if (ret.error) {
 								console.log(ret.message);
 							} */
-						}
-					}}
-					on:uploaded={async (e) => {
-						uploadingFile = false;
-						uploadedFiles = e.detail;
-						console.log(uploadedFiles);
-					}}
-					on:warning={async (e) => {
-						uploadingFile = false;
-						uploadedFiles = e.detail;
-						console.log(uploadedFiles);
-					}}
-					on:error={async (e) => {
-						uploadingFile = false;
-						uploadedFiles = e.detail;
-						console.log(uploadedFiles);
-					}}
-				/>
-			</Col>
-			<Col>
-				<div class="form-floating">
-					<Input
-						type="text"
-						name="wftitle"
-						id="input-wftitle"
-						class="form-control"
-						bind:value={wftitle}
+							}
+						}}
+						on:uploaded={async (e) => {
+							uploadingFile = false;
+							uploadedFiles = e.detail;
+							console.log(uploadedFiles);
+						}}
+						on:warning={async (e) => {
+							uploadingFile = false;
+							uploadedFiles = e.detail;
+							console.log(uploadedFiles);
+						}}
+						on:error={async (e) => {
+							uploadingFile = false;
+							uploadedFiles = e.detail;
+							console.log(uploadedFiles);
+						}}
 					/>
-					<Label for="input-wftitle">
-						{$_('start.title')}
-					</Label>
-				</div>
-			</Col>
-			<Col>
-				<Dropdown {isOpen} class="w-100">
-					<DropdownToggle tag="div" class="d-inline-block w-100">
-						<div class="form-floating">
-							<Input
-								placeholder="type team name here"
-								on:keyup={searchTeam}
-								bind:value={team_id_for_search}
-								class="w-100 form-control"
-								id="input-team"
-							/>
-							<Label for="input-team">
-								{$_('start.teamid')}
-								{theTeam ? theTeam.teamid : ''}</Label
-							>
-						</div>
-					</DropdownToggle>
-					<DropdownMenu>
-						{#each search_result as aTeam}
-							<DropdownItem
+				</Col>
+				<Col>
+					<div class="form-floating">
+						<Input
+							type="text"
+							name="wftitle"
+							id="input-wftitle"
+							class="form-control"
+							bind:value={wftitle}
+						/>
+						<Label for="input-wftitle">
+							{$_('start.title')}
+						</Label>
+					</div>
+				</Col>
+				<Col>
+					<Dropdown {isOpen} class="w-100">
+						<DropdownToggle tag="div" class="d-inline-block w-100">
+							<div class="form-floating">
+								<Input
+									placeholder="type team name here"
+									on:keyup={searchTeam}
+									bind:value={team_id_for_search}
+									class="w-100 form-control"
+									id="input-team"
+								/>
+								<Label for="input-team">
+									{$_('start.teamid')}
+									{theTeam ? theTeam.teamid : ''}</Label
+								>
+							</div>
+						</DropdownToggle>
+						<DropdownMenu>
+							{#each search_result as aTeam}
+								<DropdownItem
+									on:click={(e) => {
+										e.preventDefault();
+										pickTeam(aTeam.teamid);
+									}}
+								>
+									{aTeam.teamid}
+								</DropdownItem>
+							{/each}
+						</DropdownMenu>
+					</Dropdown>
+					<div class="mt-2">
+						<span>
+							{$_('start.recentTeam')}
+						</span>
+						{#each recentTeams as ateam, index (ateam)}
+							<Button
+								class="mx-1 badge bg-light text-primary border border-primary"
 								on:click={(e) => {
 									e.preventDefault();
-									pickTeam(aTeam.teamid);
+									team_id_for_search = ateam;
+									pickTeam(ateam);
 								}}
 							>
-								{aTeam.teamid}
-							</DropdownItem>
+								{ateam}
+							</Button>
 						{/each}
-					</DropdownMenu>
-				</Dropdown>
-				<div class="mt-2">
-					<span>
-						{$_('start.recentTeam')}
-					</span>
-					{#each recentTeams as ateam, index (ateam)}
-						<Button
-							class="mx-1 badge bg-light text-primary border border-primary"
-							on:click={(e) => {
-								e.preventDefault();
-								team_id_for_search = ateam;
-								pickTeam(ateam);
-							}}
-						>
-							{ateam}
-						</Button>
-					{/each}
+					</div>
+				</Col>
+			</Row>
+		</Form>
+		{#if uploadingFile === false}
+			<div class="mt-3 w-100 text-center">
+				<div>
+					{$_('start.ifnotfamiliar')}
 				</div>
-			</Col>
-		</Row>
-	</Form>
-	{#if uploadingFile === false}
-		<Row cols="1">
-			<Col style="margin-top: 20px;">
-				<Button
-					disabled={starting === 1}
-					color="primary"
-					class="w-100"
-					on:click={(e) => {
-						e.preventDefault();
-						if (wftitle.trim().length === 0 || textPbo.trim().length === 0) {
-							showConfirmModal = true;
-						} else {
-							_startWorkflow(false);
-						}
-					}}
-				>
-					{$_('start.startIt')}
-				</Button>
-			</Col>
-		</Row>
-		<div class="mt-3 w-100 text-center">
-			<div>
-				{$_('start.OR')}
 			</div>
-		</div>
-		<Row cols="1">
-			<Col>
+			<Row cols="1">
+				<Col>
+					<Button
+						disabled={starting === 1}
+						color="secondary"
+						class="w-100"
+						on:click={(e) => {
+							e.preventDefault();
+							_startWorkflow(true);
+						}}
+					>
+						{$_('start.rehearsal')}
+					</Button>
+				</Col>
+			</Row>
+			<div class="mt-3 w-100 text-center">
+				<div>
+					{$_('start.iffamiliar')}
+				</div>
+			</div>
+			<Row cols="1">
+				<Col style="margin-top: 20px;">
+					<Button
+						disabled={starting === 1}
+						color="primary"
+						class="w-100"
+						on:click={(e) => {
+							e.preventDefault();
+							if (wftitle.trim().length === 0 || textPbo.trim().length === 0) {
+								showConfirmModal = true;
+							} else {
+								_startWorkflow(false);
+							}
+						}}
+					>
+						{$_('start.startIt')}
+					</Button>
+				</Col>
+			</Row>
+		{/if}
+		{#if theTeam}
+			<div class="text-center fs-4">Team {theTeam.teamid}</div>
+			{#each roles as aRole (aRole)}
+				<Card>
+					<CardHeader><CardTitle>{aRole}</CardTitle></CardHeader>
+					<CardBody>
+						<CardText>
+							{#each theTeam.tmap[aRole] as aMember (aMember.uid)}
+								<Badge pill color="light" class="kfk-tag border border-primary text-primary">
+									{aMember.cn} &lt;{aMember.uid}&gt;
+								</Badge>
+							{/each}
+						</CardText>
+					</CardBody>
+				</Card>
+			{/each}
+		{/if}
+	</Container>
+{:else}
+	<Container class="mt-3 w-50">
+		<Row cols="2" style="margin-top: 20px;">
+			<div class="w-100 text-center">
+				{TimeTool.fromNow($startedWorkflow.ts)}
+			</div>
+			{#if $startedWorkflow !== null}
 				<Button
-					disabled={starting === 1}
-					color="secondary"
-					class="w-100"
+					class="w-100 mb-5"
+					color="primary"
 					on:click={(e) => {
 						e.preventDefault();
-						_startWorkflow(true);
+						//$filterStorage.tplid = $startedWorkflow.tplid;
+						//$filterStorage.workTitlePattern = 'wf:' + $startedWorkflow.wfid;
+						//$filterStorage.workStatus = 'ST_RUN';
+						//goto('/work');
+						goto(`/workflow/@${$startedWorkflow.wfid}`);
 					}}
 				>
-					{$_('start.rehearsal')}
+					{$_('start.checkitout')}
 				</Button>
-			</Col>
-		</Row>
-		<Row cols="2" style="margin-top: 20px;">
-			{#if startedWorkflow !== null}
-				<Col>
-					<Button
-						class="w-100"
-						on:click={(e) => {
-							e.preventDefault();
-							$filterStorage.tplid = startedWorkflow.tplid;
-							$filterStorage.workTitlePattern = 'wf:' + startedWorkflow.wfid;
-							$filterStorage.workStatus = 'ST_RUN';
-							goto('/work');
-							//goto(`/workflow/@${startedWorkflow.wfid}`);
-						}}
-					>
-						{$_('start.checkitout')}
-					</Button>
-				</Col>
-				<Col>
-					<Button
-						class="w-100"
-						on:click={(e) => {
-							e.preventDefault();
-							starting = 0;
-							startedWorkflow = null;
-						}}
-					>
-						{$_('start.dismiss')}
-					</Button>
-				</Col>
+				<Button
+					class="w-100 mb-5"
+					color="primary"
+					on:click={(e) => {
+						e.preventDefault();
+						starting = 0;
+						goto(`/workflow/@${$startedWorkflow.wfid}/gotofirststep`);
+					}}
+				>
+					{$_('start.firststep')}
+				</Button>
+				<Button
+					class="w-100 mb-5"
+					color="primary"
+					on:click={(e) => {
+						e.preventDefault();
+						starting = 0;
+						$startedWorkflow = null;
+					}}
+				>
+					{$_('start.startanother')}
+				</Button>
 			{/if}
 		</Row>
-	{/if}
-	{#if theTeam}
-		<div class="text-center fs-4">Team {theTeam.teamid}</div>
-		{#each roles as aRole (aRole)}
-			<Card>
-				<CardHeader><CardTitle>{aRole}</CardTitle></CardHeader>
-				<CardBody>
-					<CardText>
-						{#each theTeam.tmap[aRole] as aMember (aMember.uid)}
-							<Badge pill color="light" class="kfk-tag border border-primary text-primary">
-								{aMember.cn} &lt;{aMember.uid}&gt;
-							</Badge>
-						{/each}
-					</CardText>
-				</CardBody>
-			</Card>
-		{/each}
-	{/if}
-</Container>
+	</Container>
+{/if}
 <div style="height:200px;">&nbsp;</div>
 <Modal isOpen={showConfirmModal} {toggle} {fullscreen}>
 	<ModalHeader {toggle}>{$_('start.pleaseConfirm')}</ModalHeader>

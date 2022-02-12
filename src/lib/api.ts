@@ -34,7 +34,8 @@ async function send({ method, path, data = null, token = null }) {
 		opts.headers['Authorization'] = token;
 	}
 
-	return fetch(`${API_SERVER}/${path}`, opts as RequestInit)
+	let fullPath = path.startsWith('/') ? `${API_SERVER}${path}` : `${API_SERVER}/${path}`;
+	return fetch(fullPath, opts as RequestInit)
 		.then((r) => r.text())
 		.then((json) => {
 			try {

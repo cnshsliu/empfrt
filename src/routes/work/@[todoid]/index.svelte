@@ -45,11 +45,13 @@
 	import { title } from '$lib/title';
 	import { onMount } from 'svelte';
 	import WorkPage from './workpage.svelte';
+	import ErrorNotify from '$lib/ErrorNotify.svelte';
 	import { StatusClass, StatusLabel } from '$lib/status';
 	import { Container, Row, Col } from 'sveltestrap';
 	export let work: Work;
 	export let user: User;
 	export let delegators: any[];
+	export let todoid;
 
 	let radioGroup;
 	let theConfirm;
@@ -168,6 +170,14 @@
 		<WorkPage {work} {user} {iframeMode} {delegators} />
 	</Container>
 {:else}
-	Work context error
+	<ErrorNotify
+		title="Error Found"
+		subtitle="Work does not exist"
+		info={`Work ${todoid} does not exist`}
+		btnTitle="Back"
+		callback={() => {
+			goto('/work');
+		}}
+	/>
 {/if}
 <Confirm bind:this={theConfirm} />

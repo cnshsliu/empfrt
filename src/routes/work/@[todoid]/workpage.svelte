@@ -17,7 +17,7 @@
 	import { debugOption } from '$lib/empstores';
 	import WorkFile from '$lib/workfile.svelte';
 	import List from '$lib/input/List.svelte';
-	import { printing } from '$lib/printStatus';
+	import { printing } from '$lib/Stores';
 	import type { User, Work, oneArgFunc } from '$lib/types';
 	export let work: Work;
 	export let user: User;

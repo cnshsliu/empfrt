@@ -15,7 +15,7 @@
 
 <script lang="ts">
 	import { setupI18n, isLocaleLoaded, locale, dir } from '$lib/i18n';
-	import { printing } from '$lib/printStatus';
+	import { printing } from '$lib/Stores';
 	import { filterStorage } from '$lib/empstores';
 	import { navigating, session } from '$app/stores';
 	import { onMount } from 'svelte';

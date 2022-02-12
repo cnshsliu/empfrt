@@ -9,6 +9,10 @@
 			{ wfid: wfid, withdoc: false },
 			session.user.sessionToken
 		);
+		console.log(workflow);
+		if (workflow.error) {
+			workflow.wftitle = 'Not Found';
+		}
 
 		try {
 			return {
@@ -34,7 +38,7 @@
 </script>
 
 <script lang="ts">
-	import type { User, Template, Workflow } from '$lib/types';
+	import type { User, Template, Workflow, EmpResponse } from '$lib/types';
 	import { _ } from '$lib/i18n';
 	import WorkFile from '$lib/workfile.svelte';
 	import { session } from '$app/stores';
@@ -42,7 +46,7 @@
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
 	import { goto } from '$app/navigation';
 	import { title } from '$lib/title';
-	import { printing } from '$lib/printStatus';
+	import { printing } from '$lib/Stores';
 	import { filterStorage } from '$lib/empstores';
 	import { onMount } from 'svelte';
 	import * as api from '$lib/api';

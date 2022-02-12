@@ -79,7 +79,7 @@
 			<Col>
 				<InputGroup class="mb-1">
 					<InputGroupText>Your avatar</InputGroupText>
-					<img src={`${user.avatar}`} class="kfk-avatar-small" />
+					<img alt="avatar" src={`${user.avatar}`} class="kfk-avatar-small" />
 					<input
 						class="form-control"
 						type="text"
@@ -99,7 +99,7 @@
 			<Col>
 				<InputGroup class="mb-1">
 					<InputGroupText>Signature</InputGroupText>
-					<img src={`${user.signature}`} class="kfk-signature" />
+					<img alt="signature" src={`${user.signature}`} class="kfk-signature" />
 					<Input bind:value={user.signature} />
 					<Button
 						on:click={async (e) => {

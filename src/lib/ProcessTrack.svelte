@@ -183,19 +183,25 @@
 									<a href={`/work/@${aDoer.todoid}`} class="clickable text-primary btn btn-sm">
 										{#if aDoer.status === 'ST_DONE'}
 											{#if aDoer.signature}
-												<img src={aDoer.signature} class="kfk-signature" />
+												<img src={aDoer.signature} class="kfk-signature" alt={aDoer.cn} />
 												<div>{aDoer.cn}({aDoer.uid})</div>
 												<div>{mtcDate(aDoer.doneat)}</div>
 											{:else}
-												<i class="bi bi-emoji-sunglasses" alt="Done" />
+												<div class="user-emoji d-flex align-items-center  justify-content-center">
+													<i class="bi bi-emoji-sunglasses" alt="Done" />
+												</div>
 												<div>{aDoer.cn}({aDoer.uid})</div>
 												<div>{mtcDate(aDoer.doneat)}</div>
 											{/if}
 										{:else if aDoer.status === 'ST_IGNORE'}
-											<i class="bi bi-emoji-smile-upside-down" alt="Ignored" />
+											<div class="user-emoji d-flex align-items-center  justify-content-center">
+												<i class="bi bi-emoji-smile-upside-down" alt="Ignored" />
+											</div>
 											<div>{aDoer.cn}({aDoer.uid})</div>
 										{:else}
-											<i class="bi bi-emoji-expressionless" alt="notdone" />
+											<div class="user-emoji d-flex align-items-center  justify-content-center">
+												<i class="bi bi-emoji-expressionless" alt="notdone" />
+											</div>
 											<div>{aDoer.cn}({aDoer.uid})</div>
 										{/if}
 									</a>
@@ -222,5 +228,8 @@
 	.local_work_doneby {
 		font-weight: bolder;
 		color: blue;
+	}
+	.user-emoji {
+		height: 50px;
 	}
 </style>

@@ -48,3 +48,4 @@ export const filterStorage = storage<FilterPicks>('filter', {
 	try_with_wfid: '',
 	debug: ''
 });
+export const startedWorkflow = storage<any>('startedWorkflow', null);
