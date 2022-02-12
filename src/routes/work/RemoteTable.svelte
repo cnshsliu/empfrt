@@ -277,12 +277,12 @@
 						>
 							<Icon name="bar-chart-steps" style="font-size:0.5rem" />
 							{row.wftitle}
-							- {StatusLabel(row.wfstatus)}
+							- {$_('status.' + row.wfstatus)}
 						</a>
 					</span>
 				</td>
 				<td data-label="Status" style="font-size:0.25rem">
-					{StatusLabel(row.status)}
+					{$_('status.' + row.status)}
 				</td>
 				<td data-label="Date" style="font-size:0.25rem">
 					<div>

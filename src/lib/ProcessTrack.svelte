@@ -16,7 +16,7 @@
 	import { _, mtcDate } from '$lib/i18n';
 	import DisplayTable from '$lib/display/Table.svelte';
 	import CommentEntry from '$lib/CommentEntry.svelte';
-	import { StatusClass, StatusLabel } from '$lib/status';
+	import { StatusClass } from '$lib/status';
 	import parser from '$lib/parser';
 	import { goto } from '$app/navigation';
 	import { Badge } from 'sveltestrap';
@@ -65,7 +65,7 @@
 				{#if wf.status === 'ST_DONE'}
 					{$_('todo.doneat')}: {mtcDate(wf.doneat)}
 				{:else}
-					<span class={StatusClass(wf.status)}>{StatusLabel(wf.status)}</span>
+					<span class={StatusClass(wf.status)}>{$_('status.' + wf.status)}</span>
 				{/if}
 			</Col>
 			<Col>{$_('todo.startby')}: {user.email === wf.starter ? 'Me' : wf.starter}</Col>
@@ -105,7 +105,7 @@
 												</Badge>
 											{/if}
 											<Badge pill color={'light'}>
-												<span class="text-primary">{StatusLabel(entry.status)}</span>
+												<span class="text-primary">{$_('status.' + entry.status)}</span>
 											</Badge>
 										{:else}
 											{#if entry.nodeid === 'ADHOC'}
@@ -115,7 +115,7 @@
 											{/if}
 											<Badge pill class="bg-white border border-primary">
 												<span class={StatusClass(entry.status)}>
-													{StatusLabel(entry.status)}
+													{$_('status.' + entry.status)}
 												</span>
 											</Badge>
 										{/if}

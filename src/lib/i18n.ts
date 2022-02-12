@@ -1,7 +1,8 @@
 import { derived } from 'svelte/store';
 import { dictionary, locale, _, date, time } from 'svelte-i18n';
 
-const MESSAGE_FILE_URL_TEMPLATE = 'http://localhost:3000/lang/{locale}.json';
+//Used for remote load, change localhost:3000 to remote server url if necessary.
+//const MESSAGE_FILE_URL_TEMPLATE = 'http://localhost:3000/lang/{locale}.json';
 
 let cachedLocale;
 

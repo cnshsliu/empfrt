@@ -128,7 +128,10 @@
 		"ST_RUN": "Running",
 		"ST_PAUSE": "Paused",
 		"ST_DONE": "Finished",
-		"ST_STOP": "Stopped"
+		"ST_STOP": "Stopped",
+		"ST_REVOKED": "Revoked",
+		"ST_RETURNED": "Returned",
+		"ST_IGNORE": "Ignored"
 	},
 
 	"start": {

@@ -128,7 +128,10 @@
 		"ST_RUN": "进行中",
 		"ST_PAUSE": "已暂停",
 		"ST_DONE": "已结束",
-		"ST_STOP": "已中止"
+		"ST_STOP": "已中止",
+		"ST_REVOKED": "已撤回",
+		"ST_RETURNED": "已退回",
+		"ST_IGNORE": "已忽略"
 	},
 	"start": {
 		"canbefile": "你也可以上传一个文件作为PBO",
