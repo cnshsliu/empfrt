@@ -45,7 +45,7 @@
 <div class="d-flex">
 	<div class="w-100">
 		<Row class="mb-2">
-			<Col class="d-flex justify-content-center">
+			<Col class="fs-3 d-flex justify-content-center">
 				<Button
 					color={currentTags.length === 0 || currentTags[0].length === 0 ? 'primary' : 'light'}
 					class={`mx-1 badge  border border-primary ${
