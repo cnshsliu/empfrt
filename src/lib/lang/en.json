@@ -150,6 +150,7 @@
 		"OR": "Or",
 		"ifnotfamiliar": "A workflow may involve a lot of people, you'd better rehearsal it if are not familiar with this workflow",
 		"iffamiliar": "Or you may start it formally",
+		"useflexibleteam": "Specify flexible team if necessary",
 		"needtitle": "Please provide title",
 		"pleaseConfirm": "Please confirm",
 		"warnNoPbo": "PBO not set",
