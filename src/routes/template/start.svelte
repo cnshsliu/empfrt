@@ -307,119 +307,126 @@
 						</Label>
 					</div>
 				</Col>
-				<Col>
-					<Dropdown {isOpen} class="w-100">
-						<DropdownToggle tag="div" class="d-inline-block w-100">
-							<div class="form-floating">
-								<Input
-									placeholder="type team name here"
-									on:keyup={searchTeam}
-									bind:value={team_id_for_search}
-									class="w-100 form-control"
-									id="input-team"
-								/>
-								<Label for="input-team">
-									{$_('start.teamid')}
-									{theTeam ? theTeam.teamid : ''}</Label
-								>
-							</div>
-						</DropdownToggle>
-						<DropdownMenu>
-							{#each search_result as aTeam}
-								<DropdownItem
+			</Row>
+			{#if uploadingFile === false}
+				<div class="mt-3 w-100 text-center">
+					<div>
+						{$_('start.ifnotfamiliar')}
+					</div>
+				</div>
+				<Row cols="1">
+					<Col>
+						<Button
+							disabled={starting === 1}
+							color="secondary"
+							class="w-100"
+							on:click={(e) => {
+								e.preventDefault();
+								_startWorkflow(true);
+							}}
+						>
+							{$_('start.rehearsal')}
+						</Button>
+					</Col>
+				</Row>
+				<div class="mt-3 w-100 text-center">
+					<div>
+						{$_('start.iffamiliar')}
+					</div>
+				</div>
+				<Row cols="1">
+					<Col style="margin-top: 20px;">
+						<Button
+							disabled={starting === 1}
+							color="primary"
+							class="w-100"
+							on:click={(e) => {
+								e.preventDefault();
+								if (wftitle.trim().length === 0 || textPbo.trim().length === 0) {
+									showConfirmModal = true;
+								} else {
+									_startWorkflow(false);
+								}
+							}}
+						>
+							{$_('start.startIt')}
+						</Button>
+					</Col>
+				</Row>
+				<Row cols="1" class="mt-5">
+					<div class="mt-3 w-100 text-center">
+						<div>
+							{$_('start.useflexibleteam')}
+						</div>
+					</div>
+					<Col>
+						<Dropdown {isOpen} class="w-100">
+							<DropdownToggle tag="div" class="d-inline-block w-100">
+								<div class="form-floating">
+									<Input
+										placeholder="type team name here"
+										on:keyup={searchTeam}
+										bind:value={team_id_for_search}
+										class="w-100 form-control"
+										id="input-team"
+									/>
+									<Label for="input-team">
+										{$_('start.teamid')}
+										{theTeam ? theTeam.teamid : ''}</Label
+									>
+								</div>
+							</DropdownToggle>
+							<DropdownMenu>
+								{#each search_result as aTeam}
+									<DropdownItem
+										on:click={(e) => {
+											e.preventDefault();
+											pickTeam(aTeam.teamid);
+										}}
+									>
+										{aTeam.teamid}
+									</DropdownItem>
+								{/each}
+							</DropdownMenu>
+						</Dropdown>
+						<div class="mt-2">
+							<span>
+								{$_('start.recentTeam')}
+							</span>
+							{#each recentTeams as ateam, index (ateam)}
+								<Button
+									class="mx-1 badge bg-light text-primary border border-primary"
 									on:click={(e) => {
 										e.preventDefault();
-										pickTeam(aTeam.teamid);
+										team_id_for_search = ateam;
+										pickTeam(ateam);
 									}}
 								>
-									{aTeam.teamid}
-								</DropdownItem>
+									{ateam}
+								</Button>
 							{/each}
-						</DropdownMenu>
-					</Dropdown>
-					<div class="mt-2">
-						<span>
-							{$_('start.recentTeam')}
-						</span>
-						{#each recentTeams as ateam, index (ateam)}
-							<Button
-								class="mx-1 badge bg-light text-primary border border-primary"
-								on:click={(e) => {
-									e.preventDefault();
-									team_id_for_search = ateam;
-									pickTeam(ateam);
-								}}
-							>
-								{ateam}
-							</Button>
-						{/each}
-					</div>
-				</Col>
-			</Row>
+						</div>
+					</Col>
+				</Row>
+			{/if}
+			{#if theTeam}
+				<div class="text-center fs-4">Team {theTeam.teamid}</div>
+				{#each roles as aRole (aRole)}
+					<Card>
+						<CardHeader><CardTitle>{aRole}</CardTitle></CardHeader>
+						<CardBody>
+							<CardText>
+								{#each theTeam.tmap[aRole] as aMember (aMember.uid)}
+									<Badge pill color="light" class="kfk-tag border border-primary text-primary">
+										{aMember.cn} &lt;{aMember.uid}&gt;
+									</Badge>
+								{/each}
+							</CardText>
+						</CardBody>
+					</Card>
+				{/each}
+			{/if}
 		</Form>
-		{#if uploadingFile === false}
-			<div class="mt-3 w-100 text-center">
-				<div>
-					{$_('start.ifnotfamiliar')}
-				</div>
-			</div>
-			<Row cols="1">
-				<Col>
-					<Button
-						disabled={starting === 1}
-						color="secondary"
-						class="w-100"
-						on:click={(e) => {
-							e.preventDefault();
-							_startWorkflow(true);
-						}}
-					>
-						{$_('start.rehearsal')}
-					</Button>
-				</Col>
-			</Row>
-			<div class="mt-3 w-100 text-center">
-				<div>
-					{$_('start.iffamiliar')}
-				</div>
-			</div>
-			<Row cols="1">
-				<Col style="margin-top: 20px;">
-					<Button
-						disabled={starting === 1}
-						color="primary"
-						class="w-100"
-						on:click={(e) => {
-							e.preventDefault();
-							if (wftitle.trim().length === 0 || textPbo.trim().length === 0) {
-								showConfirmModal = true;
-							} else {
-								_startWorkflow(false);
-							}
-						}}
-					>
-						{$_('start.startIt')}
-					</Button>
-				</Col>
-			</Row>
-		{/if}
-		{#if theTeam}
-			<div class="text-center fs-4">Team {theTeam.teamid}</div>
-			{#each roles as aRole (aRole)}
-				<Card>
-					<CardHeader><CardTitle>{aRole}</CardTitle></CardHeader>
-					<CardBody>
-						<CardText>
-							{#each theTeam.tmap[aRole] as aMember (aMember.uid)}
-								<Badge pill color="light" class="kfk-tag border border-primary text-primary">
-									{aMember.cn} &lt;{aMember.uid}&gt;
-								</Badge>
-							{/each}
-						</CardText>
-					</CardBody>
-				</Card>
-			{/each}
-		{/if}
 	</Container>
 {:else}
 	<Container class="mt-3 w-50">
