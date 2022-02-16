@@ -4872,33 +4872,79 @@ ret='DEFAULT'; `
 		that.holdEvent(evt);
 	}
 
+	getKfkClass(jq) {
+		let kfkClass = '';
+		if (jq.hasClass('ACTION')) kfkClass = 'ACTION';
+		else if (jq.hasClass('INFORM')) kfkClass = 'INFORM';
+		else if (jq.hasClass('SCRIPT')) kfkClass = 'SCRIPT';
+		else if (jq.hasClass('TIMER')) kfkClass = 'TIMER';
+		else if (jq.hasClass('SUB')) kfkClass = 'SUB';
+		else if (jq.hasClass('AND')) kfkClass = 'AND';
+		else if (jq.hasClass('OR')) kfkClass = 'OR';
+		else if (jq.hasClass('GROUND')) kfkClass = 'GROUND';
+		else if (jq.hasClass('START')) kfkClass = 'START';
+		else if (jq.hasClass('END')) kfkClass = 'END';
+		return kfkClass;
+	}
+
+	setKfkClass(jq, kc) {
+		let oldKc = KFK.getKfkClass(jq);
+		jq.removeClass(oldKc);
+		jq.addClass(kc);
+	}
+
+	validKfkClass() {
+		return ['START', 'END', 'ACTION', 'INFORM', 'SCRIPT', 'TIMER', 'SUB', 'AND', 'OR', 'GROUND'];
+	}
+
 	async onPaste(evt: Event) {
 		const that = KFK;
 		if (KFK.docIsReadOnly()) {
 			console.log('paste ignored since docIsReadOnly');
 			return;
 		}
+		//如果当前是展示属性窗口，直接返回
 		if (that.showingProp) return;
+		//如果有connectText并且当前正在mouseover一个connectId，则设置当没connectId的文本
 		if (that.clipboardConnectText && that.hoveredConnectId) {
 			that.setConnectText($(`.${that.hoveredConnectId}`), that.clipboardConnectText);
 			that.onChange('Paste connect');
 		} else if (
 			//如果贴了链接线，就不再贴节点
 			that.clipboardNode &&
+			//START 和 END节点不能被粘贴，因为只能有一个
 			that.clipboardNode.hasClass('START') === false &&
 			that.clipboardNode.hasClass('END') === false
 		) {
-			let newNode = KFK.makeCloneDIV(that.clipboardNode, KFK.myuid(), {
-				left:
-					KFK.scalePoint(KFK.scrXToJc3X(KFK.currentMousePos.x)) -
-					KFK.divWidth(that.clipboardNode) * 0.5,
-				top:
-					KFK.scalePoint(KFK.scrYToJc3Y(KFK.currentMousePos.y)) -
-					KFK.divHeight(that.clipboardNode) * 0.5
-			});
-			newNode.appendTo(KFK.C3);
-			await KFK.setNodeEventHandler(newNode, async function () {});
-			that.onChange('Paste node');
+			//if (that.hoverJqDiv()) {
+			if (that.getPropertyApplyToJqNode()) {
+				let pasteToJq = that.getPropertyApplyToJqNode();
+				if (pasteToJq.hasClass('END') || pasteToJq.hasClass('START')) {
+					console.log('paste to START/END not allowed');
+				} else {
+					console.log('paste hover node');
+					let newNode = KFK.makeCloneDIV(that.clipboardNode, KFK.myuid(), {});
+					pasteToJq.empty();
+					newNode.children().each((_index: any, aChild: any) => {
+						$(aChild).appendTo(pasteToJq);
+					});
+					KFK.setKfkClass(pasteToJq, KFK.getKfkClass(newNode));
+				}
+
+				//that.onChange('Paste node');
+			} else {
+				let newNode = KFK.makeCloneDIV(that.clipboardNode, KFK.myuid(), {
+					left:
+						KFK.scalePoint(KFK.scrXToJc3X(KFK.currentMousePos.x)) -
+						KFK.divWidth(that.clipboardNode) * 0.5,
+					top:
+						KFK.scalePoint(KFK.scrYToJc3Y(KFK.currentMousePos.y)) -
+						KFK.divHeight(that.clipboardNode) * 0.5
+				});
+				newNode.appendTo(KFK.C3);
+				await KFK.setNodeEventHandler(newNode, async function () {});
+				that.onChange('Paste node');
+			}
 		}
 		that.holdEvent(evt);
 	}
