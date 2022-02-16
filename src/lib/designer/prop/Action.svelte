@@ -250,12 +250,18 @@
 										/>
 									</InputGroup>
 								{/if}
+
 								<InputGroup size="sm">
 									<InputGroupText>
 										{$_('prop.action.kvar.value')}
 									</InputGroupText>
-									<Input bind:value={kvar.value} disabled={readonly} />
+									{#if kvar.name.startsWith('textarea_') || kvar.name.startsWith('ta_')}
+										<Input type="textarea" bind:value={kvar.value} disabled={readonly} />
+									{:else}
+										<Input bind:value={kvar.value} disabled={readonly} />
+									{/if}
 								</InputGroup>
+
 								<InputGroup size="sm">
 									<InputGroupText>
 										{$_('prop.action.kvar.label')}

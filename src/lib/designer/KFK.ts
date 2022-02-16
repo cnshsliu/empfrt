@@ -330,6 +330,7 @@ class KFKclass {
 	movingConnect: boolean = false;
 	designerCallback = null;
 	connectEndFirst = false;
+	movingEnd: boolean = false;
 
 	constructor() {
 		let that = this;
@@ -722,6 +723,7 @@ class KFKclass {
 	onChange(reason: string) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
+		console.log('onChange ', reason);
 		that.templateChangeTimer && clearTimeout(that.templateChangeTimer);
 		const tpldoc = that.drawingToTemplateDoc();
 		if (['UNDO', 'REDO'].includes(reason) === false) {
@@ -1324,10 +1326,15 @@ ret='DEFAULT'; `
 			newConnectId = `connect_${that.linkPosNode[1].attr('id')}_${that.linkPosNode[0].attr('id')}`;
 			await that.redrawLinkLines(that.linkPosNode[1], 'connect');
 		}
-		/*
-		if (that.clipboardConnectText && that.clipboardConnectText.trim().length > 0)
+		if (
+			that.clipboardConnectText &&
+			that.clipboardConnectText.trim().length > 0 &&
+			that.movingEnd
+		) {
 			that.setConnectText($(`.${newConnectId}`), that.clipboardConnectText);
-			*/
+			console.log('Movingend', that.movingEnd);
+			if (that.movingEnd) that.movingEnd = false;
+		}
 		//看两个节点的Linkto属性，在添加一个连接线后有没有什么变化，
 		//如果有变化，就上传U， 如果没变化，就不用U
 		//没有变化的情况：之前就有从linkPosNode[0]到 linkPosNode[1]的链接存在
@@ -2400,6 +2407,25 @@ ret='DEFAULT'; `
 			that.setSelectedNodesBoundingRect();
 		}
 	}
+	selectAllNode() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.selectedDIVs = [];
+		that.JC3.find('.kfknode').each(async (_index: any, aNode: any) => {
+			$(aNode).addClass('selected');
+			that.selectedDIVs.push($(aNode));
+		});
+		that.setSelectedNodesBoundingRect();
+	}
+	deselectAllNode() {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.selectedDIVs = [];
+		that.JC3.find('.kfknode').each(async (_index: any, aNode: any) => {
+			$(aNode).removeClass('selected');
+		});
+		that.setSelectedNodesBoundingRect();
+	}
 	async selectConnect(svgConnect, evt: MouseEvent) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -2577,11 +2603,11 @@ ret='DEFAULT'; `
 		};
 	}
 
-	selectNodeOnClick(jqDIV: myJQuery, shiftKey: boolean) {
+	selectNodeOnClick(jqDIV: myJQuery, metaKey: boolean) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		const exist = that.selectedDIVs.indexOf(jqDIV);
-		if (shiftKey) {
+		if (metaKey) {
 			if (exist >= 0) {
 				that.deselectNode(that.selectedDIVs[exist]);
 			} else {
@@ -2888,7 +2914,7 @@ ret='DEFAULT'; `
 	 */
 	async procKeypool(evt) {
 		let that = this;
-		that.log(that.keypool);
+		console.log(that.keypool);
 		if (that.keypoolCleanTimeout) {
 			clearTimeout(that.keypoolCleanTimeout);
 		}
@@ -2913,7 +2939,7 @@ ret='DEFAULT'; `
 			that.setTool('CONNECT');
 			await that.yarkLinkNode(that.hoverJqDiv());
 			that.keypool = '';
-		} else if (['gb', 'ge'].includes(that.keypool) && that.hoveredConnect) {
+		} else if (['cb', 'ce'].includes(that.keypool) && that.hoveredConnect) {
 			//Connect Begin/End node
 			that.cancelLinkNode();
 			that.setTool('CONNECT');
@@ -2921,13 +2947,19 @@ ret='DEFAULT'; `
 			that.movingConnect = true;
 			let jqFrom = $('#' + that.hoveredConnect.attr('fid'));
 			let jqTo = $('#' + that.hoveredConnect.attr('tid'));
+			that.clipboardConnectText = that.hoveredConnect.attr('case');
+			if (Parser.isEmpty(that.clipboardConnectText)) {
+				that.clipboardConnectText = null;
+			}
 			//CE: Connect  END node
-			if (that.keypool === 'ge') {
+			if (that.keypool === 'ce') {
 				that.connectEndFirst = false;
+				that.movingEnd = true;
 				await that.yarkLinkNode(jqFrom);
 			} else {
 				//CB: Connect Begin node
 				that.connectEndFirst = true;
+				that.movingEnd = true;
 				await that.yarkLinkNode(jqTo, false);
 			}
 			that.keypool = '';
@@ -3267,24 +3299,6 @@ ret='DEFAULT'; `
 		return y + that.scrollContainer.scrollTop();
 	}
 
-	//Delete node  remove node
-	async deleteNode_request(jqDIV: myJQuery) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		that.stopNodeBalls();
-		const myId = jqDIV.attr('id');
-		const links = that.tpl.find(`.link[from="${myId}"], .link[to="${myId}"]`);
-		that.yarkOpHistory({
-			obj: 'node',
-			from: jqDIV,
-			to: null,
-			links: links
-		});
-		await that.deleteLinks(jqDIV, links);
-		jqDIV.remove();
-		that.onChange('Delete');
-	}
-
 	async deleteLinks(_jqDIV: myJQuery, links: any) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -3402,23 +3416,35 @@ ret='DEFAULT'; `
 		}
 	}
 
-	deleteSingleNode(theDIV, cutMode) {
+	deleteSingleNode(jqDIV: any, cutMode: boolean, immediateOnChange: boolean = true) {
 		let that = this;
-		if (that.anyLocked(theDIV)) return;
-		if (theDIV.hasClass('START') || theDIV.hasClass('END')) {
+		if (that.anyLocked(jqDIV)) return;
+		if (jqDIV.hasClass('START') || jqDIV.hasClass('END')) {
 			return;
 		}
 		if (cutMode === true) {
 			//copy时不过滤nocopy
-			const jTemp = theDIV.clone();
+			const jTemp = jqDIV.clone();
 			const jTitle = jTemp.find('.coco_title');
 			if (jTitle.length > 0) {
 				jTitle.text(jTitle.text() + '的复制');
 			}
 			that.copyCandidateDIVs.push(jTemp);
 		}
-		theDIV.shouldBeDeleted = true;
-		that.deleteNode_request(theDIV);
+		jqDIV.shouldBeDeleted = true;
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		that.stopNodeBalls();
+		const myId = jqDIV.attr('id');
+		const links = that.tpl.find(`.link[from="${myId}"], .link[to="${myId}"]`);
+		that.yarkOpHistory({
+			obj: 'node',
+			from: jqDIV,
+			to: null,
+			links: links
+		});
+		that.deleteLinks(jqDIV, links).then((ret) => {});
+		jqDIV.remove();
+		if (immediateOnChange) that.onChange('Delete');
 	}
 
 	async deleteSingleConnect(connectId) {
@@ -3470,10 +3496,10 @@ ret='DEFAULT'; `
 					const theDIV = that.hoverJqDiv();
 					that.deleteSingleNode(theDIV, cutMode);
 					that.hoverJqDiv(null);
-					that.onChange('Delete Node');
+					that.onChange('Delete hovered Node');
 				} else if (that.hoveredConnectId) {
 					that.deleteSingleConnect(that.hoveredConnectId);
-					that.onChange('Delete Connect');
+					that.onChange('Delete hovered Connect');
 				}
 			} else if (
 				that.selectedDIVs.length > 0 ||
@@ -3490,7 +3516,7 @@ ret='DEFAULT'; `
 					if (notLockedCount > 0) {
 						for (let i = 0; i < that.selectedDIVs.length; i++) {
 							if (that.anyLocked(that.selectedDIVs[i])) continue;
-							that.deleteSingleNode(that.selectedDIVs[i], cutMode);
+							that.deleteSingleNode(that.selectedDIVs[i], cutMode, false);
 							objectDeleted++;
 							affectedParentsArray.push([...that.getParent(that.selectedDIVs[i])]);
 						}
@@ -4079,6 +4105,7 @@ ret='DEFAULT'; `
 			that.addDocumentEventHandler();
 			that.inited = true;
 			that.showHelp('To see node properties, press P then click on a node', 10000);
+			KFK.C3GotFocus();
 		}
 	}
 
@@ -4158,6 +4185,7 @@ ret='DEFAULT'; `
 			console.error(err);
 		} finally {
 			that.inited = true;
+			KFK.C3GotFocus();
 		}
 	}
 
@@ -4313,7 +4341,10 @@ ret='DEFAULT'; `
 			if (evt === that.lastEvt) return;
 			that.lastEvt = evt;
 			if (that.isShowingModal === true) return;
-			if (that.onC3 === false) return;
+			if (that.onC3 === false) {
+				console.log('onC3 = false');
+				return;
+			}
 			if (that.isEditting) return;
 			if (evt.key === 'Shift') that.KEYDOWN.shift = true;
 			else if (evt.key === 'Control') that.KEYDOWN.ctrl = true;
@@ -4324,6 +4355,10 @@ ret='DEFAULT'; `
 			if ((evt.key === 'a' || evt.key === 's') && (evt.ctrlKey || evt.metaKey)) {
 				evt.stopPropagation();
 				evt.preventDefault();
+				if (evt.key === 'a') {
+					console.log('Select all');
+					KFK.selectAllNode();
+				}
 				return;
 			}
 			//key pool
@@ -4497,7 +4532,7 @@ ret='DEFAULT'; `
 				};
 				if (that.duringKuangXuan) {
 					that.ignoreClick = true;
-					//that.endKuangXuan(that.kuangXuanStartPoint, that.kuangXuanEndPoint, evt.shfitKey);
+					that.endKuangXuan(that.kuangXuanStartPoint, that.kuangXuanEndPoint, evt.metaKey);
 					that.duringKuangXuan = false;
 				}
 			}
@@ -4949,6 +4984,62 @@ ret='DEFAULT'; `
 		that.holdEvent(evt);
 	}
 
+	endKuangXuan(pt1: Point, pt2: Point, metaKey: boolean) {
+		pt1.x = KFK.scalePoint(pt1.x);
+		pt1.y = KFK.scalePoint(pt1.y);
+		pt2.x = KFK.scalePoint(pt2.x);
+		pt2.y = KFK.scalePoint(pt2.y);
+
+		let jqRect = $('#selectingrect');
+		jqRect.hide();
+		let rect = {
+			left: Math.min(pt1.x, pt2.x),
+			top: Math.min(pt1.y, pt2.y),
+			width: Math.abs(pt1.x - pt2.x),
+			height: Math.abs(pt1.y - pt2.y),
+			right: 0,
+			bottom: 0
+		};
+		rect.right = rect.left + rect.width;
+		rect.bottom = rect.top + rect.height;
+		if (rect.width < 10 && rect.height < 10) {
+			//这里，如果滑动大小横向和纵向都小于10， 则不作为框选
+			return;
+		}
+
+		if (metaKey === false) {
+			while (KFK.selectedDIVs.length > 0) {
+				KFK.deselectNode(KFK.selectedDIVs[0]);
+			}
+		}
+		//为防止混乱，框选只对node div有效果
+		KFK.JC3.find('.kfknode').each((index, div) => {
+			let jqDiv = $(div);
+			let divRect = KFK.divRect(jqDiv);
+			if (
+				rect.left < divRect.right &&
+				rect.right > divRect.left &&
+				rect.top < divRect.bottom &&
+				rect.bottom > divRect.top
+			) {
+				KFK.selectNode(jqDiv);
+			}
+		});
+
+		KFK.JC3.find('.kfkshape').each((index, shape) => {
+			let svgShape = SVG(shape);
+			let shapeRect = KFK.getShapeRect(svgShape);
+			if (
+				rect.left < shapeRect.right &&
+				rect.right > shapeRect.left &&
+				rect.top < shapeRect.bottom &&
+				rect.bottom > shapeRect.top
+			) {
+				KFK.selectShape(svgShape);
+			}
+		});
+	}
+
 	scrCenter() {
 		return {
 			x: $(window).width() * 0.5,
@@ -5181,7 +5272,7 @@ ret='DEFAULT'; `
 			if (evt.shiftKey) {
 				await that.showNodeProperties(jqNodeDIV);
 			} else {
-				that.selectNodeOnClick(jqNodeDIV, evt.shiftKey);
+				that.selectNodeOnClick(jqNodeDIV, evt.metaKey);
 			}
 		} else if (that.tool === 'CONNECT' && that.docIsReadOnly() === false) {
 			if (that.afterDragging === false) {

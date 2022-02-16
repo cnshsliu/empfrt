@@ -151,6 +151,9 @@
 			}
 		}
 	}
+	async function exportData(tplid) {
+		//let res = await post('/template/data', { tplid: tplid }, user.sessionToken);
+	}
 
 	onMount(async () => {
 		filter_author = $filterStorage.author;
@@ -385,6 +388,15 @@
 										class="nav-link "
 										><Icon name="trash" />
 										{$_('remotetable.tplaction.deleteThisTempalte')}
+									</a>
+								</DropdownItem>
+								<DropdownItem>
+									<a
+										href={'#'}
+										on:click|preventDefault={() => exportData(row.tplid)}
+										class="nav-link "
+										><Icon name="trash" />
+										{$_('remotetable.tplaction.exportdata')}
 									</a>
 								</DropdownItem>
 							{/if}
