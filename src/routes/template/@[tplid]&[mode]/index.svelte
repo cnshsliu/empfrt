@@ -57,7 +57,7 @@
 	$title = template.tplid;
 	let Designer: any;
 	let theDesigner: any;
-	let readonly = true;
+	let readonly = tpl_mode !== 'edit';
 	let recentTemplates = [];
 	let recentTeams = [];
 
