@@ -71,6 +71,15 @@
 		/* window.onscroll = function () {
 			myFunction();
 		}; */
+		document.onkeyup = (e) => {
+			if (e.ctrlKey && e.key === '1') {
+				goto('/template');
+			} else if (e.ctrlKey && e.key === '2') {
+				goto('/workflow');
+			} else if (e.ctrlKey && e.key === '3') {
+				goto('/work');
+			}
+		};
 	});
 </script>
 
