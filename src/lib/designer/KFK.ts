@@ -765,6 +765,10 @@ class KFKclass {
 				label: '',
 				kvars: '',
 				byall: true,
+				vote: '',
+				vote_any: '',
+				vote_failto: '',
+				vote_percent: 60,
 				doer: '',
 				instruct: '',
 				transferable: false
@@ -790,6 +794,12 @@ class KFKclass {
 			kvarsString = that.base64ToCode(kvarsString); //TO JSON.stringified string
 			ret.ACTION.kvars = JSON.parse(kvarsString); //to JSON
 			ret.ACTION.byall = jqDIV.hasClass('BYALL');
+			ret.ACTION.vote = jqDIV.attr('vote') ? jqDIV.attr('vote').trim() : '';
+			ret.ACTION.vote_any = jqDIV.attr('vote_any') ? jqDIV.attr('vote_any').trim() : '';
+			ret.ACTION.vote_failto = jqDIV.attr('vote_failto') ? jqDIV.attr('vote_failto').trim() : '';
+			ret.ACTION.vote_percent = jqDIV.attr('vote_percent')
+				? parseInt(jqDIV.attr('vote_percent').trim())
+				: 60;
 			ret.ACTION.instruct = that.base64ToCode(blankToDefault(jqDIV.find('.instruct').text(), ''));
 			ret.ACTION.transferable = blankToDefault(jqDIV.attr('transferable'), 'false') === 'true';
 
@@ -873,6 +883,14 @@ ret='DEFAULT'; `
 			}
 			if (propJSON.byall) {
 				jqDIV.addClass('BYALL');
+				if (propJSON.vote) {
+					jqDIV.attr('vote', propJSON.vote);
+					jqDIV.attr('vote_any', propJSON.vote_any);
+					jqDIV.attr('vote_failto', propJSON.vote_failto);
+					jqDIV.attr('vote_percent', propJSON.vote_percent);
+				} else {
+					jqDIV.attr('vote', '');
+				}
 			} else {
 				jqDIV.removeClass('BYALL');
 			}

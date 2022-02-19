@@ -211,6 +211,10 @@ export interface NodePropJSON {
 	label: string;
 	sub: string;
 	byall: boolean;
+	vote: string;
+	vote_any: string;
+	vote_failto: string;
+	vote_percent: number;
 	instruct: string;
 	alone: boolean;
 	transferable: boolean;

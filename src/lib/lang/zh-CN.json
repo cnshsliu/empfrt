@@ -213,7 +213,7 @@
 				"instruct": "可以使用简单HTML格式，也可使用Handlebars嵌入流程变量,like {{varname.label}}, {{varname.value}}"
 			},
 			"p10t": {
-				"alldone": "只有当所有人完成才完成",
+				"alldone": "多人参与时投票",
 				"transferable": "可转办",
 				"pds": "参与者字符串",
 				"pick": "可参考定义",
@@ -307,5 +307,17 @@
 			"top": "移到最上",
 			"bottom": "移到最下"
 		}
+	},
+	"vote": {
+		"last": "依最后一人的选择",
+		"most": "依最多人的选择",
+		"least": "依最少人的选择",
+		"allOrFailto": "选择全部一样，否则",
+		"percentOrFailto": "某一选择超过比例，否则",
+		"ifAny": "只要有选，否则依最后",
+		"ifAnyThenMost": "只要有选，否则依最多",
+		"ifAnyThenLeast": "只要有选，否则依最少",
+		"ifAnyThenAllThenMost": "只要有选，否则依统一选择, 或最多",
+		"ifAnyThenFailto": "只要有选，否则"
 	}
 }

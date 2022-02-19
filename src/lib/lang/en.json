@@ -214,7 +214,7 @@
 				"instruct": "may use simple HTML format and Handlebars to include Kvars"
 			},
 			"p10t": {
-				"alldone": "Done only when All-Done",
+				"alldone": "Vote if multiple participants",
 				"transferable": "Transferable",
 				"pds": "PDS",
 				"pick": "Pick PDS",
@@ -310,5 +310,17 @@
 			"top": "Move to top",
 			"bottom": "Move to bottom"
 		}
+	},
+	"vote": {
+		"last": "The last one",
+		"most": "The most",
+		"least": "The least",
+		"allOrFailto": "All the same or fail to",
+		"percentOrFailto": "More than %, or fail to",
+		"ifAny": "If any match",
+		"ifAnyThenMost": "If any, or else the most",
+		"ifAnyThenLeast": "If any, or else the least",
+		"ifAnyThenAllThenMost": "If any, then all the same , then the most",
+		"ifAnyThenFailto": "If any, or fail to"
 	}
 }

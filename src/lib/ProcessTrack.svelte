@@ -85,6 +85,9 @@
 	<div class="fs-3 mt-3">
 		<hr />
 	</div>
+	<!--pre><code>
+	{JSON.stringify(wf.history, null, 2)}
+	</code></pre -->
 	<Container class="my-0">
 		{#each wf.history as entry}
 			<Card
@@ -128,11 +131,11 @@
 									{/if}
 								</div>
 							</Col>
-							{#if entry.route}
+							{#if entry.workDecision}
 								<hr />
 								<Col>
 									<span class="kfk-kvar-key-display">{$_('todo.decision')}:</span>
-									<span class="kfk-kvar-value-display">{entry.route}</span>
+									<span class="kfk-kvar-value-display">{entry.workDecision}</span>
 								</Col>
 							{/if}
 						</Row>
@@ -177,37 +180,42 @@
 								<CommentEntry bind:comment={entry.comment} />
 							</Col>
 						{/if}
-						<Col>
-							<p class="text-right fs-6 fw-light fst-italic">
+						<Col class="fs-6 fw-light">
+							<Row class="d-flex">
 								{#each entry.doers as aDoer}
-									<a href={`/work/@${aDoer.todoid}`} class="clickable text-primary btn btn-sm">
-										{#if aDoer.status === 'ST_DONE'}
-											{#if aDoer.signature}
-												<img src={aDoer.signature} class="kfk-signature" alt={aDoer.cn} />
-												<div>{aDoer.cn}({aDoer.uid})</div>
+									<Col>
+										<a href={`/work/@${aDoer.todoid}`} class="clickable text-primary btn btn-sm">
+											{#if aDoer.status === 'ST_DONE'}
+												<div>{aDoer.route}</div>
+												{#if aDoer.signature}
+													<img src={aDoer.signature} class="kfk-signature" alt={aDoer.cn} />
+												{:else}
+													<div class="user-emoji d-flex align-items-center  justify-content-center">
+														<i class="bi bi-emoji-sunglasses" alt="Done" />
+													</div>
+												{/if}
+												<div>{aDoer.cn}</div>
 												<div>{mtcDate(aDoer.doneat)}</div>
-											{:else}
+											{:else if aDoer.status === 'ST_IGNORE'}
+												<div>&nbsp;</div>
 												<div class="user-emoji d-flex align-items-center  justify-content-center">
-													<i class="bi bi-emoji-sunglasses" alt="Done" />
+													<i class="bi bi-emoji-smile-upside-down" alt="Ignored" />
 												</div>
-												<div>{aDoer.cn}({aDoer.uid})</div>
-												<div>{mtcDate(aDoer.doneat)}</div>
+												<div>{aDoer.cn}</div>
+												<div>&nbsp;</div>
+											{:else}
+												<div>&nbsp;</div>
+												<div class="user-emoji d-flex align-items-center  justify-content-center">
+													<i class="bi bi-emoji-expressionless" alt="notdone" />
+												</div>
+												<div>{aDoer.cn}</div>
+												<div>&nbsp;</div>
 											{/if}
-										{:else if aDoer.status === 'ST_IGNORE'}
-											<div class="user-emoji d-flex align-items-center  justify-content-center">
-												<i class="bi bi-emoji-smile-upside-down" alt="Ignored" />
-											</div>
-											<div>{aDoer.cn}({aDoer.uid})</div>
-										{:else}
-											<div class="user-emoji d-flex align-items-center  justify-content-center">
-												<i class="bi bi-emoji-expressionless" alt="notdone" />
-											</div>
-											<div>{aDoer.cn}({aDoer.uid})</div>
-										{/if}
-									</a>
+										</a>
+									</Col>
 								{/each}
-							</p>
-							<p class="text-right fs-6 fw-light fst-italic" />
+								<Col class="ms-auto">&nbsp;</Col>
+							</Row>
 						</Col>
 					</Row>
 				</CardBody>

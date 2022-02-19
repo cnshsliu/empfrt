@@ -129,6 +129,40 @@
 					/>
 				</InputGroup>
 			</Col>
+			{#if nodeInfo.nodeProps.ACTION.byall}
+				<Col>
+					<InputGroup size="sm">
+						<Input type="select" bind:value={nodeInfo.nodeProps.ACTION.vote} disabled={readonly}>
+							<option value="last">{$_('vote.last')}</option>
+							<option value="most">{$_('vote.most')}</option>
+							<option value="least">{$_('vote.least')}</option>
+							<option value="allOrFailto">{$_('vote.allOrFailto')}</option>
+							<option value="percentOrFailto">{$_('vote.percentOrFailto')}</option>
+							<option value="ifAny">{$_('vote.ifAny')}</option>
+							<option value="ifAnyThenMost">{$_('vote.ifAnyThenMost')}</option>
+							<option value="ifAnyThenLeast">{$_('vote.ifAnyThenLeast')}</option>
+							<option value="ifAnyThenAllThenMost">{$_('vote.ifAnyThenAllThenMost')}</option>
+							<option value="ifAnyThenFailto">{$_('vote.ifAnyThenFailto')}</option>
+						</Input>
+					</InputGroup>
+				</Col>
+				<Col>
+					<InputGroup size="sm">
+						{#if ['ifAny', 'ifAnyThenMost', 'ifAnyThenLeast', 'ifAnyThenAllThenMost', 'ifAnyThenFailto', 'percentOrFailto'].includes(nodeInfo.nodeProps.ACTION.vote)}
+							<InputGroupText>Any</InputGroupText>
+							<Input bind:value={nodeInfo.nodeProps.ACTION.vote_any} />
+						{/if}
+						{#if ['percentOrFailto'].includes(nodeInfo.nodeProps.ACTION.vote)}
+							<InputGroupText>Percentage</InputGroupText>
+							<Input type="number" bind:value={nodeInfo.nodeProps.ACTION.vote_percent} />
+						{/if}
+						{#if ['allOrFailto', 'percentOrFailto', 'ifAnyThenFailto'].includes(nodeInfo.nodeProps.ACTION.vote)}
+							<InputGroupText>Fail to</InputGroupText>
+							<Input bind:value={nodeInfo.nodeProps.ACTION.vote_failto} />
+						{/if}
+					</InputGroup>
+				</Col>
+			{/if}
 			<Col>
 				<InputGroup size="sm">
 					<Input
