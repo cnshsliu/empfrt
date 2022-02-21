@@ -85,7 +85,7 @@
 	<div class="fs-3 mt-3">
 		<hr />
 	</div>
-	<!--pre><code>
+	<!-- pre><code>
 	{JSON.stringify(wf.history, null, 2)}
 	</code></pre -->
 	<Container class="my-0">
@@ -186,7 +186,7 @@
 									<Col>
 										<a href={`/work/@${aDoer.todoid}`} class="clickable text-primary btn btn-sm">
 											{#if aDoer.status === 'ST_DONE'}
-												<div>{aDoer.route}</div>
+												<div>{@html aDoer.route ? aDoer.route : '&nbsp;'}</div>
 												{#if aDoer.signature}
 													<img src={aDoer.signature} class="kfk-signature" alt={aDoer.cn} />
 												{:else}
