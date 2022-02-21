@@ -27,7 +27,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import FileUploader from '$lib/FileUploader.svelte';
-	import { filterStorage, startedWorkflow } from '$lib/empstores';
+	import { filterStorage } from '$lib/empstores';
 	import type { User, Template, Team, oneArgFunc } from '$lib/types';
 	import { getNotificationsContext } from 'svelte-notifications';
 	const { addNotification } = getNotificationsContext();
@@ -60,6 +60,7 @@
 	let fullscreen = false;
 	let isOpen = false;
 	let roles = [];
+	let startedWorkflow = null;
 	let uploadedFiles = [];
 	let fade_message = '';
 	let timeoutID = null;
@@ -126,12 +127,12 @@
 		);
 		if (res.wfid) {
 			console.log(res);
-			$startedWorkflow = { wfid: res.wfid, tplid: res.tplid, ts: new Date().getTime() };
+			startedWorkflow = { wfid: res.wfid, tplid: res.tplid, ts: new Date().getTime() };
 			fade_message = `Workflow ${res.wftitle} Started.`;
 			setFadeMessage(fade_message, 'success');
 			starting = 1;
 		} else {
-			$startedWorkflow = null;
+			startedWorkflow = null;
 			if (res.errors && res.errors.MongoError && res.errors.MongoError[0]) {
 				if (res.errors.MongoError[0].indexOf('duplicate') >= 0) {
 					fade_message = `exists already`;
@@ -144,19 +145,12 @@
 		}
 	};
 
-	if ($startedWorkflow) {
-		if (!$startedWorkflow.tplid || !$startedWorkflow.tplid || !$startedWorkflow.ts)
-			$startedWorkflow = null;
+	if (startedWorkflow) {
+		if (!startedWorkflow.tplid || !startedWorkflow.tplid || !startedWorkflow.ts)
+			startedWorkflow = null;
 	}
-	if ($startedWorkflow && $startedWorkflow.tplid && $startedWorkflow.tplid !== tplid) {
-		$startedWorkflow = null;
-	}
-	if ($startedWorkflow && $startedWorkflow.wfid) {
-		api.post('workflow/read', { wfid: $startedWorkflow.wfid }, user.sessionToken).then((wf) => {
-			if (wf.wftitle == 'Not Found') {
-				$startedWorkflow = null;
-			}
-		});
+	if (startedWorkflow && startedWorkflow.tplid && startedWorkflow.tplid !== tplid) {
+		startedWorkflow = null;
 	}
 
 	let recentTemplates = [];
@@ -221,7 +215,7 @@
 		</Col>
 	</Row>
 </Container>
-{#if $startedWorkflow === null}
+{#if startedWorkflow === null}
 	<Container class="mt-3 w-50">
 		<Form>
 			<Row cols="1" class="mt-2">
@@ -432,19 +426,15 @@
 	<Container class="mt-3 w-50">
 		<Row cols="2" style="margin-top: 20px;">
 			<div class="w-100 text-center">
-				{TimeTool.fromNow($startedWorkflow.ts)}
+				{TimeTool.fromNow(startedWorkflow.ts)}
 			</div>
-			{#if $startedWorkflow !== null}
+			{#if startedWorkflow !== null}
 				<Button
 					class="w-100 mb-5"
 					color="primary"
 					on:click={(e) => {
 						e.preventDefault();
-						//$filterStorage.tplid = $startedWorkflow.tplid;
-						//$filterStorage.workTitlePattern = 'wf:' + $startedWorkflow.wfid;
-						//$filterStorage.workStatus = 'ST_RUN';
-						//goto('/work');
-						goto(`/workflow/@${$startedWorkflow.wfid}`);
+						goto(`/workflow/@${startedWorkflow.wfid}`);
 					}}
 				>
 					{$_('start.checkitout')}
@@ -455,7 +445,7 @@
 					on:click={(e) => {
 						e.preventDefault();
 						starting = 0;
-						goto(`/workflow/@${$startedWorkflow.wfid}/gotofirststep`);
+						goto(`/workflow/@${startedWorkflow.wfid}/gotofirststep`);
 					}}
 				>
 					{$_('start.firststep')}
@@ -466,7 +456,7 @@
 					on:click={(e) => {
 						e.preventDefault();
 						starting = 0;
-						$startedWorkflow = null;
+						startedWorkflow = null;
 					}}
 				>
 					{$_('start.startanother')}

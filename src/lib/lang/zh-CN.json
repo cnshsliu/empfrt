@@ -136,7 +136,7 @@
 	"start": {
 		"canbefile": "你也可以上传一个文件作为PBO",
 		"startWorkflow": "启动这个流程",
-		"startIt": "马上启动",
+		"startIt": "正式启动",
 		"rehearsal": "先演练一下",
 		"context": "流程上下文信息(可选)",
 		"pbo": "主要业务对象URL",
