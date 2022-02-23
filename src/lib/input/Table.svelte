@@ -18,7 +18,6 @@
 	let rows = [];
 	let avgrow = [];
 	let sumrow = [];
-	console.log('=====', readonly);
 	if (readonly) {
 		console.log(kvar);
 		if (typeof kvar.value === 'string') {

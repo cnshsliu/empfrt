@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Parser from '$lib/parser';
+	import { qtb } from '$lib/utils';
 	import {
 		NavLink,
 		Icon,
@@ -18,6 +19,19 @@
 	if (Parser.isEmpty(nodeInfo.caseValue)) {
 		nodeInfo.caseValue = '';
 	}
+	if (Parser.isEmpty(nodeInfo.setValue)) {
+		nodeInfo.setValue = '';
+	} else {
+		try {
+			nodeInfo.setValue = Parser.base64ToCode(nodeInfo.setValue);
+		} catch (e) {
+			nodeInfo.setValue = '';
+		}
+	}
+	$: {
+		nodeInfo.setValue = qtb(nodeInfo.setValue);
+		console.log(nodeInfo.setValue);
+	}
 </script>
 
 <Container>
@@ -26,6 +40,10 @@
 			<InputGroup size="sm">
 				<InputGroupText>Case Value</InputGroupText>
 				<Input bind:value={nodeInfo.caseValue} disabled={readonly} />
+			</InputGroup>
+			<InputGroup size="sm">
+				<InputGroupText>Set Value</InputGroupText>
+				<Input bind:value={nodeInfo.setValue} disabled={readonly} />
 			</InputGroup>
 		</Col>
 		<Col class="d-flex mt-3">

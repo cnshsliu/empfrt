@@ -234,6 +234,7 @@
 				"sel_placeholder": "可选项1;可选项2;可选项3",
 				"value": "初始",
 				"label": "标识",
+				"when": "条件",
 				"placeholder": "提示",
 				"visi": "可见",
 				"breakrow": "换行",

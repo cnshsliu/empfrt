@@ -155,6 +155,7 @@ export interface kvarDef {
 	id: string;
 	options?: string;
 	required?: boolean;
+	when?: string;
 	cssClass?: string;
 	hide?: string;
 	ui?: string | string[];
@@ -168,6 +169,7 @@ export interface KVarDefInput {
 	breakrow?: boolean;
 	placeholder?: string;
 	required?: boolean;
+	when?: string;
 	id?: string;
 	options?: string;
 	coldef?: string;
@@ -194,6 +196,7 @@ export interface NodeInfo {
 	jqDiv: any;
 	theConnect: any;
 	caseValue: string;
+	setValue: string;
 	nodeProps: {
 		kvarsArr: KVarDef[];
 		label: string;

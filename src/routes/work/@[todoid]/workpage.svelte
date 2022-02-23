@@ -237,9 +237,51 @@
 		recentUsers = recentUsers;
 	};
 
+	let showKVars = new Array();
+	for (let i = 0; i < work.kvarsArr.length; i++) {
+		showKVars[i] = work.kvarsArr[i].when ? false : true;
+	}
+
+	const getKVarValue = (name) => {
+		for (let i = 0; i < work.kvarsArr.length; i++) {
+			if (work.kvarsArr[i].name === name) {
+				return work.kvarsArr[i].value;
+			}
+		}
+		return null;
+	};
+	const splitWhen = (x) => {
+		let tmp = x.match(/(\w+)(\={1,3}|\>=?|\<=?|\!=)(\w+)/);
+		if (tmp) {
+			return [tmp[1], tmp[2], tmp[3]];
+		} else {
+			return null;
+		}
+	};
+
 	const caculateFormula = function (kvar) {
 		console.log(kvar.name, ' new value: ', kvar.value);
 		if (work.kvarsArr.length <= 0) return;
+		for (let i = 0; i < work.kvarsArr.length; i++) {
+			if (work.kvarsArr[i].when) {
+				showKVars[i] = false;
+				let tmp = splitWhen(work.kvarsArr[i].when);
+				let refValue = getKVarValue(tmp[0]);
+				showKVars[i] = ['=', '==', '==='].includes(tmp[1])
+					? refValue === tmp[2]
+					: ['>'].includes(tmp[1])
+					? refValue > tmp[2]
+					: ['>='].includes(tmp[1])
+					? refValue >= tmp[2]
+					: ['<'].includes(tmp[1])
+					? refValue < tmp[2]
+					: ['<='].includes(tmp[1])
+					? refValue <= tmp[2]
+					: ['!='].includes(tmp[1])
+					? refValue != tmp[2]
+					: false;
+			}
+		}
 		for (let i = 0; i < work.kvarsArr.length; i++) {
 			if (work.kvarsArr[i].formula) {
 				console.log(work.kvarsArr[i].formula);
@@ -255,6 +297,9 @@
 	};
 </script>
 
+<!--pre><code>
+{JSON.stringify(work, null, 2)}
+</code></pre -->
 {#if work && work.todoid}
 	<Container id={'workitem_' + work.todoid} class={'mt-3 ' + ($printing ? 'nodisplay' : '')}>
 		<form>
@@ -284,14 +329,16 @@
 						{$_('todo.nodeInput')}
 						<Row cols={{ lg: 4, md: 2, xs: 1 }} class="m-2">
 							{#each work.kvarsArr as kvar, i}
-								<InputKVar
-									{work}
-									{kvar}
-									{i}
-									on:kvar_value_input_changed={async (e) => {
-										await caculateFormula(e.detail);
-									}}
-								/>
+								{#if showKVars[i]}
+									<InputKVar
+										{work}
+										{kvar}
+										{i}
+										on:kvar_value_input_changed={async (e) => {
+											await caculateFormula(e.detail);
+										}}
+									/>
+								{/if}
 							{/each}
 						</Row>
 					{/if}

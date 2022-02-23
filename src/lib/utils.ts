@@ -30,5 +30,15 @@ export const qtb = function (str: string) {
 	str = str.replace(/（/g, '(');
 	str = str.replace(/）/g, ')');
 	str = str.replace(/｜/g, '|');
+	str = str.replace(/“/g, '"');
+	str = str.replace(/”/g, '"');
+	str = str.replace(/。/g, '.');
+	str = str.replace(/【/g, '[');
+	str = str.replace(/】/g, ']');
+	str = str.replace(/「/g, '{');
+	str = str.replace(/」/g, '}');
+	str = str.replace(/？/g, '?');
+	str = str.replace(/《/g, '<');
+	str = str.replace(/》/g, '>');
 	return str;
 };

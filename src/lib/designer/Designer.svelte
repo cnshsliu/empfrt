@@ -72,7 +72,7 @@
 	};
 	const setConnectProperties = async () => {
 		toggle();
-		await KFK.setConnectProperties(nodeInfo.theConnect, nodeInfo.caseValue);
+		await KFK.setConnectProperties(nodeInfo.theConnect, nodeInfo.caseValue, nodeInfo.setValue);
 	};
 
 	const setNodeProperties = async () => {

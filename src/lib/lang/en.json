@@ -237,6 +237,7 @@
 				"sel_placeholder": "Option1;Option2;Option3",
 				"value": "Value",
 				"label": "Label",
+				"when": "When",
 				"placeholder": "Placeholder",
 				"visi": "Visible",
 				"breakrow": "Break row",

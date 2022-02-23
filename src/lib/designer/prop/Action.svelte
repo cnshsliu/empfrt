@@ -317,23 +317,25 @@
 								</InputGroup>
 								<InputGroup size="sm">
 									<InputGroupText>
+										{$_('prop.action.kvar.required')}
+									</InputGroupText>
+									<Input type="checkbox" bind:checked={kvar.required} disabled={readonly} />
+									<InputGroupText>
 										{$_('prop.action.kvar.breakrow')}
 									</InputGroupText>
 									<Input type="checkbox" bind:checked={kvar.breakrow} disabled={readonly} />
-								</InputGroup>
-								<InputGroup size="sm">
 									<InputGroupText>
 										{$_('prop.action.kvar.ID')}
 									</InputGroupText>
 									<Input bind:value={kvar.id} disabled={readonly} />
 								</InputGroup>
-								<PDSResolver bind:this={thePDSResolver} bind:value={kvar.visi} {readonly} />
 								<InputGroup size="sm">
 									<InputGroupText>
-										{$_('prop.action.kvar.required')}
+										{$_('prop.action.kvar.when')}
 									</InputGroupText>
-									<Input type="checkbox" bind:checked={kvar.required} disabled={readonly} />
+									<Input bind:value={kvar.when} disabled={readonly} />
 								</InputGroup>
+								<PDSResolver bind:this={thePDSResolver} bind:value={kvar.visi} {readonly} />
 							</TabPane>
 						</TabContent>
 					</div>

@@ -225,6 +225,8 @@ class KFKclass {
 	PageNumberVert: number = 0;
 	LeftB: number = 0;
 	TopB: number = 0;
+	bestViewTop: number = 200; //用于空开上部和左部的菜单
+	bestViewLeft: number = 200;
 	_width = 0;
 	_height: number = 0;
 	minimapMouseDown: boolean = false;
@@ -618,13 +620,6 @@ class KFKclass {
 		return Buffer.from(base64, 'base64').toString('utf-8');
 	}
 
-	scrollToPos(pos: Point) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		const that = this;
-		that.JS1.scrollLeft(pos.x);
-		that.JS1.scrollTop(pos.y);
-	}
-
 	//Following solution to prevetn scrolling after focus  cause a problem of juqery
 	//So, dont' use it but adapt getScrollPos then scrollToPos solution
 	//https://stackoverflow.com/questions/4963053/focus-to-input-without-scrolling
@@ -708,11 +703,11 @@ class KFKclass {
 			let linkHtml = `<div class="link" from="${aConnect.attr('fid')}" to="${aConnect.attr(
 				'tid'
 			)}">link</div>`;
-			if (Parser.isEmpty(aConnect.attr('case')) === false) {
-				linkHtml = `<div class="link" from="${aConnect.attr('fid')}" to="${aConnect.attr(
-					'tid'
-				)}" case="${aConnect.attr('case')}">link</div>`;
-			}
+			let caseSeg = Parser.isEmpty(aConnect.attr('case')) ? '' : `case="${aConnect.attr('case')}"`;
+			let setSeg = Parser.isEmpty(aConnect.attr('set')) ? '' : `set="${aConnect.attr('set')}"`;
+			linkHtml = `<div class="link" from="${aConnect.attr('fid')}" to="${aConnect.attr(
+				'tid'
+			)}" ${caseSeg} ${setSeg}>link</div>`;
 			tplDocHtml += linkHtml;
 		});
 		tplDocHtml += '</div>';
@@ -1015,29 +1010,38 @@ ret='DEFAULT'; `
 			nodeType: 'CONNECT',
 			theConnect: theConnect,
 			caseValue: theConnect.attr('case'),
+			setValue: theConnect.attr('set'),
 			nodeProps: { label: 'Connect' }
 		});
 	}
 
-	async setConnectText(theConnect: any, caseValue: string) {
+	async setConnectText(theConnect: any, caseValue: string, setValue: string = '') {
 		const that = this;
 		theConnect.attr('case', caseValue);
+		let base64Set = setValue;
+		if (setValue) {
+			base64Set = that.codeToBase64(setValue);
+		}
+		setValue && theConnect.attr('set', base64Set);
 		const tplLinks = that.tpl.find(
 			`.link[from="${theConnect.attr('fid')}"][to="${theConnect.attr('tid')}"]`
 		);
 		for (let i = 0; i < tplLinks.length; i++) {
 			$(tplLinks[i]).attr('case', caseValue);
+			setValue && $(tplLinks[i]).attr('set', base64Set);
 		}
 
 		await that.redrawLinkLines(that.JC3.find(`#${theConnect.attr('fid')}`), 'after moving');
 
-		this.onChange('Connect case Changed');
+		that.onChange('Connect case Changed');
 	}
 
-	async setConnectProperties(theConnect: any, caseValue) {
+	async setConnectProperties(theConnect: any, caseValue = '', setValue = '') {
 		let tmp = caseValue.trim();
 		caseValue = Parser.isEmpty(tmp) ? '' : tmp;
-		await this.setConnectText(theConnect, caseValue);
+		tmp = setValue.trim();
+		setValue = Parser.isEmpty(tmp) ? '' : tmp;
+		await this.setConnectText(theConnect, caseValue, setValue);
 	}
 
 	focusOnNode(jqNodeDIV: myJQuery) {
@@ -1153,6 +1157,7 @@ ret='DEFAULT'; `
 		A: myJQuery,
 		B: myJQuery,
 		caseValue: string,
+		setValue: string,
 		_posLimitA = [0, 1, 2, 3], //eslint-disable-line
 		_posLimitB = [0, 1, 2, 3], //eslint-disable-line
 		drawLine = true
@@ -1235,7 +1240,8 @@ ret='DEFAULT'; `
 				APos.points[AIndex].y,
 				BPos.points[BIndex].x,
 				BPos.points[BIndex].y,
-				caseValue
+				caseValue,
+				setValue
 			);
 		}
 		return [AIndex, BIndex];
@@ -2386,6 +2392,11 @@ ret='DEFAULT'; `
 		return pt / that.scaleRatio;
 	}
 
+	unscalePoint(pt: any) {
+		const that = this;
+		return pt * that.scaleRatio;
+	}
+
 	addMinimap() {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -2891,10 +2902,13 @@ ret='DEFAULT'; `
 			const jqTo = $(`#${toId}`);
 			let caseValue = $(tplLinks[i]).attr('case');
 			caseValue = Parser.isEmpty(caseValue) ? '' : caseValue;
+			let setValue = $(tplLinks[i]).attr('set');
+			setValue = Parser.isEmpty(setValue) ? '' : setValue;
 			const anchorPair = await that.drawConnect(
 				jqNode,
 				jqTo,
 				caseValue,
+				setValue,
 				allowConnectPoints[0],
 				allowConnectPoints[1],
 				true
@@ -2913,10 +2927,13 @@ ret='DEFAULT'; `
 				const jqFrom = $(`#${fromId}`);
 				let caseValue = $(guiLinks_toMe[i]).attr('case');
 				caseValue = Parser.isEmpty(caseValue) ? '' : caseValue;
+				let setValue = $(guiLinks_toMe[i]).attr('set');
+				setValue = Parser.isEmpty(setValue) ? '' : setValue;
 				const anchorPair = await that.drawConnect(
 					jqFrom,
 					jqNode,
 					caseValue,
+					setValue,
 					allowConnectPoints[2],
 					allowConnectPoints[3],
 					true
@@ -2982,11 +2999,7 @@ ret='DEFAULT'; `
 			}
 			that.keypool = '';
 		} else if (['ct'].includes(that.keypool) && that.hoveredConnect) {
-			let tmp = that.hoveredConnect.attr('case');
-			if (Parser.isEmpty(tmp) === false) {
-				that.setConnectText(that.hoveredConnect, '');
-				that.onChange('clear connect text');
-			}
+			that.setConnectText(that.hoveredConnect, '', '');
 		}
 	}
 
@@ -4235,6 +4248,26 @@ ret='DEFAULT'; `
 			y: that.TopB
 		});
 	}
+	scrollToStartNode() {
+		const that = this;
+		let startNode = that.JC3.find('.START').first();
+		if (startNode) {
+			let thePos = {
+				x: KFKclass.unpx(startNode.css('left')) + that.LeftB - that.bestViewLeft,
+				y: KFKclass.unpx(startNode.css('top')) + that.TopB - that.bestViewTop
+			};
+			console.log(thePos);
+			that.scrollToPos(thePos);
+		} else {
+			that.scrollToFirstPage();
+		}
+	}
+	scrollToPos(pos: Point) {
+		//eslint-disable-next-line  @typescript-eslint/no-this-alias
+		const that = this;
+		that.JS1.scrollLeft(pos.x);
+		that.JS1.scrollTop(pos.y);
+	}
 
 	initLeftRightPanelEventHandler() {
 		$('#leftPanel').on('click', function (evt) {
@@ -4446,7 +4479,8 @@ ret='DEFAULT'; `
 					that.deleteObjects(evt, false);
 					break;
 				case 'r':
-					that.scrollToFirstPage();
+					//that.scrollToFirstPage();
+					that.scrollToStartNode();
 					break;
 				default:
 					break;
@@ -5155,6 +5189,7 @@ ret='DEFAULT'; `
 		_tstr: string,
 		triangle: number[],
 		caseValue: string,
+		setValue: string,
 		simpleLineMode: boolean = false
 	) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
@@ -5238,6 +5273,7 @@ ret='DEFAULT'; `
 				}
 			}
 			theConnect.attr('case', caseValue);
+			theConnect.attr('set', setValue);
 			const connectText = await that.svgDraw.text(function (add: any) {
 				add.tspan(caseValue).dy(-2);
 			});
@@ -5347,7 +5383,8 @@ ret='DEFAULT'; `
 		fy: number,
 		tx: number,
 		ty: number,
-		caseValue: string
+		caseValue: string,
+		setValue: string
 	) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -5583,6 +5620,7 @@ ret='DEFAULT'; `
 			tstr,
 			triangle,
 			caseValue,
+			setValue,
 			that.APP.model.viewConfig.simpleLineMode
 		);
 	}
