@@ -1903,6 +1903,14 @@ div.pbo {
 	background-size: contain;
 	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/OR.svg');
 }
+.node.THROUGH {
+	left: 400px;
+	top: 300px;
+	background-position: center; /* Center the image */
+	background-repeat: no-repeat; /* Do not repeat the image */
+	background-size: contain;
+	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/THROUGH.svg');
+}
 
 .node.GROUND {
 	left: 400px;
@@ -2244,6 +2252,12 @@ div.pbo {
 }
 .toolbox.CONNECT.active {
 	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/CONNECT2.svg');
+}
+.toolbox.THROUGH {
+	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/THROUGH.svg');
+}
+.toolbox.THROUGH.active {
+	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/THROUGH2.svg');
 }
 @keyframes shaking {
 	25% {

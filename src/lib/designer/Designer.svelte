@@ -349,6 +349,13 @@
 		>
 			<div class="shortcutkey">9</div>
 		</ListGroupItem>
+		<ListGroupItem
+			class="d-flex align-items-center toolbox THROUGH {currentTool === 'THROUGH' ? 'active' : ''}"
+			on:click={(event) => designerSetTool('THROUGH', event)}
+			title="过渡"
+		>
+			<div class="shortcutkey">0</div>
+		</ListGroupItem>
 	</ListGroup>
 </div>
 <!-- div id="minimap" class="padlayout spaceToHide" / -->

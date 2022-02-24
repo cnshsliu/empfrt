@@ -58,7 +58,8 @@ const config = {
 		SUB: { edittable: true, resizable: false },
 		AND: { edittable: true, resizable: false },
 		OR: { edittable: true, resizable: false },
-		GROUND: { edittable: true, resizable: false }
+		GROUND: { edittable: true, resizable: false },
+		THROUGH: { edittable: true, resizable: false }
 	},
 	defaultSize: {},
 	layout: {

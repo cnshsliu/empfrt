@@ -33,7 +33,8 @@ const APP = {
 		AND: false,
 		OR: false,
 		GROUND: false,
-		CONNECT: false
+		CONNECT: false,
+		THROUGH: false
 	},
 	model: {
 		gridWidth: 20,
