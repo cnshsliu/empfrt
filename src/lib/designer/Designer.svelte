@@ -61,8 +61,11 @@
 	const toggle = () => {
 		KFK.panStartAt = undefined;
 		openModal = !openModal;
+		console.log('modal toggle');
 		if (openModal === false) {
 			KFK.showingProp = false;
+			KFK.resetTmpTool();
+			console.log('reset Tmp Tool');
 			documentEventOn();
 		}
 	};

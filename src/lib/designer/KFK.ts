@@ -141,8 +141,8 @@ class KFKclass {
 	scaleRatio: number = 1;
 	currentPage: number = 0;
 	loadedProjectId: string = null;
-	closeHelpTimer: any = null;
 	keypool: string = '';
+	closeHelpTimer: any = null;
 	keypoolCleanTimeout: any = null;
 	svgDraw: any = null; //画svg的画布
 	helpArea: any = null;
@@ -329,6 +329,7 @@ class KFKclass {
 
 	tobeRemovedConnectId: string = null;
 	oldTool = 'POINTER';
+	tmpTool = null;
 	movingConnect: boolean = false;
 	designerCallback = null;
 	connectEndFirst = false;
@@ -1247,7 +1248,7 @@ ret='DEFAULT'; `
 		return [AIndex, BIndex];
 	}
 
-	async yarkLinkNode(jqDIV: myJQuery, shiftKey: boolean = false) {
+	async yarkLinkNode(jqDIV: myJQuery, altKey: boolean = false) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		if (that.shapeDragging) return;
@@ -1268,7 +1269,7 @@ ret='DEFAULT'; `
 		}
 		that.tmpPos = that.calculateNodeConnectPoints(jqDIV);
 		that.linkPosNode.push(jqDIV);
-		await that.procLinkNode(shiftKey);
+		await that.procLinkNode(altKey);
 	}
 
 	cancelLinkNode() {
@@ -1283,7 +1284,7 @@ ret='DEFAULT'; `
 	}
 
 	//add link add connection lianjie lianxian
-	async procLinkNode(shiftKey: boolean) {
+	async procLinkNode(altKey: boolean) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		if (that.linkPosNode.length < 2) {
@@ -1365,7 +1366,7 @@ ret='DEFAULT'; `
 		//有变化的情况：1. 之前不存在； 2. 之前存在方向相反的链接，从linkPosNode[1]到linkPosNode[0]的
 		//以上两种情况中，1会只导致只U第一个； 2会导致U；两端两个节点
 
-		if (!shiftKey || that.connectEndFirst === true) {
+		if (!altKey || that.connectEndFirst === true) {
 			//如果没有按住Shift，则结束连接操作
 			that.linkPosNode.splice(0, 2);
 		} else {
@@ -2747,22 +2748,25 @@ ret='DEFAULT'; `
 				label = 'Email';
 				break;
 			case 'SCRIPT':
-				label = 'Script';
+				label = '';
 				break;
 			case 'TIMER':
-				label = 'Timer';
+				label = '';
 				break;
 			case 'SUB':
-				label = 'Sub Process';
+				label = '';
 				break;
 			case 'AND':
-				label = 'AND';
+				label = '';
 				break;
 			case 'OR':
-				label = 'OR';
+				label = '';
 				break;
 			case 'GROUND':
-				label = 'GROUND';
+				label = '';
+				break;
+			case 'THROUGH':
+				label = '';
 				break;
 			default:
 				label = 'Activity';
@@ -4380,6 +4384,13 @@ ret='DEFAULT'; `
 		});
 	}
 
+	resetTmpTool() {
+		if (KFK.tmpTool) {
+			KFK.setTool(KFK.tmpTool);
+			KFK.tmpTool = null;
+		}
+	}
+
 	addDocumentEventHandler(force = false) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -4397,8 +4408,14 @@ ret='DEFAULT'; `
 				return;
 			}
 			if (that.isEditting) return;
-			if (evt.key === 'Shift') that.KEYDOWN.shift = true;
-			else if (evt.key === 'Control') that.KEYDOWN.ctrl = true;
+			if (evt.key === 'Shift') {
+				that.KEYDOWN.shift = true;
+				if (that.tool !== 'POINTER') {
+					console.log('shift down');
+					that.tmpTool = that.tool;
+					that.setTool('POINTER');
+				}
+			} else if (evt.key === 'Control') that.KEYDOWN.ctrl = true;
 			else if (evt.key === 'Alt') that.KEYDOWN.alt = true;
 			else if (evt.key === 'Meta') that.KEYDOWN.meta = true;
 			//如果正处于编辑状态，则不做处理
@@ -4474,6 +4491,9 @@ ret='DEFAULT'; `
 				case '9':
 					that.setTool('CONNECT', evt);
 					break;
+				case '0':
+					that.setTool('THROUGH', evt);
+					break;
 				case 'Backspace':
 				case 'Delete':
 					that.deleteObjects(evt, false);
@@ -4491,6 +4511,11 @@ ret='DEFAULT'; `
 			switch (evt.key) {
 				case 'Shift':
 					that.KEYDOWN.shift = false;
+					console.log('shift up');
+					if (that.tmpTool) {
+						that.setTool(that.tmpTool);
+						that.tmpTool = null;
+					}
 					break;
 				case 'Control':
 					that.KEYDOWN.ctrl = false;
@@ -4969,6 +4994,7 @@ ret='DEFAULT'; `
 		else if (jq.hasClass('AND')) kfkClass = 'AND';
 		else if (jq.hasClass('OR')) kfkClass = 'OR';
 		else if (jq.hasClass('GROUND')) kfkClass = 'GROUND';
+		else if (jq.hasClass('THROUGH')) kfkClass = 'THROUGH';
 		else if (jq.hasClass('START')) kfkClass = 'START';
 		else if (jq.hasClass('END')) kfkClass = 'END';
 		return kfkClass;
@@ -4981,7 +5007,19 @@ ret='DEFAULT'; `
 	}
 
 	validKfkClass() {
-		return ['START', 'END', 'ACTION', 'INFORM', 'SCRIPT', 'TIMER', 'SUB', 'AND', 'OR', 'GROUND'];
+		return [
+			'START',
+			'END',
+			'ACTION',
+			'INFORM',
+			'SCRIPT',
+			'TIMER',
+			'SUB',
+			'AND',
+			'OR',
+			'GROUND',
+			'THROUGH'
+		];
 	}
 
 	async onPaste(evt: Event) {
@@ -5330,7 +5368,7 @@ ret='DEFAULT'; `
 			}
 		} else if (that.tool === 'CONNECT' && that.docIsReadOnly() === false) {
 			if (that.afterDragging === false) {
-				await that.yarkLinkNode(jqNodeDIV, evt.shiftKey);
+				await that.yarkLinkNode(jqNodeDIV, evt.altKey);
 			} else {
 				that.afterDragging = true;
 			}
