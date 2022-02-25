@@ -186,7 +186,7 @@
 									<Col>
 										<a href={`/work/@${aDoer.todoid}`} class="clickable text-primary btn btn-sm">
 											{#if aDoer.status === 'ST_DONE'}
-												<div>{@html aDoer.route ? aDoer.route : '&nbsp;'}</div>
+												<div>{@html aDoer.decision ? aDoer.decision : '&nbsp;'}</div>
 												{#if aDoer.signature}
 													<img src={aDoer.signature} class="kfk-signature" alt={aDoer.cn} />
 												{:else}
