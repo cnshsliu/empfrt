@@ -13,6 +13,7 @@
 		const res = await fetch(`/work/@${todoid}.json`);
 
 		const theWork = await res.json();
+		theWork.routingOptions.sort();
 		let delegators = [];
 		try {
 			let delegations = await post('/delegation/today');

@@ -38,6 +38,7 @@
 	export let template: Template;
 	export let workflow: Workflow = null;
 	export let tpl_mode: string;
+	export let routeStatus = [];
 
 	let jQuery: any;
 	let jq: any;
@@ -204,7 +205,7 @@
 			await KFK.loadTemplateDoc(template, tpl_mode);
 		} else {
 			designerSetTool('POINTER');
-			await KFK.loadWorkflowDoc(workflow);
+			await KFK.loadWorkflowDoc(workflow, routeStatus);
 		}
 		KFK.addDocumentEventHandler(true);
 		currentTool = KFK.tool;

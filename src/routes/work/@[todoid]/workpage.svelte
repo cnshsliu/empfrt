@@ -140,7 +140,7 @@
 	function checkRequired() {
 		let errMsg = '';
 		for (let i = 0; i < work.kvarsArr.length; i++) {
-			if (work.kvarsArr[i].required) {
+			if (work.kvarsArr[i].required && showKVars[i]) {
 				if (work.kvarsArr[i].type === 'checkbox') {
 					if (work.kvarsArr[i].value !== true && work.kvarsArr[i].value !== false) {
 						errMsg = `${work.kvarsArr[i].label} should hava value`;
@@ -384,7 +384,7 @@
 						</Row>
 					{/if}
 
-					<Row class="mt-2">
+					<Row class="mt-4">
 						{#if work.returnable}
 							<Col>
 								<Button

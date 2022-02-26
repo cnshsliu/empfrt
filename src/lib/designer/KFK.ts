@@ -638,6 +638,13 @@ class KFKclass {
 		return suuid.generate();
 	}
 
+	getNodeLabel(jqDIV: myJQuery) {
+		let node_label = '';
+		if (jqDIV.find('p').length > 0) {
+			node_label = jqDIV.find('p').first().text().trim();
+		}
+		return node_label;
+	}
 	setNodeLabel(jqDIV: myJQuery, label: string) {
 		let isDirty = false;
 		label = label.trim();
@@ -3007,11 +3014,42 @@ ret='DEFAULT'; `
 		}
 	}
 
-	async setConnectionStatusColor() {
+	async setConnectionStatusColor(routeStatus) {
 		const that = this;
+
 		const connectLines = this.svgDraw.find('.connect');
 
+		console.log('RouteStatus: ');
+		console.log(routeStatus);
+
 		let connectNumber = 0;
+		connectLines.each(async (connect: any) => {
+			//如果这根连接线条的fid属性是当前node的id
+			connectNumber++;
+			let fid = connect.attr('fid');
+			let tid = connect.attr('tid');
+			//找到Node的DIV
+			const fromDIV: any = $(`#${fid}`);
+			const toDIV: any = $(`#${tid}`);
+			//找到node里面的work DIV
+			let toWorkId = toDIV.find('.work').last().attr('id');
+			let tmp = routeStatus.filter(
+				//(x) => x.from_nodeid === fid && x.to_nodeid === tid && x.status === 'ST_PASS'
+				(x) => x.from_nodeid === fid && x.to_workid === toWorkId && x.status === 'ST_PASS'
+			);
+			/* console.log(
+				'Rouete count: from',
+				KFK.getNodeLabel(fromDIV),
+				'->',
+				KFK.getNodeLabel(toDIV),
+				' = ',
+				tmp.length
+			); */
+			if (tmp.length > 0) {
+				connect.addClass(toDIV.hasClass('ST_RUN') ? 'ST_RUN' : 'ST_DONE');
+			}
+		});
+		/*
 		connectLines.each(async (connect: any) => {
 			//如果这根连接线条的fid属性是当前node的id
 			connectNumber++;
@@ -3051,6 +3089,7 @@ ret='DEFAULT'; `
 				}
 			}
 		});
+		 */
 		return connectNumber;
 	}
 
@@ -4147,7 +4186,7 @@ ret='DEFAULT'; `
 	/**
 	 * @type {}
 	 */
-	async loadWorkflowDoc(wfobj: any) {
+	async loadWorkflowDoc(wfobj: any, routeStatus: []) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		that.wfid = wfobj.wfid;
@@ -4206,7 +4245,7 @@ ret='DEFAULT'; `
 				//Change link line style by it's status
 			}
 			*/
-			let connectionNumber = await that.setConnectionStatusColor();
+			let connectionNumber = await that.setConnectionStatusColor(routeStatus);
 
 			that.myFadeOut($('.loading'));
 			that.myFadeIn(that.JC3, 1000);

@@ -7,11 +7,17 @@
 			{ wfid: wfid, withdoc: true },
 			session.user.sessionToken
 		);
+		const routeStatus = await api.post(
+			'/workflow/route/status',
+			{ wfid: wfid },
+			session.user.sessionToken
+		);
 
 		try {
 			return {
 				props: {
 					workflow: workflow,
+					routeStatus: routeStatus,
 					wfid: page.params.wfid,
 					user: session.user
 				}
@@ -23,6 +29,7 @@
 					workflow: {
 						wftitle: 'Not Found'
 					},
+					routeStatus: [],
 					wfid: page.params.wfid,
 					user: session.user
 				}
@@ -46,6 +53,7 @@
 	import { Icon } from 'sveltestrap';
 	import { ClientPermControl } from '$lib/clientperm';
 	export let workflow: Workflow;
+	export let routeStatus: [];
 	export let wfid: string;
 
 	let theNotifier;
@@ -149,6 +157,17 @@
 						<AniIcon icon="pen" ani="aniShake" />
 						{'Rename'}
 					</NavLink>
+					<NavLink
+						class="kfk-link"
+						on:click={(e) => {
+							e.preventDefault();
+							opWorkflow(workflow.wfid, 'restart');
+							goto(`/template/@${workflow.tplid}&read`);
+						}}
+					>
+						<AniIcon icon="bar-chart-steps" ani="aniShake" />
+						{'Template'}
+					</NavLink>
 				{:else}
 					{#if workflow.status === 'ST_RUN'}
 						<NavLink class="kfk-link" disabled>
@@ -211,7 +230,7 @@
 	{/if}
 </div>
 {#if workflow.wftitle !== 'Not Found'}
-	<svelte:component this={Designer} bind:this={theDesigner} {workflow} />
+	<svelte:component this={Designer} bind:this={theDesigner} {workflow} {routeStatus} />
 {:else}
 	<ErrorNotify
 		title="Error Found"
