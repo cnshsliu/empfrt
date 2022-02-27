@@ -205,7 +205,7 @@
 				{ todoid: todoid },
 				user.sessionToken
 			)) as unknown as Work;
-			console.log(JSON.stringify(work, null, 2));
+			//console.log(JSON.stringify(work, null, 2));
 			work.wf.kvarsArr = work.wf.kvarsArr;
 		}, 500);
 		comment = '';
@@ -260,7 +260,7 @@
 	};
 
 	const caculateFormula = function (kvar) {
-		console.log(kvar.name, ' new value: ', kvar.value);
+		//console.log(kvar.name, ' new value: ', kvar.value);
 		if (work.kvarsArr.length <= 0) return;
 		for (let i = 0; i < work.kvarsArr.length; i++) {
 			if (work.kvarsArr[i].when) {
@@ -284,7 +284,7 @@
 		}
 		for (let i = 0; i < work.kvarsArr.length; i++) {
 			if (work.kvarsArr[i].formula) {
-				console.log(work.kvarsArr[i].formula);
+				//console.log(work.kvarsArr[i].formula);
 				try {
 					Parser.evalFormula(user, work.kvarsArr, work.kvarsArr[i].formula).then((result) => {
 						work.kvarsArr[i].value = result;

@@ -3052,7 +3052,8 @@ ret='DEFAULT'; `
 			); */
 			connect.removeClass('ST_RUN').removeClass('ST_DONE');
 			if (tmp.length > 0) {
-				connect.addClass(toDIV.hasClass('ST_RUN') ? 'ST_RUN' : 'ST_DONE');
+				//connect.addClass(toDIV.hasClass('ST_RUN') ? 'ST_RUN' : 'ST_DONE');
+				connect.addClass(KFK.getSTClass(toDIV));
 			}
 		});
 		/*
@@ -4203,7 +4204,7 @@ ret='DEFAULT'; `
 			const theGuiNode = that.JC3.find('#' + aWork.attr('nodeid'));
 			theGuiNode.append(aWork);
 		}
-		console.log(statusObj.routeStatus);
+		//console.log(statusObj.routeStatus);
 		await that.setConnectionStatusColor(statusObj.routeStatus);
 	}
 
@@ -4211,6 +4212,13 @@ ret='DEFAULT'; `
 		let old_classes = jqObj.attr('class').split(/\s+/);
 		old_classes.map((x) => (x.startsWith('ST_') ? jqObj.removeClass(x) : ''));
 		jqObj.addClass(newClassName);
+	}
+
+	getSTClass(jqObj) {
+		let old_classes = jqObj.attr('class').split(/\s+/);
+		let tmp = old_classes.filter((x) => x.startsWith('ST_'));
+		if (tmp.length > 0) return tmp[0];
+		else return '';
 	}
 
 	/**
@@ -4606,7 +4614,7 @@ ret='DEFAULT'; `
 		$(document).on('mousemove', function (evt) {
 			that.globalMouseX = evt.clientX;
 			that.globalMouseY = evt.clientY;
-			that.designerCallback('resetTemplateChecking', that.template);
+			that.designerCallback('updateCheckOnMousemove', that.template);
 			if (that.inPresentingMode || that.inOverviewMode) return;
 			if (that.inNoteEditor) return;
 			if (!that.onC3) return;

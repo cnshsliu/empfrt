@@ -53,6 +53,8 @@
 	let checkTemplateUpdateTimeout = null;
 	let checkWorkflowUpdateInterval = null;
 	let checkWorkflowUpdateTimeout = null;
+	let checkTemplateTimes = 0;
+	let checkWorkflowTimes = 0;
 	let workflowUpdatedAt = '';
 	let templateUpdatedAt = '';
 
@@ -192,8 +194,8 @@
 			case 'resetChecking':
 				resetChecking();
 				break;
-			case 'resetTemplateChecking':
-				resetTemplateChecking();
+			case 'updateCheckOnMousemove':
+				updateCheckOnMousemove();
 				break;
 		}
 	}
@@ -228,7 +230,6 @@
 	};
 
 	const resetChecking = () => {
-		console.log('stop checking update');
 		clearAllTimer();
 		if (KFK.scenario === 'template') {
 			checkTemplateUpdateTimeout = setTimeout(async () => {
@@ -238,44 +239,81 @@
 		if (KFK.scenario === 'workflow') {
 			checkWorkflowUpdateTimeout = setTimeout(async () => {
 				await setWorkflowCheckingInterval();
-			}, 10000);
+			}, 5000);
 		}
 	};
-	const resetTemplateChecking = () => {
-		console.log('stop checking template update');
-		clearTemplateTimer();
+	const remoteTemplateCheck = async () => {
+		console.log(`${checkTemplateTimes} Checking template remote update ${templateUpdatedAt}`);
+		checkTemplateTimes += 1;
+		let ret = await api.post(
+			'template/read',
+			{ tplid: template.tplid, updatedAt: templateUpdatedAt },
+			user.sessionToken
+		);
+		if (ret.hasOwnProperty('tplid')) {
+			//console.log('Changed.... reload it');
+			template = ret as unknown as Template;
+			templateUpdatedAt = template.updatedAt;
+			await KFK.loadTemplateDoc(template, tpl_mode);
+		}
+	};
+	const updateCheckOnMousemove = () => {
 		if (KFK.scenario === 'template') {
-			checkTemplateUpdateTimeout = setTimeout(async () => {
-				await setTemplateCheckingInterval();
-			}, 10000);
+			if (tpl_mode === 'edit') {
+				//鼠标移动时，应该是在编辑状态，就不能再刷新改动
+				clearTemplateTimer();
+				checkTemplateTimes = 0;
+				console.log('editting mode, remote update after 10 seconds');
+				checkTemplateUpdateTimeout = setTimeout(async () => {
+					await setTemplateCheckingInterval();
+				}, 10000);
+			} else {
+				if (checkTemplateUpdateInterval === null) {
+					if (checkTemplateUpdateTimeout) {
+						clearTimeout(checkTemplateUpdateTimeout);
+					}
+					checkTemplateUpdateTimeout = setTimeout(async () => {
+						console.log('Restart monitoring');
+						checkTemplateTimes = 0;
+						await setTemplateCheckingInterval();
+					}, 1000);
+				}
+			}
+		}
+		if (KFK.scenario === 'workflow') {
+			if (checkWorkflowUpdateInterval === null) {
+				if (checkWorkflowUpdateTimeout) {
+					clearTimeout(checkWorkflowUpdateTimeout);
+				}
+				if (workflow.status === 'ST_RUN') {
+					checkWorkflowUpdateTimeout = setTimeout(async () => {
+						console.log('Restart monitoring');
+						checkWorkflowTimes = 0;
+						await setWorkflowCheckingInterval();
+					}, 1000);
+				}
+			}
 		}
 	};
 	const setTemplateCheckingInterval = async () => {
-		let remoteCheck = async () => {
-			let ret = await api.post(
-				'template/read',
-				{ tplid: template.tplid, updatedAt: templateUpdatedAt },
-				user.sessionToken
-			);
-			if (ret.hasOwnProperty('tplid')) {
-				//console.log('Changed.... reload it');
-				template = ret as unknown as Template;
-				templateUpdatedAt = template.updatedAt;
-				await KFK.loadTemplateDoc(template, tpl_mode);
-			}
-		};
 		if (KFK.scenario === 'template') {
 			let intervalSeconds = 10;
-			console.log('check template update every ', intervalSeconds, 'seconds');
-			await remoteCheck();
+			await remoteTemplateCheck();
 			checkTemplateUpdateInterval = setInterval(async () => {
-				console.log('Checking template update', template.updatedAt);
-				await remoteCheck();
+				await remoteTemplateCheck();
+				if (checkTemplateTimes > (5 * 60) / intervalSeconds) {
+					//if (checkTemplateTimes > 3) {
+					console.log('Stop remote checking loop');
+					clearInterval(checkTemplateUpdateInterval);
+					checkTemplateUpdateInterval = null;
+				}
 			}, intervalSeconds * 1000);
 		}
 	};
 	const setWorkflowCheckingInterval = async () => {
 		let remoteCheck = async () => {
+			console.log(`${checkWorkflowTimes} Checking monitoring update ${workflowUpdatedAt}`);
+			checkWorkflowTimes += 1;
 			let ret = await api.post(
 				'workflow/check/status',
 				{ wfid: workflow.wfid, updatedAt: workflowUpdatedAt },
@@ -285,15 +323,27 @@
 				//console.log('Changed.... reset classes', ret);
 				//workflowUpdatedAt = ret.updatedAt;
 				await KFK.resetWorkflowStatusClasses(ret);
+				if (ret.status != 'ST_RUN') {
+					console.log('Not ST_RUN, stop monitoring...');
+					clearInterval(checkWorkflowUpdateInterval);
+					checkWorkflowUpdateInterval = null;
+					checkWorkflowTimes = 0;
+				}
 			}
 		};
-		if (KFK.scenario === 'workflow') {
-			let intervalSeconds = 10;
-			console.log('check workflow update every ', intervalSeconds, 'seconds');
+		if (KFK.scenario === 'workflow' && workflow.status === 'ST_RUN') {
+			let intervalSeconds = 10; //seconds
+			let stopEvery = 5; //minutes
 			await remoteCheck();
 			checkWorkflowUpdateInterval = setInterval(async () => {
-				console.log('Checking workflow update', workflowUpdatedAt);
 				await remoteCheck();
+				if (checkWorkflowTimes > (stopEvery * 60) / intervalSeconds) {
+					//if (checkWorkflowTimes > 3) {
+					console.log('stop process monitor update');
+					clearInterval(checkWorkflowUpdateInterval);
+					checkWorkflowUpdateInterval = null;
+					checkWorkflowTimes = 0;
+				}
 			}, intervalSeconds * 1000);
 		}
 	};
