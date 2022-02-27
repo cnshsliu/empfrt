@@ -76,7 +76,8 @@
 			"setVisi": "Set Visibility",
 			"setOwner": "Set Owner",
 			"deleteThisTempalte": "Delete This Template",
-			"lastUpdate": "Last Update "
+			"lastUpdate": "Last Update",
+			"exportdata": "Export Data"
 		}
 	},
 	"title": {

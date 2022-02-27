@@ -76,7 +76,8 @@
 			"setVisi": "设置可见性",
 			"setOwner": "设置流程Owner",
 			"deleteThisTempalte": "删除这个模版",
-			"lastUpdate": "上次更新 "
+			"lastUpdate": "上次更新",
+			"exportdata": "导出数据"
 		}
 	},
 	"title": {

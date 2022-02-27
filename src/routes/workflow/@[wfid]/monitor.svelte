@@ -8,7 +8,7 @@
 			session.user.sessionToken
 		);
 		const routeStatus = await api.post(
-			'/workflow/route/status',
+			'/workflow/routes',
 			{ wfid: wfid },
 			session.user.sessionToken
 		);

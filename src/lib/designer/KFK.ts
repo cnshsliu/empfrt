@@ -747,6 +747,7 @@ class KFKclass {
 				token
 			);
 			//return ret.data;
+			that.designerCallback('changeSaved', that.template);
 
 			that.templateChangeTimer = undefined;
 		}, 1000);
@@ -2960,7 +2961,6 @@ ret='DEFAULT'; `
 	 */
 	async procKeypool(evt) {
 		let that = this;
-		console.log(that.keypool);
 		if (that.keypoolCleanTimeout) {
 			clearTimeout(that.keypoolCleanTimeout);
 		}
@@ -3019,8 +3019,8 @@ ret='DEFAULT'; `
 
 		const connectLines = this.svgDraw.find('.connect');
 
-		console.log('RouteStatus: ');
-		console.log(routeStatus);
+		/* console.log('RouteStatus: ');
+		console.log(routeStatus); */
 
 		let connectNumber = 0;
 		connectLines.each(async (connect: any) => {
@@ -3032,12 +3032,17 @@ ret='DEFAULT'; `
 			const fromDIV: any = $(`#${fid}`);
 			const toDIV: any = $(`#${tid}`);
 			//找到node里面的work DIV
-			let toWorkId = toDIV.find('.work').last().attr('id');
+			let toWorks = toDIV.find('.work');
+			let toWorkIds = [];
+			toWorks.each((_index: any, divWork: any) => {
+				toWorkIds.push($(divWork).attr('id'));
+			});
 			let tmp = routeStatus.filter(
 				//(x) => x.from_nodeid === fid && x.to_nodeid === tid && x.status === 'ST_PASS'
-				(x) => x.from_nodeid === fid && x.to_workid === toWorkId && x.status === 'ST_PASS'
+				(x) => x.from_nodeid === fid && toWorkIds.includes(x.to_workid) && x.status === 'ST_PASS'
 			);
-			/* console.log(
+			/* console.log(toWorkIds);
+			console.log(
 				'Rouete count: from',
 				KFK.getNodeLabel(fromDIV),
 				'->',
@@ -3045,6 +3050,7 @@ ret='DEFAULT'; `
 				' = ',
 				tmp.length
 			); */
+			connect.removeClass('ST_RUN').removeClass('ST_DONE');
 			if (tmp.length > 0) {
 				connect.addClass(toDIV.hasClass('ST_RUN') ? 'ST_RUN' : 'ST_DONE');
 			}
@@ -4183,10 +4189,34 @@ ret='DEFAULT'; `
 		}
 	}
 
+	async resetWorkflowStatusClasses(statusObj) {
+		let that = this;
+		for (let i = 0; i < statusObj.nodeStatus.length; i++) {
+			const jqNode = that.JC3.find('#' + statusObj.nodeStatus[i].nodeid);
+			KFK.replaceSTClassTo(jqNode, statusObj.nodeStatus[i].status);
+		}
+
+		that.JC3.find('.work').remove();
+		let works = $(statusObj.doc).first('.workflow').find('.work');
+		for (let i = 0; i < works.length; i++) {
+			const aWork = $(works[i]);
+			const theGuiNode = that.JC3.find('#' + aWork.attr('nodeid'));
+			theGuiNode.append(aWork);
+		}
+		console.log(statusObj.routeStatus);
+		await that.setConnectionStatusColor(statusObj.routeStatus);
+	}
+
+	replaceSTClassTo(jqObj, newClassName) {
+		let old_classes = jqObj.attr('class').split(/\s+/);
+		old_classes.map((x) => (x.startsWith('ST_') ? jqObj.removeClass(x) : ''));
+		jqObj.addClass(newClassName);
+	}
+
 	/**
 	 * @type {}
 	 */
-	async loadWorkflowDoc(wfobj: any, routeStatus: []) {
+	async loadWorkflowDoc(wfobj: any, routeStatus: any[]) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		that.wfid = wfobj.wfid;
@@ -4576,6 +4606,7 @@ ret='DEFAULT'; `
 		$(document).on('mousemove', function (evt) {
 			that.globalMouseX = evt.clientX;
 			that.globalMouseY = evt.clientY;
+			that.designerCallback('resetTemplateChecking', that.template);
 			if (that.inPresentingMode || that.inOverviewMode) return;
 			if (that.inNoteEditor) return;
 			if (!that.onC3) return;

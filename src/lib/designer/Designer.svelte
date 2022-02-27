@@ -38,7 +38,7 @@
 	export let template: Template;
 	export let workflow: Workflow = null;
 	export let tpl_mode: string;
-	export let routeStatus = [];
+	export let routeStatus: any[] = [];
 
 	let jQuery: any;
 	let jq: any;
@@ -49,6 +49,12 @@
 	let errMsg = '';
 	let roleOptions = [];
 	let workid = null;
+	let checkTemplateUpdateInterval = null;
+	let checkTemplateUpdateTimeout = null;
+	let checkWorkflowUpdateInterval = null;
+	let checkWorkflowUpdateTimeout = null;
+	let workflowUpdatedAt = '';
+	let templateUpdatedAt = '';
 
 	let nodeInfo: NodeInfo;
 	function designerSetTool(what: string, event?: any) {
@@ -183,9 +189,114 @@
 				documentEventOff();
 				openModal = true;
 				break;
+			case 'resetChecking':
+				resetChecking();
+				break;
+			case 'resetTemplateChecking':
+				resetTemplateChecking();
+				break;
 		}
 	}
 
+	const clearAllTimer = () => {
+		if (checkTemplateUpdateInterval) {
+			clearInterval(checkTemplateUpdateInterval);
+			checkTemplateUpdateInterval = null;
+		}
+		if (checkTemplateUpdateTimeout) {
+			clearTimeout(checkTemplateUpdateTimeout);
+			checkTemplateUpdateTimeout = null;
+		}
+		if (checkWorkflowUpdateInterval) {
+			clearInterval(checkWorkflowUpdateInterval);
+			checkWorkflowUpdateInterval = null;
+		}
+		if (checkWorkflowUpdateTimeout) {
+			clearTimeout(checkWorkflowUpdateTimeout);
+			checkWorkflowUpdateTimeout = null;
+		}
+	};
+	const clearTemplateTimer = () => {
+		if (checkTemplateUpdateInterval) {
+			clearInterval(checkTemplateUpdateInterval);
+			checkTemplateUpdateInterval = null;
+		}
+		if (checkTemplateUpdateTimeout) {
+			clearTimeout(checkTemplateUpdateTimeout);
+			checkTemplateUpdateTimeout = null;
+		}
+	};
+
+	const resetChecking = () => {
+		console.log('stop checking update');
+		clearAllTimer();
+		if (KFK.scenario === 'template') {
+			checkTemplateUpdateTimeout = setTimeout(async () => {
+				await setTemplateCheckingInterval();
+			}, 10000);
+		}
+		if (KFK.scenario === 'workflow') {
+			checkWorkflowUpdateTimeout = setTimeout(async () => {
+				await setWorkflowCheckingInterval();
+			}, 10000);
+		}
+	};
+	const resetTemplateChecking = () => {
+		console.log('stop checking template update');
+		clearTemplateTimer();
+		if (KFK.scenario === 'template') {
+			checkTemplateUpdateTimeout = setTimeout(async () => {
+				await setTemplateCheckingInterval();
+			}, 10000);
+		}
+	};
+	const setTemplateCheckingInterval = async () => {
+		let remoteCheck = async () => {
+			let ret = await api.post(
+				'template/read',
+				{ tplid: template.tplid, updatedAt: templateUpdatedAt },
+				user.sessionToken
+			);
+			if (ret.hasOwnProperty('tplid')) {
+				//console.log('Changed.... reload it');
+				template = ret as unknown as Template;
+				templateUpdatedAt = template.updatedAt;
+				await KFK.loadTemplateDoc(template, tpl_mode);
+			}
+		};
+		if (KFK.scenario === 'template') {
+			let intervalSeconds = 10;
+			console.log('check template update every ', intervalSeconds, 'seconds');
+			await remoteCheck();
+			checkTemplateUpdateInterval = setInterval(async () => {
+				console.log('Checking template update', template.updatedAt);
+				await remoteCheck();
+			}, intervalSeconds * 1000);
+		}
+	};
+	const setWorkflowCheckingInterval = async () => {
+		let remoteCheck = async () => {
+			let ret = await api.post(
+				'workflow/check/status',
+				{ wfid: workflow.wfid, updatedAt: workflowUpdatedAt },
+				user.sessionToken
+			);
+			if (ret.hasOwnProperty('wfid')) {
+				//console.log('Changed.... reset classes', ret);
+				//workflowUpdatedAt = ret.updatedAt;
+				await KFK.resetWorkflowStatusClasses(ret);
+			}
+		};
+		if (KFK.scenario === 'workflow') {
+			let intervalSeconds = 10;
+			console.log('check workflow update every ', intervalSeconds, 'seconds');
+			await remoteCheck();
+			checkWorkflowUpdateInterval = setInterval(async () => {
+				console.log('Checking workflow update', workflowUpdatedAt);
+				await remoteCheck();
+			}, intervalSeconds * 1000);
+		}
+	};
 	onMount(async () => {
 		const jqModule = await import('jquery');
 		jQuery = jqModule.default;
@@ -203,12 +314,20 @@
 				designerSetTool('POINTER');
 			}
 			await KFK.loadTemplateDoc(template, tpl_mode);
+			templateUpdatedAt = template.updatedAt;
 		} else {
 			designerSetTool('POINTER');
 			await KFK.loadWorkflowDoc(workflow, routeStatus);
+			workflowUpdatedAt = workflow.updatedAt;
 		}
 		KFK.addDocumentEventHandler(true);
 		currentTool = KFK.tool;
+		resetChecking();
+	});
+	onDestroy(async () => {
+		console.log('clear ALl timer');
+		clearAllTimer();
+		jq(document).off();
 	});
 
 	export function showTplProp() {
@@ -233,10 +352,6 @@
 	export function documentEventOn() {
 		KFK.addDocumentEventHandler(true);
 	}
-	onDestroy(async () => {
-		jq(document).off();
-	});
-
 	const showDesignerHelp = function () {
 		return;
 	};
