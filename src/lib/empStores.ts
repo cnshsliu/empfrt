@@ -8,7 +8,8 @@ export const SetFor = storage('idSelect', {
 	setTagFor: '',
 	setDescFor: '',
 	setAuthorFor: '',
-	setVisiFor: ''
+	setVisiFor: '',
+	settingFor: ''
 });
 
 export const whichTabStorage = storage<WhichTab>('whichtab', {

@@ -48,7 +48,15 @@
 		"lastingDays": "持续天数",
 		"actions": "操作",
 		"author": "作者",
-		"setvisito": "对谁可见 (PDS): ",
+		"template": {
+			"set": {
+				"title": "设置当面模版",
+				"settags": "添加标签，多个标签之间用空格分割",
+				"setauthor": "将作者指定为（输入用户邮箱前缀）",
+				"setdesc": "设置说明描述信息",
+				"setvisito": "对谁可见 (使用PDS格式指定): "
+			}
+		},
 		"me": "我",
 		"any": "任何人",
 		"startIt": "启动",

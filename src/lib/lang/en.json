@@ -48,7 +48,15 @@
 		"lastingDays": "Lasting Days",
 		"actions": "Actions",
 		"author": "Author",
-		"setvisito": "Visible for (PDS): ",
+		"template": {
+			"set": {
+				"title": "Template Settings",
+				"settags": "Set tags (delimited by spaces)",
+				"setauthor": "Set author to（user id/email prefix）",
+				"setdesc": "Set description",
+				"setvisito": "Set visible for (specify with PDS format): "
+			}
+		},
 		"me": "Me",
 		"any": "Any",
 		"startIt": "Start it",

@@ -324,56 +324,19 @@
 									{$_('remotetable.tplaction.seeWorklist')}
 								</a>
 							</DropdownItem>
-							{#if row.author === user.email}
-								<DropdownItem>
-									<a
-										href={'#'}
-										on:click|preventDefault={() => {
-											$SetFor.setVisiFor = row.tplid;
-											row.checked = false;
-											visi_rds_input = row.visi;
-										}}
-										class="nav-link "
-									>
-										<Icon name="eye" />
-										{$_('remotetable.tplaction.setVisi')}
-									</a>
-								</DropdownItem>
-							{/if}
-							{#if user.perms && ClientPermControl(user.perms, user.email, 'template', row, 'update')}
-								<DropdownItem>
-									<a
-										href={'#'}
-										on:click|preventDefault={() => {
-											desc_input = row.desc;
-											$SetFor.setDescFor = row.tplid;
-										}}
-										class="nav-link "
-									>
-										<Icon name="card-text" />
-										{$_('remotetable.tplaction.addDesc')}
-									</a>
-								</DropdownItem>
-							{/if}
-							<DropdownItem>
-								<a
-									href={'#'}
-									on:click|preventDefault={() => {
-										$SetFor.setTagFor = row.tplid;
-									}}
-									class="nav-link "
-								>
-									<Icon name="tags" />
-									{$_('remotetable.tplaction.setTags')}
-								</a>
-							</DropdownItem>
 							{#if user.perms && ClientPermControl(user.perms, user.email, 'template', row, 'delete')}
 								<DropdownItem>
 									<a
 										href={'#'}
 										on:click|preventDefault={(e) => {
 											e.preventDefault();
+											$SetFor.setVisiFor = row.tplid;
 											$SetFor.setAuthorFor = row.tplid;
+											$SetFor.setDescFor = row.tplid;
+											$SetFor.setTagFor = row.tplid;
+											$SetFor.settingFor = row.tplid;
+											row.checked = false;
+											visi_rds_input = row.visi;
 										}}
 										class="nav-link "
 									>

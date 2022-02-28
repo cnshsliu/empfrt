@@ -7,9 +7,10 @@
 	import AniIcon from '$lib/AniIcon.svelte';
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
-	import { Badge, Button, Icon, Row, InputGroup } from 'sveltestrap';
+	import { Badge, Button, Icon, Row, Col, InputGroup } from 'sveltestrap';
 	import { session } from '$app/stores';
 	import { SetFor, filterStorage } from '$lib/empstores';
+	import { ClientPermControl } from '$lib/clientperm';
 	export let user: User = $session.user;
 	export let token = user.sessionToken;
 	export let rows2;
@@ -48,97 +49,6 @@
 		</div>
 	{/if}
 {/if}
-{#if $SetFor.setVisiFor === row.tplid}
-	<div class="ms-5">
-		<Row>
-			<InputGroup>
-				<div class="form-floating flex-fill">
-					<input
-						class="form-control"
-						id={'input-visi-pds-' + index}
-						placeholder="PDS"
-						bind:value={visi_rds_input}
-					/>
-					<label for={`input-visi-pds-${index}`}> {$_('remotetable.setvisito')} </label>
-				</div>
-				<!-- svelte-ignore missing-declaration -->
-				<Button
-					color="primary"
-					on:click={async (e) => {
-						e.preventDefault();
-						visi_rds_input = qtb(visi_rds_input);
-						//will use temaid=""(no specified team, but may use T:team_name in pds), email = current user
-						let people = await api.post('explain/pds', { pds: visi_rds_input }, token);
-						console.log(people);
-						row.visipeople = people;
-						row.checked = true;
-						rows2[index] = row;
-						rows2 = rows2;
-					}}
-				>
-					{$_('button.check')}
-				</Button>
-				<Button
-					color="success"
-					on:click={async (e) => {
-						e.preventDefault();
-						visi_rds_input = qtb(visi_rds_input);
-						let res = await api.post(
-							'template/setvisi',
-							{ tplid: row.tplid, visi: visi_rds_input },
-							token
-						);
-						if (res.error) {
-							setFadeMessage(res.message, 'warning');
-						} else {
-							row.visi = res.visi;
-							rows2[index] = row;
-							rows2 = rows2;
-						}
-					}}
-					disabled={!row.checked}
-				>
-					{$_('button.set')}
-				</Button>
-				<Button
-					on:click={async (e) => {
-						e.preventDefault();
-						$SetFor.setVisiFor = '';
-						visi_rds_input = '';
-						row.visipeople = null;
-						let res = await api.post('template/clearvisi', { tplid: row.tplid }, token);
-						if (res.error) {
-							setFadeMessage(res.message, 'warning');
-						} else {
-							row.visi = '';
-							rows2[index] = row;
-							rows2 = rows2;
-						}
-					}}
-				>
-					{$_('button.clear')}
-				</Button>
-				<Button
-					on:click={(e) => {
-						e.preventDefault();
-						row.checked = false;
-						$SetFor.setVisiFor = '';
-						visi_rds_input = '';
-					}}
-				>
-					{$_('button.close')}
-				</Button>
-			</InputGroup>
-		</Row>
-		{#if Array.isArray(row.visipeople)}
-			<Row>
-				{#each row.visipeople as visiperson}
-					<div class="text-center">{visiperson.cn}({visiperson.uid})</div>
-				{/each}
-			</Row>
-		{/if}
-	</div>
-{/if}
 {#if row.desc && row.desc.trim().length > 0}
 	{#if row.author === user.email}
 		<div
@@ -162,53 +72,6 @@
 			{row.desc}
 		</div>
 	{/if}
-{/if}
-{#if $SetFor.setDescFor === row.tplid}
-	<div class="ms-5">
-		<Row>
-			<InputGroup>
-				<div class="form-floating flex-fill">
-					<input
-						class="form-control"
-						id={'input-desc-' + index}
-						placeholder="Description"
-						bind:value={desc_input}
-					/>
-					<label for={`input-desc-${index}`}> set description to: </label>
-				</div>
-				<Button
-					color="primary"
-					on:click={async (e) => {
-						e.preventDefault();
-						desc_input = desc_input.trim();
-						let ret = await api.post(
-							'template/desc',
-							{ tplid: row.tplid, desc: desc_input },
-							token
-						);
-						if (ret.err) {
-							setFadeMessage(ret.message, 'warning');
-						} else {
-							setFadeMessage('Success', 'success');
-						}
-						row.desc = desc_input;
-						rows2 = rows2;
-					}}
-				>
-					{$_('button.set')}
-				</Button>
-				<Button
-					on:click={(e) => {
-						e.preventDefault();
-						$SetFor.setDescFor = '';
-						desc_input = '';
-					}}
-				>
-					{$_('button.close')}
-				</Button>
-			</InputGroup>
-		</Row>
-	</div>
 {/if}
 {#if Array.isArray(row.tags) && row.tags.length > 0}
 	<div
@@ -241,18 +104,65 @@
 		{/each}
 	</div>
 {/if}
-{#if $SetFor.setTagFor === row.tplid}
-	<div class="ms-5">
-		<Row>
+{#if $SetFor.settingFor === row.tplid && user.perms && ClientPermControl(user.perms, user.email, 'template', row, 'delete')}
+	<div class="card ms-0">
+		<div class="card-header">
 			<InputGroup>
-				<div class="form-floating flex-fill">
-					<input
-						name={'newtag-' + index}
-						class="form-control"
-						id={'input-tags-' + index}
-						placeholder="New tags"
-						bind:value={tag_input}
-						on:change={async (e) => {
+				<div class="flex-fill">
+					{$_('remotetable.template.set.title')}
+				</div>
+				<Button
+					on:click={(e) => {
+						e.preventDefault();
+						row.checked = false;
+						$SetFor.settingFor = '';
+						$SetFor.setTagFor = '';
+						$SetFor.setAuthorFor = '';
+						$SetFor.setDescFor = '';
+						$SetFor.setVisiFor = '';
+						visi_rds_input = '';
+					}}
+				>
+					{$_('button.close')}
+				</Button>
+			</InputGroup>
+		</div>
+		<div class="card-body">
+			<Row>
+				<InputGroup>
+					<div class="form-floating flex-fill">
+						<input
+							name={'newtag-' + index}
+							class="form-control"
+							id={'input-tags-' + index}
+							placeholder="New tags"
+							bind:value={tag_input}
+							on:change={async (e) => {
+								e.preventDefault();
+								if (tag_input.trim().length > 0) {
+									let tags = await api.post(
+										'tag/add',
+										{ objtype: 'template', objid: row.tplid, text: tag_input.trim() },
+										token
+									);
+									if (tags.error) {
+										setFadeMessage(tags.message, 'warning');
+									} else {
+										row.tags = tags;
+										row = row;
+										await reloadTags();
+									}
+								}
+								tag_input = '';
+							}}
+						/>
+						<label for={`input-tags-${index}`}>
+							{$_('remotetable.template.set.settags')}
+						</label>
+					</div>
+					<Button
+						color="primary"
+						on:click={async (e) => {
 							e.preventDefault();
 							if (tag_input.trim().length > 0) {
 								let tags = await api.post(
@@ -270,91 +180,161 @@
 							}
 							tag_input = '';
 						}}
-					/>
-					<label for={`input-tags-${index}`}> input new tags delimited by space/;/, </label>
-				</div>
-				<Button
-					color="primary"
-					on:click={async (e) => {
-						e.preventDefault();
-						if (tag_input.trim().length > 0) {
-							let tags = await api.post(
-								'tag/add',
-								{ objtype: 'template', objid: row.tplid, text: tag_input.trim() },
+					>
+						{$_('button.set')}
+					</Button>
+				</InputGroup>
+			</Row>
+			<Row>
+				<InputGroup>
+					<div class="form-floating flex-fill">
+						<input
+							class="form-control"
+							id={'input-owner-' + index}
+							placeholder="User ID"
+							bind:value={author_input}
+						/>
+						<label for={`input-owner-${index}`}> {$_('remotetable.template.set.setauthor')}</label>
+					</div>
+					<Button
+						color="primary"
+						on:click={async (e) => {
+							e.preventDefault();
+							author_input = author_input.trim();
+							if (author_input.length <= 0) return;
+							let ret = await api.post(
+								'template/set/author',
+								{ tplid: row.tplid, author: author_input },
 								token
 							);
-							if (tags.error) {
-								setFadeMessage(tags.message, 'warning');
+							if (ret.error) {
+								setFadeMessage(ret.message, 'warning');
 							} else {
-								row.tags = tags;
+								console.log(JSON.stringify(ret));
+								row.author = ret.author;
+								row.authorName = ret.authorName;
 								row = row;
-								await reloadTags();
+								dispatch('authorSet', row);
 							}
-						}
-						tag_input = '';
-					}}
-				>
-					{$_('button.set')}
-				</Button>
-				<Button
-					on:click={(e) => {
-						e.preventDefault();
-						$SetFor.setTagFor = '';
-					}}
-				>
-					{$_('button.close')}
-				</Button>
-			</InputGroup>
-		</Row>
-	</div>
-{/if}
-{#if $SetFor.setAuthorFor === row.tplid}
-	<div class="ms-5">
-		<Row>
-			<InputGroup>
-				<div class="form-floating flex-fill">
-					<input
-						class="form-control"
-						id={'input-owner-' + index}
-						placeholder="User ID"
-						bind:value={author_input}
-					/>
-					<label for={`input-owner-${index}`}> Set author to (user id): </label>
-				</div>
-				<Button
-					color="primary"
-					on:click={async (e) => {
-						e.preventDefault();
-						author_input = author_input.trim();
-						if (author_input.length <= 0) return;
-						let ret = await api.post(
-							'template/set/author',
-							{ tplid: row.tplid, author: author_input },
-							token
-						);
-						if (ret.error) {
-							setFadeMessage(ret.message, 'warning');
-						} else {
-							console.log(JSON.stringify(ret));
-							row.author = ret.author;
-							row.authorName = ret.authorName;
-							row = row;
-							dispatch('authorSet', row);
-						}
-					}}
-				>
-					{$_('button.set')}
-				</Button>
-				<Button
-					on:click={(e) => {
-						e.preventDefault();
-						$SetFor.setAuthorFor = '';
-						author_input = '';
-					}}
-				>
-					{$_('button.close')}
-				</Button>
-			</InputGroup>
-		</Row>
+						}}
+					>
+						{$_('button.set')}
+					</Button>
+				</InputGroup>
+			</Row>
+			<Row>
+				<InputGroup>
+					<div class="form-floating flex-fill">
+						<input
+							class="form-control"
+							id={'input-desc-' + index}
+							placeholder="Description"
+							bind:value={desc_input}
+						/>
+						<label for={`input-desc-${index}`}> {$_('remotetable.template.set.setdesc')}</label>
+					</div>
+					<Button
+						color="primary"
+						on:click={async (e) => {
+							e.preventDefault();
+							desc_input = desc_input.trim();
+							let ret = await api.post(
+								'template/desc',
+								{ tplid: row.tplid, desc: desc_input },
+								token
+							);
+							if (ret.err) {
+								setFadeMessage(ret.message, 'warning');
+							} else {
+								setFadeMessage('Success', 'success');
+							}
+							row.desc = desc_input;
+							rows2 = rows2;
+						}}
+					>
+						{$_('button.set')}
+					</Button>
+				</InputGroup>
+			</Row>
+			<Row>
+				<InputGroup>
+					<div class="form-floating flex-fill">
+						<input
+							class="form-control"
+							id={'input-visi-pds-' + index}
+							placeholder="PDS"
+							bind:value={visi_rds_input}
+						/>
+						<label for={`input-visi-pds-${index}`}>
+							{$_('remotetable.template.set.setvisito')}
+						</label>
+					</div>
+					<!-- svelte-ignore missing-declaration -->
+					<Button
+						color="primary"
+						on:click={async (e) => {
+							e.preventDefault();
+							visi_rds_input = qtb(visi_rds_input);
+							//will use temaid=""(no specified team, but may use T:team_name in pds), email = current user
+							let people = await api.post('explain/pds', { pds: visi_rds_input }, token);
+							console.log(people);
+							row.visipeople = people;
+							row.checked = true;
+							rows2[index] = row;
+							rows2 = rows2;
+						}}
+					>
+						{$_('button.check')}
+					</Button>
+					<Button
+						color="success"
+						on:click={async (e) => {
+							e.preventDefault();
+							visi_rds_input = qtb(visi_rds_input);
+							let res = await api.post(
+								'template/setvisi',
+								{ tplid: row.tplid, visi: visi_rds_input },
+								token
+							);
+							if (res.error) {
+								setFadeMessage(res.message, 'warning');
+							} else {
+								row.visi = res.visi;
+								rows2[index] = row;
+								rows2 = rows2;
+							}
+						}}
+						disabled={!row.checked}
+					>
+						{$_('button.set')}
+					</Button>
+					<Button
+						on:click={async (e) => {
+							e.preventDefault();
+							$SetFor.setVisiFor = '';
+							visi_rds_input = '';
+							row.visipeople = null;
+							let res = await api.post('template/clearvisi', { tplid: row.tplid }, token);
+							if (res.error) {
+								setFadeMessage(res.message, 'warning');
+							} else {
+								row.visi = '';
+								rows2[index] = row;
+								rows2 = rows2;
+							}
+						}}
+					>
+						{$_('button.clear')}
+					</Button>
+				</InputGroup>
+			</Row>
+			{#if Array.isArray(row.visipeople)}
+				<Row>
+					{#each row.visipeople as visiperson}
+						<div class="text-center">{visiperson.cn}({visiperson.uid})</div>
+					{/each}
+				</Row>
+			{/if}
+		</div>
 	</div>
 {/if}
