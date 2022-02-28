@@ -191,6 +191,8 @@
 		"print": "Print",
 		"startat": "Start at",
 		"startby": "Start by",
+		"nodevars": "Node Variables",
+		"comments": "User Comments",
 		"restartrehearsal": "Restart Rehearsal",
 		"cancelworkflowatfirststep": "Abandon Process"
 	},

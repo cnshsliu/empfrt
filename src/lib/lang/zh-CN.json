@@ -190,6 +190,8 @@
 		"print": "打印",
 		"startat": "启动于",
 		"startby": "启动者",
+		"nodevars": "节点参数",
+		"comments": "节点备注",
 		"restartrehearsal": "重新演练",
 		"cancelworkflowatfirststep": "放弃本流程"
 	},

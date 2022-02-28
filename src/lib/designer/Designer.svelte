@@ -332,7 +332,7 @@
 			}
 		};
 		if (KFK.scenario === 'workflow' && workflow.status === 'ST_RUN') {
-			let intervalSeconds = 10; //seconds
+			let intervalSeconds = workflow.rehearsal ? 1 : 10; //seconds
 			let stopEvery = 5; //minutes
 			await remoteCheck();
 			checkWorkflowUpdateInterval = setInterval(async () => {
