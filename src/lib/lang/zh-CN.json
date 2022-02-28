@@ -50,7 +50,7 @@
 		"author": "作者",
 		"template": {
 			"set": {
-				"title": "设置当面模版",
+				"title": "设置当前模版",
 				"settags": "添加标签，多个标签之间用空格分割",
 				"setauthor": "将作者指定为（输入用户邮箱前缀）",
 				"setdesc": "设置说明描述信息",
@@ -80,6 +80,7 @@
 			"seeWorkflows": "查看相关进程",
 			"seeWorklist": "查看相关工作项",
 			"addDesc": "添加备注",
+			"set": "设置",
 			"setTags": "设置标签",
 			"setVisi": "设置可见性",
 			"setOwner": "设置流程Owner",

@@ -340,8 +340,8 @@
 										}}
 										class="nav-link "
 									>
-										<Icon name="person-bounding-box" />
-										{$_('remotetable.tplaction.setOwner')}
+										<Icon name="ui-checks-grid" />
+										{$_('remotetable.tplaction.set')}
 									</a>
 								</DropdownItem>
 								<DropdownItem>
