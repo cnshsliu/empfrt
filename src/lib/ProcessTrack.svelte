@@ -92,11 +92,11 @@
 	<Container class="my-0">
 		{#each wf.history as entry}
 			<Row cols="1">
-				<Col
-					class={'mt-3 ' +
-						(workid === entry.workid ? 'kfk-highlight-track-current ' : 'kfk-highlight-track ')}
-				>
-					<Row class="border rounded-3 mt-1 pt-0 kfk-work-kvars tnt-work-kvars">
+				<div class="col mt-3 ">
+					<Row
+						class={'border rounded-3 mt-1 pt-0 kfk-work-kvars tnt-work-kvars ' +
+							(entry.isCurrent ? 'border-5' : '')}
+					>
 						<Col class="d-flex border-end col-4 card-header">
 							<div class="text-center px-3 w-100">
 								<span class="fs-5">{entry.title}</span><br />
@@ -224,7 +224,7 @@
 							</Row>
 						{/if}
 					{/if}
-				</Col>
+				</div>
 			</Row>
 		{/each}
 		<Row>

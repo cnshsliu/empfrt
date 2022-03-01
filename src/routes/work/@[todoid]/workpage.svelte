@@ -61,7 +61,9 @@
 			payload.kvars[work.kvarsArr[i]['name']] = work.kvarsArr[i];
 		}
 		api.post('work/sendback', payload, user.sessionToken);
-		goto(iframeMode ? '/work?iframe' : '/work');
+		setTimeout(() => {
+			goto(iframeMode ? '/work?iframe' : '/work');
+		}, 500);
 	}
 	function _revokeWork() {
 		//if (checkRequired() === false) return;
@@ -71,7 +73,9 @@
 			comment: comment
 		};
 		api.post('work/revoke', payload, user.sessionToken);
-		goto(iframeMode ? '/work?iframe' : '/work');
+		setTimeout(() => {
+			goto(iframeMode ? '/work?iframe' : '/work');
+		}, 500);
 	}
 	function _toggleAdhoc() {
 		adhocTaskDoerConfirmed = false;

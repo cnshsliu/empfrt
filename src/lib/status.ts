@@ -48,7 +48,7 @@ export function StatusClass(status: string, border = false): string {
 	let ret = status;
 	switch (status) {
 		case 'ST_RUN':
-			ret = border ? 'text-info border border-info' : 'text-info';
+			ret = border ? 'text-primary border border-info' : 'text-primary';
 			break;
 		case 'ST_DONE':
 			ret = border ? 'text-success border border-success' : 'text-success';

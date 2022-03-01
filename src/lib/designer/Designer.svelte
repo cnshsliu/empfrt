@@ -234,6 +234,7 @@
 	};
 
 	const resetChecking = () => {
+		console.log('==============resetChecking============');
 		clearAllTimer();
 		if (KFK.scenario === 'template') {
 			checkTemplateUpdateTimeout = setTimeout(async () => {

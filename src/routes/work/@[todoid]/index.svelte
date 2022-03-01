@@ -13,6 +13,11 @@
 		const res = await fetch(`/work/@${todoid}.json`);
 
 		const theWork = await res.json();
+		theWork.wf.history.map((x) => {
+			x.isCurrent = x.workid === theWork.workid;
+			x.classname = 'col mt-3 kfk-highlight-track' + (x.isCurrent ? '-current' : '');
+			return x;
+		});
 		theWork.routingOptions.sort();
 		let delegators = [];
 		try {
