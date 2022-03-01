@@ -186,6 +186,7 @@
 		"process": "进程信息",
 		"processRehearsal": "进程演练信息",
 		"worklog": "任务历史记录",
+		"worklogof": "流程执行记录",
 		"monitor": "监控",
 		"print": "打印",
 		"startat": "启动于",
@@ -193,7 +194,8 @@
 		"nodevars": "节点参数",
 		"comments": "节点备注",
 		"restartrehearsal": "重新演练",
-		"cancelworkflowatfirststep": "放弃本流程"
+		"cancelworkflowatfirststep": "放弃本流程",
+		"workflowcontext": "流程上下文信息"
 	},
 	"tpl": {
 		"new": "新建",

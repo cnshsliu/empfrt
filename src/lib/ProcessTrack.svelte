@@ -45,6 +45,7 @@
 
 <Container class="mt-5">
 	<div class="fs-3 text-center">
+		<div class="fs-5">{$_('todo.worklogof')}</div>
 		<div
 			class="clickable text-primary fs-3 text-center"
 			on:click={(e) => {
@@ -96,7 +97,7 @@
 						(workid === entry.workid ? 'kfk-highlight-track-current ' : 'kfk-highlight-track ')}
 				>
 					<Row class="border rounded-3 mt-1 pt-0 kfk-work-kvars tnt-work-kvars">
-						<Col class="d-flex border-end col-3 card-header">
+						<Col class="d-flex border-end col-4 card-header">
 							<div class="text-center px-3 w-100">
 								<span class="fs-5">{entry.title}</span><br />
 								<sup>
@@ -132,12 +133,15 @@
 								{/if}
 							</div>
 						</Col>
-						<Col class="col-9">
+						<Col class="col-8">
 							<div class=" ms-3">
 								<Row class="d-flex">
 									{#each entry.doers as aDoer}
 										<Col class="text-center">
-											<a href={`/work/@${aDoer.todoid}`} class="clickable text-primary btn btn-sm">
+											<div
+												on:click|preventDefault={(e) => goto(`/work/@${aDoer.todoid}`)}
+												class="clickable btn btn-sm"
+											>
 												{#if aDoer.status === 'ST_DONE'}
 													<div>{@html aDoer.decision ? aDoer.decision : '&nbsp;'}</div>
 													{#if aDoer.signature}
@@ -166,7 +170,7 @@
 													<div>{aDoer.cn}</div>
 													<div>&nbsp;</div>
 												{/if}
-											</a>
+											</div>
 										</Col>
 									{/each}
 								</Row>

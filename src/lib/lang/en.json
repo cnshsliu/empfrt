@@ -187,6 +187,7 @@
 		"process": "Process",
 		"processRehearsal": "Process Rehearsal",
 		"worklog": "Work log",
+		"worklogof": "Work log of",
 		"monitor": "Monitor",
 		"print": "Print",
 		"startat": "Start at",
@@ -194,7 +195,8 @@
 		"nodevars": "Node Variables",
 		"comments": "User Comments",
 		"restartrehearsal": "Restart Rehearsal",
-		"cancelworkflowatfirststep": "Abandon Process"
+		"cancelworkflowatfirststep": "Abandon Process",
+		"workflowcontext": "Workflow Context"
 	},
 	"tpl": {
 		"new": "New",
