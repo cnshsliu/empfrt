@@ -57,6 +57,10 @@
 	let checkWorkflowTimes = 0;
 	let workflowUpdatedAt = '';
 	let templateUpdatedAt = '';
+	let workflowCheckIntervalSeconds = 10;
+	let templateCheckIntervalSeconds = 10;
+
+	if (workflow) workflowCheckIntervalSeconds = workflow.rehearsal ? 5 : 10; //seconds
 
 	let nodeInfo: NodeInfo;
 	function designerSetTool(what: string, event?: any) {
@@ -297,17 +301,16 @@
 	};
 	const setTemplateCheckingInterval = async () => {
 		if (KFK.scenario === 'template') {
-			let intervalSeconds = 10;
 			await remoteTemplateCheck();
 			checkTemplateUpdateInterval = setInterval(async () => {
 				await remoteTemplateCheck();
-				if (checkTemplateTimes > (5 * 60) / intervalSeconds) {
+				if (checkTemplateTimes > (5 * 60) / templateCheckIntervalSeconds) {
 					//if (checkTemplateTimes > 3) {
 					console.log('Stop remote checking loop');
 					clearInterval(checkTemplateUpdateInterval);
 					checkTemplateUpdateInterval = null;
 				}
-			}, intervalSeconds * 1000);
+			}, templateCheckIntervalSeconds * 1000);
 		}
 	};
 	const setWorkflowCheckingInterval = async () => {
@@ -332,19 +335,18 @@
 			}
 		};
 		if (KFK.scenario === 'workflow' && workflow.status === 'ST_RUN') {
-			let intervalSeconds = workflow.rehearsal ? 1 : 10; //seconds
 			let stopEvery = 5; //minutes
 			await remoteCheck();
 			checkWorkflowUpdateInterval = setInterval(async () => {
 				await remoteCheck();
-				if (checkWorkflowTimes > (stopEvery * 60) / intervalSeconds) {
+				if (checkWorkflowTimes > (stopEvery * 60) / workflowCheckIntervalSeconds) {
 					//if (checkWorkflowTimes > 3) {
 					console.log('stop process monitor update');
 					clearInterval(checkWorkflowUpdateInterval);
 					checkWorkflowUpdateInterval = null;
 					checkWorkflowTimes = 0;
 				}
-			}, intervalSeconds * 1000);
+			}, workflowCheckIntervalSeconds * 1000);
 		}
 	};
 	onMount(async () => {
