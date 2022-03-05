@@ -2165,8 +2165,6 @@ ret='DEFAULT'; `
 				to: jqDIV.clone()
 			});
 			that.onChange('New Node');
-		} else if (that.tool !== 'POINTER') {
-			console.warn(that.tool, 'does not have config in cocoConfig');
 		}
 
 		evt.stopImmediatePropagation();

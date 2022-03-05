@@ -1844,7 +1844,7 @@ div.pbo {
 	background-position: center; /* Center the image */
 	background-repeat: no-repeat; /* Do not repeat the image */
 	background-size: contain;
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/START.svg');
+	background-image: url('/svg/START.svg');
 }
 
 .node.ACTION {
@@ -1853,7 +1853,7 @@ div.pbo {
 	background-position: center; /* Center the image */
 	background-repeat: no-repeat; /* Do not repeat the image */
 	background-size: contain;
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/ACTION.svg');
+	background-image: url('/svg/ACTION.svg');
 }
 .node.INFORM {
 	left: 400px;
@@ -1861,7 +1861,7 @@ div.pbo {
 	background-position: center; /* Center the image */
 	background-repeat: no-repeat; /* Do not repeat the image */
 	background-size: contain;
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/INFORM.svg');
+	background-image: url('/svg/INFORM.svg');
 }
 .node.SCRIPT {
 	left: 400px;
@@ -1869,7 +1869,7 @@ div.pbo {
 	background-position: center; /* Center the image */
 	background-repeat: no-repeat; /* Do not repeat the image */
 	background-size: contain;
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/SCRIPT.svg');
+	background-image: url('/svg/SCRIPT.svg');
 }
 .node.TIMER {
 	left: 400px;
@@ -1877,7 +1877,7 @@ div.pbo {
 	background-position: center; /* Center the image */
 	background-repeat: no-repeat; /* Do not repeat the image */
 	background-size: contain;
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/TIMER.svg');
+	background-image: url('/svg/TIMER.svg');
 }
 .node.SUB {
 	left: 400px;
@@ -1885,7 +1885,7 @@ div.pbo {
 	background-position: center; /* Center the image */
 	background-repeat: no-repeat; /* Do not repeat the image */
 	background-size: contain;
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/SUB.svg');
+	background-image: url('/svg/SUB.svg');
 }
 .node.AND {
 	left: 400px;
@@ -1893,7 +1893,7 @@ div.pbo {
 	background-position: center; /* Center the image */
 	background-repeat: no-repeat; /* Do not repeat the image */
 	background-size: contain;
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/AND.svg');
+	background-image: url('/svg/AND.svg');
 }
 .node.OR {
 	left: 400px;
@@ -1901,7 +1901,7 @@ div.pbo {
 	background-position: center; /* Center the image */
 	background-repeat: no-repeat; /* Do not repeat the image */
 	background-size: contain;
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/OR.svg');
+	background-image: url('/svg/OR.svg');
 }
 .node.THROUGH {
 	left: 400px;
@@ -1909,7 +1909,7 @@ div.pbo {
 	background-position: center; /* Center the image */
 	background-repeat: no-repeat; /* Do not repeat the image */
 	background-size: contain;
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/THROUGH.svg');
+	background-image: url('/svg/THROUGH.svg');
 }
 
 .node.GROUND {
@@ -1918,7 +1918,7 @@ div.pbo {
 	background-position: center; /* Center the image */
 	background-repeat: no-repeat; /* Do not repeat the image */
 	background-size: contain;
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/GROUND.svg');
+	background-image: url('/svg/GROUND.svg');
 }
 
 .node.END {
@@ -1927,7 +1927,7 @@ div.pbo {
 	background-position: center; /* Center the image */
 	background-repeat: no-repeat; /* Do not repeat the image */
 	background-size: contain;
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/END.svg');
+	background-image: url('/svg/END.svg');
 }
 
 .node.ST_DONE {
@@ -2194,70 +2194,70 @@ div.pbo {
 	color: #ffffff;
 }
 .toolbox.POINTER {
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/POINTER.svg');
+	background-image: url('/svg/POINTER.svg');
 }
 .toolbox.POINTER.active {
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/POINTER2.svg');
+	background-image: url('/svg/POINTER2.svg');
 }
 .toolbox.ACTION {
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/ACTION.svg');
+	background-image: url('/svg/ACTION.svg');
 }
 .toolbox.ACTION.active {
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/ACTION2.svg');
+	background-image: url('/svg/ACTION2.svg');
 }
 .toolbox.TIMER {
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/TIMER.svg');
+	background-image: url('/svg/TIMER.svg');
 }
 .toolbox.TIMER.active {
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/TIMER2.svg');
+	background-image: url('/svg/TIMER2.svg');
 }
 .toolbox.SUB {
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/SUB.svg');
+	background-image: url('/svg/SUB.svg');
 }
 .toolbox.SUB.active {
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/SUB2.svg');
+	background-image: url('/svg/SUB2.svg');
 }
 .toolbox.SCRIPT {
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/SCRIPT.svg');
+	background-image: url('/svg/SCRIPT.svg');
 }
 .toolbox.SCRIPT.active {
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/SCRIPT2.svg');
+	background-image: url('/svg/SCRIPT2.svg');
 }
 .toolbox.AND {
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/AND.svg');
+	background-image: url('/svg/AND.svg');
 }
 .toolbox.AND.active {
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/AND2.svg');
+	background-image: url('/svg/AND2.svg');
 }
 .toolbox.OR {
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/OR.svg');
+	background-image: url('/svg/OR.svg');
 }
 .toolbox.OR.active {
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/OR2.svg');
+	background-image: url('/svg/OR2.svg');
 }
 .toolbox.INFORM {
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/INFORM.svg');
+	background-image: url('/svg/INFORM.svg');
 }
 .toolbox.INFORM.active {
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/INFORM2.svg');
+	background-image: url('/svg/INFORM2.svg');
 }
 .toolbox.GROUND {
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/GROUND.svg');
+	background-image: url('/svg/GROUND.svg');
 }
 .toolbox.GROUND.active {
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/GROUND2.svg');
+	background-image: url('/svg/GROUND2.svg');
 }
 .toolbox.CONNECT {
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/CONNECT.svg');
+	background-image: url('/svg/CONNECT.svg');
 }
 .toolbox.CONNECT.active {
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/CONNECT2.svg');
+	background-image: url('/svg/CONNECT2.svg');
 }
 .toolbox.THROUGH {
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/THROUGH.svg');
+	background-image: url('/svg/THROUGH.svg');
 }
 .toolbox.THROUGH.active {
-	background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/THROUGH2.svg');
+	background-image: url('/svg/THROUGH2.svg');
 }
 @keyframes shaking {
 	25% {
@@ -2292,58 +2292,56 @@ div.pbo {
 @-webkit-keyframes loadingCircle {
 	0%,
 	100% {
-		background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/spinner/spinner00.svg');
+		background-image: url('/svg/spinner/spinner00.svg');
 	}
 	20% {
-		background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/spinner/spinner20.svg');
+		background-image: url('/svg/spinner/spinner20.svg');
 	}
 	40% {
-		background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/spinner/spinner40.svg');
+		background-image: url('/svg/spinner/spinner40.svg');
 	}
 	60% {
-		background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/spinner/spinner00.svg');
+		background-image: url('/svg/spinner/spinner00.svg');
 	}
 	80% {
-		background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/spinner/spinner40.svg');
+		background-image: url('/svg/spinner/spinner40.svg');
 	}
 }
 @keyframes loadingCircle {
 	0%,
 	100% {
-		background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/spinner/spinner00.svg');
+		background-image: url('/svg/spinner/spinner00.svg');
 	}
 	20% {
-		background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/spinner/spinner20.svg');
+		background-image: url('/svg/spinner/spinner20.svg');
 	}
 	40% {
-		background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/spinner/spinner40.svg');
+		background-image: url('/svg/spinner/spinner40.svg');
 	}
 	60% {
-		background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/spinner/spinner00.svg');
+		background-image: url('/svg/spinner/spinner00.svg');
 	}
 	80% {
-		background-image: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/spinner/spinner40.svg');
+		background-image: url('/svg/spinner/spinner40.svg');
 	}
 }
 
 .input_good {
 	padding-right: 25px;
-	background: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/yes.svg') no-repeat right;
+	background: url('/svg/yes.svg') no-repeat right;
 	background-size: 20px;
 	background-color: white;
 }
 .input_wrong {
 	padding-right: 25px;
-	background: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/error.svg') no-repeat
-		right;
+	background: url('/svg/error.svg') no-repeat right;
 	background-size: 20px;
 	background-color: white;
 }
 .input_circle:before,
 .input_circle {
 	padding-right: calc(1.5em + 0.75rem);
-	background: url('https://cdn.jsdelivr.net/gh/cnshsliu/empfrt/static/svg/spinner/spinner00.svg')
-		no-repeat right;
+	background: url('/svg/spinner/spinner00.svg') no-repeat right;
 	background-size: 20px;
 	animation: 1.5s linear 0s infinite normal none running loadingCircle;
 }
