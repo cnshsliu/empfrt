@@ -11,7 +11,7 @@
 	import { onMount } from 'svelte';
 	import Parser from '$lib/parser';
 	import { qtb } from '$lib/utils';
-	import { SetFor, filterStorage } from '$lib/empstores';
+	import { filterStorage } from '$lib/empstores';
 	import { ClientPermControl } from '$lib/clientperm';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
 	import { goto } from '$app/navigation';
@@ -42,6 +42,13 @@
 	let page = 0; //first page
 	let pageIndex = 0; //first row
 	let pageSize = user && user.ps ? user.ps : 10; //optional, 10 by default
+	let SetFor = {
+		setVisiFor: '',
+		setAuthorFor: '',
+		setDescFor: '',
+		setTagFor: '',
+		settingFor: ''
+	};
 
 	let loading = true;
 	export let rowsCount = 0;
@@ -330,11 +337,11 @@
 										href={'#'}
 										on:click|preventDefault={(e) => {
 											e.preventDefault();
-											$SetFor.setVisiFor = row.tplid;
-											$SetFor.setAuthorFor = row.tplid;
-											$SetFor.setDescFor = row.tplid;
-											$SetFor.setTagFor = row.tplid;
-											$SetFor.settingFor = row.tplid;
+											SetFor.setVisiFor = row.tplid;
+											SetFor.setAuthorFor = row.tplid;
+											SetFor.setDescFor = row.tplid;
+											SetFor.setTagFor = row.tplid;
+											SetFor.settingFor = row.tplid;
 											row.checked = false;
 											visi_rds_input = row.visi;
 										}}
@@ -383,10 +390,11 @@
 						{desc_input}
 						{setFadeMessage}
 						{reloadTags}
+						{SetFor}
 						on:authorSet={(e) => {
 							row = e.detail;
 							rows2[index] = row;
-							$SetFor.setAuthorFor = '';
+							SetFor.setAuthorFor = '';
 						}}
 					/>
 				</td>

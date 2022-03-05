@@ -9,7 +9,7 @@
 	const dispatch = createEventDispatcher();
 	import { Badge, Button, Icon, Row, Col, InputGroup } from 'sveltestrap';
 	import { session } from '$app/stores';
-	import { SetFor, filterStorage } from '$lib/empstores';
+	import { filterStorage } from '$lib/empstores';
 	import { ClientPermControl } from '$lib/clientperm';
 	export let user: User = $session.user;
 	export let token = user.sessionToken;
@@ -22,6 +22,7 @@
 	let tag_input: string = '';
 	export let setFadeMessage: any;
 	export let reloadTags: any;
+	export let SetFor: any;
 </script>
 
 {#if row.visi}
@@ -29,12 +30,12 @@
 		<div
 			class="ms-5 kfk-link"
 			on:click={() => {
-				if ($SetFor.setVisiFor !== row.tplid) {
-					$SetFor.setVisiFor = row.tplid;
+				if (SetFor.setVisiFor !== row.tplid) {
+					SetFor.setVisiFor = row.tplid;
 					row.checked = false;
 					visi_rds_input = row.visi;
 				} else {
-					$SetFor.setVisiFor = '';
+					SetFor.setVisiFor = '';
 					visi_rds_input = '';
 				}
 			}}
@@ -54,12 +55,12 @@
 		<div
 			class="ms-5 kfk-link"
 			on:click={() => {
-				if ($SetFor.setDescFor === row.tplid) {
+				if (SetFor.setDescFor === row.tplid) {
 					desc_input = '';
-					$SetFor.setDescFor = '';
+					SetFor.setDescFor = '';
 				} else {
 					desc_input = row.desc;
-					$SetFor.setDescFor = row.tplid;
+					SetFor.setDescFor = row.tplid;
 				}
 			}}
 		>
@@ -77,10 +78,10 @@
 	<div
 		class="ms-5 kfk-link"
 		on:click={() => {
-			if ($SetFor.setTagFor !== row.tplid) {
-				$SetFor.setTagFor = row.tplid;
+			if (SetFor.setTagFor !== row.tplid) {
+				SetFor.setTagFor = row.tplid;
 			} else {
-				$SetFor.setTagFor = '';
+				SetFor.setTagFor = '';
 			}
 		}}
 	>
@@ -104,7 +105,7 @@
 		{/each}
 	</div>
 {/if}
-{#if $SetFor.settingFor === row.tplid && user.perms && ClientPermControl(user.perms, user.email, 'template', row, 'delete')}
+{#if SetFor.settingFor === row.tplid && user.perms && ClientPermControl(user.perms, user.email, 'template', row, 'delete')}
 	<div class="card ms-0">
 		<div class="card-header">
 			<InputGroup>
@@ -115,11 +116,11 @@
 					on:click={(e) => {
 						e.preventDefault();
 						row.checked = false;
-						$SetFor.settingFor = '';
-						$SetFor.setTagFor = '';
-						$SetFor.setAuthorFor = '';
-						$SetFor.setDescFor = '';
-						$SetFor.setVisiFor = '';
+						SetFor.settingFor = '';
+						SetFor.setTagFor = '';
+						SetFor.setAuthorFor = '';
+						SetFor.setDescFor = '';
+						SetFor.setVisiFor = '';
 						visi_rds_input = '';
 					}}
 				>
@@ -311,7 +312,7 @@
 					<Button
 						on:click={async (e) => {
 							e.preventDefault();
-							$SetFor.setVisiFor = '';
+							SetFor.setVisiFor = '';
 							visi_rds_input = '';
 							row.visipeople = null;
 							let res = await api.post('template/clearvisi', { tplid: row.tplid }, token);
