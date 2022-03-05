@@ -3017,86 +3017,18 @@ ret='DEFAULT'; `
 	async setConnectionStatusColor(routeStatus) {
 		const that = this;
 
-		const connectLines = this.svgDraw.find('.connect');
-
-		/* console.log('RouteStatus: ');
-		console.log(routeStatus); */
-
 		let connectNumber = 0;
-		connectLines.each(async (connect: any) => {
-			//如果这根连接线条的fid属性是当前node的id
-			connectNumber++;
-			let fid = connect.attr('fid');
-			let tid = connect.attr('tid');
-			//找到Node的DIV
-			const fromDIV: any = $(`#${fid}`);
-			const toDIV: any = $(`#${tid}`);
-			//找到node里面的work DIV
-			let toWorks = toDIV.find('.work');
-			let toWorkIds = [];
-			toWorks.each((_index: any, divWork: any) => {
-				toWorkIds.push($(divWork).attr('id'));
-			});
-			let tmp = routeStatus.filter(
-				//(x) => x.from_nodeid === fid && x.to_nodeid === tid && x.status === 'ST_PASS'
-				(x) => x.from_nodeid === fid && toWorkIds.includes(x.to_workid) && x.status === 'ST_PASS'
-			);
-			/* console.log(toWorkIds);
-			console.log(
-				'Rouete count: from',
-				KFK.getNodeLabel(fromDIV),
-				'->',
-				KFK.getNodeLabel(toDIV),
-				' = ',
-				tmp.length
-			); */
-			connect.removeClass('ST_RUN').removeClass('ST_DONE');
-			if (tmp.length > 0) {
-				//connect.addClass(toDIV.hasClass('ST_RUN') ? 'ST_RUN' : 'ST_DONE');
-				connect.addClass(KFK.getSTClass(toDIV));
-			}
-		});
-		/*
-		connectLines.each(async (connect: any) => {
-			//如果这根连接线条的fid属性是当前node的id
-			connectNumber++;
-			let fid = connect.attr('fid');
-			let tid = connect.attr('tid');
-			//这条线是从哪到哪的
-			const fromDIV: any = $(`#${fid}`);
-			const toDIV: any = $(`#${tid}`);
-			//指向节点有没有完成？如果完成，则
-			if (toDIV.hasClass('ST_DONE')) {
-				//这个完成的toDIV的前序work的ID是哪个？
-				let prevDoneWorkId = toDIV.find('.work').attr('from_nodeid');
-				if (fromDIV.hasClass('ST_DONE') && prevDoneWorkId === fid) {
-					//这个线所链接的两个节点都是ST_DONE
-					//并且，结束节点在结束时所记录的“来自于“节点的ID就是当前from节点
-					//则把这个链接线的状态设置为ST_DONE
-					connect.addClass('ST_DONE');
-				}
-			} else if (toDIV.hasClass('ST_RUN')) {
-				//找兄弟链接, 检查兄弟链接中是否有已经完成了的
-				const links = that.tpl.find(`.link[from="${fid}"]`);
-				let hasDone = false;
-				for (let i = 0; i < links.length; i++) {
-					const toId = $(links[i]).attr('to');
-					const jqTo = $(`#${toId}`);
-					if (that.isA(jqTo, 'ST_DONE')) {
-						hasDone = true;
-						break;
-					}
-				}
-				//如果其他兄弟也没有完成，则表示我还在运行中，（其它兄弟链接也在运行中）
-				if (!hasDone) {
-					connect.addClass('ST_RUN');
-				} else {
-					//否则，表示，其它兄弟链接中又一个已经完成，那么，我的状态就应该是IGNORE
-					connect.addClass('ST_IGNORE');
-				}
-			}
-		});
-		 */
+		for (let i = 0; i < routeStatus.length; i++) {
+			let aRoute = routeStatus[i];
+			let connectId = 'connect_' + aRoute.from_nodeid + '_' + aRoute.to_nodeid;
+			try {
+				let aConnect = $(`#${connectId}`);
+				let toNode = $(`#${aRoute.to_nodeid}`);
+				aConnect.removeClass('ST_RUN').removeClass('ST_DONE');
+				aConnect.addClass(KFK.getSTClass(toNode));
+				connectNumber += 1;
+			} catch (e) {}
+		}
 		return connectNumber;
 	}
 
@@ -4209,9 +4141,13 @@ ret='DEFAULT'; `
 	}
 
 	replaceSTClassTo(jqObj, newClassName) {
-		let old_classes = jqObj.attr('class').split(/\s+/);
-		old_classes.map((x) => (x.startsWith('ST_') ? jqObj.removeClass(x) : ''));
-		jqObj.addClass(newClassName);
+		try {
+			let old_classes = jqObj.attr('class').split(/\s+/);
+			old_classes.map((x) => (x.startsWith('ST_') ? jqObj.removeClass(x) : ''));
+			jqObj.addClass(newClassName);
+		} catch (err) {
+			console.error(err);
+		}
 	}
 
 	getSTClass(jqObj) {

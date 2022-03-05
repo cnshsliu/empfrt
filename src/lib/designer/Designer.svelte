@@ -318,21 +318,29 @@
 		let remoteCheck = async () => {
 			console.log(`${checkWorkflowTimes} Checking monitoring update ${workflowUpdatedAt}`);
 			checkWorkflowTimes += 1;
-			let ret = await api.post(
-				'workflow/check/status',
-				{ wfid: workflow.wfid, updatedAt: workflowUpdatedAt },
-				user.sessionToken
-			);
-			if (ret.hasOwnProperty('wfid')) {
-				//console.log('Changed.... reset classes', ret);
-				//workflowUpdatedAt = ret.updatedAt;
-				await KFK.resetWorkflowStatusClasses(ret);
-				if (ret.status != 'ST_RUN') {
-					console.log('Not ST_RUN, stop monitoring...');
-					clearInterval(checkWorkflowUpdateInterval);
-					checkWorkflowUpdateInterval = null;
-					checkWorkflowTimes = 0;
+			try {
+				let ret = await api.post(
+					'workflow/check/status',
+					{ wfid: workflow.wfid, updatedAt: workflowUpdatedAt },
+					user.sessionToken
+				);
+				if (ret.hasOwnProperty('wfid')) {
+					//console.log('Changed.... reset classes', ret);
+					//workflowUpdatedAt = ret.updatedAt;
+					try {
+						await KFK.resetWorkflowStatusClasses(ret);
+					} catch (error) {
+						console.log('error....');
+					}
+					if (ret.status != 'ST_RUN') {
+						console.log('Not ST_RUN, stop monitoring...');
+						clearInterval(checkWorkflowUpdateInterval);
+						checkWorkflowUpdateInterval = null;
+						checkWorkflowTimes = 0;
+					}
 				}
+			} catch (error) {
+				checkWorkflowTimes += 10;
 			}
 		};
 		if (KFK.scenario === 'workflow' && workflow.status === 'ST_RUN') {
@@ -375,9 +383,11 @@
 		}
 		KFK.addDocumentEventHandler(true);
 		currentTool = KFK.tool;
+		console.log('On Mount ===============');
 		resetChecking();
 	});
 	onDestroy(async () => {
+		console.log('on Destroy==============');
 		console.log('clear ALl timer');
 		clearAllTimer();
 		jq(document).off();
