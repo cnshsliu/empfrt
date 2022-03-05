@@ -326,6 +326,7 @@ class KFKclass {
 	pointAfterResize: Point = null;
 	selectedTodo: any = null;
 	user: User = null;
+	bwid: string = '';
 
 	tobeRemovedConnectId: string = null;
 	oldTool = 'POINTER';
@@ -743,7 +744,7 @@ class KFKclass {
 			const token = that.user.sessionToken;
 			const ret = await api.post(
 				'template/put',
-				{ doc: that.template.doc, tplid: that.tplid },
+				{ doc: that.template.doc, tplid: that.tplid, bwid: that.bwid },
 				token
 			);
 			//return ret.data;
@@ -4007,10 +4008,11 @@ ret='DEFAULT'; `
 		that.ball.addClass('noshow');
 	}
 
-	async init(user: User) {
+	async init(user: User, bwid) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		that.user = user;
+		that.bwid = bwid;
 		if (that.inited === true) {
 			console.error('that.init was called more than once');
 		}

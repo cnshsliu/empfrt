@@ -3,6 +3,7 @@
 <script lang="ts">
 	import { _ } from '$lib/i18n';
 	import Parser from '$lib/parser';
+	import suuid from 'short-uuid';
 	import { Status } from '$lib/status';
 	import * as api from '$lib/api';
 	import { session } from '$app/stores';
@@ -59,6 +60,7 @@
 	let templateUpdatedAt = '';
 	let workflowCheckIntervalSeconds = 10;
 	let templateCheckIntervalSeconds = 10;
+	let currentBrowserWindowID = 'INITIAL';
 
 	if (workflow) workflowCheckIntervalSeconds = workflow.rehearsal ? 5 : 10; //seconds
 
@@ -252,7 +254,7 @@
 		checkTemplateTimes += 1;
 		let ret = await api.post(
 			'template/read',
-			{ tplid: template.tplid, updatedAt: templateUpdatedAt },
+			{ tplid: template.tplid, checkUpdatedAt: templateUpdatedAt, bwid: currentBrowserWindowID },
 			user.sessionToken
 		);
 		if (ret.hasOwnProperty('tplid')) {
@@ -260,6 +262,10 @@
 			template = ret as unknown as Template;
 			templateUpdatedAt = template.updatedAt;
 			await KFK.loadTemplateDoc(template, tpl_mode);
+		} else {
+			if ((ret as unknown as String) === 'MAYBE_LASTUPDATE_BY_YOUSELF') {
+				console.log('Updated by yourself');
+			}
 		}
 	};
 	const updateCheckOnMousemove = () => {
@@ -306,7 +312,6 @@
 			checkTemplateUpdateInterval = setInterval(async () => {
 				await remoteTemplateCheck();
 				if (checkTemplateTimes > (5 * 60) / templateCheckIntervalSeconds) {
-					//if (checkTemplateTimes > 3) {
 					console.log('Stop remote checking loop');
 					clearInterval(checkTemplateUpdateInterval);
 					checkTemplateUpdateInterval = null;
@@ -360,6 +365,7 @@
 	};
 	onMount(async () => {
 		const jqModule = await import('jquery');
+		currentBrowserWindowID = suuid.generate();
 		jQuery = jqModule.default;
 		jq = jQuery;
 		/* The next several lines of codes make draggalbe/resizeable availabe for jQuery */
@@ -368,7 +374,7 @@
 		jqueryui = module.default;
 		/* jquery-ui import finished */
 		KFK.designerCallback = designerCallback;
-		KFK.init($session.user);
+		KFK.init($session.user, currentBrowserWindowID);
 		KFK.scenario = workflow ? 'workflow' : 'template';
 		if (KFK.scenario === 'template') {
 			if (tpl_mode !== 'edit') {
