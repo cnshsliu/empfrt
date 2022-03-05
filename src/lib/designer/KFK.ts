@@ -3206,7 +3206,7 @@ ret='DEFAULT'; `
 					const p = svgConnect.pointAt(pos * lengthOfConnectorLine);
 					that.tmpBalls[index].center(p.x, p.y);
 				})
-				.loop(3);
+				.loop(9999);
 		});
 	}
 
