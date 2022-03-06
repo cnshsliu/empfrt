@@ -776,7 +776,8 @@ class KFKclass {
 				vote_percent: 60,
 				doer: '',
 				instruct: '',
-				transferable: false
+				transferable: false,
+				sr: false
 			},
 			SCRIPT: { id: '', label: '', code: '', runmode: 'ASYNC' },
 			INFORM: { id: '', label: '', role: '', subject: '', content: '' },
@@ -807,6 +808,7 @@ class KFKclass {
 				: 60;
 			ret.ACTION.instruct = that.base64ToCode(blankToDefault(jqDIV.find('.instruct').text(), ''));
 			ret.ACTION.transferable = blankToDefault(jqDIV.attr('transferable'), 'false') === 'true';
+			ret.ACTION.sr = blankToDefault(jqDIV.attr('sr'), 'false') === 'true';
 
 			if (that.workflow) {
 				let theWork = jqDIV.find('.work').first();
@@ -901,6 +903,9 @@ ret='DEFAULT'; `
 			}
 			if (propJSON.transferable) {
 				jqDIV.attr('transferable', propJSON.transferable.toString());
+			}
+			if (propJSON.sr) {
+				jqDIV.attr('sr', propJSON.sr.toString());
 			}
 		} else if (jqDIV.hasClass('SCRIPT')) {
 			propJSON = props.SCRIPT;

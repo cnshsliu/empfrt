@@ -231,6 +231,7 @@
 			"p10t": {
 				"alldone": "Vote if multiple participants",
 				"transferable": "Transferable",
+				"sr": "Keep single running task if looped",
 				"pds": "PDS",
 				"pick": "Pick PDS",
 				"try": "Try a PDS",

@@ -175,6 +175,17 @@
 				</InputGroup>
 			</Col>
 			<Col>
+				<InputGroup>
+					<Input
+						id="t1"
+						type="checkbox"
+						label={$_('prop.action.p10t.sr')}
+						bind:checked={nodeInfo.nodeProps.ACTION.sr}
+						disabled={readonly}
+					/>
+				</InputGroup>
+			</Col>
+			<Col>
 				<div class="my-3">
 					<RolePicker
 						bind:role={nodeInfo.nodeProps.ACTION.role}

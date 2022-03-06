@@ -221,6 +221,7 @@ export interface NodePropJSON {
 	instruct: string;
 	alone: boolean;
 	transferable: boolean;
+	sr: boolean;
 }
 
 export interface SearchResult {
