@@ -3021,10 +3021,10 @@ ret='DEFAULT'; `
 			let aRoute = routeStatus[i];
 			let connectId = 'connect_' + aRoute.from_nodeid + '_' + aRoute.to_nodeid;
 			try {
-				let aConnect = $(`#${connectId}`);
-				let toNode = $(`#${aRoute.to_nodeid}`);
-				aConnect.removeClass('ST_RUN').removeClass('ST_DONE');
-				aConnect.addClass(KFK.getSTClass(toNode));
+				KFK.replaceSTClassTo(
+					$(`#${connectId}`),
+					aRoute.status === 'ST_IGNORE' ? 'ST_IGNORE' : KFK.getSTClass($(`#${aRoute.to_nodeid}`))
+				);
 				connectNumber += 1;
 			} catch (e) {}
 		}
@@ -3202,7 +3202,7 @@ ret='DEFAULT'; `
 			runner
 				.during(function (pos: number) {
 					const p = svgConnect.pointAt(pos * lengthOfConnectorLine);
-					that.tmpBalls[index].center(p.x, p.y);
+					that.tmpBalls[index] && that.tmpBalls[index].center(p.x, p.y);
 				})
 				.loop(9999);
 		});
@@ -4145,9 +4145,7 @@ ret='DEFAULT'; `
 			let old_classes = jqObj.attr('class').split(/\s+/);
 			old_classes.map((x) => (x.startsWith('ST_') ? jqObj.removeClass(x) : ''));
 			jqObj.addClass(newClassName);
-		} catch (err) {
-			console.error(err);
-		}
+		} catch (err) {}
 	}
 
 	getSTClass(jqObj) {

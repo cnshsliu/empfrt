@@ -444,6 +444,16 @@
 					color="primary"
 					on:click={(e) => {
 						e.preventDefault();
+						goto(`/workflow/@${startedWorkflow.wfid}/monitor`);
+					}}
+				>
+					{$_('start.monitorit')}
+				</Button>
+				<Button
+					class="w-100 mb-5"
+					color="primary"
+					on:click={(e) => {
+						e.preventDefault();
 						starting = 0;
 						goto(`/workflow/@${startedWorkflow.wfid}/gotofirststep`);
 					}}

@@ -1964,6 +1964,7 @@ div.pbo {
 .connect.ST_IGNORE {
 	stroke-width: 5;
 	stroke: #2726ff13;
+	stroke-dasharray: 5, 5;
 }
 .connect.ST_DONE {
 	stroke-width: 5;

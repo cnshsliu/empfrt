@@ -320,7 +320,14 @@
 						{/if}
 					</a>
 				</td>
-				<td data-label="Status">{row.statusLabel}</td>
+				<td data-label="Status">
+					<a
+						class="preview-link kfk-workflow-id tnt-workflow-id"
+						href="/workflow/@{row.wfid}/monitor"
+					>
+						{row.statusLabel}
+					</a>
+				</td>
 				<td data-label="Starter">{Parser.userDisplay(row.starter, user.email)}</td>
 				<td data-label="Updated at">
 					{$date(new Date(row.updatedAt))}
