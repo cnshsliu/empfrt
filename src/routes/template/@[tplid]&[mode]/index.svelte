@@ -78,7 +78,7 @@
 	onMount(async () => {
 		const module = await import('$lib/designer/Designer.svelte');
 		Designer = module.default;
-		$filterStorage.tplid = tplid;
+		//$filterStorage.tplid = tplid;
 		$filterStorage.workTitlePattern = '';
 		if (localStorage) {
 			recentTemplates = JSON.parse(localStorage.getItem('recentTemplates') ?? JSON.stringify([]));

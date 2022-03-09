@@ -574,7 +574,9 @@
 				<div class="fs-3">{$_('todo.workflowcontext')}:</div>
 				<Row cols={{ lg: 4, md: 2, xs: 1 }}>
 					{#each work.wf.kvarsArr as kvar}
-						<KVarDisplay {work} {kvar} />
+						{#if kvar.name[0] !== '$'}
+							<KVarDisplay {work} {kvar} />
+						{/if}
 					{/each}
 				</Row>
 			</Container>

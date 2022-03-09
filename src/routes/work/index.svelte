@@ -33,7 +33,7 @@
 	import type { User, Work } from '$lib/types';
 	import { session } from '$app/stores';
 	import { Container, Row, Col, Button, FormGroup, Input } from 'sveltestrap';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { title } from '$lib/title';
 	import { filterStorage } from '$lib/empstores';
 
@@ -146,6 +146,10 @@
 
 		await setTemplates();
 		refreshList();
+	});
+	onDestroy(async () => {
+		$filterStorage.workTitlePattern = '';
+		$filterStorage.tplid = '';
 	});
 </script>
 

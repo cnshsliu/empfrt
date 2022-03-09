@@ -65,7 +65,7 @@
 		Designer = module.default;
 
 		$filterStorage.tplid = workflow.tplid;
-		$filterStorage.workTitlePattern = 'wf:' + wfid;
+		//$filterStorage.workTitlePattern = 'wf:' + wfid;
 	});
 
 	export let user: User;

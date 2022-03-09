@@ -133,6 +133,40 @@
 				<InputGroup>
 					<div class="form-floating flex-fill">
 						<input
+							class="form-control"
+							id={'input-desc-' + index}
+							placeholder="Description"
+							bind:value={desc_input}
+						/>
+						<label for={`input-desc-${index}`}> {$_('remotetable.template.set.setdesc')}</label>
+					</div>
+					<Button
+						color="primary"
+						on:click={async (e) => {
+							e.preventDefault();
+							desc_input = desc_input.trim();
+							let ret = await api.post(
+								'template/desc',
+								{ tplid: row.tplid, desc: desc_input },
+								token
+							);
+							if (ret.err) {
+								setFadeMessage(ret.message, 'warning');
+							} else {
+								setFadeMessage('Success', 'success');
+							}
+							row.desc = desc_input;
+							rows2 = rows2;
+						}}
+					>
+						{$_('button.set')}
+					</Button>
+				</InputGroup>
+			</Row>
+			<Row>
+				<InputGroup>
+					<div class="form-floating flex-fill">
+						<input
 							name={'newtag-' + index}
 							class="form-control"
 							id={'input-tags-' + index}
@@ -217,40 +251,6 @@
 								row = row;
 								dispatch('authorSet', row);
 							}
-						}}
-					>
-						{$_('button.set')}
-					</Button>
-				</InputGroup>
-			</Row>
-			<Row>
-				<InputGroup>
-					<div class="form-floating flex-fill">
-						<input
-							class="form-control"
-							id={'input-desc-' + index}
-							placeholder="Description"
-							bind:value={desc_input}
-						/>
-						<label for={`input-desc-${index}`}> {$_('remotetable.template.set.setdesc')}</label>
-					</div>
-					<Button
-						color="primary"
-						on:click={async (e) => {
-							e.preventDefault();
-							desc_input = desc_input.trim();
-							let ret = await api.post(
-								'template/desc',
-								{ tplid: row.tplid, desc: desc_input },
-								token
-							);
-							if (ret.err) {
-								setFadeMessage(ret.message, 'warning');
-							} else {
-								setFadeMessage('Success', 'success');
-							}
-							row.desc = desc_input;
-							rows2 = rows2;
 						}}
 					>
 						{$_('button.set')}

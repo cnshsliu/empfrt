@@ -150,7 +150,7 @@
 														<div
 															class="user-emoji d-flex align-items-center  justify-content-center"
 														>
-															<i class="bi bi-emoji-sunglasses" alt="Done" />
+															<i class="fs-2 text-success bi bi-emoji-sunglasses" alt="Done" />
 														</div>
 													{/if}
 													<div>{aDoer.cn}</div>
@@ -158,7 +158,7 @@
 												{:else if aDoer.status === 'ST_IGNORE'}
 													<div>&nbsp;</div>
 													<div class="user-emoji d-flex align-items-center  justify-content-center">
-														<i class="bi bi-emoji-smile-upside-down" alt="Ignored" />
+														<i class="bi text-black-50 bi-emoji-smile-upside-down" alt="Ignored" />
 													</div>
 													<div>{aDoer.cn}</div>
 													<div>&nbsp;</div>

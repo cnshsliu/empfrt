@@ -204,6 +204,7 @@
 			<InputGroup size="sm">
 				<Input
 					type="textarea"
+					style="height: 20em;"
 					placeholder={$_('prop.action.placeholder.instruct')}
 					bind:value={nodeInfo.nodeProps.ACTION.instruct}
 					disabled={readonly}
