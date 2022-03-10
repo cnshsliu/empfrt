@@ -97,8 +97,8 @@
 						(entry.isCurrent ? 'border-5' : '')}
 				>
 					<Row>
-						<Col class="d-flex border-end col-2 card-header">
-							<div class="text-center px-3 w-100">
+						<Col class="d-flex border-end col-3 card-header">
+							<div class="text-center px-0 w-100">
 								{#if workid === entry.workid}
 									{#if entry.nodeid === 'ADHOC'}
 										<Badge pill color={'light'}>
@@ -130,7 +130,7 @@
 								{/if}
 							</div>
 						</Col>
-						<Col class="col-10">
+						<Col class="col-9">
 							<div>
 								<Row class="d-flex px-3  py-1 border-bottom">
 									<span class="ms-0">
