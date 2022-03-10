@@ -5,6 +5,7 @@
 	//Sort component is optional
 	import { _ } from '$lib/i18n';
 	import * as api from '$lib/api';
+	import Confirm from '$lib/confirm.svelte';
 	import { session } from '$app/stores';
 	import ItemEditor from './TplSearchResultItemEditor.svelte';
 	import AniIcon from '$lib/AniIcon.svelte';
@@ -32,6 +33,7 @@
 		Badge
 	} from 'sveltestrap';
 	import { getData } from '$lib/pagination/Server.js';
+	import { createEventDispatcher, getContext, setContext } from 'svelte';
 
 	export let TimeTool;
 	export let reloadTags;
@@ -41,6 +43,7 @@
 	export let setFadeMessage;
 	let page = 0; //first page
 	let pageIndex = 0; //first row
+	let theConfirm;
 	let pageSize = user && user.ps ? user.ps : 10; //optional, 10 by default
 	let SetFor = {
 		setVisiFor: '',
@@ -53,7 +56,7 @@
 	let loading = true;
 	export let rowsCount = 0;
 	let filter_author = '';
-	let input_search: String = '';
+	let input_search;
 	let sorting = { dir: 'desc', key: 'updatedAt' };
 	let storeSorting = $filterStorage.tplSorting;
 	if (storeSorting) {
@@ -63,6 +66,24 @@
 			$filterStorage.tplSorting = sorting;
 		}
 	}
+	$: filteredRows = rows;
+
+	setContext('state', {
+		getState: () => ({
+			page,
+			pageIndex,
+			pageSize,
+			rows,
+			filteredRows
+		}),
+		setPage: (_page, _pageIndex) => {
+			page = _page;
+			pageIndex = _pageIndex;
+		},
+		setRows: (_rows) => {
+			filteredRows = _rows;
+		}
+	});
 
 	export function reset() {
 		filter_author = '';
@@ -169,26 +190,17 @@
 			$filterStorage.author = filter_author;
 		}
 	});
-	/*
-<code>
-	<pre>
-		How to use RemoteTable Pagination 
-		1. Copy RemoteTable.svelet to object folder
-			(team/template/workflow/work etc.) 
-			2.1. modify deleteRow to match API endpoint and payload 
-		2. Do following modification to RemoteTable.svelte 
-			2.2. modify link href of object in remote table row
-			2.3. modify link hrefs in DropDown
-			3. in index.svelete, change "RemoteTable endpoint" to the correct one. 
-			4. modify object search method in handlers.js on server side to return objs and total number of objs. Reference to TemplateSearch
-	</pre>
-</code>
-*/
+	const stateContext = getContext('state');
+	let col_per_row = $filterStorage.col_per_row;
+	if ([1, 2, 3, 4].includes(col_per_row) === false) {
+		col_per_row = 1;
+		$filterStorage.col_per_row = col_per_row;
+	}
 </script>
 
-<Table {loading} {rows} {pageIndex} {pageSize} let:rows={rows2}>
-	<div slot="top">
-		<Row cols={{ xs: 1, md: 2 }}>
+<Container>
+	<div>
+		<Row cols={{ xs: 1, md: 2 }} class="mt-1">
 			<Col>
 				<Search on:search={onSearch} text={input_search} />
 			</Col>
@@ -228,186 +240,234 @@
 			</Col>
 		</Row>
 	</div>
-	<thead slot="head">
-		<tr>
-			<th>
-				{$_('remotetable.name')}
-				<Sort key="tplid" on:sort={onSort} />
-			</th>
-			<th>
-				{$_('remotetable.author')}
-				<Sort key="author" on:sort={onSort} />
-			</th>
-			<!-- th>
-				Updated at
-				<Sort key="updatedAt" dir="desc" on:sort={onSort} />
-			</th -->
-			<th> &nbsp; </th>
-			<th> &nbsp; </th>
-		</tr>
-	</thead>
-	<tbody>
-		{#each rows2 as row, index (row)}
-			<tr
-				class:kfk-odd={index % 2 !== 0}
-				class:kfk-even={index % 2 === 0}
-				class:tnt-odd={index % 2 !== 0}
-				class:tnt-even={index % 2 === 0}
-			>
-				<td data-label="Name">
-					<a
-						class="preview-link kfk-template-id tnt-template-id"
-						href="/template/@{row.tplid}&read"
-					>
-						{row.tplid}
-					</a>
-				</td>
-				<td data-label="Author">
-					{row.authorName
-						? row.authorName
-						: row.author.indexOf('@') > -1
-						? row.author.substring(0, row.author.indexOf('@'))
-						: row.author}
-				</td>
-				<td>
-					{#if user.perms && ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
+	<div class="d-flex mt-2 p-0 w-100">
+		<div class="w-100">
+			<Row>
+				<Col>{$_('remotetable.sortBy')}:</Col>
+				<Col>
+					{$_('remotetable.name')}
+					<Sort key="tplid" on:sort={onSort} />
+				</Col>
+				<Col>
+					{$_('remotetable.author')}
+					<Sort key="author" on:sort={onSort} />
+				</Col>
+			</Row>
+		</div>
+		<div class="flex-shrink-1">
+			<Dropdown class="m-0 p-0">
+				<DropdownToggle caret color="notexist" class="btn-sm">
+					{$_('remotetable.colperrow')}
+				</DropdownToggle>
+				<DropdownMenu>
+					<DropdownItem>
 						<a
+							class="nav-link"
 							href={'#'}
 							on:click|preventDefault={() => {
-								goto(`template/start?tplid=${row.tplid}`, { replaceState: false });
+								$filterStorage.col_per_row = 1;
+								col_per_row = 1;
 							}}
-							class="nav-link "
 						>
-							<Icon name="caret-right-square" />
-							{$_('remotetable.startIt')}
+							{$_('remotetable.cols-1')}
 						</a>
-					{:else}
-						&nbsp;
-					{/if}
-				</td>
-				<td>
-					<Dropdown>
-						<DropdownToggle caret color="notexist" class="btn-sm">
-							{$_('remotetable.actions')}
-						</DropdownToggle>
-						<DropdownMenu>
-							<DropdownItem>
-								{$_('remotetable.tplaction.lastUpdate')}: {TimeTool.format(row.updatedAt, 'lll')}
-							</DropdownItem>
-							{#if user.perms && ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
-								<DropdownItem>
+					</DropdownItem>
+					<DropdownItem>
+						<a
+							class="nav-link"
+							href={'#'}
+							on:click|preventDefault={() => {
+								$filterStorage.col_per_row = 2;
+								col_per_row = 2;
+							}}
+						>
+							{$_('remotetable.cols-2')}
+						</a>
+					</DropdownItem>
+					<DropdownItem>
+						<a
+							class="nav-link"
+							href={'#'}
+							on:click|preventDefault={() => {
+								$filterStorage.col_per_row = 3;
+								col_per_row = 3;
+							}}
+						>
+							{$_('remotetable.cols-3')}
+						</a>
+					</DropdownItem>
+					<DropdownItem>
+						<a
+							class="nav-link"
+							href={'#'}
+							on:click|preventDefault={() => {
+								$filterStorage.col_per_row = 4;
+								col_per_row = 4;
+							}}
+						>
+							{$_('remotetable.cols-4')}
+						</a>
+					</DropdownItem>
+				</DropdownMenu>
+			</Dropdown>
+		</div>
+	</div>
+	<!-- code><pre>
+			{JSON.stringify(rows, null, 2)}
+	</pre></code -->
+	<Row cols={col_per_row}>
+		{#each rows as row, index (row)}
+			<Col class="pb-1">
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex">
+							<div class="w-100">
+								<h5 class="card-title">
+									{row.tplid}
+								</h5>
+							</div>
+							<div class="flex-shrink-1">
+								<Dropdown class="m-0 p-0">
+									<DropdownToggle caret color="notexist" class="btn-sm">
+										{$_('remotetable.actions')}
+									</DropdownToggle>
+									<DropdownMenu>
+										<DropdownItem>
+											{$_('remotetable.tplaction.lastUpdate')}: {TimeTool.format(
+												row.updatedAt,
+												'lll'
+											)}
+										</DropdownItem>
+										{#if user.perms && ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
+											<DropdownItem>
+												<a
+													href={'#'}
+													on:click|preventDefault={() => {
+														goto(`template/start?tplid=${row.tplid}`, { replaceState: false });
+													}}
+													class="nav-link "
+													><Icon name="caret-right-square" />
+													{$_('remotetable.tplaction.startIt')}
+												</a>
+											</DropdownItem>
+										{/if}
+										<DropdownItem>
+											<a
+												href={'#'}
+												on:click|preventDefault={async () => {
+													$filterStorage.tplid = row.tplid;
+													goto('/workflow');
+												}}
+												class="nav-link "
+												><Icon name="bar-chart-steps" />
+												{$_('remotetable.tplaction.seeWorkflows')}
+											</a>
+										</DropdownItem>
+										<DropdownItem>
+											<a
+												href={'#'}
+												on:click|preventDefault={async () => {
+													$filterStorage.tplid = row.tplid;
+													goto('/work');
+												}}
+												class="nav-link "
+												><Icon name="bar-chart-steps" />
+												{$_('remotetable.tplaction.seeWorklist')}
+											</a>
+										</DropdownItem>
+										{#if user.perms && ClientPermControl(user.perms, user.email, 'template', row, 'delete')}
+											<DropdownItem>
+												<a
+													href={'#'}
+													on:click|preventDefault={(e) => {
+														e.preventDefault();
+														SetFor.setVisiFor = row.tplid;
+														SetFor.setAuthorFor = row.tplid;
+														SetFor.setDescFor = row.tplid;
+														SetFor.setTagFor = row.tplid;
+														SetFor.settingFor = row.tplid;
+														row.checked = false;
+														visi_rds_input = row.visi;
+													}}
+													class="nav-link "
+												>
+													<Icon name="ui-checks-grid" />
+													{$_('remotetable.tplaction.set')}
+												</a>
+											</DropdownItem>
+											<DropdownItem>
+												<a
+													href={'#'}
+													on:click|preventDefault={() => deleteRow(row.tplid)}
+													class="nav-link "
+													><Icon name="trash" />
+													{$_('remotetable.tplaction.deleteThisTempalte')}
+												</a>
+											</DropdownItem>
+											<DropdownItem>
+												<a
+													href={'#'}
+													on:click|preventDefault={() => exportData(row.tplid)}
+													class="nav-link "
+													><Icon name="trash" />
+													{$_('remotetable.tplaction.exportdata')}
+												</a>
+											</DropdownItem>
+										{/if}
+									</DropdownMenu>
+								</Dropdown>
+							</div>
+						</div>
+						<Row cols={{ xs: 1 }}>
+							<Col>
+								{#if user.perms && ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
 									<a
 										href={'#'}
 										on:click|preventDefault={() => {
 											goto(`template/start?tplid=${row.tplid}`, { replaceState: false });
 										}}
 										class="nav-link "
-										><Icon name="caret-right-square" />
-										{$_('remotetable.tplaction.startIt')}
-									</a>
-								</DropdownItem>
-							{/if}
-							<DropdownItem>
-								<a
-									href={'#'}
-									on:click|preventDefault={async () => {
-										$filterStorage.tplid = row.tplid;
-										goto('/workflow');
-									}}
-									class="nav-link "
-									><Icon name="bar-chart-steps" />
-									{$_('remotetable.tplaction.seeWorkflows')}
-								</a>
-							</DropdownItem>
-							<DropdownItem>
-								<a
-									href={'#'}
-									on:click|preventDefault={async () => {
-										$filterStorage.tplid = row.tplid;
-										goto('/work');
-									}}
-									class="nav-link "
-									><Icon name="bar-chart-steps" />
-									{$_('remotetable.tplaction.seeWorklist')}
-								</a>
-							</DropdownItem>
-							{#if user.perms && ClientPermControl(user.perms, user.email, 'template', row, 'delete')}
-								<DropdownItem>
-									<a
-										href={'#'}
-										on:click|preventDefault={(e) => {
-											e.preventDefault();
-											SetFor.setVisiFor = row.tplid;
-											SetFor.setAuthorFor = row.tplid;
-											SetFor.setDescFor = row.tplid;
-											SetFor.setTagFor = row.tplid;
-											SetFor.settingFor = row.tplid;
-											row.checked = false;
-											visi_rds_input = row.visi;
-										}}
-										class="nav-link "
 									>
-										<Icon name="ui-checks-grid" />
-										{$_('remotetable.tplaction.set')}
+										<Icon name="caret-right-square" />
+										{$_('remotetable.startIt')}
 									</a>
-								</DropdownItem>
-								<DropdownItem>
-									<a
-										href={'#'}
-										on:click|preventDefault={() => deleteRow(row.tplid)}
-										class="nav-link "
-										><Icon name="trash" />
-										{$_('remotetable.tplaction.deleteThisTempalte')}
-									</a>
-								</DropdownItem>
-								<DropdownItem>
-									<a
-										href={'#'}
-										on:click|preventDefault={() => exportData(row.tplid)}
-										class="nav-link "
-										><Icon name="trash" />
-										{$_('remotetable.tplaction.exportdata')}
-									</a>
-								</DropdownItem>
-							{/if}
-						</DropdownMenu>
-					</Dropdown>
-				</td>
-			</tr>
-			<tr
-				class:kfk-odd={index % 2 !== 0}
-				class:kfk-even={index % 2 === 0}
-				class:tnt-odd={index % 2 !== 0}
-				class:tnt-even={index % 2 === 0}
-			>
-				<td colspan="4">
-					<ItemEditor
-						{rows2}
-						{row}
-						{visi_rds_input}
-						{user}
-						{index}
-						{desc_input}
-						{setFadeMessage}
-						{reloadTags}
-						{SetFor}
-						on:authorSet={(e) => {
-							row = e.detail;
-							rows2[index] = row;
-							SetFor.setAuthorFor = '';
-						}}
-					/>
-				</td>
-			</tr>
+								{/if}
+							</Col>
+						</Row>
+						<Row cols={{ md: 2, xs: 1 }}>
+							<Col>
+								{$_('remotetable.author')}:
+								{row.authorName
+									? row.authorName
+									: row.author.indexOf('@') > -1
+									? row.author.substring(0, row.author.indexOf('@'))
+									: row.author}
+							</Col>
+						</Row>
+						<ItemEditor
+							{rows}
+							{row}
+							{visi_rds_input}
+							{user}
+							{index}
+							{desc_input}
+							{setFadeMessage}
+							{reloadTags}
+							{SetFor}
+							on:authorSet={(e) => {
+								row = e.detail;
+								rows[index] = row;
+								SetFor.setAuthorFor = '';
+							}}
+						/>
+					</div>
+				</div>
+			</Col>
 		{/each}
-	</tbody>
-	<div slot="bottom">
-		<Pagination
-			{page}
-			{pageSize}
-			count={rowsCount}
-			serverSide={true}
-			on:pageChange={onPageChange}
-		/>
-	</div>
-</Table>
+	</Row>
+	{$_('remotetable.totalRows')}: {rowsCount}
+	{$_('remotetable.pageSize')}: {pageSize}
+	<Pagination {page} {pageSize} count={rowsCount} serverSide={true} on:pageChange={onPageChange} />
+</Container>
+
+<Confirm bind:this={theConfirm} />

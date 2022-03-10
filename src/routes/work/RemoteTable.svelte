@@ -302,6 +302,8 @@
 		{/each}
 	</tbody>
 	<div slot="bottom">
+		{$_('remotetable.totalRows')}: {rowsCount}
+		{$_('remotetable.pageSize')}: {pageSize}
 		<Pagination
 			{page}
 			{pageSize}

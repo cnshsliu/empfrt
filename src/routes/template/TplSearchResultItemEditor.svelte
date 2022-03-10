@@ -13,7 +13,7 @@
 	import { ClientPermControl } from '$lib/clientperm';
 	export let user: User = $session.user;
 	export let token = user.sessionToken;
-	export let rows2;
+	export let rows;
 	export let row: any;
 	export let visi_rds_input: string;
 	export let index: any;
@@ -28,7 +28,7 @@
 {#if row.visi}
 	{#if row.author === user.email}
 		<div
-			class="ms-5 kfk-link"
+			class="ms-4 kfk-link"
 			on:click={() => {
 				if (SetFor.setVisiFor !== row.tplid) {
 					SetFor.setVisiFor = row.tplid;
@@ -44,7 +44,7 @@
 			{row.visi}
 		</div>
 	{:else}
-		<div class="ms-5">
+		<div class="ms-4">
 			<AniIcon icon="people-fill" ani="aniShake" />
 			{row.visi}
 		</div>
@@ -53,7 +53,7 @@
 {#if row.desc && row.desc.trim().length > 0}
 	{#if row.author === user.email}
 		<div
-			class="ms-5 kfk-link"
+			class="ms-4 kfk-link"
 			on:click={() => {
 				if (SetFor.setDescFor === row.tplid) {
 					desc_input = '';
@@ -68,7 +68,7 @@
 			{row.desc}
 		</div>
 	{:else}
-		<div class="ms-5">
+		<div class="ms-4">
 			<AniIcon icon="card-text" ani="aniShake" />
 			{row.desc}
 		</div>
@@ -76,7 +76,7 @@
 {/if}
 {#if Array.isArray(row.tags) && row.tags.length > 0}
 	<div
-		class="ms-5 kfk-link"
+		class="ms-4 kfk-link"
 		on:click={() => {
 			if (SetFor.setTagFor !== row.tplid) {
 				SetFor.setTagFor = row.tplid;
@@ -156,7 +156,7 @@
 								setFadeMessage('Success', 'success');
 							}
 							row.desc = desc_input;
-							rows2 = rows2;
+							rows = rows;
 						}}
 					>
 						{$_('button.set')}
@@ -281,8 +281,8 @@
 							console.log(people);
 							row.visipeople = people;
 							row.checked = true;
-							rows2[index] = row;
-							rows2 = rows2;
+							rows[index] = row;
+							rows = rows;
 						}}
 					>
 						{$_('button.check')}
@@ -301,8 +301,8 @@
 								setFadeMessage(res.message, 'warning');
 							} else {
 								row.visi = res.visi;
-								rows2[index] = row;
-								rows2 = rows2;
+								rows[index] = row;
+								rows = rows;
 							}
 						}}
 						disabled={!row.checked}
@@ -320,8 +320,8 @@
 								setFadeMessage(res.message, 'warning');
 							} else {
 								row.visi = '';
-								rows2[index] = row;
-								rows2 = rows2;
+								rows[index] = row;
+								rows = rows;
 							}
 						}}
 					>

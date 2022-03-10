@@ -47,6 +47,13 @@
 	let calendar_end = '';
 	let sorting = { dir: 'desc', key: 'updatedAt' };
 	let storeSorting = $filterStorage.wfSorting;
+	if (storeSorting) {
+		if (storeSorting.dir && storeSorting.key) {
+			sorting = storeSorting;
+		} else {
+			$filterStorage.wfSorting = sorting;
+		}
+	}
 
 	$: filteredRows = rows;
 
@@ -66,13 +73,6 @@
 			filteredRows = _rows;
 		}
 	});
-	if (storeSorting) {
-		if (storeSorting.dir && storeSorting.key) {
-			sorting = storeSorting;
-		} else {
-			$filterStorage.wfSorting = sorting;
-		}
-	}
 	let storeTspan = $filterStorage.tspan;
 	if (storeTspan && Object.keys(tspans).includes(storeTspan)) {
 		filter_tspan = storeTspan;
@@ -246,6 +246,11 @@
 		input_search = $filterStorage.wfTitlePattern;
 	}
 	const stateContext = getContext('state');
+	let col_per_row = $filterStorage.col_per_row;
+	if ([1, 2, 3, 4].includes(col_per_row) === false) {
+		col_per_row = 1;
+		$filterStorage.col_per_row = col_per_row;
+	}
 </script>
 
 <Container>
@@ -347,6 +352,7 @@
 							href={'#'}
 							on:click|preventDefault={() => {
 								$filterStorage.col_per_row = 1;
+								col_per_row = 1;
 							}}
 						>
 							{$_('remotetable.cols-1')}
@@ -358,6 +364,7 @@
 							href={'#'}
 							on:click|preventDefault={() => {
 								$filterStorage.col_per_row = 2;
+								col_per_row = 2;
 							}}
 						>
 							{$_('remotetable.cols-2')}
@@ -369,6 +376,7 @@
 							href={'#'}
 							on:click|preventDefault={() => {
 								$filterStorage.col_per_row = 3;
+								col_per_row = 3;
 							}}
 						>
 							{$_('remotetable.cols-3')}
@@ -380,6 +388,7 @@
 							href={'#'}
 							on:click|preventDefault={() => {
 								$filterStorage.col_per_row = 4;
+								col_per_row = 4;
 							}}
 						>
 							{$_('remotetable.cols-4')}
@@ -389,7 +398,10 @@
 			</Dropdown>
 		</div>
 	</div>
-	<Row cols={$filterStorage.col_per_row}>
+	<!-- code><pre>
+			{JSON.stringify(rows, null, 2)}
+	</pre></code -->
+	<Row cols={col_per_row}>
 		{#each rows as row, index (row)}
 			<Col>
 				<div class="card">
@@ -562,7 +574,7 @@
 								</Dropdown>
 							</div>
 						</div>
-						<Row cols={{ lg: 3, md: 2, xs: 1 }}>
+						<Row cols={{ md: 2, xs: 1 }}>
 							<Col>
 								<h6 class="card-subtitle mb-2 text-muted">
 									<a
@@ -573,21 +585,23 @@
 									</a>
 								</h6>
 							</Col>
-							<Col>Starter: {Parser.userDisplay(row.starter, user.email)}</Col>
+						</Row>
+						<Row cols={{ md: 2, xs: 1 }}>
+							<Col>{$_('remotetable.starter')}: {row.starterCN}</Col>
 							<Col>
-								Updated at: {$date(new Date(row.updatedAt))}
+								{$_('remotetable.updatedAt')}: {$date(new Date(row.updatedAt))}
 								{$time(new Date(row.updatedAt))}
 							</Col>
 						</Row>
 						<div class="card-text row" />
 						<a
-							href="#"
+							href={'#'}
 							class="card-link"
 							on:click|preventDefault={() => opWorkflow(row, 'works_running')}
 						>
 							{$_('remotetable.wfa.runningWorks')}
 						</a>
-						<a href="#" class="card-link" on:click={() => opWorkflow(row, 'viewTemplate')}>
+						<a href={'#'} class="card-link" on:click={() => opWorkflow(row, 'viewTemplate')}>
 							{$_('remotetable.wfa.viewTemplate')}
 						</a>
 						{#if setTitleFor === row.wfid}
