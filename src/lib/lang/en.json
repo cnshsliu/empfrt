@@ -41,6 +41,7 @@
 		"cols-4": "four cols per row",
 		"totalRows": "Total",
 		"pageSize": "Page Size",
+		"pageCount": "Page Count",
 		"sortBy": "Sort by",
 		"filter": "Filter",
 		"bywhat": "by name or title",

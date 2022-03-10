@@ -403,12 +403,12 @@
 	</pre></code -->
 	<Row cols={col_per_row}>
 		{#each rows as row, index (row)}
-			<Col>
-				<div class="card">
-					<div class="card-body">
+			<Col class="mb-2 card py-2">
+				<div class="">
+					<div class="">
 						<div class="d-flex">
 							<div class="w-100">
-								<h5 class="card-title">
+								<h5 class="">
 									{row.wftitle}
 									{#if row.rehearsal}
 										<i class="bi-patch-check" />
@@ -576,7 +576,7 @@
 						</div>
 						<Row cols={{ md: 2, xs: 1 }}>
 							<Col>
-								<h6 class="card-subtitle mb-2 text-muted">
+								<h6 class=" mb-2 text-muted">
 									<a
 										class="preview-link kfk-workflow-id tnt-workflow-id"
 										href="/workflow/@{row.wfid}/monitor"
@@ -593,7 +593,6 @@
 								{$time(new Date(row.updatedAt))}
 							</Col>
 						</Row>
-						<div class="card-text row" />
 						<a
 							href={'#'}
 							class="card-link"
@@ -640,8 +639,6 @@
 			</Col>
 		{/each}
 	</Row>
-	{$_('remotetable.totalRows')}: {rowsCount}
-	{$_('remotetable.pageSize')}: {pageSize}
 	<Pagination {page} {pageSize} count={rowsCount} serverSide={true} on:pageChange={onPageChange} />
 </Container>
 

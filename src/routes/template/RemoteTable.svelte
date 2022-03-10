@@ -317,12 +317,12 @@
 	</pre></code -->
 	<Row cols={col_per_row}>
 		{#each rows as row, index (row)}
-			<Col class="pb-1">
-				<div class="card">
-					<div class="card-body">
+			<Col class="mb-2 card py-2">
+				<div class="">
+					<div class="">
 						<div class="d-flex">
 							<div class="w-100">
-								<h5 class="card-title">
+								<h5 class="">
 									{row.tplid}
 								</h5>
 							</div>
@@ -418,7 +418,15 @@
 								</Dropdown>
 							</div>
 						</div>
-						<Row cols={{ xs: 1 }}>
+						<Row cols={{ md: 2, xs: 1 }}>
+							<Col>
+								{$_('remotetable.author')}:
+								{row.authorName
+									? row.authorName
+									: row.author.indexOf('@') > -1
+									? row.author.substring(0, row.author.indexOf('@'))
+									: row.author}
+							</Col>
 							<Col>
 								{#if user.perms && ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
 									<a
@@ -432,16 +440,6 @@
 										{$_('remotetable.startIt')}
 									</a>
 								{/if}
-							</Col>
-						</Row>
-						<Row cols={{ md: 2, xs: 1 }}>
-							<Col>
-								{$_('remotetable.author')}:
-								{row.authorName
-									? row.authorName
-									: row.author.indexOf('@') > -1
-									? row.author.substring(0, row.author.indexOf('@'))
-									: row.author}
 							</Col>
 						</Row>
 						<ItemEditor
@@ -465,8 +463,6 @@
 			</Col>
 		{/each}
 	</Row>
-	{$_('remotetable.totalRows')}: {rowsCount}
-	{$_('remotetable.pageSize')}: {pageSize}
 	<Pagination {page} {pageSize} count={rowsCount} serverSide={true} on:pageChange={onPageChange} />
 </Container>
 

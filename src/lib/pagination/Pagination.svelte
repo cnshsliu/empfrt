@@ -6,7 +6,8 @@
 	}
 </script>
 
-<script>
+<script lang="ts">
+	import { _ } from '$lib/i18n';
 	import { createEventDispatcher, getContext } from 'svelte';
 	const dispatch = createEventDispatcher();
 	const stateContext = getContext('state');
@@ -69,13 +70,14 @@
 		</button>
 	</li>
 	<li>
-		<button disabled={page >= pageCount - 1} on:click={(e) => onChange(e, pageCount)}>
+		<button disabled={page >= pageCount - 1} on:click={(e) => onChange(e, pageCount - 1)}>
 			{labels.last}
 		</button>
 	</li>
 </ul>
-Page: {page}
-PageCount:{pageCount}
+{$_('remotetable.totalRows')}: {count}
+{$_('remotetable.pageSize')}: {pageSize}
+{$_('remotetable.pageCount')}: {pageCount}
 
 <style>
 	.active {
