@@ -97,10 +97,8 @@
 						</td>
 					</tr>
 				</tbody>
-			{:else}
-				<slot rows={visibleRows} />
 			{/if}
-			<slot name="foot" />
+			<slot rows={visibleRows} />
 		</table>
 
 		<slot name="bottom">

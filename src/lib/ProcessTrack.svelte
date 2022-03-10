@@ -92,37 +92,34 @@
 	<Container class="my-0">
 		{#each wf.history as entry}
 			<Row cols="1">
-				<div class="col mt-3 ">
-					<Row
-						class={'border rounded-3 mt-1 pt-0 kfk-work-kvars tnt-work-kvars ' +
-							(entry.isCurrent ? 'border-5' : '')}
-					>
-						<Col class="d-flex border-end col-4 card-header">
+				<div
+					class={'col mt-3 border rounded-3 mt-1 pt-0 kfk-work-kvars tnt-work-kvars ' +
+						(entry.isCurrent ? 'border-5' : '')}
+				>
+					<Row>
+						<Col class="d-flex border-end col-2 card-header">
 							<div class="text-center px-3 w-100">
-								<span class="fs-5">{entry.title}</span><br />
-								<sup>
-									{#if workid === entry.workid}
-										{#if entry.nodeid === 'ADHOC'}
-											<Badge pill color={'light'}>
-												<span class="text-primary">Adhoc</span>
-											</Badge>
-										{/if}
+								{#if workid === entry.workid}
+									{#if entry.nodeid === 'ADHOC'}
 										<Badge pill color={'light'}>
-											<span class="text-primary">{$_('status.' + entry.status)}</span>
-										</Badge>
-									{:else}
-										{#if entry.nodeid === 'ADHOC'}
-											<Badge pill class="bg-white border border-primary">
-												<span class={StatusClass(entry.status)}> ADHOC </span>
-											</Badge>
-										{/if}
-										<Badge pill class="bg-white border border-primary">
-											<span class={StatusClass(entry.status)}>
-												{$_('status.' + entry.status)}
-											</span>
+											<span class="text-primary">Adhoc</span>
 										</Badge>
 									{/if}
-								</sup>
+									<Badge pill color={'light'}>
+										<span class="text-primary">{$_('status.' + entry.status)}</span>
+									</Badge>
+								{:else}
+									{#if entry.nodeid === 'ADHOC'}
+										<Badge pill class="bg-white border border-primary">
+											<span class={StatusClass(entry.status)}> ADHOC </span>
+										</Badge>
+									{/if}
+									<Badge pill class="bg-white border border-primary">
+										<span class={StatusClass(entry.status)}>
+											{$_('status.' + entry.status)}
+										</span>
+									</Badge>
+								{/if}
 								{#if entry.doneat}
 									<br />{mtcDate(entry.doneat)}
 								{/if}
@@ -133,9 +130,14 @@
 								{/if}
 							</div>
 						</Col>
-						<Col class="col-8">
-							<div class=" ms-3">
-								<Row class="d-flex">
+						<Col class="col-10">
+							<div>
+								<Row class="d-flex px-3  py-1 border-bottom">
+									<span class="ms-0">
+										<span class="fs-5">{entry.title}</span>
+									</span>
+								</Row>
+								<Row class="ms-3 d-flex">
 									{#each entry.doers as aDoer}
 										<Col class="text-center">
 											<div

@@ -12,10 +12,20 @@
 	import { StatusLabel } from '$lib/status';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
 	import { goto } from '$app/navigation';
-	import { Row, Col, InputGroup, InputGroupText, Input, Icon, Button } from 'sveltestrap';
+	import {
+		Container,
+		Row,
+		Col,
+		InputGroup,
+		InputGroupText,
+		Input,
+		Icon,
+		Button
+	} from 'sveltestrap';
 	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, NavLink } from 'sveltestrap';
 	import { getData } from '$lib/pagination/Server.js';
 	import { ClientPermControl } from '$lib/clientperm';
+	import { createEventDispatcher, getContext, setContext } from 'svelte';
 
 	export let token;
 	export let endpoint;
@@ -37,6 +47,25 @@
 	let calendar_end = '';
 	let sorting = { dir: 'desc', key: 'updatedAt' };
 	let storeSorting = $filterStorage.wfSorting;
+
+	$: filteredRows = rows;
+
+	setContext('state', {
+		getState: () => ({
+			page,
+			pageIndex,
+			pageSize,
+			rows,
+			filteredRows
+		}),
+		setPage: (_page, _pageIndex) => {
+			page = _page;
+			pageIndex = _pageIndex;
+		},
+		setRows: (_rows) => {
+			filteredRows = _rows;
+		}
+	});
 	if (storeSorting) {
 		if (storeSorting.dir && storeSorting.key) {
 			sorting = storeSorting;
@@ -216,10 +245,11 @@
 		filter_tspan = $filterStorage.tspan;
 		input_search = $filterStorage.wfTitlePattern;
 	}
+	const stateContext = getContext('state');
 </script>
 
-<Table {loading} {rows} {pageIndex} {pageSize}>
-	<div slot="top">
+<Container>
+	<div>
 		<Row cols={{ xs: 1, md: 2 }} class="mt-1">
 			<Col>
 				<Search on:search={onSearch} text={input_search} />
@@ -283,317 +313,322 @@
 			</Row>
 		{/if}
 	</div>
-	<thead slot="head">
-		<tr>
-			<th>
-				{$_('remotetable.title')}
-				<Sort key="wftitle" on:sort={onSort} />
-			</th>
-			<th>
-				{$_('remotetable.status')}
-				<Sort key="status" on:sort={onSort} />
-			</th>
-			<th>
-				{$_('remotetable.starter')}
-				<Sort key="starter" on:sort={onSort} />
-			</th>
-			<th>
-				{$_('remotetable.updatedAt')}
-				<Sort key="updatedAt" dir="desc" on:sort={onSort} />
-			</th>
-			<th> &nbsp; </th>
-		</tr>
-	</thead>
-	<tbody>
+	<div class="d-flex mt-2 p-0 w-100">
+		<div class="w-100">
+			<Row>
+				<Col>{$_('remotetable.sortBy')}:</Col>
+				<Col>
+					{$_('remotetable.title')}
+					<Sort key="wftitle" on:sort={onSort} />
+				</Col>
+				<Col>
+					{$_('remotetable.status')}
+					<Sort key="status" on:sort={onSort} />
+				</Col>
+				<Col>
+					{$_('remotetable.starter')}
+					<Sort key="starter" on:sort={onSort} />
+				</Col>
+				<Col>
+					{$_('remotetable.updatedAt')}
+					<Sort key="updatedAt" dir="desc" on:sort={onSort} />
+				</Col>
+			</Row>
+		</div>
+		<div class="flex-shrink-1">
+			<Dropdown class="m-0 p-0">
+				<DropdownToggle caret color="notexist" class="btn-sm">
+					{$_('remotetable.colperrow')}
+				</DropdownToggle>
+				<DropdownMenu>
+					<DropdownItem>
+						<a
+							class="nav-link"
+							href={'#'}
+							on:click|preventDefault={() => {
+								$filterStorage.col_per_row = 1;
+							}}
+						>
+							{$_('remotetable.cols-1')}
+						</a>
+					</DropdownItem>
+					<DropdownItem>
+						<a
+							class="nav-link"
+							href={'#'}
+							on:click|preventDefault={() => {
+								$filterStorage.col_per_row = 2;
+							}}
+						>
+							{$_('remotetable.cols-2')}
+						</a>
+					</DropdownItem>
+					<DropdownItem>
+						<a
+							class="nav-link"
+							href={'#'}
+							on:click|preventDefault={() => {
+								$filterStorage.col_per_row = 3;
+							}}
+						>
+							{$_('remotetable.cols-3')}
+						</a>
+					</DropdownItem>
+					<DropdownItem>
+						<a
+							class="nav-link"
+							href={'#'}
+							on:click|preventDefault={() => {
+								$filterStorage.col_per_row = 4;
+							}}
+						>
+							{$_('remotetable.cols-4')}
+						</a>
+					</DropdownItem>
+				</DropdownMenu>
+			</Dropdown>
+		</div>
+	</div>
+	<Row cols={$filterStorage.col_per_row}>
 		{#each rows as row, index (row)}
-			<tr
-				class:kfk-odd={index % 2 !== 0}
-				class:tnt-odd={index % 2 !== 0}
-				class:kfk-even={index % 2 === 0}
-				class:tnt-even={index % 2 === 0}
-			>
-				<td data-label="Title">
-					<a class="preview-link kfk-workflow-id tnt-workflow-id" href="/workflow/@{row.wfid}">
-						{row.wftitle}
-						{#if row.rehearsal}
-							<i class="bi-patch-check" />
-						{/if}
-					</a>
-				</td>
-				<td data-label="Status">
-					<a
-						class="preview-link kfk-workflow-id tnt-workflow-id"
-						href="/workflow/@{row.wfid}/monitor"
-					>
-						{row.statusLabel}
-					</a>
-				</td>
-				<td data-label="Starter">{Parser.userDisplay(row.starter, user.email)}</td>
-				<td data-label="Updated at">
-					{$date(new Date(row.updatedAt))}
-					{$time(new Date(row.updatedAt))}
-				</td>
-				<td>
-					<Dropdown>
-						<DropdownToggle caret color="notexist" class="btn-sm">
-							{$_('remotetable.actions')}
-						</DropdownToggle>
-						<DropdownMenu>
-							<DropdownItem>
-								<a
-									class="nav-link"
-									href={'#'}
-									on:click|preventDefault={() => opWorkflow(row, 'works_running')}
-								>
-									<Icon name="list-check" />
-									{$_('remotetable.wfa.runningWorks')}
-								</a>
-							</DropdownItem>
-							<DropdownItem>
-								<a
-									class="nav-link"
-									href={'#'}
-									on:click|preventDefault={() => opWorkflow(row, 'works_all')}
-								>
-									<Icon name="list-check" />
-									{$_('remotetable.wfa.allWorks')}
-								</a>
-							</DropdownItem>
-							{#if ClientPermControl(user.perms, user.email, 'workflow', row, 'update')}
-								{#if row.status === 'ST_RUN'}
-									<DropdownItem>
-										<NavLink on:click={() => opWorkflow(row, 'pause')}>
-											<Icon name="pause-btn" />
-											{$_('remotetable.wfa.pause')}
-										</NavLink>
-									</DropdownItem>
-								{/if}
-								{#if row.status === 'ST_PAUSE'}
-									<DropdownItem>
-										<NavLink on:click={() => opWorkflow(row, 'resume')}>
-											<Icon name="arrow-counterclockwise" />
-											{$_('remotetable.wfa.resume')}
-										</NavLink>
-									</DropdownItem>
-								{/if}
-								{#if row.status === 'ST_PAUSE' || row.status === 'ST_RUN'}
-									<DropdownItem>
-										<NavLink on:click={() => opWorkflow(row, 'stop')}>
-											<Icon name="slash-square" />
-											{$_('remotetable.wfa.stop')}
-										</NavLink>
-									</DropdownItem>
-								{/if}
-								{#if ['ST_RUN', 'ST_PAUSE', 'ST_STOP'].indexOf(row.status) > -1}
-									<DropdownItem>
-										<NavLink on:click={() => opWorkflow(row, 'restart')}>
-											<Icon name="caret-right-square" />
-											{$_('remotetable.wfa.restart')}
-										</NavLink>
-									</DropdownItem>
-								{/if}
-								<!-- DropdownItem>
+			<Col>
+				<div class="card">
+					<div class="card-body">
+						<div class="d-flex">
+							<div class="w-100">
+								<h5 class="card-title">
+									{row.wftitle}
+									{#if row.rehearsal}
+										<i class="bi-patch-check" />
+									{/if}
+								</h5>
+							</div>
+							<div class="flex-shrink-1">
+								<Dropdown class="m-0 p-0">
+									<DropdownToggle caret color="notexist" class="btn-sm">
+										{$_('remotetable.actions')}
+									</DropdownToggle>
+									<DropdownMenu>
+										<DropdownItem>
+											<a
+												class="nav-link"
+												href={'#'}
+												on:click|preventDefault={() => opWorkflow(row, 'works_all')}
+											>
+												<Icon name="list-check" />
+												{$_('remotetable.wfa.allWorks')}
+											</a>
+										</DropdownItem>
+										{#if ClientPermControl(user.perms, user.email, 'workflow', row, 'update')}
+											{#if row.status === 'ST_RUN'}
+												<DropdownItem>
+													<NavLink on:click={() => opWorkflow(row, 'pause')}>
+														<Icon name="pause-btn" />
+														{$_('remotetable.wfa.pause')}
+													</NavLink>
+												</DropdownItem>
+											{/if}
+											{#if row.status === 'ST_PAUSE'}
+												<DropdownItem>
+													<NavLink on:click={() => opWorkflow(row, 'resume')}>
+														<Icon name="arrow-counterclockwise" />
+														{$_('remotetable.wfa.resume')}
+													</NavLink>
+												</DropdownItem>
+											{/if}
+											{#if row.status === 'ST_PAUSE' || row.status === 'ST_RUN'}
+												<DropdownItem>
+													<NavLink on:click={() => opWorkflow(row, 'stop')}>
+														<Icon name="slash-square" />
+														{$_('remotetable.wfa.stop')}
+													</NavLink>
+												</DropdownItem>
+											{/if}
+											{#if ['ST_RUN', 'ST_PAUSE', 'ST_STOP'].indexOf(row.status) > -1}
+												<DropdownItem>
+													<NavLink on:click={() => opWorkflow(row, 'restart')}>
+														<Icon name="caret-right-square" />
+														{$_('remotetable.wfa.restart')}
+													</NavLink>
+												</DropdownItem>
+											{/if}
+											<!-- DropdownItem>
 									<NavLink on:click={() => opWorkflow(row, 'setpboat')}>
 										<Icon name="caret-right-square" />
 										{$_('remotetable.wfa.setpboat')}
 									</NavLink>
 								</DropdownItem -->
-								<DropdownItem>
-									<NavLink on:click={() => opWorkflow(row, 'setTitle')}>
-										<Icon name="caret-right-square" />
-										{$_('remotetable.wfa.setTitle')}
-									</NavLink>
-								</DropdownItem>
-							{:else}
-								{#if row.status === 'ST_RUN'}
-									<DropdownItem>
-										<NavLink disabled>
-											<Icon name="pause-btn" />
-											{$_('remotetable.wfa.pause')}
-										</NavLink>
-									</DropdownItem>
-								{/if}
-								{#if row.status === 'ST_PAUSE'}
-									<DropdownItem>
-										<NavLink disabled>
-											<Icon name="arrow-counterclockwise" />
-											{$_('remotetable.wfa.resume')}
-										</NavLink>
-									</DropdownItem>
-								{/if}
-								{#if row.status === 'ST_PAUSE' || row.status === 'ST_RUN'}
-									<DropdownItem>
-										<NavLink disabled>
-											<Icon name="slash-square" />
-											{$_('remotetable.wfa.stop')}
-										</NavLink>
-									</DropdownItem>
-								{/if}
-								{#if ['ST_RUN', 'ST_PAUSE', 'ST_STOP'].indexOf(row.status) > -1}
-									<DropdownItem>
-										<NavLink disabled>
-											<Icon name="caret-right-square" />
-											{$_('remotetable.wfa.restart')}
-										</NavLink>
-									</DropdownItem>
-								{/if}
-							{/if}
-							<DropdownItem>
-								{#if ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
-									<NavLink on:click={() => opWorkflow(row, 'startAnother')}>
-										<Icon name="caret-right-fill" />
-										{$_('remotetable.wfa.startAnother')}
-									</NavLink>
-								{:else}
-									<NavLink disabled>
-										<Icon name="caret-right-fill" />
-										Start Another
-										{$_('remotetable.wfa.startAnother')}
-									</NavLink>
-								{/if}
-							</DropdownItem>
-							<DropdownItem>
-								<NavLink on:click={() => opWorkflow(row, 'viewTemplate')}>
-									<Icon name="code-square" />
-									{$_('remotetable.wfa.viewTemplate')}
-								</NavLink>
-							</DropdownItem>
-							<DropdownItem>
-								<NavLink on:click={() => opWorkflow(row, 'viewInstanceTemplate')}>
-									<Icon name="code" />
-									{$_('remotetable.wfa.viewInstanceTemplate')}
-								</NavLink>
-							</DropdownItem>
-							{#if user.group === 'ADMIN' || (user.email === row.starter && (row.rehearsal || row.pnodeid === 'start'))}
-								<DropdownItem>
-									<NavLink
-										on:click={(e) => {
-											e.preventDefault();
-											theConfirm.title = $_('confirm.title.areyousure');
-											theConfirm.body = $_('confirm.body.deleteWorkflow');
-											theConfirm.buttons = [$_('confirm.button.confirm')];
-											theConfirm.callbacks = [
-												async () => {
-													opWorkflow(row, 'destroy');
-												}
-											];
-											theConfirm.toggle();
-										}}
+											<DropdownItem>
+												<NavLink on:click={() => opWorkflow(row, 'setTitle')}>
+													<Icon name="caret-right-square" />
+													{$_('remotetable.wfa.setTitle')}
+												</NavLink>
+											</DropdownItem>
+										{:else}
+											{#if row.status === 'ST_RUN'}
+												<DropdownItem>
+													<NavLink disabled>
+														<Icon name="pause-btn" />
+														{$_('remotetable.wfa.pause')}
+													</NavLink>
+												</DropdownItem>
+											{/if}
+											{#if row.status === 'ST_PAUSE'}
+												<DropdownItem>
+													<NavLink disabled>
+														<Icon name="arrow-counterclockwise" />
+														{$_('remotetable.wfa.resume')}
+													</NavLink>
+												</DropdownItem>
+											{/if}
+											{#if row.status === 'ST_PAUSE' || row.status === 'ST_RUN'}
+												<DropdownItem>
+													<NavLink disabled>
+														<Icon name="slash-square" />
+														{$_('remotetable.wfa.stop')}
+													</NavLink>
+												</DropdownItem>
+											{/if}
+											{#if ['ST_RUN', 'ST_PAUSE', 'ST_STOP'].indexOf(row.status) > -1}
+												<DropdownItem>
+													<NavLink disabled>
+														<Icon name="caret-right-square" />
+														{$_('remotetable.wfa.restart')}
+													</NavLink>
+												</DropdownItem>
+											{/if}
+										{/if}
+										<DropdownItem>
+											{#if ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
+												<NavLink on:click={() => opWorkflow(row, 'startAnother')}>
+													<Icon name="caret-right-fill" />
+													{$_('remotetable.wfa.startAnother')}
+												</NavLink>
+											{:else}
+												<NavLink disabled>
+													<Icon name="caret-right-fill" />
+													Start Another
+													{$_('remotetable.wfa.startAnother')}
+												</NavLink>
+											{/if}
+										</DropdownItem>
+										<DropdownItem>
+											<NavLink on:click={() => opWorkflow(row, 'viewInstanceTemplate')}>
+												<Icon name="code" />
+												{$_('remotetable.wfa.viewInstanceTemplate')}
+											</NavLink>
+										</DropdownItem>
+										{#if user.group === 'ADMIN' || (user.email === row.starter && (row.rehearsal || row.pnodeid === 'start'))}
+											<DropdownItem>
+												<NavLink
+													on:click={(e) => {
+														e.preventDefault();
+														theConfirm.title = $_('confirm.title.areyousure');
+														theConfirm.body = $_('confirm.body.deleteWorkflow');
+														theConfirm.buttons = [$_('confirm.button.confirm')];
+														theConfirm.callbacks = [
+															async () => {
+																opWorkflow(row, 'destroy');
+															}
+														];
+														theConfirm.toggle();
+													}}
+												>
+													<Icon name="trash" />
+													{$_('remotetable.wfa.deleteThisWorkflow')}
+												</NavLink>
+											</DropdownItem>
+											<DropdownItem>
+												<NavLink
+													on:click={(e) => {
+														e.preventDefault();
+														theConfirm.title = $_('confirm.title.areyousure');
+														theConfirm.body = $_('confirm.body.deleteWorkflow');
+														theConfirm.buttons = [$_('confirm.button.confirm')];
+														theConfirm.callbacks = [
+															async () => {
+																opWorkflow(row, 'restartthendestroy');
+															}
+														];
+														theConfirm.toggle();
+													}}
+												>
+													<Icon name="trash" />
+													{$_('remotetable.wfa.restartthendeleteThisWorkflow')}
+												</NavLink>
+											</DropdownItem>
+										{/if}
+									</DropdownMenu>
+								</Dropdown>
+							</div>
+						</div>
+						<Row cols={{ lg: 3, md: 2, xs: 1 }}>
+							<Col>
+								<h6 class="card-subtitle mb-2 text-muted">
+									<a
+										class="preview-link kfk-workflow-id tnt-workflow-id"
+										href="/workflow/@{row.wfid}/monitor"
 									>
-										<Icon name="trash" />
-										{$_('remotetable.wfa.deleteThisWorkflow')}
-									</NavLink>
-								</DropdownItem>
-								<DropdownItem>
-									<NavLink
-										on:click={(e) => {
-											e.preventDefault();
-											theConfirm.title = $_('confirm.title.areyousure');
-											theConfirm.body = $_('confirm.body.deleteWorkflow');
-											theConfirm.buttons = [$_('confirm.button.confirm')];
-											theConfirm.callbacks = [
-												async () => {
-													opWorkflow(row, 'restartthendestroy');
-												}
-											];
-											theConfirm.toggle();
-										}}
-									>
-										<Icon name="trash" />
-										{$_('remotetable.wfa.restartthendeleteThisWorkflow')}
-									</NavLink>
-								</DropdownItem>
-							{/if}
-						</DropdownMenu>
-					</Dropdown>
-				</td>
-			</tr>
-			{#if setPboAtFor === row.wfid}
-				<tr
-					class:kfk-odd={index % 2 !== 0}
-					class:kfk-even={index % 2 === 0}
-					class:tnt-odd={index % 2 !== 0}
-					class:tnt-even={index % 2 === 0}
-				>
-					<td colspan="4">
-						<InputGroup>
-							<InputGroupText>Set PBO At:</InputGroupText>
-							<Input type="select" bind:value={row.pboat}>
-								<option value="STARTER_START">At start only</option>
-								<option value="STARTER_RUNNING">STARTER at running task</option>
-								<option value="STARTER_ANY">starter at any task</option>
-								<option value="ANY_RUNNING">anyone at running task</option>
-								<option value="ANY_ANY">anyone at anytime</option>
-							</Input>
-							<Button
-								size="sm"
-								color="primary"
-								on:click={async (e) => {
-									e.preventDefault();
-									await api.post(
-										'workflow/set/pboat',
-										{ wfid: row.wfid, pboat: row.pboat },
-										user.sessionToken
-									);
-									setPboAtFor = '';
-								}}
-							>
-								Set
-							</Button>
-						</InputGroup>
-					</td>
-				</tr>
-			{/if}
-			{#if setTitleFor === row.wfid}
-				<tr
-					class:kfk-odd={index % 2 !== 0}
-					class:kfk-even={index % 2 === 0}
-					class:tnt-odd={index % 2 !== 0}
-					class:tnt-even={index % 2 === 0}
-				>
-					<td colspan="4">
-						<InputGroup>
-							<InputGroupText>Set Title to:</InputGroupText>
-							<Input bind:value={row.wftitle} />
-							<Button
-								size="sm"
-								color="primary"
-								on:click={async (e) => {
-									e.preventDefault();
-									await api.post(
-										'workflow/set/title',
-										{ wfid: row.wfid, wftitle: row.wftitle },
-										user.sessionToken
-									);
-									setTitleFor = '';
-								}}
-							>
-								Set
-							</Button>
-							<Button
-								size="sm"
-								color="secondary"
-								on:click={async (e) => {
-									e.preventDefault();
-									setTitleFor = '';
-								}}
-							>
-								Cancel
-							</Button>
-						</InputGroup>
-					</td>
-				</tr>
-			{/if}
+										{row.statusLabel}
+									</a>
+								</h6>
+							</Col>
+							<Col>Starter: {Parser.userDisplay(row.starter, user.email)}</Col>
+							<Col>
+								Updated at: {$date(new Date(row.updatedAt))}
+								{$time(new Date(row.updatedAt))}
+							</Col>
+						</Row>
+						<div class="card-text row" />
+						<a
+							href="#"
+							class="card-link"
+							on:click|preventDefault={() => opWorkflow(row, 'works_running')}
+						>
+							{$_('remotetable.wfa.runningWorks')}
+						</a>
+						<a href="#" class="card-link" on:click={() => opWorkflow(row, 'viewTemplate')}>
+							{$_('remotetable.wfa.viewTemplate')}
+						</a>
+						{#if setTitleFor === row.wfid}
+							<div>Set Title to:</div>
+							<InputGroup>
+								<Input bind:value={row.wftitle} />
+								<Button
+									size="sm"
+									color="primary"
+									on:click={async (e) => {
+										e.preventDefault();
+										await api.post(
+											'workflow/set/title',
+											{ wfid: row.wfid, wftitle: row.wftitle },
+											user.sessionToken
+										);
+										setTitleFor = '';
+									}}
+								>
+									Set
+								</Button>
+								<Button
+									size="sm"
+									color="secondary"
+									on:click={async (e) => {
+										e.preventDefault();
+										setTitleFor = '';
+									}}
+								>
+									Cancel
+								</Button>
+							</InputGroup>
+						{/if}
+					</div>
+				</div>
+			</Col>
 		{/each}
-	</tbody>
-	<div slot="bottom">
-		<Pagination
-			{page}
-			{pageSize}
-			count={rowsCount}
-			serverSide={true}
-			on:pageChange={onPageChange}
-		/>
-	</div>
-</Table>
+	</Row>
+	{$_('remotetable.totalRows')}: {rowsCount}
+	{$_('remotetable.pageSize')}: {pageSize}
+	<Pagination {page} {pageSize} count={rowsCount} serverSide={true} on:pageChange={onPageChange} />
+</Container>
+
 <Confirm bind:this={theConfirm} />

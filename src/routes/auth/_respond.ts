@@ -14,7 +14,8 @@ export function respond(body) {
 	const jwtValue = Buffer.from(JSON.stringify(body.user)).toString('base64');
 
 	authStore.set({ jwt: jwtValue });
-	let cookieString = `jwt=${jwtValue}; Path=/; HttpOnly`;
+	const daysToExpire = new Date(2147483647 * 1000).toUTCString();
+	let cookieString = `jwt=${jwtValue}; expires=${daysToExpire}; Path=/; HttpOnly`;
 
 	return {
 		headers: {

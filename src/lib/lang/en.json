@@ -34,6 +34,14 @@
 		"in": "In"
 	},
 	"remotetable": {
+		"colperrow": "Col per row",
+		"cols-1": "one cols per row",
+		"cols-2": "two cols per row",
+		"cols-3": "three cols per row",
+		"cols-4": "four cols per row",
+		"totalRows": "Total",
+		"pageSize": "Page Size",
+		"sortBy": "Sort by",
 		"filter": "Filter",
 		"bywhat": "by name or title",
 		"in": "In",

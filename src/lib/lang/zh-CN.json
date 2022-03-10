@@ -34,6 +34,14 @@
 		"in": "时间"
 	},
 	"remotetable": {
+		"colperrow": "每行个数",
+		"cols-1": "每行最多一个",
+		"cols-2": "每行最多两个",
+		"cols-3": "每行最多三个",
+		"cols-4": "每行最多四个",
+		"totalRows": "总共个数",
+		"pageSize": "每页个数",
+		"sortBy": "排序方式",
 		"filter": "过滤",
 		"bywhat": "根据名称或标题过滤",
 		"in": "时间",

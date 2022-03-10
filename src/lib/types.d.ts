@@ -273,6 +273,7 @@ export interface FilterPicks {
 	try_with_wfid?: string;
 	try_with_kvar?: string;
 	tspan: string;
+	col_per_row: number;
 	debug: string;
 }
 export interface EmpResponse {
