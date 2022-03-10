@@ -25,7 +25,7 @@
 		...globalLabels
 	};
 
-	$: pageCount = Math.floor(count / pageSize);
+	$: pageCount = Math.ceil(count / pageSize);
 
 	function onChange(event, page) {
 		const state = stateContext.getState();
@@ -55,7 +55,7 @@
 		</button>
 	</li>
 	{#each buttons as button}
-		{#if page + button >= 0 && page + button <= pageCount}
+		{#if page + button >= 0 && page + button + 1 <= pageCount}
 			<li>
 				<button class:active={page === page + button} on:click={(e) => onChange(e, page + button)}>
 					{page + button + 1}
@@ -64,16 +64,18 @@
 		{/if}
 	{/each}
 	<li>
-		<button disabled={page > pageCount - 1} on:click={(e) => onChange(e, page + 1)}>
+		<button disabled={page >= pageCount - 1} on:click={(e) => onChange(e, page + 1)}>
 			{labels.next}
 		</button>
 	</li>
 	<li>
-		<button disabled={page >= pageCount} on:click={(e) => onChange(e, pageCount)}>
+		<button disabled={page >= pageCount - 1} on:click={(e) => onChange(e, pageCount)}>
 			{labels.last}
 		</button>
 	</li>
 </ul>
+Page: {page}
+PageCount:{pageCount}
 
 <style>
 	.active {
