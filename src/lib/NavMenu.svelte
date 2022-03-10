@@ -189,12 +189,12 @@
 				data-bs-toggle="collapse"
 				data-bs-target="#navbarSupportedContent"
 				aria-controls="navbarSupportedContent"
-				aria-expanded="false"
+				aria-expanded="true"
 				aria-label="Toggle navigation"
 			>
 				<span class="navbar-toggler-icon" />
 			</button>
-			<div class="collapse navbar-collapse" id="navbarSupportedContent">
+			<div class="collapse navbar-collapse show" id="navbarSupportedContent">
 				<Nav class="ms-auto">
 					<NavItem>
 						<NavLink href="/" class="py-2 ps-0 pe-3" active={$page.path === '/'}>

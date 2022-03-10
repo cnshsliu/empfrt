@@ -5,15 +5,27 @@
 	import * as api from '$lib/api';
 	import { session } from '$app/stores';
 	import { filterStorage } from '$lib/empstores';
+	import Confirm from '$lib/confirm.svelte';
 	import { tspans } from '$lib/variables';
 	import { onMount } from 'svelte';
 	import Parser from '$lib/parser';
 	import { StatusLabel } from '$lib/status';
 	import type { Workflow, Work } from '$lib/types';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
+	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, NavLink } from 'sveltestrap';
 	import { goto } from '$app/navigation';
-	import { Row, Col, Button, InputGroup, InputGroupText, Input, Icon } from 'sveltestrap';
+	import {
+		Container,
+		Row,
+		Col,
+		Button,
+		InputGroup,
+		InputGroupText,
+		Input,
+		Icon
+	} from 'sveltestrap';
 	import { getData } from '$lib/pagination/Server.js';
+	import { createEventDispatcher, getContext, setContext } from 'svelte';
 
 	export let token;
 	export let iframeMode;
@@ -22,6 +34,7 @@
 	let page = 0; //first page
 	let pageIndex = 0; //first row
 	let pageSize = 10; //optional, 10 by default
+	let theConfirm;
 
 	let loading = true;
 	let rowsCount = 0;
@@ -129,10 +142,6 @@
 		input_search = $filterStorage.workTitlePattern;
 	}
 
-	onMount(async () => {
-		reload();
-	});
-
 	async function onSort(event) {
 		sorting = { dir: event.detail.dir, key: event.detail.key };
 		$filterStorage.workSorting = sorting;
@@ -149,10 +158,38 @@
 	$: if ($filterStorage) {
 		filter_tspan = $filterStorage.tspan;
 	}
+	$: filteredRows = rows;
+	setContext('state', {
+		getState: () => ({
+			page,
+			pageIndex,
+			pageSize,
+			rows,
+			filteredRows
+		}),
+		setPage: (_page, _pageIndex) => {
+			page = _page;
+			pageIndex = _pageIndex;
+		},
+		setRows: (_rows) => {
+			filteredRows = _rows;
+		}
+	});
+	const stateContext = getContext('state');
+	let col_per_row = $filterStorage.col_per_row;
+	let isMobile = false;
+	onMount(async () => {
+		reload();
+		isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+		if (isMobile || [1, 2, 3, 4].includes(col_per_row) === false) {
+			col_per_row = 1;
+			$filterStorage.col_per_row = col_per_row;
+		}
+	});
 </script>
 
-<Table hover {loading} {rows} {pageIndex} {pageSize} let:rows={rows2}>
-	<div slot="top">
+<Container>
+	<div>
 		<Row cols={{ xs: 1, md: 2 }} class="mt-1">
 			<Col>
 				<Search on:search={onSearch} text={input_search} />
@@ -216,98 +253,162 @@
 			</Row>
 		{/if}
 	</div>
-	<thead slot="head">
-		<tr>
-			<th>
-				{$_('remotetable.title')}
-				<Sort key="title" on:sort={onSort} />
-			</th>
-			<th>
-				{$_('remotetable.status')}
-				<Sort key="status" on:sort={onSort} />
-			</th>
-			<th>
-				{$_('remotetable.updatedAt')}
-				<Sort key="updatedAt" dir="desc" on:sort={onSort} />
-			</th>
-			<th>
-				{$_('remotetable.lastingDays')}
-				<Sort key="lastdays" dir="desc" on:sort={onSort} />
-			</th>
-			<th> &nbsp; </th>
-		</tr>
-	</thead>
-	<tbody>
-		{#each rows2 as row, index (row)}
-			<tr
-				class:kfk-odd={index % 2 !== 0}
-				class:kfk-even={index % 2 === 0}
-				class:tnt-odd={index % 2 !== 0}
-				class:tnt-even={index % 2 === 0}
-			>
-				<td data-label="Title">
-					<a
-						class="preview-link   kfk-work-id tnt-work-id"
-						href={'#'}
-						on:click|preventDefault={(e) => {
-							e.preventDefault();
-							gotoWorkitem(row);
-						}}
-					>
-						{row.title}
-						<sup>
-							{#if row.nodeid === 'ADHOC'}
-								/ adhoc
-							{/if}
-							{#if row.rehearsal}
-								/ <i class="bi-patch-check-fill" />
-								{Parser.userDisplay(row.doer, user.email)}
-							{/if}
-						</sup>
-					</a>
-					<br />
-					<span style="font-size:0.5rem; margin-left:2em; ">
+	<div class="d-flex mt-2 p-0 w-100">
+		<div class="w-100">
+			<Row>
+				<Col>{$_('remotetable.sortBy')}:</Col>
+				<Col>
+					{$_('remotetable.title')}
+					<Sort key="title" on:sort={onSort} />
+				</Col>
+				<Col>
+					{$_('remotetable.status')}
+					<Sort key="status" on:sort={onSort} />
+				</Col>
+				<Col>
+					{$_('remotetable.lasting')}
+					<Sort key="lastdays" dir="desc" on:sort={onSort} />
+				</Col>
+			</Row>
+		</div>
+		<div class="flex-shrink-1">
+			<Dropdown class="m-0 p-0">
+				<DropdownToggle caret color="notexist" class="btn-sm">
+					{$_('remotetable.colperrow')}
+				</DropdownToggle>
+				<DropdownMenu>
+					<DropdownItem>
 						<a
-							class="kfk-link"
+							class="nav-link"
 							href={'#'}
-							on:click={(e) => {
-								e.preventDefault();
-								gotoWorkflow(row.wfid);
+							on:click|preventDefault={() => {
+								$filterStorage.col_per_row = 1;
+								col_per_row = 1;
 							}}
 						>
-							<Icon name="bar-chart-steps" style="font-size:0.5rem" />
-							{row.wftitle}
-							- {$_('status.' + row.wfstatus)}
+							{$_('remotetable.cols-1')}
 						</a>
-					</span>
-				</td>
-				<td data-label="Status" style="font-size:0.25rem">
-					{$_('status.' + row.status)}
-				</td>
-				<td data-label="Date" style="font-size:0.25rem">
-					<div>
-						{#if row.doneat}
-							{$date(new Date(row.doneat))}
-							{$time(new Date(row.doneat))}
-						{:else}
-							{$date(new Date(row.createdAt))}
-							{$time(new Date(row.createdAt))}
-						{/if}
-					</div>
-				</td>
-				<td class="kfk-lastdays">
-					{row.lastdays}
-				</td>
-			</tr>
-		{/each}
-	</tbody>
-	<div slot="bottom">
-		<Pagination
-			{page}
-			{pageSize}
-			count={rowsCount}
-			serverSide={true}
-			on:pageChange={onPageChange}
-		/>
+					</DropdownItem>
+					<DropdownItem>
+						<a
+							class="nav-link"
+							href={'#'}
+							on:click|preventDefault={() => {
+								$filterStorage.col_per_row = 2;
+								col_per_row = 2;
+							}}
+						>
+							{$_('remotetable.cols-2')}
+						</a>
+					</DropdownItem>
+					<DropdownItem>
+						<a
+							class="nav-link"
+							href={'#'}
+							on:click|preventDefault={() => {
+								$filterStorage.col_per_row = 3;
+								col_per_row = 3;
+							}}
+						>
+							{$_('remotetable.cols-3')}
+						</a>
+					</DropdownItem>
+					<DropdownItem>
+						<a
+							class="nav-link"
+							href={'#'}
+							on:click|preventDefault={() => {
+								$filterStorage.col_per_row = 4;
+								col_per_row = 4;
+							}}
+						>
+							{$_('remotetable.cols-4')}
+						</a>
+					</DropdownItem>
+				</DropdownMenu>
+			</Dropdown>
+		</div>
 	</div>
-</Table>
+	<Row cols={col_per_row}>
+		{#each rows as row, index (row)}
+			<Col class="mb-2 card py-2">
+				<div class="">
+					<div class="">
+						<div class="d-flex">
+							<div class="w-100">
+								<h5 class="">
+									<a
+										class="preview-link   kfk-work-id tnt-work-id"
+										href={'#'}
+										on:click|preventDefault={(e) => {
+											e.preventDefault();
+											gotoWorkitem(row);
+										}}
+									>
+										{row.title}
+										<sup>
+											{#if row.nodeid === 'ADHOC'}
+												/ adhoc
+											{/if}
+											{#if row.rehearsal}
+												/ <i class="bi-patch-check-fill" />
+												{Parser.userDisplay(row.doer, user.email)}
+											{/if}
+										</sup>
+									</a>
+								</h5>
+							</div>
+							<div class="flex-shrink-1 text-nowrap ">
+								{$_('remotetable.lasting')}:
+								{row.lastdays}
+							</div>
+						</div>
+						<Row cols={{ md: 2, xs: 1 }}>
+							<Col>
+								{$_('remotetable.status')}:
+								{$_('status.' + row.status)}
+							</Col>
+							<Col>
+								<div>
+									{$_('remotetable.updatedAt')}:
+									{#if row.doneat}
+										{$date(new Date(row.doneat))}
+										{$time(new Date(row.doneat))}
+									{:else}
+										{$date(new Date(row.createdAt))}
+										{$time(new Date(row.createdAt))}
+									{/if}
+								</div>
+							</Col>
+						</Row>
+						<Row class="fs-6">
+							<Col>
+								{$_('remotetable.belongTo')}:
+								<a
+									class="kfk-link fs-6"
+									href={'#'}
+									on:click={(e) => {
+										e.preventDefault();
+										gotoWorkflow(row.wfid);
+									}}
+								>
+									{row.wftitle}
+								</a>
+							</Col>
+						</Row>
+					</div>
+				</div>
+			</Col>
+		{/each}
+	</Row>
+</Container>
+
+<Pagination
+	{page}
+	{pageSize}
+	count={rowsCount}
+	serverSide={true}
+	{isMobile}
+	on:pageChange={onPageChange}
+/>
+<Confirm bind:this={theConfirm} />

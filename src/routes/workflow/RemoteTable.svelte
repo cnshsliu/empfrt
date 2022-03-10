@@ -33,8 +33,8 @@
 	let rows: Workflow[] = [] as Workflow[];
 	let page = 0; //first page
 	let pageIndex = 0; //first row
-	let theConfirm;
 	let pageSize = user && user.ps ? user.ps : 10; //optional, 10 by default
+	let theConfirm;
 
 	let loading = true;
 	let rowsCount = 0;
@@ -238,19 +238,21 @@
 		input_search = $filterStorage.wfTitlePattern;
 	}
 
-	onMount(async () => {
-		reload();
-	});
+	const stateContext = getContext('state');
+	let col_per_row = $filterStorage.col_per_row;
 	$: if ($filterStorage) {
 		filter_tspan = $filterStorage.tspan;
 		input_search = $filterStorage.wfTitlePattern;
 	}
-	const stateContext = getContext('state');
-	let col_per_row = $filterStorage.col_per_row;
-	if ([1, 2, 3, 4].includes(col_per_row) === false) {
-		col_per_row = 1;
-		$filterStorage.col_per_row = col_per_row;
-	}
+	let isMobile = false;
+	onMount(async () => {
+		reload();
+		isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+		if (isMobile || [1, 2, 3, 4].includes(col_per_row) === false) {
+			col_per_row = 1;
+			$filterStorage.col_per_row = col_per_row;
+		}
+	});
 </script>
 
 <Container>
@@ -639,7 +641,14 @@
 			</Col>
 		{/each}
 	</Row>
-	<Pagination {page} {pageSize} count={rowsCount} serverSide={true} on:pageChange={onPageChange} />
 </Container>
+<Pagination
+	{page}
+	{pageSize}
+	count={rowsCount}
+	serverSide={true}
+	{isMobile}
+	on:pageChange={onPageChange}
+/>
 
 <Confirm bind:this={theConfirm} />

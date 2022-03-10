@@ -42,7 +42,7 @@
 		"totalRows": "Total",
 		"pageSize": "Page Size",
 		"pageCount": "Page Count",
-		"sortBy": "Sort by",
+		"sortBy": "Sorting",
 		"filter": "Filter",
 		"bywhat": "by name or title",
 		"in": "In",
@@ -55,8 +55,10 @@
 		"updatedAt": "Updated at",
 		"startedAt": "Started at",
 		"lastingDays": "Lasting Days",
+		"lasting": "Days",
 		"actions": "Actions",
 		"author": "Author",
+		"belongTo": "Belonging to",
 		"template": {
 			"set": {
 				"title": "Template Settings",

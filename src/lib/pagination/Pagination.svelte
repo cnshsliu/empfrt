@@ -9,6 +9,7 @@
 <script lang="ts">
 	import { _ } from '$lib/i18n';
 	import { createEventDispatcher, getContext } from 'svelte';
+	import { onMount } from 'svelte';
 	const dispatch = createEventDispatcher();
 	const stateContext = getContext('state');
 
@@ -17,6 +18,7 @@
 	export let page = 0;
 	export let pageSize;
 	export let serverSide = false;
+	export let isMobile;
 
 	export let labels = {
 		first: 'First',
@@ -44,7 +46,12 @@
 	}
 </script>
 
-<ul>
+{#if isMobile === false}
+	{$_('remotetable.totalRows')}: {count}
+	{$_('remotetable.pageSize')}: {pageSize}
+	{$_('remotetable.pageCount')}: {pageCount}
+{/if}
+<ul class="p-0">
 	<li>
 		<button disabled={page === 0} on:click={(e) => onChange(e, 0)}>
 			{labels.first}
@@ -75,9 +82,6 @@
 		</button>
 	</li>
 </ul>
-{$_('remotetable.totalRows')}: {count}
-{$_('remotetable.pageSize')}: {pageSize}
-{$_('remotetable.pageCount')}: {pageCount}
 
 <style>
 	.active {

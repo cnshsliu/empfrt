@@ -190,7 +190,9 @@
 		on:filterDoerChange={refreshList}
 		on:filterStatusChange={filterStatusChanged}
 		on:filterTemplateChange={filterTemplateChanged}
-		fields="{['doer', 'templatepicker', 'statuses']},"
+		fields="{user.group === 'ADMIN'
+			? ['doer', 'templatepicker', 'statuses']
+			: ['templatepicker', 'statuses']},"
 		object_type="work items"
 		statuses={[
 			{ value: 'All', label: $_('status.All') },

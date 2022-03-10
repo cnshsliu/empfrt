@@ -42,7 +42,7 @@
 		"totalRows": "总共个数",
 		"pageSize": "每页个数",
 		"pageCount": "页数",
-		"sortBy": "排序方式",
+		"sortBy": "排序",
 		"filter": "过滤",
 		"bywhat": "根据名称或标题过滤",
 		"in": "时间",
@@ -55,8 +55,10 @@
 		"updatedAt": "最后更新",
 		"startedAt": "启动时间",
 		"lastingDays": "持续天数",
+		"lasting": "天数",
 		"actions": "操作",
 		"author": "作者",
+		"belongTo": "所属流程",
 		"template": {
 			"set": {
 				"title": "设置当前模版",
