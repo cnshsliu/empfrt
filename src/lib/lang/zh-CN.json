@@ -207,7 +207,11 @@
 		"comments": "节点备注",
 		"restartrehearsal": "重新演练",
 		"cancelworkflowatfirststep": "放弃本流程",
-		"workflowcontext": "流程上下文信息"
+		"workflowcontext": "流程上下文信息",
+		"track": {
+			"dakai": "展开",
+			"shouqi": "折叠"
+		}
 	},
 	"tpl": {
 		"new": "新建",

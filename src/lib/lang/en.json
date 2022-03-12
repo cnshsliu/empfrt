@@ -208,7 +208,11 @@
 		"comments": "User Comments",
 		"restartrehearsal": "Restart Rehearsal",
 		"cancelworkflowatfirststep": "Abandon Process",
-		"workflowcontext": "Workflow Context"
+		"workflowcontext": "Workflow Context",
+		"track": {
+			"dakai": "Expand",
+			"shouqi": "Collapse"
+		}
 	},
 	"tpl": {
 		"new": "New",

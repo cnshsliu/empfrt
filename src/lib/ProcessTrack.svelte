@@ -44,19 +44,6 @@
 </script>
 
 <Container class="mt-5">
-	<div class="fs-3 text-center">
-		<div class="fs-5">{$_('todo.worklogof')}</div>
-		<div
-			class="clickable text-primary fs-3 text-center"
-			on:click={(e) => {
-				e.preventDefault();
-				gotoWorkflow(wfid);
-			}}
-		>
-			{wf.wftitle}
-		</div>
-		<hr />
-	</div>
 	<Container class="mt-1">
 		<Row cols={{ lg: 4, md: 2, sm: 1 }}>
 			<Col>

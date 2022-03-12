@@ -275,6 +275,7 @@ export interface FilterPicks {
 	try_with_kvar?: string;
 	tspan: string;
 	col_per_row: number;
+	showprocesstrack: boolean;
 	debug: string;
 }
 export interface EmpResponse {

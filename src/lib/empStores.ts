@@ -48,6 +48,7 @@ export const filterStorage = storage<FilterPicks>('filter', {
 	try_with_kvar: '',
 	try_with_wfid: '',
 	col_per_row: 1,
+	showprocesstrack: true,
 	debug: ''
 });
 export const startedWorkflow = storage<any>('startedWorkflow', null);

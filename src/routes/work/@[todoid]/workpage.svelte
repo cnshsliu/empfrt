@@ -4,6 +4,7 @@
 	import * as api from '$lib/api';
 	import { goto } from '$app/navigation';
 	import Parser from '$lib/parser';
+	import { filterStorage } from '$lib/empstores';
 	import { text_area_resize } from '$lib/autoresize_textarea';
 	import CommentEntry from '$lib/CommentEntry.svelte';
 	import ProcessTrack from '$lib/ProcessTrack.svelte';
@@ -586,7 +587,12 @@
 		{/if}
 		{#if work.rehearsal}
 			<div class="fs-3">Rehearsal Information:</div>
-			<p>Doable: {checkDoable()} status: {work.status} revocable: {work.revocable}</p>
+			<p>
+				Doable: {checkDoable()} status: {work.status} revocable: {work.revocable}
+				Wfid: {work.wfid}
+				Workid: {work.workid}
+				Todoid: {work.todoid}
+			</p>
 			<p>{work.doer === user.email ? '' : `Rehearsal for ${work.doer}`}</p>
 			<div>
 				<ul>
@@ -604,15 +610,55 @@
 			</div>
 		{/if}
 	</Container>
-	<ProcessTrack
-		{user}
-		bind:wf={work.wf}
-		bind:wfid={work.wfid}
-		bind:workid={work.workid}
-		{onPrint}
-		{_refreshWork}
-		{iframeMode}
-	/>
+	<Container>
+		<div class="fs-3 text-center position-relative">
+			<div class="fs-5">{$_('todo.worklogof')}</div>
+			<div
+				class="clickable text-primary fs-3 text-center"
+				on:click={(e) => {
+					e.preventDefault();
+					goto(`/workflow/@${work.wfid}`);
+				}}
+			>
+				{work.wf.wftitle}
+			</div>
+			<div class="position-absolute bottom-0 end-0 kfk-tag">
+				{#if $filterStorage.showprocesstrack}
+					<a
+						href={'#'}
+						on:click={(e) => {
+							e.preventDefault();
+							$filterStorage.showprocesstrack = false;
+						}}
+					>
+						{$_('todo.track.shouqi')}
+					</a>
+				{:else}
+					<a
+						href={'#'}
+						on:click={(e) => {
+							e.preventDefault();
+							$filterStorage.showprocesstrack = true;
+						}}
+					>
+						{$_('todo.track.dakai')}
+					</a>
+				{/if}
+			</div>
+			<hr />
+		</div>
+	</Container>
+	{#if $filterStorage.showprocesstrack}
+		<ProcessTrack
+			{user}
+			bind:wf={work.wf}
+			bind:wfid={work.wfid}
+			bind:workid={work.workid}
+			{onPrint}
+			{_refreshWork}
+			{iframeMode}
+		/>
+	{/if}
 {:else}
 	Not found
 {/if}
