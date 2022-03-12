@@ -5343,8 +5343,9 @@ ret='DEFAULT'; `
 			}
 			theConnect.attr('case', caseValue);
 			theConnect.attr('set', setValue);
+			let caseDisplay = `${caseValue}${setValue ? '+++' : ''}`;
 			const connectText = await that.svgDraw.text(function (add: any) {
-				add.tspan(caseValue).dy(-2);
+				add.tspan(caseDisplay).dy(-2);
 			});
 			connectText.font({ family: 'Helvetica', anchor: 'start' });
 			connectText.addClass(lineClass + '_text');
