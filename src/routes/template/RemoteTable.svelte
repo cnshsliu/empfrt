@@ -325,7 +325,9 @@
 						<div class="d-flex">
 							<div class="w-100">
 								<h5 class="">
-									{row.tplid}
+									<a class="kfk-workflow-id tnt-workflow-id" href={`/template/@${row.tplid}&read`}
+										>{row.tplid}</a
+									>
 								</h5>
 							</div>
 							<div class="flex-shrink-1">

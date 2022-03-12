@@ -411,10 +411,15 @@
 						<div class="d-flex">
 							<div class="w-100">
 								<h5 class="">
-									{row.wftitle}
-									{#if row.rehearsal}
-										<i class="bi-patch-check" />
-									{/if}
+									<a
+										class="preview-link kfk-workflow-id tnt-workflow-id"
+										href="/workflow/@{row.wfid}/monitor"
+									>
+										{row.wftitle}
+										{#if row.rehearsal}
+											<i class="bi-patch-check" />
+										{/if}
+									</a>
 								</h5>
 							</div>
 							<div class="flex-shrink-1">
@@ -579,12 +584,7 @@
 						<Row cols={{ md: 2, xs: 1 }}>
 							<Col>
 								<h6 class=" mb-2 text-muted">
-									<a
-										class="preview-link kfk-workflow-id tnt-workflow-id"
-										href="/workflow/@{row.wfid}/monitor"
-									>
-										{row.statusLabel}
-									</a>
+									{row.statusLabel}
 								</h6>
 							</Col>
 						</Row>
@@ -596,13 +596,17 @@
 							</Col>
 						</Row>
 						<a
+							class="fs-6 kfk-workflow-id tnt-workflow-id"
 							href={'#'}
-							class="card-link"
 							on:click|preventDefault={() => opWorkflow(row, 'works_running')}
 						>
 							{$_('remotetable.wfa.runningWorks')}
 						</a>
-						<a href={'#'} class="card-link" on:click={() => opWorkflow(row, 'viewTemplate')}>
+						<a
+							href={'#'}
+							class="ms-3 fs-6 kfk-workflow-id tnt-workflow-id"
+							on:click={() => opWorkflow(row, 'viewTemplate')}
+						>
 							{$_('remotetable.wfa.viewTemplate')}
 						</a>
 						{#if setTitleFor === row.wfid}
