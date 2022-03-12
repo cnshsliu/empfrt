@@ -307,7 +307,16 @@
 	},
 	"designer": {
 		"AthenB": "A->B, 请点选B节点",
-		"BthenA": "B->A, 请点选A节点"
+		"BthenA": "B->A, 请点选A节点",
+		"confirm": {
+			"reload": {
+				"title": "重新加载 ",
+				"body": "模板已被他人或在其它窗口中修改，需要重新加载",
+				"button": {
+					"yes": "重新加载"
+				}
+			}
+		}
 	},
 	"filepond": {
 		"labelIdle": {

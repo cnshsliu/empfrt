@@ -744,11 +744,24 @@ class KFKclass {
 			const token = that.user.sessionToken;
 			const ret = await api.post(
 				'template/put',
-				{ doc: that.template.doc, tplid: that.tplid, bwid: that.bwid },
+				{
+					doc: that.template.doc,
+					tplid: that.tplid,
+					bwid: that.bwid,
+					lastUpdatedAt: that.template.updatedAt
+				},
 				token
 			);
-			//return ret.data;
-			that.designerCallback('changeSaved', that.template);
+			if (
+				ret.error &&
+				['CHECK_LASTUPDATEDAT_FAILED', 'LOCK_FAILED', 'BWID_FAILED'].includes(ret.error)
+			) {
+				console.log(ret.message);
+				that.designerCallback('confirmReload', that.template);
+			} else {
+				that.template.updatedAt = ret.updatedAt;
+				that.designerCallback('changeSaved', that.template);
+			}
 
 			that.templateChangeTimer = undefined;
 		}, 1000);
@@ -4073,6 +4086,7 @@ ret='DEFAULT'; `
 			that.setTool('POINTER');
 		}
 		try {
+			console.log(JSON.stringify(that.template, null, 2));
 			that.tplid = that.template.tplid;
 			history.splice(0);
 			history.push(that.template.doc);

@@ -3,6 +3,7 @@
 <script lang="ts">
 	import { _ } from '$lib/i18n';
 	import Parser from '$lib/parser';
+	import Confirm from '$lib/confirm.svelte';
 	import suuid from 'short-uuid';
 	import { Status } from '$lib/status';
 	import * as api from '$lib/api';
@@ -41,6 +42,7 @@
 	export let tpl_mode: string;
 	export let routeStatus: any[] = [];
 
+	let theConfirm;
 	let jQuery: any;
 	let jq: any;
 	let jqueryui: any;
@@ -200,6 +202,17 @@
 			case 'updateCheckOnMousemove':
 				updateCheckOnMousemove();
 				break;
+			case 'confirmReload':
+				theConfirm.title = $_('designer.confirm.reload.title');
+				theConfirm.body = $_('designer.confirm.reload.body');
+				theConfirm.buttons = [$_('designer.confirm.reload.button.yes')];
+				theConfirm.callbacks = [
+					async () => {
+						await remoteTemplateCheck();
+					}
+				];
+				theConfirm.toggle();
+				break;
 		}
 	}
 
@@ -234,11 +247,13 @@
 
 	const resetChecking = () => {
 		clearAllTimer();
+		/*
 		if (KFK.scenario === 'template') {
 			checkTemplateUpdateTimeout = setTimeout(async () => {
 				await setTemplateCheckingInterval();
 			}, 10000);
 		}
+			*/
 		if (KFK.scenario === 'workflow') {
 			checkWorkflowUpdateTimeout = setTimeout(async () => {
 				await setWorkflowCheckingInterval();
@@ -259,6 +274,7 @@
 		}
 	};
 	const updateCheckOnMousemove = () => {
+		/*
 		if (KFK.scenario === 'template') {
 			if (tpl_mode === 'edit') {
 				//鼠标移动时，应该是在编辑状态，就不能再刷新改动
@@ -279,6 +295,7 @@
 				}
 			}
 		}
+			*/
 		if (KFK.scenario === 'workflow') {
 			if (checkWorkflowUpdateInterval === null) {
 				if (checkWorkflowUpdateTimeout) {
@@ -294,6 +311,7 @@
 		}
 	};
 	const setTemplateCheckingInterval = async () => {
+		/*
 		if (KFK.scenario === 'template') {
 			await remoteTemplateCheck();
 			checkTemplateUpdateInterval = setInterval(async () => {
@@ -304,6 +322,7 @@
 				}
 			}, templateCheckIntervalSeconds * 1000);
 		}
+			*/
 	};
 	const setWorkflowCheckingInterval = async () => {
 		let remoteCheck = async () => {
@@ -608,3 +627,4 @@
 		{/if}
 	</ModalFooter>
 </Modal>
+<Confirm bind:this={theConfirm} />

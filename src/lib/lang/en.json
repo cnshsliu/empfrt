@@ -310,7 +310,16 @@
 	},
 	"designer": {
 		"AthenB": "A->B, Waiting for B",
-		"BthenA": "B->A, Waiting for A"
+		"BthenA": "B->A, Waiting for A",
+		"confirm": {
+			"reload": {
+				"title": "Reload",
+				"body": "Template was modified by else other, or in other window, need reloading",
+				"button": {
+					"yes": "Reload"
+				}
+			}
+		}
 	},
 	"filepond": {
 		"labelIdle": {
