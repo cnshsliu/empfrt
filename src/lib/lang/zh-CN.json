@@ -294,10 +294,16 @@
 			"SUB": "子流程ID",
 			"standalone": "独立运行"
 		},
-		"designer": {
-			"AthenB": "A->B, 请点选B节点",
-			"BthenA": "B->A, 请点选A节点"
+		"connect": {
+			"decision": "用户选择",
+			"setValue": "设置流程参数",
+			"varname": "参数名",
+			"varvalue": "参数值"
 		}
+	},
+	"designer": {
+		"AthenB": "A->B, 请点选B节点",
+		"BthenA": "B->A, 请点选A节点"
 	},
 	"filepond": {
 		"labelIdle": {

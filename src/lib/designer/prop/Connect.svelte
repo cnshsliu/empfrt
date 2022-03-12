@@ -1,6 +1,8 @@
 <script lang="ts">
 	import Parser from '$lib/parser';
+	import { _ } from '$lib/i18n';
 	import { qtb } from '$lib/utils';
+	import SetValue from './SetValue.svelte';
 	import {
 		NavLink,
 		Icon,
@@ -9,13 +11,15 @@
 		Col,
 		InputGroup,
 		InputGroupText,
-		Input
+		Input,
+		Button
 	} from 'sveltestrap';
 
 	export let nodeInfo;
 	export let showHelp;
 	export let readonly;
 	let helpShowing = false;
+	let showEditor = false;
 	if (Parser.isEmpty(nodeInfo.caseValue)) {
 		nodeInfo.caseValue = '';
 	}
@@ -38,14 +42,29 @@
 	<Row cols="1" class="mt-2">
 		<Col>
 			<InputGroup size="sm">
-				<InputGroupText>Case Value</InputGroupText>
+				<InputGroupText>{$_('prop.connect.decision')}</InputGroupText>
 				<Input bind:value={nodeInfo.caseValue} disabled={readonly} />
 			</InputGroup>
-			<InputGroup size="sm">
-				<InputGroupText>Set Value</InputGroupText>
-				<Input bind:value={nodeInfo.setValue} disabled={readonly} />
+			<InputGroup>
+				<InputGroupText>{$_('prop.connect.setValue')}</InputGroupText>
+				<Input class="ms-1" value={nodeInfo.setValue} disabled={true} />
+				{#if !readonly}
+					<Button
+						on:click={(e) => {
+							e.preventDefault();
+							showEditor = !showEditor;
+						}}
+					>
+						<Icon name={showEditor ? 'chevron-up' : 'chevron-down'} />
+					</Button>
+				{/if}
 			</InputGroup>
 		</Col>
+		{#if !readonly && showEditor}
+			<Col>
+				<SetValue bind:value={nodeInfo.setValue} />
+			</Col>
+		{/if}
 		<Col class="d-flex mt-3">
 			<span class="kfk-property-id" />
 			<NavLink

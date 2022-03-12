@@ -76,11 +76,9 @@
 	const toggle = () => {
 		KFK.panStartAt = undefined;
 		openModal = !openModal;
-		console.log('modal toggle');
 		if (openModal === false) {
 			KFK.showingProp = false;
 			KFK.resetTmpTool();
-			console.log('reset Tmp Tool');
 			documentEventOn();
 		}
 	};
@@ -147,7 +145,6 @@
 		if (nodeInfo.nodeType !== 'TPL') {
 			KFK.setNodeDOMProperties(nodeInfo.jqDiv, nodeInfo.nodeProps);
 		} else {
-			console.log('set template properties', template.pboat);
 			await api.post(
 				'template/set/pboat',
 				{ tplid: template.tplid, pboat: template.pboat },
@@ -184,7 +181,7 @@
 				openModal = true;
 				break;
 			case 'showConnectProp':
-				modalSize = undefined;
+				modalSize = 'xl';
 				helpId = undefined;
 				nodeInfo = args;
 				documentEventOff();
@@ -236,7 +233,6 @@
 	};
 
 	const resetChecking = () => {
-		console.log('==============resetChecking============');
 		clearAllTimer();
 		if (KFK.scenario === 'template') {
 			checkTemplateUpdateTimeout = setTimeout(async () => {
@@ -250,7 +246,6 @@
 		}
 	};
 	const remoteTemplateCheck = async () => {
-		console.log(`${checkTemplateTimes} Checking template remote update ${templateUpdatedAt}`);
 		checkTemplateTimes += 1;
 		let ret = await api.post(
 			'template/read',
@@ -258,14 +253,9 @@
 			user.sessionToken
 		);
 		if (ret.hasOwnProperty('tplid')) {
-			//console.log('Changed.... reload it');
 			template = ret as unknown as Template;
 			templateUpdatedAt = template.updatedAt;
 			await KFK.loadTemplateDoc(template, tpl_mode);
-		} else {
-			if ((ret as unknown as String) === 'MAYBE_LASTUPDATE_BY_YOUSELF') {
-				console.log('Updated by yourself');
-			}
 		}
 	};
 	const updateCheckOnMousemove = () => {
@@ -274,7 +264,6 @@
 				//鼠标移动时，应该是在编辑状态，就不能再刷新改动
 				clearTemplateTimer();
 				checkTemplateTimes = 0;
-				console.log('editting mode, remote update after 10 seconds');
 				checkTemplateUpdateTimeout = setTimeout(async () => {
 					await setTemplateCheckingInterval();
 				}, 10000);
@@ -284,7 +273,6 @@
 						clearTimeout(checkTemplateUpdateTimeout);
 					}
 					checkTemplateUpdateTimeout = setTimeout(async () => {
-						console.log('Restart monitoring');
 						checkTemplateTimes = 0;
 						await setTemplateCheckingInterval();
 					}, 1000);
@@ -298,7 +286,6 @@
 				}
 				if (workflow.status === 'ST_RUN') {
 					checkWorkflowUpdateTimeout = setTimeout(async () => {
-						console.log('Restart monitoring');
 						checkWorkflowTimes = 0;
 						await setWorkflowCheckingInterval();
 					}, 1000);
@@ -312,7 +299,6 @@
 			checkTemplateUpdateInterval = setInterval(async () => {
 				await remoteTemplateCheck();
 				if (checkTemplateTimes > (5 * 60) / templateCheckIntervalSeconds) {
-					console.log('Stop remote checking loop');
 					clearInterval(checkTemplateUpdateInterval);
 					checkTemplateUpdateInterval = null;
 				}
@@ -321,7 +307,6 @@
 	};
 	const setWorkflowCheckingInterval = async () => {
 		let remoteCheck = async () => {
-			console.log(`${checkWorkflowTimes} Checking monitoring update ${workflowUpdatedAt}`);
 			checkWorkflowTimes += 1;
 			try {
 				let ret = await api.post(
@@ -330,7 +315,6 @@
 					user.sessionToken
 				);
 				if (ret.hasOwnProperty('wfid')) {
-					//console.log('Changed.... reset classes', ret);
 					//workflowUpdatedAt = ret.updatedAt;
 					try {
 						await KFK.resetWorkflowStatusClasses(ret);
@@ -338,7 +322,6 @@
 						console.log('error....');
 					}
 					if (ret.status != 'ST_RUN') {
-						console.log('Not ST_RUN, stop monitoring...');
 						clearInterval(checkWorkflowUpdateInterval);
 						checkWorkflowUpdateInterval = null;
 						checkWorkflowTimes = 0;
@@ -355,7 +338,6 @@
 				await remoteCheck();
 				if (checkWorkflowTimes > (stopEvery * 60) / workflowCheckIntervalSeconds) {
 					//if (checkWorkflowTimes > 3) {
-					console.log('stop process monitor update');
 					clearInterval(checkWorkflowUpdateInterval);
 					checkWorkflowUpdateInterval = null;
 					checkWorkflowTimes = 0;
@@ -389,18 +371,14 @@
 		}
 		KFK.addDocumentEventHandler(true);
 		currentTool = KFK.tool;
-		console.log('On Mount ===============');
 		resetChecking();
 	});
 	onDestroy(async () => {
-		console.log('on Destroy==============');
-		console.log('clear ALl timer');
 		clearAllTimer();
 		jq(document).off();
 	});
 
 	export function showTplProp() {
-		console.log('show tpl prop');
 		designerCallback('showTplProp', {
 			nodeType: 'TPL',
 			nodeProps: { label: 'Template Properties' }

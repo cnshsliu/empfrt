@@ -82,6 +82,7 @@ export interface Workflow {
 	status: string;
 	statusLabel: string;
 	starter: string;
+	starterCN: string;
 	doc: string;
 	createdAt: string;
 	updatedAt: string;

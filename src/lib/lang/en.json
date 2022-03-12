@@ -296,6 +296,12 @@
 		"sub": {
 			"SUB": "Sub TPLID",
 			"standalone": "Standalone"
+		},
+		"connect": {
+			"decision": "Decision",
+			"setValue": "Set Process Value",
+			"varname": "Var Name",
+			"varvalue": "Var Value"
 		}
 	},
 	"designer": {
