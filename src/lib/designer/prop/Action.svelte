@@ -19,7 +19,8 @@
 		TabPane,
 		TabContent
 	} from 'sveltestrap';
-	import type { KVarDefInput } from '$lib/types';
+	import type { KVarDefInput, Workflow } from '$lib/types';
+	import { createEventDispatcher, setContext, getContext } from 'svelte';
 	import { onMount } from 'svelte';
 	import RolePicker from '$lib/designer/prop/RolePicker.svelte';
 
@@ -29,12 +30,14 @@
 	export let showHelp;
 	export let readonly;
 	export let scenario;
+	export let wfid;
 	export let workid;
 	let todos = [];
 
 	let TimeTool = null;
 	let helpShowing = false;
 	let thePDSResolver;
+	const workflow: Workflow = getContext('workflow');
 
 	let doerHTML = '';
 	if (nodeInfo.nodeProps.ACTION.doer) {
@@ -67,6 +70,10 @@
 						{ workid: workid },
 						$session.user.sessionToken
 					)) as unknown as any[];
+					todos = todos.map((x) => {
+						x.newdoer = '';
+						return x;
+					});
 				});
 			} else {
 				todos = [];
@@ -94,6 +101,7 @@
 	onMount(async () => {
 		TimeTool = (await import('$lib/TimeTool')).default;
 	});
+	let user = $session.user;
 </script>
 
 <Container>
@@ -461,19 +469,76 @@
 			<TabPane tabId="tasks" tab="Tasks" active={isActive('tasks')}>
 				{#each todos as todo, index}
 					<Row>
-						<a
-							href={`/work/@${todo.todoid}`}
-							target="_worktab"
-							class="btn btn-sm clickable text-primary"
-						>
-							{#if todo.status === 'ST_DONE'}
+						{workid}<br />
+						{todo.status}
+						{#if todo.status === 'ST_DONE'}
+							<a
+								href={`/work/@${todo.todoid}`}
+								target="_worktab"
+								class="btn btn-sm clickable text-primary"
+							>
 								<i class="bi bi-emoji-sunglasses" />{todo.cn}
 								<sup>{TimeTool.format(todo.doneat, 'LLL')}</sup>
-							{:else}
+							</a>
+						{:else}
+							<a
+								href={`/work/@${todo.todoid}`}
+								target="_worktab"
+								class="btn btn-sm clickable text-primary"
+							>
 								<i class="bi bi-emoji-expressionless" />
 								{todo.cn}
+							</a>
+
+							{#if user.group === 'ADMIN' && todo.status === 'ST_RUN'}
+								<InputGroup>
+									<InputGroupText>Change to</InputGroupText>
+									<Input bind:value={todo.newdoer} />
+									<Button
+										on:click={async (e) => {
+											e.preventDefault();
+											let ret = await api.post(
+												'todo/set/doer',
+												{
+													todoid: todo.todoid,
+													forall: false,
+													doer: todo.doer,
+													newdoer: todo.newdoer
+												},
+												$session.user.sessionToken
+											);
+											if (ret && ret.error) {
+												console.error(ret.message);
+											} else {
+												todo.doer = ret.newdoer;
+												todo.cn = ret.newcn;
+											}
+										}}>For this</Button
+									>
+									<Button
+										on:click={async (e) => {
+											e.preventDefault();
+											let ret = await api.post(
+												'todo/set/doer',
+												{
+													todoid: todo.todoid,
+													forall: true,
+													doer: todo.doer,
+													newdoer: todo.newdoer
+												},
+												$session.user.sessionToken
+											);
+											if (ret && ret.error) {
+												console.error(ret.message);
+											} else {
+												todo.doer = ret.newdoer;
+												todo.cn = ret.newcn;
+											}
+										}}>For all</Button
+									>
+								</InputGroup>
 							{/if}
-						</a>
+						{/if}
 					</Row>
 				{/each}
 			</TabPane>

@@ -8,6 +8,7 @@
 	import { Status } from '$lib/status';
 	import * as api from '$lib/api';
 	import { session } from '$app/stores';
+	import { createEventDispatcher, setContext, getContext } from 'svelte';
 	import type { Template, Workflow, KFKclass } from '$lib/types';
 	import Action from '$lib/designer/prop/Action.svelte';
 	import ScriptProp from '$lib/designer/prop/ScriptProp.svelte';
@@ -452,6 +453,8 @@
 	}
 
 	let user = $session.user;
+	if (workflow) setContext('workflow', workflow);
+	if (template) setContext('template', template);
 </script>
 
 <div id="S1">
