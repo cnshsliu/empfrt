@@ -41,10 +41,12 @@
 				browserLocale = window.navigator.language;
 				if (browserLocale !== tmp && !$filterStorage.confirmlocale) {
 					theConfirm.title = $_('confirm.locale.langchanged.title');
-					theConfirm.body = $_('confirm.locale.langchanged.body');
+					theConfirm.body = $_('confirm.locale.langchanged.body', {
+						values: { browserlang: browserLocale }
+					});
 					theConfirm.buttons = [
 						$_('confirm.locale.langchanged.button1'),
-						$_('confirm.locale.langchanged.button2')
+						$_('confirm.locale.langchanged.button2', { values: { currentlang: tmp } })
 					];
 					theConfirm.callbacks = [
 						async () => {
@@ -64,7 +66,9 @@
 				await setI18N($filterStorage.locale);
 
 				theConfirm.title = $_('confirm.locale.usedefault.title');
-				theConfirm.body = $_('confirm.locale.usedefault.body');
+				theConfirm.body = $_('confirm.locale.usedefault.body', {
+					values: { browserlang: browserLocale }
+				});
 				theConfirm.buttons = [$_('confirm.locale.usedefault.confirm')];
 				theConfirm.callbacks = [async () => {}];
 				theConfirm.toggle();
