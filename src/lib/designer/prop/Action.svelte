@@ -30,7 +30,6 @@
 	export let showHelp;
 	export let readonly;
 	export let scenario;
-	export let wfid;
 	export let workid;
 	let todos = [];
 
