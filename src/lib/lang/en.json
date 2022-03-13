@@ -343,6 +343,19 @@
 			"confirm": "Confirm",
 			"cancel": "Cancel",
 			"delete": "Delete"
+		},
+		"locale": {
+			"usedefault": {
+				"title": "Browser language detected",
+				"body": "MTC use your browser's default language, you may change it in settings if you'd like to use other language in MTC",
+				"confirm": "Got it"
+			},
+			"langchanged": {
+				"title": "Browser language changed",
+				"body": "Browser language changed, change MTC language respectively?",
+				"button1": "Yes",
+				"button2": "Stick on current language"
+			}
 		}
 	},
 	"inputtable": {

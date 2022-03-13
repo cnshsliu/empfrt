@@ -14,7 +14,9 @@
 </script>
 
 <script lang="ts">
-	import { setupI18n, isLocaleLoaded, locale, dir } from '$lib/i18n';
+	import { setupI18n, isLocaleLoaded, locale, dir, _ } from '$lib/i18n';
+	import { Container } from 'sveltestrap';
+	import Confirm from '$lib/confirm.svelte';
 	import { printing } from '$lib/Stores';
 	import { filterStorage } from '$lib/empstores';
 	import { navigating, session } from '$app/stores';
@@ -28,24 +30,69 @@
 	export let page;
 
 	let bootstrap: any;
+	let theConfirm;
+	let browserLocale = '';
+
 	onMount(async () => {
+		let tmp = $filterStorage.locale;
+		if (tmp) {
+			await setI18N(tmp);
+			if (window) {
+				browserLocale = window.navigator.language;
+				if (browserLocale !== tmp && !$filterStorage.confirmlocale) {
+					theConfirm.title = $_('confirm.locale.langchanged.title');
+					theConfirm.body = $_('confirm.locale.langchanged.body');
+					theConfirm.buttons = [
+						$_('confirm.locale.langchanged.button1'),
+						$_('confirm.locale.langchanged.button2')
+					];
+					theConfirm.callbacks = [
+						async () => {
+							$filterStorage.locale = browserLocale;
+						},
+						async () => {
+							$filterStorage.confirmlocale = true;
+						}
+					];
+					theConfirm.toggle();
+				}
+			}
+		} else {
+			if (window) {
+				browserLocale = window.navigator.language;
+				$filterStorage.locale = browserLocale;
+				await setI18N($filterStorage.locale);
+
+				theConfirm.title = $_('confirm.locale.usedefault.title');
+				theConfirm.body = $_('confirm.locale.usedefault.body');
+				theConfirm.buttons = [$_('confirm.locale.usedefault.confirm')];
+				theConfirm.callbacks = [async () => {}];
+				theConfirm.toggle();
+			}
+		}
 		const module = await import('bootstrap');
 		bootstrap = module.default;
-		let tmp = $filterStorage.locale;
-		if (tmp !== undefined && tmp !== null) {
-			setupI18n({ withLocale: tmp });
-		}
 	});
 
-	$: if (!$isLocaleLoaded) {
-		setupI18n({ withLocale: 'en' });
-	}
+	const setI18N = async function (locale) {
+		if (['en', 'zh-CN'].includes(locale) === false) {
+			if (locale.indexOf('-') > 0) {
+				await setI18N(locale.substring(0, locale.indexOf('-')));
+			} else {
+				await setI18N('en');
+			}
+		} else {
+			console.log('I18N: ', locale);
+			await setupI18n({ withLocale: locale });
+		}
+	};
+
+	//Reset locale on user pickup
 	$: if ($filterStorage.locale) {
-		setupI18n({ withLocale: $filterStorage.locale });
+		setTimeout(async () => {
+			await setI18N($filterStorage.locale);
+		});
 	}
-	/* $: {
-		document.dir = $dir;
-	} */
 </script>
 
 <svelte:head>
@@ -69,24 +116,30 @@
 {#if $navigating}
 	<PreloadingIndicator />
 {/if}
+<!-- for global notification purpose, wrap other component into this Notifications component -->
 <Notifications>
 	{#if $isLocaleLoaded}
+		<!-- on printing, hide the NavMenu -->
 		{#if $printing === false}
 			<NavMenu />
 		{/if}
 		<main>
 			<slot />
 		</main>
+		<!-- on page of single business item, hide EmpRoot -->
 		{#if page.path.startsWith('/template/@') || page.path.startsWith('/workflow/@') || page.path.startsWith('/work/@')}
 			&nbsp;
 		{:else}
 			<EmpFooter />
 		{/if}
 	{:else}
-		<p>Loading...</p>
-		<div class="spinner">&nbsp;</div>
+		<Container class="w-100 text-center mt-5 pt-5">
+			<p>Loading...</p>
+			<div class="spinner w-100">&nbsp;</div>
+		</Container>
 	{/if}
 </Notifications>
 {#if $session.errors}
 	<ErrHint errors={$session.errors} />
 {/if}
+<Confirm bind:this={theConfirm} />

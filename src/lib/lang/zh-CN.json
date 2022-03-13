@@ -340,6 +340,19 @@
 			"confirm": "确认",
 			"cancel": "取消",
 			"delete": "删除"
+		},
+		"locale": {
+			"usedefault": {
+				"title": "自动侦测浏览器语言",
+				"body": "初次使用，MTC使用你的浏览器的语言。您可以在MTC设置中设置使用其它语言",
+				"confirm": "知道了"
+			},
+			"langchanged": {
+				"title": "浏览器语言已变更",
+				"body": "浏览器语言已变更，你要把MTC界面语言切换为与浏览器界面语言相同吗？",
+				"button1": "是的，切换",
+				"button2": "继续使用现有语言"
+			}
 		}
 	},
 	"inputtable": {

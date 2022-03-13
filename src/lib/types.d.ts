@@ -256,6 +256,7 @@ export interface FilterPicks {
 	starter: string;
 	author: string;
 	locale: string;
+	confirmlocale: boolean;
 	calendar_begin: string;
 	calendar_end: string;
 	workTitlePattern: string;

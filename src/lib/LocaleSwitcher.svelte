@@ -8,6 +8,7 @@
 	function switchLocale(event) {
 		event.preventDefault();
 		$filterStorage.locale = event.target.value;
+		$filterStorage.confirmlocale = false;
 
 		//dispatch('locale-changed', event.target.value);
 	}
@@ -21,5 +22,6 @@
 
 <Input type="select" bind:value={locale_value} on:change={switchLocale}>
 	<option value="en">English</option>
+	<option value="en-US">English - United States</option>
 	<option value="zh-CN">中文</option>
 </Input>

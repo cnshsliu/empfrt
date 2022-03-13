@@ -101,7 +101,7 @@
 					</div>
 				</div>
 				<div
-					class="d-inline-block col-6 mx-1 align-self-center kfk-header-username tnt-header-username"
+					class="d-inline-block col-6 ms-3 align-self-center kfk-header-username tnt-header-username"
 				>
 					{$session.user ? $session.user.username : 'Metatocome'}
 				</div>
