@@ -468,8 +468,11 @@
 			<TabPane tabId="tasks" tab="Tasks" active={isActive('tasks')}>
 				{#each todos as todo, index}
 					<Row>
-						{workid}<br />
-						{todo.status}
+						{#if user.group === 'ADMIN' && todo.status === 'ST_RUN'}
+							workid: {workid}<br />
+							todoid: {todo.todoid}<br />
+							status: {todo.status}
+						{/if}
 						{#if todo.status === 'ST_DONE'}
 							<a
 								href={`/work/@${todo.todoid}`}
