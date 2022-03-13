@@ -365,7 +365,9 @@
 			}, workflowCheckIntervalSeconds * 1000);
 		}
 	};
+	let isMobile = false;
 	onMount(async () => {
+		isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 		const jqModule = await import('jquery');
 		currentBrowserWindowID = suuid.generate();
 		jQuery = jqModule.default;
@@ -376,7 +378,7 @@
 		jqueryui = module.default;
 		/* jquery-ui import finished */
 		KFK.designerCallback = designerCallback;
-		KFK.init($session.user, currentBrowserWindowID);
+		KFK.init($session.user, currentBrowserWindowID, isMobile);
 		KFK.scenario = workflow ? 'workflow' : 'template';
 		if (KFK.scenario === 'template') {
 			if (tpl_mode !== 'edit') {
@@ -470,77 +472,77 @@
 		<ListGroupItem
 			class="d-flex align-items-center toolbox POINTER {currentTool === 'POINTER' ? 'active' : ''}"
 			on:click={(event) => designerSetTool('POINTER', event)}
-			title="点选"
+			title={$_('tools.POINTER')}
 		>
 			<div class="shortcutkey">ESC</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox ACTION {currentTool === 'ACTION' ? 'active' : ''}"
 			on:click={(event) => designerSetTool('ACTION', event)}
-			title="活动"
+			title={$_('tools.ACTION')}
 		>
 			<div class="shortcutkey">1</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox INFORM {currentTool === 'INFORM' ? 'active' : ''}"
 			on:click={(event) => designerSetTool('INFORM', event)}
-			title="通知"
+			title={$_('tools.INFORM')}
 		>
 			<div class="shortcutkey">2</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox SCRIPT {currentTool === 'SCRIPT' ? 'active' : ''}"
 			on:click={(event) => designerSetTool('SCRIPT', event)}
-			title="程序"
+			title={$_('tools.SCRIPT')}
 		>
 			<div class="shortcutkey">3</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox TIMER {currentTool === 'TIMER' ? 'active' : ''}"
 			on:click={(event) => designerSetTool('TIMER', event)}
-			title="定时器"
+			title={$_('tools.TIMER')}
 		>
 			<div class="shortcutkey">4</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox SUB {currentTool === 'SUB' ? 'active' : ''}"
 			on:click={(event) => designerSetTool('SUB', event)}
-			title="子流程"
+			title={$_('tools.SUB')}
 		>
 			<div class="shortcutkey">5</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox AND {currentTool === 'AND' ? 'active' : ''}"
 			on:click={(event) => designerSetTool('AND', event)}
-			title="并"
+			title={$_('tools.AND')}
 		>
 			<div class="shortcutkey">6</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox OR {currentTool === 'OR' ? 'active' : ''}"
 			on:click={(event) => designerSetTool('OR', event)}
-			title="或"
+			title={$_('tools.OR')}
 		>
 			<div class="shortcutkey">7</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox GROUND {currentTool === 'GROUND' ? 'active' : ''}"
 			on:click={(event) => designerSetTool('GROUND', event)}
-			title="接地"
+			title={$_('tools.GROUND')}
 		>
 			<div class="shortcutkey">8</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox CONNECT {currentTool === 'CONNECT' ? 'active' : ''}"
 			on:click={(event) => designerSetTool('CONNECT', event)}
-			title="连接"
+			title={$_('tools.CONNECT')}
 		>
 			<div class="shortcutkey">9</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox THROUGH {currentTool === 'THROUGH' ? 'active' : ''}"
 			on:click={(event) => designerSetTool('THROUGH', event)}
-			title="过渡"
+			title={$_('tools.THROUGH')}
 		>
 			<div class="shortcutkey">0</div>
 		</ListGroupItem>

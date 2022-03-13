@@ -382,5 +382,18 @@
 		"ifAnyThenLeast": "If any, or else the least",
 		"ifAnyThenAllThenMost": "If any, then all the same , then the most",
 		"ifAnyThenFailto": "If any, or fail to"
+	},
+	"tools": {
+		"POINTER": "Select",
+		"ACTION": "Activity",
+		"INFORM": "Notify",
+		"SCRIPT": "Script",
+		"TIMER": "Timer",
+		"SUB": "Sub process",
+		"AND": "And",
+		"OR": "OR",
+		"GROUND": "Ground",
+		"CONNECT": "Connect",
+		"THROUGH": "Through"
 	}
 }

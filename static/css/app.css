@@ -1828,6 +1828,20 @@ svg text.selected tspan {
 .node.ACTION .instruct {
 	display: none;
 }
+.node .mobilehandler {
+	display: none;
+}
+.node.selected .mobilehandler {
+	position: absolute;
+	right: -25px;
+	display: block;
+	width: 24px;
+	height: 24;
+	border-radius: 16px;
+	background-color: #2726ff;
+	color: white;
+	font-size: 19px;
+}
 div.work,
 div.pbo {
 	display: none;

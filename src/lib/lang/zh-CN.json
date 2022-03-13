@@ -379,5 +379,18 @@
 		"ifAnyThenLeast": "只要有选，否则依最少",
 		"ifAnyThenAllThenMost": "只要有选，否则依统一选择, 或最多",
 		"ifAnyThenFailto": "只要有选，否则"
+	},
+	"tools": {
+		"POINTER": "点选",
+		"ACTION": "活动",
+		"INFORM": "通知",
+		"SCRIPT": "脚本",
+		"TIMER": "定时器",
+		"SUB": "子流程",
+		"AND": "并",
+		"OR": "或",
+		"GROUND": "接地",
+		"CONNECT": "连接",
+		"THROUGH": "过渡"
 	}
 }

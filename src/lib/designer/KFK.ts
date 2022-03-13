@@ -327,6 +327,7 @@ class KFKclass {
 	selectedTodo: any = null;
 	user: User = null;
 	bwid: string = '';
+	isMobile: boolean = false;
 
 	tobeRemovedConnectId: string = null;
 	oldTool = 'POINTER';
@@ -682,6 +683,7 @@ class KFKclass {
 	//
 	//删除添加eventHandler带来的额外的、会引起复制节点event响应不正常的内容
 	removeNodeEventFootprint(jqNodeDIV: myJQuery) {
+		jqNodeDIV.find('.mobilehandler').remove();
 		jqNodeDIV.find('.ui-resizable-handle').remove();
 		jqNodeDIV.find('.locklabel').remove();
 		jqNodeDIV.removeClass(
@@ -4024,11 +4026,12 @@ ret='DEFAULT'; `
 		that.ball.addClass('noshow');
 	}
 
-	async init(user: User, bwid) {
+	async init(user: User, bwid, isMobile: boolean = false) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		that.user = user;
 		that.bwid = bwid;
+		that.isMobile = isMobile;
 		if (that.inited === true) {
 			console.error('that.init was called more than once');
 		}
@@ -4080,14 +4083,13 @@ ret='DEFAULT'; `
 		await that.cleanupJC3();
 		that.tmpBalls.clear();
 		that.template = template;
+		that.tplid = that.template.tplid;
 		that.workflow = null;
 		that.tpl_mode = tplmode;
 		if (that.tpl_mode === 'read') {
 			that.setTool('POINTER');
 		}
 		try {
-			console.log(JSON.stringify(that.template, null, 2));
-			that.tplid = that.template.tplid;
 			history.splice(0);
 			history.push(that.template.doc);
 			history_pointer = 1;
@@ -4096,6 +4098,7 @@ ret='DEFAULT'; `
 			nodes.addClass('kfknode');
 			await that.JC3.append(nodes);
 			const guiNodes = that.JC3.find('.node');
+			await that.addMobileHandler(guiNodes);
 			for (let i = 0; i < guiNodes.length; i++) {
 				const jqNode = $(guiNodes[i]);
 				await that.setNodeEventHandler(jqNode);
@@ -4174,6 +4177,22 @@ ret='DEFAULT'; `
 		else return '';
 	}
 
+	async addMobileHandler(guiNodes) {
+		let that = this;
+		if (!that.isMobile) return;
+		for (let i = 0; i < guiNodes.length; i++) {
+			$(guiNodes[i]).append(
+				`<div class='mobilehandler m-0 p-0 inline-block text-center'><i class="align-top text-center bi bi-arrow-up-right-circle"/></div>`
+			);
+			$(guiNodes[i]).find('.mobilehandler').off('click');
+			$(guiNodes[i])
+				.find('.mobilehandler')
+				.on('click', async () => {
+					await that.showNodeProperties($(guiNodes[i]));
+				});
+		}
+	}
+
 	/**
 	 * @type {}
 	 */
@@ -4199,13 +4218,14 @@ ret='DEFAULT'; `
 			const nodes = that.tpl.find('.node');
 			nodes.addClass('kfknode');
 			await that.JC3.append(nodes);
+			const guiNodes = that.JC3.find('.node');
+			await that.addMobileHandler(guiNodes);
 			//在上面的that.JC3.append(nodes) 以后，
 			//会导致that.tpl变空（对一个包含很多节点的模板，会变空 .node
 			//和.link全部会丢失，当节点不多时，.node没有了，.link还在）
 			//所以，必须用下面这句话重新读取workflow中的.template，解析后复制给that.tpl
 			//这地方很奇怪，似乎跟JC3.append有关，append会从tpl中抽走对象？又不是完全抽走？什么机制？
 			that.tpl = $(wfobj.doc).first('.template');
-			const guiNodes = that.JC3.find('.node');
 			let setDrag = false;
 			for (let i = 0; i < guiNodes.length; i++) {
 				const jqNode = $(guiNodes[i]);
