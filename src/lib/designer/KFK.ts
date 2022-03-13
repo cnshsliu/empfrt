@@ -4179,7 +4179,7 @@ ret='DEFAULT'; `
 
 	async addMobileHandler(guiNodes) {
 		let that = this;
-		if (!that.isMobile) return;
+		//if (!that.isMobile) return;
 		for (let i = 0; i < guiNodes.length; i++) {
 			$(guiNodes[i]).append(
 				`<div class='mobilehandler m-0 p-0 inline-block text-center'><i class="align-top text-center bi bi-arrow-up-right-circle"/></div>`
