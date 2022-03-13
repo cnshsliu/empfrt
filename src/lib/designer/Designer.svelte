@@ -167,7 +167,7 @@
 				helpId = undefined;
 				nodeInfo = args;
 				if (nodeInfo.nodeType === 'ACTION') {
-					workid = nodeInfo.jqDiv.find('.work').attr('id');
+					workid = nodeInfo.jqDiv.find('.work').last().attr('id');
 					//ACTION 是需要有role和kvars的
 					roleOptions = Parser.collectRoles(args.nodes);
 					if (nodeInfo.nodeProps.ACTION.kvars) {
