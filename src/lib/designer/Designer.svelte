@@ -540,7 +540,9 @@
 			<div class="shortcutkey">9</div>
 		</ListGroupItem>
 		<ListGroupItem
-			class="d-flex align-items-center toolbox THROUGH {currentTool === 'THROUGH' ? 'active' : ''}"
+			class="d-flex align-items-center border-0 toolbox THROUGH {currentTool === 'THROUGH'
+				? 'active'
+				: ''}"
 			on:click={(event) => designerSetTool('THROUGH', event)}
 			title={$_('tools.THROUGH')}
 		>
