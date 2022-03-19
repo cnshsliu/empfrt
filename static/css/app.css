@@ -2375,6 +2375,24 @@ div.pbo {
 	background-repeat: no-repeat;
 	animation: 1.5s linear 0s infinite normal none running spinning;
 }
+@keyframes runninglogo {
+	50% {
+		transform: scale(1.3);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+.runninglogo {
+	width: 80px;
+	height: 80px;
+	margin-top: calc(50vh - 100px);
+	background-image: url(/metatocome.png);
+	background-size: contain;
+	background-position: center center;
+	background-repeat: no-repeat;
+	animation: 2.5s linear 0s infinite normal none running runninglogo;
+}
 .kfk-link:hover {
 	background-color: #e5dbff;
 	border-radius: 10px;

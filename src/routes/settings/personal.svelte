@@ -63,19 +63,12 @@
 
 <form>
 	<Container class="mt-3">
-		<div class="w-100 text-center fs-3">{user.email}</div>
+		<div class="w-100 text-center fs-3">
+			{user.email}
+			<br />
+			{user.group}
+		</div>
 		<Row cols="1" class="mt-3">
-			<Col>
-				<InputGroup class="mb-1">
-					<InputGroupText>Current password:</InputGroupText>
-					<input
-						class="form-control"
-						type="password"
-						placeholder="Old Password"
-						bind:value={my_old_password}
-					/>
-				</InputGroup>
-			</Col>
 			<Col>
 				<InputGroup class="mb-1">
 					<InputGroupText>Your avatar</InputGroupText>
@@ -132,7 +125,14 @@
 			</Col>
 			<Col>
 				<InputGroup class="mb-1">
-					<InputGroupText>Change password:</InputGroupText>
+					<InputGroupText>Current password:</InputGroupText>
+					<input
+						class="form-control"
+						type="password"
+						placeholder="Old Password"
+						bind:value={my_old_password}
+					/>
+					<InputGroupText>New password:</InputGroupText>
 					<input
 						class="form-control"
 						type="password"
@@ -151,7 +151,7 @@
 			</Col>
 			<Col>
 				<InputGroup class="mb-1">
-					<InputGroupText>Send Email to me on new work comming</InputGroupText> &nbsp;&nbsp;
+					<InputGroupText>Send email to me on new work comming</InputGroupText> &nbsp;&nbsp;
 					<span class="form-control">
 						<Input type="checkbox" bind:checked={user.ew} />
 					</span>
@@ -159,22 +159,6 @@
 						on:click={async (e) => {
 							e.preventDefault();
 							await setPersonal({ ew: user.ew });
-						}}
-					>
-						Set
-					</Button>
-				</InputGroup>
-			</Col>
-			<Col>
-				<InputGroup class="mb-1">
-					<InputGroupText>Page Size</InputGroupText> &nbsp;&nbsp;
-					<span class="form-control">
-						<Input type="number" bind:value={user.ps} step="10" min="10" max="100" />
-					</span>
-					<Button
-						on:click={async (e) => {
-							e.preventDefault();
-							await setPersonal({ ps: user.ps });
 						}}
 					>
 						Set
@@ -200,7 +184,6 @@
 					</Button>
 				</InputGroup>
 			</Col>
-			<Col class="p-3">My Group: {user.group}</Col>
 		</Row>
 	</Container>
 </form>

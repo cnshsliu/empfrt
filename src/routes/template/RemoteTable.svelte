@@ -3,7 +3,7 @@
 <script lang="ts">
 	//Row component is optional and only serves to render odd/even row, you can use <tr> instead.
 	//Sort component is optional
-	import { _ } from '$lib/i18n';
+	import { _, date, time } from '$lib/i18n';
 	import * as api from '$lib/api';
 	import Confirm from '$lib/confirm.svelte';
 	import { session } from '$app/stores';
@@ -55,6 +55,8 @@
 
 	let loading = true;
 	export let rowsCount = 0;
+	let editlogfor = '';
+	let editlogs: any = [];
 	let filter_author = '';
 	let input_search;
 	let sorting = { dir: 'desc', key: 'updatedAt' };
@@ -108,7 +110,7 @@
 		$filterStorage.author = filter_author;
 		await load(page);
 	};
-	async function load(_page) {
+	async function load(_page, reason = 'unknown') {
 		loading = true;
 		let tagsForFilter = $filterStorage.tplTag.split(';');
 		const data = await getData(
@@ -184,6 +186,8 @@
 	}
 
 	let col_per_row = $filterStorage.col_per_row;
+	let row_per_page = $filterStorage.row_per_page;
+	pageSize = row_per_page;
 	let isMobile = false;
 	onMount(async () => {
 		filter_author = $filterStorage.author;
@@ -195,6 +199,11 @@
 		if (isMobile || [1, 2, 3, 4].includes(col_per_row) === false) {
 			col_per_row = 1;
 			$filterStorage.col_per_row = col_per_row;
+		}
+		if ([10, 20, 50, 100].includes(row_per_page) === false) {
+			row_per_page = 10;
+			$filterStorage.row_per_page = row_per_page;
+			pageSize = row_per_page;
 		}
 	});
 	const stateContext = getContext('state');
@@ -255,6 +264,71 @@
 					<Sort key="author" on:sort={onSort} />
 				</Col>
 			</Row>
+		</div>
+		<div class="flex-shrink-1">
+			<Dropdown class="m-0 p-0">
+				<DropdownToggle caret color="notexist" class="btn-sm">
+					{$_('remotetable.rowperpage')}
+				</DropdownToggle>
+				<DropdownMenu>
+					<DropdownItem>
+						<a
+							class="nav-link"
+							href={'#'}
+							on:click|preventDefault={async () => {
+								$filterStorage.row_per_page = 10;
+								row_per_page = 10;
+								pageSize = 10;
+								await load(0, 'on pageSize');
+							}}
+						>
+							{$_('remotetable.rows-10')}
+						</a>
+					</DropdownItem>
+					<DropdownItem>
+						<a
+							class="nav-link"
+							href={'#'}
+							on:click|preventDefault={async () => {
+								$filterStorage.row_per_page = 20;
+								row_per_page = 20;
+								pageSize = 20;
+								await load(0, 'on pageSize');
+							}}
+						>
+							{$_('remotetable.rows-20')}
+						</a>
+					</DropdownItem>
+					<DropdownItem>
+						<a
+							class="nav-link"
+							href={'#'}
+							on:click|preventDefault={async () => {
+								$filterStorage.row_per_page = 50;
+								row_per_page = 50;
+								pageSize = 50;
+								await load(0, 'on pageSize');
+							}}
+						>
+							{$_('remotetable.rows-50')}
+						</a>
+					</DropdownItem>
+					<DropdownItem>
+						<a
+							class="nav-link"
+							href={'#'}
+							on:click|preventDefault={async () => {
+								$filterStorage.row_per_page = 100;
+								row_per_page = 100;
+								pageSize = 100;
+								await load(0, 'on pageSize');
+							}}
+						>
+							{$_('remotetable.rows-100')}
+						</a>
+					</DropdownItem>
+				</DropdownMenu>
+			</Dropdown>
 		</div>
 		<div class="flex-shrink-1">
 			<Dropdown class="m-0 p-0">
@@ -417,6 +491,25 @@
 													{$_('remotetable.tplaction.exportdata')}
 												</a>
 											</DropdownItem>
+											<DropdownItem>
+												<a
+													href={'#'}
+													on:click|preventDefault={async (e) => {
+														e.preventDefault();
+														editlogs = await api.post(
+															'/template/editlog',
+															{ tplid: row.tplid },
+															user.sessionToken
+														);
+														editlogfor = row.tplid;
+														visi_rds_input = row.visi;
+													}}
+													class="nav-link "
+												>
+													<Icon name="ui-checks-grid" />
+													{$_('remotetable.tplaction.editlog')}
+												</a>
+											</DropdownItem>
 										{/if}
 									</DropdownMenu>
 								</Dropdown>
@@ -446,6 +539,25 @@
 								{/if}
 							</Col>
 						</Row>
+						{#if editlogfor === row.tplid}
+							<Container>
+								<Row>
+									<Button
+										color="primary"
+										on:click={(e) => {
+											e.preventDefault();
+											editlogfor = '';
+										}}>Close</Button
+									>
+								</Row>
+								{#each editlogs as elog}
+									<Row>
+										<Col>{TimeTool.format(elog.updatedAt, 'lll')}</Col><Col>{elog.editorName}</Col>
+										<Col>{elog.editor}</Col>
+									</Row>
+								{/each}
+							</Container>
+						{/if}
 						<ItemEditor
 							{rows}
 							{row}

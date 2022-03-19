@@ -276,6 +276,7 @@ export interface FilterPicks {
 	try_with_kvar?: string;
 	tspan: string;
 	col_per_row: number;
+	row_per_page: number;
 	showprocesstrack: boolean;
 	debug: string;
 }

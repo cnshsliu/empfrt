@@ -4181,6 +4181,10 @@ ret='DEFAULT'; `
 		let that = this;
 		//if (!that.isMobile) return;
 		for (let i = 0; i < guiNodes.length; i++) {
+			let kfkClass = that.getKfkClass($(guiNodes[i]));
+			if (['AND', 'OR', 'START', 'END', 'GROUND', 'THROUGH'].includes(kfkClass)) {
+				continue;
+			}
 			$(guiNodes[i]).append(
 				`<div class='mobilehandler m-0 p-0 inline-block text-center'><i class="align-top text-center bi bi-arrow-up-right-circle"/></div>`
 			);

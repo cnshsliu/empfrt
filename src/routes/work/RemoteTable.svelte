@@ -125,8 +125,8 @@
 	async function onSearch(event) {
 		input_search = event.detail.text;
 		$filterStorage.workTitlePattern = input_search;
-		await load(page, 'onSearch');
 		page = 0;
+		await load(page, 'onSearch');
 	}
 
 	export async function refresh(detail) {
@@ -177,6 +177,8 @@
 	});
 	const stateContext = getContext('state');
 	let col_per_row = $filterStorage.col_per_row;
+	let row_per_page = $filterStorage.row_per_page;
+	pageSize = row_per_page;
 	let isMobile = false;
 	onMount(async () => {
 		reload();
@@ -184,6 +186,11 @@
 		if (isMobile || [1, 2, 3, 4].includes(col_per_row) === false) {
 			col_per_row = 1;
 			$filterStorage.col_per_row = col_per_row;
+		}
+		if ([10, 20, 50, 100].includes(row_per_page) === false) {
+			row_per_page = 10;
+			$filterStorage.row_per_page = row_per_page;
+			pageSize = row_per_page;
 		}
 	});
 </script>
@@ -270,6 +277,71 @@
 					<Sort key="lastdays" dir="desc" on:sort={onSort} />
 				</Col>
 			</Row>
+		</div>
+		<div class="flex-shrink-1">
+			<Dropdown class="m-0 p-0">
+				<DropdownToggle caret color="notexist" class="btn-sm">
+					{$_('remotetable.rowperpage')}
+				</DropdownToggle>
+				<DropdownMenu>
+					<DropdownItem>
+						<a
+							class="nav-link"
+							href={'#'}
+							on:click|preventDefault={async () => {
+								$filterStorage.row_per_page = 10;
+								row_per_page = 10;
+								pageSize = 10;
+								await load(0, 'on pageSize');
+							}}
+						>
+							{$_('remotetable.rows-10')}
+						</a>
+					</DropdownItem>
+					<DropdownItem>
+						<a
+							class="nav-link"
+							href={'#'}
+							on:click|preventDefault={async () => {
+								$filterStorage.row_per_page = 20;
+								row_per_page = 20;
+								pageSize = 20;
+								await load(0, 'on pageSize');
+							}}
+						>
+							{$_('remotetable.rows-20')}
+						</a>
+					</DropdownItem>
+					<DropdownItem>
+						<a
+							class="nav-link"
+							href={'#'}
+							on:click|preventDefault={async () => {
+								$filterStorage.row_per_page = 50;
+								row_per_page = 50;
+								pageSize = 50;
+								await load(0, 'on pageSize');
+							}}
+						>
+							{$_('remotetable.rows-50')}
+						</a>
+					</DropdownItem>
+					<DropdownItem>
+						<a
+							class="nav-link"
+							href={'#'}
+							on:click|preventDefault={async () => {
+								$filterStorage.row_per_page = 100;
+								row_per_page = 100;
+								pageSize = 100;
+								await load(0, 'on pageSize');
+							}}
+						>
+							{$_('remotetable.rows-100')}
+						</a>
+					</DropdownItem>
+				</DropdownMenu>
+			</Dropdown>
 		</div>
 		<div class="flex-shrink-1">
 			<Dropdown class="m-0 p-0">

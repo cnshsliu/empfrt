@@ -3,6 +3,7 @@
 	import * as api from '$lib/api';
 	import { Container, Button } from 'sveltestrap';
 	import BadgeWithDel from '$lib/input/BadgeWithDel.svelte';
+	import OrgChartMaintainer from './orgchartMaintainer.svelte';
 	import InputExandable from '$lib/input/InputExandable.svelte';
 	import PDSResolver from '$lib/input/PDSResolver.svelte';
 	let orgchartlist = [];
@@ -93,9 +94,6 @@
 </script>
 
 <Container class="text-nowrap">
-	<PDSResolver class="mt-3" bind:label={resolver_label} embed={true} />
-	<div>Relational query always start from the current user</div>
-
 	{#if orgchartroot && orgchartroot.ou === 'root'}
 		{orgchartroot.cn}
 		<Button on:click={refreshOrgChart} color="primary">Refresh</Button>
@@ -163,6 +161,14 @@
 		</ul>
 	{/if}
 </Container>
+<PDSResolver class="mt-3" bind:label={resolver_label} embed={true} />
+<div>Relational query always start from the current user</div>
+
+{#if authorizedAdmin}
+	<div>
+		<OrgChartMaintainer />
+	</div>
+{/if}
 
 <style>
 	ul li {

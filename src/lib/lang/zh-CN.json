@@ -34,7 +34,12 @@
 		"in": "时间"
 	},
 	"remotetable": {
+		"rowperpage": "每页个数",
 		"colperrow": "每行个数",
+		"rows-10": "每页10个",
+		"rows-20": "每页20个",
+		"rows-50": "每页50个",
+		"rows-100": "每页100个",
 		"cols-1": "每行最多一个",
 		"cols-2": "每行最多两个",
 		"cols-3": "每行最多三个",
@@ -97,7 +102,8 @@
 			"setOwner": "设置流程Owner",
 			"deleteThisTempalte": "删除这个模版",
 			"lastUpdate": "上次更新",
-			"exportdata": "导出数据"
+			"exportdata": "导出数据",
+			"editlog": "编辑历史"
 		}
 	},
 	"title": {

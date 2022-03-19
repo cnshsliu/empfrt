@@ -3,6 +3,7 @@
 	import * as api from '$lib/api';
 	import { session } from '$app/stores';
 	import { getNotificationsContext } from 'svelte-notifications';
+	import OrgChartCsvFormat from './orgchartcsvformat.svelte';
 	const { addNotification } = getNotificationsContext();
 	import type { EmpResponse, OrgMembers, oneArgFunc } from '$lib/types';
 	import { Input, InputGroupText, InputGroup, Container, Button } from 'sveltestrap';
@@ -13,6 +14,14 @@
 	let fileSaver = null;
 	let default_user_password = '';
 	let admin_password = '';
+
+	let new_ou_id = '';
+	let new_ou_name = '';
+	let new_user_ou_id = '';
+	let new_user_name = '';
+	let new_user_email = '';
+	let delete_user_email = '';
+	let delete_ou_id = '';
 	export function setFadeMessage(
 		message: string,
 		type = 'warning',
@@ -73,18 +82,123 @@
 	<Container class="text-nowrap">
 		<div class="mt-5" />
 		<InputGroup>
-			<InputGroupText>Admin Password:</InputGroupText>
+			<InputGroupText>Admin password is required:</InputGroupText>
 			<Input bind:value={admin_password} type="password" required={true} />
-			<InputGroupText>Default User Password:</InputGroupText>
+		</InputGroup>
+		<InputGroup class="mt-2">
+			<InputGroupText>OU_ID:</InputGroupText>
+			<Input bind:value={new_user_ou_id} />
+			<InputGroupText>Name:</InputGroupText>
+			<Input bind:value={new_user_name} />
+			<InputGroupText>Email:</InputGroupText>
+			<Input bind:value={new_user_email} />
+			<InputGroupText>Password:</InputGroupText>
 			<Input bind:value={default_user_password} type="password" required={true} />
+			<Button
+				color="primary"
+				on:click={async (e) => {
+					e.preventDefault();
+					let res = await api.post(
+						'orgchart/add',
+						{
+							password: admin_password,
+							content: `${new_user_ou_id},${new_user_name},${new_user_email},,,,`,
+							default_user_password: default_user_password
+						},
+						user.sessionToken
+					);
+					if (res.error) {
+						setFadeMessage(res.message, 'warning');
+					} else {
+						setFadeMessage('Success, refresh orgchart please', 'success');
+					}
+				}}
+			>
+				New or update User
+			</Button>
 		</InputGroup>
-		<InputGroup>
-			<InputGroupText>Orgchart CSV file</InputGroupText>
-			<input class="form-control" name="file" type="file" bind:files />
-			<Button size="sm" on:click={uploadOrgChart} color="primary">Import</Button>
+		<InputGroup class="mt-2">
+			<InputGroupText>Email:</InputGroupText>
+			<Input bind:value={delete_user_email} />
+			<Button
+				color="primary"
+				on:click={async (e) => {
+					e.preventDefault();
+					let res = await api.post(
+						'orgchart/add',
+						{
+							password: admin_password,
+							content: `D,${delete_user_email},,,,,,`,
+							default_user_password: 'not required'
+						},
+						user.sessionToken
+					);
+					if (res.error) {
+						setFadeMessage(res.message, 'warning');
+					} else {
+						setFadeMessage('Success, refresh orgchart please', 'success');
+					}
+				}}
+			>
+				Delete User by email
+			</Button>
 		</InputGroup>
-		<InputGroup>
-			<InputGroupText>Export to CSV file</InputGroupText>
+		<InputGroup class="mt-2">
+			<InputGroupText>OU_ID:</InputGroupText>
+			<Input bind:value={new_ou_id} />
+			<InputGroupText>Name:</InputGroupText>
+			<Input bind:value={new_ou_name} />
+			<Button
+				color="primary"
+				on:click={async (e) => {
+					e.preventDefault();
+					let res = await api.post(
+						'orgchart/add',
+						{
+							password: admin_password,
+							content: `${new_ou_id},${new_ou_name},,,,,`,
+							default_user_password: 'not required'
+						},
+						user.sessionToken
+					);
+					if (res.error) {
+						setFadeMessage(res.message, 'warning');
+					} else {
+						setFadeMessage('Success, refresh orgchart please', 'success');
+					}
+				}}
+			>
+				New or update OU
+			</Button>
+		</InputGroup>
+		<InputGroup class="mt-2">
+			<InputGroupText>OU_ID:</InputGroupText>
+			<Input bind:value={delete_ou_id} />
+			<Button
+				color="primary"
+				on:click={async (e) => {
+					e.preventDefault();
+					let res = await api.post(
+						'orgchart/add',
+						{
+							password: admin_password,
+							content: `D,${delete_ou_id},,,,,,`,
+							default_user_password: 'not required'
+						},
+						user.sessionToken
+					);
+					if (res.error) {
+						setFadeMessage(res.message, 'warning');
+					} else {
+						setFadeMessage('Success, refresh orgchart please', 'success');
+					}
+				}}
+			>
+				Delete OU by ID
+			</Button>
+		</InputGroup>
+		<InputGroup class="mt-5">
+			<InputGroupText>Export the whole OrgChart to CSV file</InputGroupText>
 			<Button
 				size="sm"
 				color="primary"
@@ -105,51 +219,14 @@
 				Export
 			</Button>
 		</InputGroup>
-		<InputGroup>
-			<Input type="textarea" bind:value={content} />
-			<Button
-				color="primary"
-				on:click={async (e) => {
-					e.preventDefault();
-					let res = await api.post(
-						'orgchart/add',
-						{
-							password: admin_password,
-							content: content,
-							default_user_password: default_user_password
-						},
-						user.sessionToken
-					);
-					if (res.error) {
-						setFadeMessage(res.message, 'warning');
-					} else {
-						setFadeMessage('Success, refresh orgchart please', 'success');
-					}
-				}}
-			>
-				Update
-			</Button>
+		<InputGroup class="mt-5">
+			<InputGroupText>Import from Orgchart CSV file</InputGroupText>
+			<input class="form-control" name="file" type="file" bind:files />
+			<Button size="sm" on:click={uploadOrgChart} color="primary">Import</Button>
 		</InputGroup>
+		<OrgChartCsvFormat />
 		{#if errMsg}
 			{errMsg}
 		{/if}
-		<div>
-			<pre>
-	Update orgchart entry line by line, in CSV format
-	Examples:
-	Next line will insert or update OU AAAAA
-	<code>AAAAA,Organization Unit Name,,,,,</code>
-
-	Next line will insert or update User abcd@email.com
-	<code>AAAAA,MyNameIsABCD,abcd@email.com,pos1:pos2,,,,</code>
-
-	Next line will delete whole OU (and OU under it, root can not be deleted)
-	<code>D,AAAAA</code>
-
-	Next line will delete  a user
-	<code>D,abcd@email.com</code>
-
-</pre>
-		</div>
 	</Container>
 </form>

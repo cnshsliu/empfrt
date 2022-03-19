@@ -45,10 +45,7 @@
 	import type { EmpResponse, OrgMembers, oneArgFunc } from '$lib/types';
 	import SmtpAdmin from './smtpadmin.svelte';
 	import Personal from './personal.svelte';
-	import OrgChartCsvFormat from './orgchartcsvformat.svelte';
 	import OrgChart from './orgchart.svelte';
-	import OrgChartMaintainer from './orgchartMaintainer.svelte';
-	import OrgChartRelationTest from '$lib/orgchartrelationtest.svelte';
 	import type { User } from '$lib/types';
 	import { onMount } from 'svelte';
 	import { post } from '$lib/utils';
@@ -783,30 +780,9 @@
 		</TabPane>
 		<TabPane tabId="orgchart" tab="Orgchart" active={isActive('orgchart')}>
 			<Container class="mt-3 mb-3 w-100">
-				<TabContent
-					pills
-					on:tab={(e) => {
-						showTab(e.detail.toString(), false);
-					}}
-				>
-					<TabPane tabId="zzorg" tab="Orgchart" active={isActive('zzorg', false)}>
-						<div class="overflow-scroll w-100 bg-light">
-							<OrgChart {user} {setFadeMessage} {authorizedAdmin} showOuId={true} />
-						</div>
-						{#if authorizedAdmin}
-							<div>
-								<OrgChartMaintainer />
-							</div>
-						{/if}
-					</TabPane>
-					<TabPane
-						tabId="fileformat"
-						tab="Orgchart File Format"
-						active={isActive('fileformat', false)}
-					>
-						<OrgChartCsvFormat />
-					</TabPane>
-				</TabContent>
+				<div class="overflow-scroll w-100 bg-light">
+					<OrgChart {user} {setFadeMessage} {authorizedAdmin} showOuId={true} />
+				</div>
 			</Container>
 		</TabPane>
 		<TabPane tabId="members" tab="Members" active={isActive('members')}>

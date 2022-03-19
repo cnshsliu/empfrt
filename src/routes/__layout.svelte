@@ -137,9 +137,8 @@
 			<EmpFooter />
 		{/if}
 	{:else}
-		<Container class="w-100 text-center mt-5 pt-5">
-			<p>Loading...</p>
-			<div class="spinner w-100">&nbsp;</div>
+		<Container class="w-100 text-center " style="height:100vh;">
+			<div class="runninglogo w-100">&nbsp;</div>
 		</Container>
 	{/if}
 </Notifications>
