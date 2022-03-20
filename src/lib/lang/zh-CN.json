@@ -410,5 +410,27 @@
 		"GROUND": "接地",
 		"CONNECT": "连接",
 		"THROUGH": "过渡"
+	},
+	"setting": {
+		"set": "设置",
+		"tab": {
+			"personal": "个人设置",
+			"delegation": "代理人设置",
+			"tenant": "企业租户",
+			"orgset": "组织设置",
+			"orgchart": "组织结构",
+			"members": "组织成员",
+			"smtp": "SMTP",
+			"data": "数据列表"
+		},
+		"personal": {
+			"avatar": "头像",
+			"signature": "签名档",
+			"cn": "显示名称",
+			"currentpassword": "当前密码",
+			"newpassword": "新密码",
+			"sendmail": "有新任务时发送邮件给我",
+			"joincode": "使用joincode加入一个组织"
+		}
 	}
 }

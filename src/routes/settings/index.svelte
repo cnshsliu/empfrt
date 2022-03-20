@@ -36,6 +36,7 @@
 
 <script lang="ts">
 	import { API_SERVER } from '$lib/Env';
+	import { _ } from '$lib/i18n';
 	import { session } from '$app/stores';
 	import { dev } from '$app/env';
 	import { filterStorage } from '$lib/empstores';
@@ -468,10 +469,10 @@
 			showTab('' + e.detail);
 		}}
 	>
-		<TabPane tabId="personal" tab="Personal" active={isActive('personal')}>
+		<TabPane tabId="personal" tab={$_('setting.tab.personal')} active={isActive('personal')}>
 			<Personal {user} {setFadeMessage} />
 		</TabPane>
-		<TabPane tabId="delegation" tab="Delegation" active={isActive('delegation')}>
+		<TabPane tabId="delegation" tab={$_('setting.tab.delegation')} active={isActive('delegation')}>
 			<Container class="mt-3">
 				<div class="w-100 text-center fs-3">Delegation</div>
 				<Card class="mt-3">
@@ -548,7 +549,7 @@
 				</Card>
 			</Container>
 		</TabPane>
-		<TabPane tabId="orgset" tab="Tenant" active={isActive('orgset')}>
+		<TabPane tabId="orgset" tab={$_('setting.tab.orgset')} active={isActive('orgset')}>
 			<Container class="mt-3 mb-3">
 				<div class="w-100 text-center fs-3">{orgname}</div>
 				<div class="w-100 text-center fs-6">
@@ -778,14 +779,14 @@
 				{/if}
 			</Container>
 		</TabPane>
-		<TabPane tabId="orgchart" tab="Orgchart" active={isActive('orgchart')}>
+		<TabPane tabId="orgchart" tab={$_('setting.tab.orgchart')} active={isActive('orgchart')}>
 			<Container class="mt-3 mb-3 w-100">
 				<div class="overflow-scroll w-100 bg-light">
 					<OrgChart {user} {setFadeMessage} {authorizedAdmin} showOuId={true} />
 				</div>
 			</Container>
 		</TabPane>
-		<TabPane tabId="members" tab="Members" active={isActive('members')}>
+		<TabPane tabId="members" tab={$_('setting.tab.members')} active={isActive('members')}>
 			<Container class="mt-3">
 				{#if myorg.adminorg === false}
 					{#if myorg.owner === user.email}
@@ -892,10 +893,10 @@
 				{/if}
 			</Container>
 		</TabPane>
-		<TabPane tabId="smtp" tab="SMTP" active={isActive('smtp')}>
+		<TabPane tabId="smtp" tab={$_('setting.tab.smtp')} active={isActive('smtp')}>
 			<SmtpAdmin {user} {myorg} {setFadeMessage} />
 		</TabPane>
-		<TabPane tabId="data" tab="Data" active={isActive('data')}>
+		<TabPane tabId="data" tab={$_('setting.tab.data')} active={isActive('data')}>
 			<ul>
 				<li><a href="/list">List Definitions</a></li>
 				<li><a href="/team">Team Definitions</a></li>

@@ -1,6 +1,7 @@
 <script type="ts">
 	import { Button, Container, Row, Col, InputGroup, InputGroupText, Input } from 'sveltestrap';
 	import { session } from '$app/stores';
+	import { _ } from '$lib/i18n';
 	import FileUploader from '$lib/FileUploader.svelte';
 	import type { User, EmpResponse } from '$lib/types';
 	import { post } from '$lib/utils';
@@ -71,7 +72,7 @@
 		<Row cols="1" class="mt-3">
 			<Col>
 				<InputGroup class="mb-1">
-					<InputGroupText>Your avatar</InputGroupText>
+					<InputGroupText>{$_('setting.personal.avatar')}</InputGroupText>
 					<img alt="avatar" src={`${user.avatar}`} class="kfk-avatar-small" />
 					<input
 						class="form-control"
@@ -85,13 +86,13 @@
 							await setPersonal({ avatar: user.avatar });
 						}}
 					>
-						Set
+						{$_('setting.set')}
 					</Button>
 				</InputGroup>
 			</Col>
 			<Col>
 				<InputGroup class="mb-1">
-					<InputGroupText>Signature</InputGroupText>
+					<InputGroupText>{$_('setting.personal.signature')}</InputGroupText>
 					<img alt="signature" src={`${user.signature}`} class="kfk-signature" />
 					<Input bind:value={user.signature} />
 					<Button
@@ -100,13 +101,13 @@
 							await setPersonal({ signature: user.signature });
 						}}
 					>
-						Set
+						{$_('setting.set')}
 					</Button>
 				</InputGroup>
 			</Col>
 			<Col>
 				<InputGroup class="mb-1">
-					<InputGroupText>Your display name:</InputGroupText>
+					<InputGroupText>{$_('setting.personal.cn')}</InputGroupText>
 					<input
 						class="form-control"
 						type="text"
@@ -119,20 +120,20 @@
 							await setPersonal({ username: user.username });
 						}}
 					>
-						Set
+						{$_('setting.set')}
 					</Button>
 				</InputGroup>
 			</Col>
 			<Col>
 				<InputGroup class="mb-1">
-					<InputGroupText>Current password:</InputGroupText>
+					<InputGroupText>{$_('setting.personal.currentpassword')}</InputGroupText>
 					<input
 						class="form-control"
 						type="password"
 						placeholder="Old Password"
 						bind:value={my_old_password}
 					/>
-					<InputGroupText>New password:</InputGroupText>
+					<InputGroupText>{$_('setting.personal.newpassword')}</InputGroupText>
 					<input
 						class="form-control"
 						type="password"
@@ -145,13 +146,13 @@
 							await setPersonal({ password: user.password });
 						}}
 					>
-						Set
+						{$_('setting.set')}
 					</Button>
 				</InputGroup>
 			</Col>
 			<Col>
 				<InputGroup class="mb-1">
-					<InputGroupText>Send email to me on new work comming</InputGroupText> &nbsp;&nbsp;
+					<InputGroupText>{$_('setting.personal.sendmail')}</InputGroupText> &nbsp;&nbsp;
 					<span class="form-control">
 						<Input type="checkbox" bind:checked={user.ew} />
 					</span>
@@ -161,13 +162,13 @@
 							await setPersonal({ ew: user.ew });
 						}}
 					>
-						Set
+						{$_('setting.set')}
 					</Button>
 				</InputGroup>
 			</Col>
 			<Col>
 				<InputGroup class="mb-1">
-					<InputGroupText>Join Org with joincode:</InputGroupText>
+					<InputGroupText>{$_('setting.personal.joincode')}</InputGroupText>
 					<Input
 						type="text"
 						bind:value={joinorgwithcode}
@@ -180,7 +181,7 @@
 							await joinOrgWithCode();
 						}}
 					>
-						Set
+						{$_('setting.set')}
 					</Button>
 				</InputGroup>
 			</Col>
