@@ -1,5 +1,6 @@
 <script context="module" lang="ts">
 	export const ssr = false;
+	import { setupI18n, isLocaleLoaded, locale, dir, _ } from '$lib/i18n';
 	export async function load({ page, session }) {
 		const { user } = session;
 		if (/^\/settings\/(.*)/.test(page.path) && !user) {
@@ -14,7 +15,6 @@
 </script>
 
 <script lang="ts">
-	import { setupI18n, isLocaleLoaded, locale, dir, _ } from '$lib/i18n';
 	import { Container } from 'sveltestrap';
 	import Confirm from '$lib/confirm.svelte';
 	import { printing } from '$lib/Stores';

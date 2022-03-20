@@ -2,12 +2,28 @@
 	"navmenu": {
 		"home": "首页",
 		"doc": "文档",
-		"template": "流程规划",
-		"workflow": "进程监控",
-		"worklist": "工作列表",
+		"template": "规划",
+		"workflow": "监控",
+		"worklist": "我的任务",
 		"settings": "设置",
 		"teaming": "组队",
 		"messages": "消息"
+	},
+	"home": {
+		"topic": "Svelte Localization Tutorial",
+		"subtopic": "Internationalization and Localization",
+		"ifyouhaveaccount": "如果已有账号，请直接登录",
+		"slogan": "超自动化·智慧企业数字大脑",
+		"introduction": "<span class='fw-bold'>MetatoCome</span> 是一个基于超自动化引擎（Hyper-Automation Engine）的在线智慧企业大脑应用平台，超自动化能够 <span class='fw-bold'>把企业的管理实践和运营过程进行数字化</span>，实现组织内所有可自动化的工作和事务的自动化，智能驱动员工、组织和各信息系统的协作，<span class='fw-bold'>建立企业的数字化中枢神经系统</span>，实现组织全方位的管理效率提升，以及整体的数字化降本增效，<span class='fw-bold'>是企业数字化转型的核心引擎</span>",
+		"features": {
+			"engine": "MetatoCome的核心是一个开放智能的超自动化引擎。开发者可以自由地设计、运行、并监控超自动化引擎的运行状况，通过使用MetatoCome超自动化API，开发者能够在手机APP、小程序或H5应用中自由地调用超自动化能力",
+			"hyper": "Metatocome能够用于组织内部任何事物的自动化，不管是z员工还是计算机系统。员工会自动分配工作任务，系统则可以通过API接口调用被自动调用、驱动，或反向调用超自动化能力",
+			"easy": "使用任何现代计算机语言，可以把MetatoCome的超自动化耨里集成到任何形式的应用中，不管是基于Web的H5应用，还是iOS或Android移动APP，还是小程序",
+			"secure": "Metatocome承担智能协作者的角色，与其它应用系统独立并隔离，而企业内部应用系统及数据采用已有的独立授权机制。企业关键业务数据得以在既有的安全框架下得到安全保护"
+		},
+		"search": {
+			"placeholder": "搜索知名企业数字大脑"
+		}
 	},
 	"account": {
 		"signin": "登入",
@@ -107,9 +123,9 @@
 		}
 	},
 	"title": {
-		"template": "流程规划",
-		"workflow": "进程监控",
-		"worklist": "工作列表"
+		"template": "规划",
+		"workflow": "监控",
+		"worklist": "我的工作"
 	},
 	"button": {
 		"resetQuery": "重置查询",
@@ -146,10 +162,6 @@
 		}
 	},
 	"recent": "最近使用: ",
-	"home": {
-		"topic": "Svelte Localization Tutorial",
-		"subtopic": "Internationalization and Localization"
-	},
 	"status": {
 		"All": "全部",
 		"ST_RUN": "进行中",

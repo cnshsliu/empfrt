@@ -1,12 +1,20 @@
 <script lang="ts">
+	import { _ } from '$lib/i18n';
+	import * as api from '$lib/api';
 	import { whichTabStorage } from '$lib/empstores';
 	import { get } from 'svelte/store';
 	import { title } from '$lib/title';
 	import type { WhichTab } from '$lib/types';
-	import { Container, Row, Col } from 'sveltestrap';
+	import { Container, Row, Col, InputGroup, Input, InputGroupText, Button } from 'sveltestrap';
 	$title = 'HyperFlow';
 	export let user;
 	let tplid;
+	let shared = [];
+	let q = '';
+
+	const searchShared = async () => {
+		shared = (await api.post('shared/search', { q }, user.sessionToken)) as unknown as any[];
+	};
 
 	let whichTab: WhichTab = get(whichTabStorage);
 	async function showTab(tabId) {
@@ -38,29 +46,26 @@
 					/>
 				</div>
 				<div class="col-md-8 order-md-1 col-lg-7 text-center text-md-start">
-					<h1 class="mb-3">Develop advanced Hyper-Automation applications with Metatocome</h1>
+					<h1 class="mb-3">
+						{$_('home.slogan')}
+					</h1>
 					<p class="lead mb-2">
-						Metatocome is a Hyper-Automation engine online service which can be used to automate
-						everything in an organization that can be automated. Developers can build advanced
-						wokflow based applications that dispatch tasks to both human and computer systems with
-						any modern computer languages.
+						{@html $_('home.introduction')}
 					</p>
 
 					<div>
 						<Container>
-							{#if user}
+							{#if !user}
 								<Row>
-									<a href="/seeitwork" class="btn btn-lg btn-outline-secondary mb-3">
-										See it works now.
+									<a href="/register" class="btn btn-lg btn-outline-secondary mb-3">
+										{$_('account.signup')}
 									</a>
 								</Row>
-							{:else}
-								<Row>
-									<a href="/register" class="btn btn-lg btn-outline-secondary mb-3"> Sign Up </a>
-								</Row>
 								<Row class="d-flex justify-content-center">
-									or if you have an account
-									<a href="/login" class="btn btn-lg btn-outline-secondary mb-3"> Sign In </a>
+									{$_('home.ifyouhaveaccount')}
+									<a href="/login" class="btn btn-lg btn-outline-secondary mb-3">
+										{$_('account.signin')}
+									</a>
 								</Row>
 							{/if}
 						</Container>
@@ -68,9 +73,30 @@
 				</div>
 			</div>
 		</div>
+		<Container class="mt-5">
+			<section class="row mt-3  align-items-center">
+				<InputGroup>
+					<Input
+						bind:value={q}
+						type="search"
+						placeholder={$_('home.search.placeholder')}
+						style="outline:none"
+					/>
+					<Button
+						on:click={async (e) => {
+							e.preventDefault();
+							await searchShared();
+						}}
+					>
+						<i class="bi bi-search" />
+					</Button>
+				</InputGroup>
+			</section>
+		</Container>
 	</div>
 	<div>
 		<div class="container masthead-followup px-4 px-md-3">
+			<section class="row mt-2 align-items-stretch" />
 			<section class="row mt-5 pb-md-4 align-items-stretch">
 				<div class="col-12 col-md-6 col-lg-3 pb-3">
 					<div class="card h-100">
@@ -81,9 +107,7 @@
 							<hr />
 							<!-- h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6 -->
 							<p class="card-text">
-								Metatocome's core component is an advanced Workflow Engine running in the cloud.
-								Developers can design, run, monitor workflow processes on this site, or develop
-								fully customized UIs with the support of Metatocome APIs.
+								{$_('home.features.engine')}
 							</p>
 						</div>
 					</div>
@@ -97,10 +121,7 @@
 							<hr />
 							<!-- h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6 -->
 							<p class="card-text">
-								Metatocome can automate the process of any sort of entities, no matter they are
-								human or computer system, from a integrated enterprise perspective. these entities
-								take the role of "workers", Staff get their work instructions from worklist, system
-								provide API endpoints Metatocome engine will call.
+								{$_('home.features.hyper')}
 							</p>
 						</div>
 					</div>
@@ -114,8 +135,7 @@
 							<hr />
 							<!-- h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6 -->
 							<p class="card-text">
-								Integrate workflow into your application, web-based, iOS or Android APP, with SDK of
-								any modern computer language.
+								{$_('home.features.easy')}
 							</p>
 						</div>
 					</div>
@@ -129,10 +149,7 @@
 							<hr />
 							<!-- h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6 -->
 							<p class="card-text">
-								Metatocome take the role of a pure collaboration engine running separatedly from
-								other systems, and has separated authentication, and access control from
-								enterprise's internal IT system. Metatocome use resource URI to refer to any
-								internal or external IT resources.
+								{$_('home.features.secure')}
 							</p>
 						</div>
 					</div>
