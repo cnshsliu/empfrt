@@ -2442,3 +2442,9 @@ div.pbo {
 .kfk-decision-done {
 	height: 50px;
 }
+
+.form-control:focus {
+	border-color: inherit;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+}

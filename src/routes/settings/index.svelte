@@ -474,18 +474,18 @@
 		</TabPane>
 		<TabPane tabId="delegation" tab={$_('setting.tab.delegation')} active={isActive('delegation')}>
 			<Container class="mt-3">
-				<div class="w-100 text-center fs-3">Delegation</div>
+				<div class="w-100 text-center fs-3">{$_('setting.delegation.delegation')}</div>
 				<Card class="mt-3">
-					<CardHeader><CardTitle>Delegate my works to</CardTitle></CardHeader>
+					<CardHeader><CardTitle>{$_('setting.delegation.delegateto')}</CardTitle></CardHeader>
 					<CardBody>
 						<InputGroup class="mb-1">
-							<InputGroupText>Between</InputGroupText>
+							<InputGroupText>{$_('setting.delegation.BeginDate')}</InputGroupText>
 							<Input type="date" bind:value={new_delegation_begindate} />
-							<InputGroupText>and</InputGroupText>
+							<InputGroupText>{$_('setting.delegation.EndDate')}</InputGroupText>
 							<Input type="date" bind:value={new_delegation_enddate} />
 						</InputGroup>
 						<InputGroup class="mb-1">
-							<InputGroupText>to</InputGroupText>
+							<InputGroupText>{$_('setting.delegation.towhom')}</InputGroupText>
 							<Input bind:value={new_delegation_delegatee} placeholder="Delegtee's email" />
 							<Button
 								on:click={(e) => {
@@ -493,21 +493,21 @@
 									newDelegation();
 								}}
 							>
-								Delegate
+								{$_('setting.delegation.Delegate')}
 							</Button>
 						</InputGroup>
 					</CardBody>
 				</Card>
 
 				<Card class="mt-3">
-					<CardHeader><CardTitle>Delegations to me</CardTitle></CardHeader>
+					<CardHeader><CardTitle>{$_('setting.delegation.tome')}</CardTitle></CardHeader>
 					<CardBody>
 						<table class="w-100">
 							<thead>
 								<tr>
-									<th> Begin </th>
-									<th> Before </th>
-									<th> Delegate to </th>
+									<th> {$_('setting.delegation.BeginDate')} </th>
+									<th> {$_('setting.delegation.EndDate')} </th>
+									<th> {$_('setting.delegation.Delegatee')} </th>
 									<th> &nbsp; </th>
 								</tr>
 							</thead>
@@ -542,8 +542,10 @@
 								on:click={(e) => {
 									e.preventDefault();
 									removeSelectedDelegation();
-								}}>Remove selected</Button
+								}}
 							>
+								{$_('setting.delegation.removeSelected')}
+							</Button>
 						</div>
 					</CardFooter>
 				</Card>

@@ -434,6 +434,17 @@
 			"newpassword": "New password",
 			"sendmail": "Send email to me on new work comming",
 			"joincode": "Join Org with joincode"
+		},
+		"delegation": {
+			"delegation": "Delegation",
+			"delegateto": "Delegate My Task to",
+			"BeginDate": "Begin Date",
+			"EndDate": "End Date",
+			"towhom": "To whom",
+			"Delegate": "Delegate",
+			"and": "and",
+			"tome": "Delegations to me",
+			"Between": "Between"
 		}
 	}
 }

@@ -415,7 +415,7 @@
 		"set": "设置",
 		"tab": {
 			"personal": "个人设置",
-			"delegation": "代理人设置",
+			"delegation": "工作委托",
 			"tenant": "企业租户",
 			"orgset": "组织设置",
 			"orgchart": "组织结构",
@@ -431,6 +431,17 @@
 			"newpassword": "新密码",
 			"sendmail": "有新任务时发送邮件给我",
 			"joincode": "使用joincode加入一个组织"
+		},
+		"delegation": {
+			"delegation": "委托",
+			"delegateto": "把我的工作委托给别人",
+			"BeginDate": "开始时间",
+			"EndDate": "结束时间",
+			"towhom": "委托给谁",
+			"Delegate": "委托",
+			"tome": "别人委托给我的",
+			"Delegatee": "被委托人",
+			"removeSelected": "中止接受委托"
 		}
 	}
 }
