@@ -14,7 +14,7 @@
 		"subtopic": "Internationalization and Localization",
 		"ifyouhaveaccount": "如果已有账号，请直接登录",
 		"slogan": "超自动化·智慧企业数字大脑",
-		"introduction": "<span class='fw-bold'>MetatoCome</span> 是一个基于超自动化引擎（Hyper-Automation Engine）的在线智慧企业大脑应用平台，超自动化能够 <span class='fw-bold'>把企业的管理实践和运营过程进行数字化</span>，实现组织内所有可自动化的工作和事务的自动化，智能驱动员工、组织和各信息系统的协作，<span class='fw-bold'>建立企业的数字化中枢神经系统</span>，实现组织全方位的管理效率提升，以及整体的数字化降本增效，<span class='fw-bold'>是企业数字化转型的核心引擎</span>",
+		"introduction": "<span class='fw-bold'>MetatoCome</span> 是一个基于超自动化引擎（Hyper-Automation Engine）的在线智慧企业大脑应用平台，超自动化能够 <span class='fw-bold'>把企业的管理实践和运营过程进行数字化</span>，实现组织内所有可自动化的工作和事务的自动化，智能驱动员工、组织和各信息系统的协作，<span class='fw-bold'>建立组织的数字化中枢神经系统</span>，实现组织全方位的管理效率提升，以及整体的数字化降本增效，<span class='fw-bold'>是企业数字化转型的核心引擎</span>",
 		"features": {
 			"engine": "MetatoCome的核心是一个开放智能的超自动化引擎。开发者可以自由地设计、运行、并监控超自动化引擎的运行状况，通过使用MetatoCome超自动化API，开发者能够在手机APP、小程序或H5应用中自由地调用超自动化能力",
 			"hyper": "Metatocome能够用于组织内部任何事物的自动化，不管是z员工还是计算机系统。员工会自动分配工作任务，系统则可以通过API接口调用被自动调用、驱动，或反向调用超自动化能力",
@@ -531,5 +531,24 @@
 		"ADMIN": "管理员",
 		"OBSERVER": "观察者",
 		"DOER": "执行者"
+	},
+	"footer": {
+		"neural": "组织的数字化中枢神经系统",
+		"PLATFORM": "MTC平台",
+		"video": "介绍视频",
+		"howitworks": "如何工作",
+		"usecases": "使用场景",
+		"signup": "注册",
+		"signin": "登录",
+		"DEVELOPER": "开发者",
+		"quickstart": "快速启动",
+		"examples": "例子",
+		"docsandhelp": "文档与帮助",
+		"discord": "Discord",
+		"sdks": "SDKs",
+		"opensource": "开源",
+		"DEPLOYMENT": "部署方式",
+		"paas": "Paas服务",
+		"privateinstall": "独立部署"
 	}
 }

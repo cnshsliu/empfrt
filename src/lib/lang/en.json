@@ -533,5 +533,24 @@
 		"ADMIN": "Administrator",
 		"OBSERVER": "Observer",
 		"DOER": "Doer"
+	},
+	"footer": {
+		"neural": "Neural system for your organiation",
+		"PLATFORM": "PLATFORM",
+		"video": "Explainer Video",
+		"howitworks": "How it works",
+		"usecases": "Use cases",
+		"signup": "Sign up",
+		"signin": "Sign in",
+		"DEVELOPER": "DEVELOPER",
+		"quickstart": "Quick Start",
+		"examples": "Examples",
+		"docsandhelp": "Docs & Help",
+		"discord": "Discord",
+		"sdks": "SDKs",
+		"opensource": "Open Source",
+		"DEPLOYMENT": "DEPLOYMENT",
+		"paas": "Paas Service",
+		"privateinstall": "Private Install"
 	}
 }
