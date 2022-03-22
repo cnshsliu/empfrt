@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { _ } from '$lib/i18n';
 	import * as api from '$lib/api';
 	import { Container, Button } from 'sveltestrap';
 	import BadgeWithDel from '$lib/input/BadgeWithDel.svelte';
@@ -78,7 +79,9 @@
 		}
 		orgchartlist = orgchartlist;
 	}
+	let resolver_label = '';
 	onMount(async () => {
+		resolver_label = $_('setting.orgchart.resolver_label');
 		await refreshOrgChart();
 	});
 
@@ -88,15 +91,13 @@
 		orgchartlist = tmp.splice(1);
 	};
 
-	let resolver_label = 'Role Query:';
-
 	export let authorizedAdmin = false;
 </script>
 
 <Container class="text-nowrap">
 	{#if orgchartroot && orgchartroot.ou === 'root'}
 		{orgchartroot.cn}
-		<Button on:click={refreshOrgChart} color="primary">Refresh</Button>
+		<Button on:click={refreshOrgChart} color="primary">{$_('setting.orgchart.btn.refresh')}</Button>
 		<ul>
 			{#each orgchartlist as oce, index (oce)}
 				<li style={`display:${oce.display}`}>
@@ -162,7 +163,7 @@
 	{/if}
 </Container>
 <PDSResolver class="mt-3" bind:label={resolver_label} embed={true} />
-<div>Relational query always start from the current user</div>
+<div>{$_('setting.orgchart.comment')}</div>
 
 {#if authorizedAdmin}
 	<div>

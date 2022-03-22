@@ -416,6 +416,8 @@
 	},
 	"setting": {
 		"set": "Set",
+		"adminpwd": "Admin Password",
+		"adminpwd_ph": "Admin password is required for security consideration",
 		"tab": {
 			"personal": "Personal",
 			"delegation": "Delegation",
@@ -445,6 +447,91 @@
 			"and": "and",
 			"tome": "Delegations to me",
 			"Between": "Between"
+		},
+		"tenant": {
+			"adiministrator": "Administrator",
+			"myrole": "My Role",
+			"myorg": "Tenant",
+			"adminpwd": "Admin Password",
+			"adminpwd_ph": "Admin password is required",
+			"name": "Set Org name to",
+			"theme": "Use Theme URL",
+			"theme_ph": "Customized theme CSS URL",
+			"timezone": "Set timezone to",
+			"orgtags": "Org level tags",
+			"ocadmins": "Orgchart Administrators",
+			"ocadmins_ph": "Who can modify orgchart (in PDS format)",
+			"myorg": "The name",
+			"myorgname": "The name",
+			"myorgtimezone": "Timezone",
+			"joincode": "Join Code",
+			"currentcode": "Current code",
+			"genjoincode": "Generated Join Code",
+			"selfjoincode": "Self-defined Join Code",
+			"invite": "Invite",
+			"invite_ph": "Email list to invite, separated by space or comma or semicolon",
+			"joinapplication": "Join applications",
+			"refresh": "Refresh",
+			"noapplication": "There is no application at thistime"
+		},
+		"orgchart": {
+			"query": "Role Query",
+			"withextra": "with Extra Information",
+			"comment": "Relational query always start from the current user",
+			"adminpwd": "Admin password is required",
+			"ou_id": "OU_ID",
+			"emp_name": "Employee name",
+			"emp_email": "Employee email",
+			"emp_pwd": "Employee password",
+			"ou_name": "OU Name",
+			"exprotcsv": "Export the whole OrgChart to CSV file",
+			"importcsv": "Import from Orgchart CSV file",
+			"btn": {
+				"refresh": "Refresh",
+				"emp_create": "New or update employee",
+				"emp_delete": "Delete employee by email",
+				"ou_create": "New or update OU",
+				"ou_delete": "Delete OU",
+				"export": "Export",
+				"import": "Import"
+			},
+			"resolver_label": "Org Role Query"
+		},
+		"members": {
+			"members": "Members",
+			"email": "Email",
+			"name": "Name",
+			"group": "Auth Group",
+			"select": "Select",
+			"removeselected": "Remove selected",
+			"remove": "Remove selected from my org",
+			"setgroup": "Set group for selected members",
+			"setpwd": "Set password for selected members"
+		},
+		"data": {
+			"list": "List Definitions",
+			"team": "Team Definitions"
+		},
+		"smtp": {
+			"onlyadmin": "Email setting is managed by org admin",
+			"server": "SMTP Server",
+			"port": "SMTP ServerPort",
+			"secure": "Secure Connection",
+			"user": "SMTP User Name",
+			"user_ph": "account name of SMPT user",
+			"pwd": "SMTP user password",
+			"pwd_ph": "Password of SMTP user",
+			"from": "Sent from",
+			"from_ph": "The sender's display name"
 		}
+	},
+	"pds": {
+		"withextra": "With Extra",
+		"noextra": "Without Extra"
+	},
+	"authgroup": {
+		"ADMIN": "Administrator",
+		"OBSERVER": "Observer",
+		"DOER": "Doer"
 	}
 }

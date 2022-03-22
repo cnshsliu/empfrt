@@ -555,26 +555,26 @@
 			<Container class="mt-3 mb-3">
 				<div class="w-100 text-center fs-3">{orgname}</div>
 				<div class="w-100 text-center fs-6">
-					Administrator: {myorg.owner === user.email ? 'Me' : myorg.owner}
+					{$_('setting.tenant.administrator')}: {myorg.owner === user.email ? 'Me' : myorg.owner}
 				</div>
 				<div class="w-100 text-center fs-6">
-					My Role: {user.group}
+					{$_('setting.tenant.myrole')}: {user.group}
 				</div>
 				{#if user.group === 'ADMIN'}
 					<Card class="mt-3">
-						<CardHeader><CardTitle>My Orgnization</CardTitle></CardHeader>
+						<CardHeader><CardTitle>{$_('setting.tenant.myorg')}</CardTitle></CardHeader>
 						<CardBody>
 							<InputGroup class="mb-1">
-								<InputGroupText>Admin Password:</InputGroupText>
+								<InputGroupText>{$_('setting.tenant.adminpwd')}</InputGroupText>
 								<Input
 									type="password"
 									bind:value={password_for_admin}
-									placeholder="Confirm with admin password"
+									placeholder={$_('setting.tenant.adminpwd_ph')}
 								/>
 							</InputGroup>
 							<InputGroup class="mb-1">
-								<InputGroupText>Set Org Name to:</InputGroupText>
-								<Input bind:value={orgname} placeholder="Orgniazation name" />
+								<InputGroupText>{$_('setting.tenant.name')}</InputGroupText>
+								<Input bind:value={orgname} placeholder={$_('setting.tenant.name_ph')} />
 								<Button
 									on:click={(e) => {
 										e.preventDefault();
@@ -585,8 +585,8 @@
 								</Button>
 							</InputGroup>
 							<InputGroup class="mb-1">
-								<InputGroupText>Set Org theme to:</InputGroupText>
-								<Input bind:value={orgtheme} placeholder="Your customized theme CSS url" />
+								<InputGroupText>{$_('setting.tenant.theme')}</InputGroupText>
+								<Input bind:value={orgtheme} placeholder={$_('setting.tenant.theme_ph')} />
 								<Button
 									on:click={(e) => {
 										e.preventDefault();
@@ -597,7 +597,7 @@
 								</Button>
 							</InputGroup>
 							<InputGroup class="mb-1">
-								<InputGroupText>Set Timezone to:</InputGroupText>
+								<InputGroupText>{$_('setting.tenant.timezone')}</InputGroupText>
 								<Input type="select" bind:value={orgtimezone}>
 									{#each tzArray as tz}
 										<option value={tz.key}>{tz.name} ({tz.diff})</option>
@@ -613,7 +613,7 @@
 								</Button>
 							</InputGroup>
 							<InputGroup class="mb-1">
-								<InputGroupText>Org level tags:</InputGroupText>
+								<InputGroupText>{$_('setting.tenant.orgtags')}</InputGroupText>
 								<Input type="text" bind:value={orgleveltags} />
 								<Button
 									on:click={(e) => {
@@ -625,11 +625,11 @@
 								</Button>
 							</InputGroup>
 							<InputGroup class="mb-1">
-								<InputGroupText>Orgchart Admin:</InputGroupText>
+								<InputGroupText>{$_('setting.tenant.ocadmins')}</InputGroupText>
 								<Input
 									type="text"
 									bind:value={orgchartadminpds}
-									placeholder="Who can modify orgchart (in PDS format)"
+									placeholder={$_('setting.tenant.ocadmins_ph')}
 								/>
 								<Button
 									on:click={async (e) => {
@@ -659,13 +659,13 @@
 					</Card>
 				{:else}
 					<Card class="mt-3">
-						<CardHeader><CardTitle>My Orgnization</CardTitle></CardHeader>
+						<CardHeader><CardTitle>{$_('setting.tenant.myorg')}</CardTitle></CardHeader>
 						<CardBody>
-							<CardSubtitle>The name:</CardSubtitle>
+							<CardSubtitle>{$_('setting.tenant.myorgname')}</CardSubtitle>
 							<CardText>
 								{orgname}
 							</CardText>
-							<CardSubtitle>Timezone:</CardSubtitle>
+							<CardSubtitle>{$_('setting.tenant.myorgtimezone')}</CardSubtitle>
 							<CardText>
 								{orgtimezone}
 								{TimeZone.getDiff(orgtimezone)}
@@ -675,11 +675,13 @@
 				{/if}
 				{#if myorg.adminorg}
 					<Card class="mt-5">
-						<CardHeader><CardTitle>Joincode</CardTitle></CardHeader>
+						<CardHeader><CardTitle>{$_('setting.tenant.joincode')}</CardTitle></CardHeader>
 						<CardBody>
-							<div class="w-100 d-flex align-content-center">Current code: {myorg.joincode}</div>
+							<div class="w-100 d-flex align-content-center">
+								{$_('setting.tenant.currentcode')}: {myorg.joincode}
+							</div>
 							<InputGroup class="mb-1">
-								<InputGroupText>Generated Join Code</InputGroupText>
+								<InputGroupText>{$_('setting.tenant.genjoincode')}</InputGroupText>
 								<Input bind:value={generatedJoinCode} />
 								<Button
 									on:click={(e) => {
@@ -691,7 +693,7 @@
 								</Button>
 							</InputGroup>
 							<InputGroup class="mb-1">
-								<InputGroupText>Self-defined Join Code</InputGroupText>
+								<InputGroupText>{$_('setting.tenant.selfjoincode')}</InputGroupText>
 								<Input bind:value={userDefinedJoinCode} />
 								<Button
 									on:click={(e) => {
@@ -706,14 +708,14 @@
 					</Card>
 					<Card class="mt-3">
 						<CardHeader>
-							<CardTitle>Invite</CardTitle></CardHeader
+							<CardTitle>{$_('setting.tenant.invite')}</CardTitle></CardHeader
 						>
 						<CardBody>
 							<InputGroup class="mb-1">
 								<Input
 									type="textarea"
 									bind:value={invitation}
-									placeholder="Email list to invite, separated by space or comma or semicolon"
+									placeholder={$_('setting.tenant.invite_ph')}
 								/>
 								<Button
 									on:click={() => {
@@ -725,7 +727,7 @@
 					</Card>
 					<Card class="mt-3">
 						<CardHeader>
-							<CardTitle>Join applications</CardTitle></CardHeader
+							<CardTitle>{$_('setting.tenant.joinapplication')}</CardTitle></CardHeader
 						>
 						<CardBody>
 							<Button
@@ -774,7 +776,7 @@
 									</Button>
 								</InputGroup>
 							{:else}
-								There is no join application at this time
+								{$_('setting.tenant.noapplication')}
 							{/if}
 						</CardBody>
 					</Card>
@@ -801,13 +803,16 @@
 						</div>
 					{/if}
 				{:else if orgMembers && orgMembers.members && orgMembers.members.length > 0}
-					<div class="w-100 text-center fs-3">Members</div>
+					<div class="w-100 text-center fs-3">{$_('setting.members.members')}</div>
 					<Col>
 						<table class="w-100 mt-3">
 							<thead>
 								<tr>
-									<th> Email</th> <th>Name</th><th> Group </th>
-									<th> {orgMembers.adminorg ? 'Select' : ''} </th>
+									<th> {$_('setting.members.email')} </th> <th> {$_('setting.members.name')} </th>
+									<th>
+										{$_('setting.members.group')}
+									</th>
+									<th> {orgMembers.adminorg ? $_('setting.members.select') : ''} </th>
 								</tr>
 							</thead>
 							<tbody>
@@ -839,34 +844,34 @@
 					</Col>
 					<Col class="d-flex justify-content-end mt-2">
 						<InputGroup class="mb-1">
-							<InputGroupText>Admin password</InputGroupText>
+							<InputGroupText>{$_('setting.adminpwd')}</InputGroupText>
 							<Input
 								type="password"
 								bind:value={password_for_admin}
-								placeholder="Confirm with your password"
+								placeholder={$_('setting.adminpwd_ph')}
 							/>
 						</InputGroup>
 					</Col>
 					<Col class="d-flex justify-content-end mt-2">
 						<InputGroup class="mb-1">
-							<InputGroupText>Remove selected?</InputGroupText>
+							<InputGroupText>{$_('setting.members.removeselected')}?</InputGroupText>
 							<Button
 								on:click={(e) => {
 									e.preventDefault();
 									removeSelectedMembers();
 								}}
 							>
-								Remove selected from my Org
+								{$_('setting.members.remove')}
 							</Button>
 						</InputGroup>
 					</Col>
 					<Col class="d-flex justify-content-end mt-2">
 						<InputGroup class="mb-1">
-							<Label for="groupSelect">Set group for selected members</Label>
+							<Label for="groupSelect">{$_('setting.members.setgroup')}</Label>
 							<Input type="select" name="select" id="groupSelect" bind:value={set_group_to}>
-								<option value="ADMIN">Administrator</option>
-								<option value="OBSERVER">Observer</option>
-								<option value="DOER">Doer</option>
+								<option value="ADMIN">{$_('authgroup.ADMIN')}</option>
+								<option value="OBSERVER">{$_('authgroup.OBSERVER')}</option>
+								<option value="DOER">{$_('authgroup.DOER')}</option>
 							</Input>
 							<Button
 								on:click={(e) => {
@@ -874,13 +879,13 @@
 									setSelectedGroup();
 								}}
 							>
-								Set
+								{$_('setting.set')}
 							</Button>
 						</InputGroup>
 					</Col>
 					<Col class="d-flex justify-content-end mt-2">
 						<InputGroup class="mb-1">
-							<Label for="groupSelect">Set password for selected members</Label>
+							<Label for="groupSelect">{$_('setting.members.setpwd')}</Label>
 							<Input type="password" id="password_for_selected" bind:value={set_password_to} />
 							<Button
 								on:click={(e) => {
@@ -888,7 +893,7 @@
 									setSelectedPassword();
 								}}
 							>
-								Set
+								{$_('setting.set')}
 							</Button>
 						</InputGroup>
 					</Col>
@@ -900,8 +905,8 @@
 		</TabPane>
 		<TabPane tabId="data" tab={$_('setting.tab.data')} active={isActive('data')}>
 			<ul>
-				<li><a href="/list">List Definitions</a></li>
-				<li><a href="/team">Team Definitions</a></li>
+				<li><a href="/list">{$_('setting.data.list')}</a></li>
+				<li><a href="/team">{$_('setting.data.team')}</a></li>
 			</ul>
 		</TabPane>
 	</TabContent>

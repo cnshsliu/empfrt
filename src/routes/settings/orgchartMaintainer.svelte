@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { API_SERVER } from '$lib/Env';
+	import { _ } from '$lib/i18n';
 	import * as api from '$lib/api';
 	import { session } from '$app/stores';
 	import { getNotificationsContext } from 'svelte-notifications';
@@ -82,17 +83,17 @@
 	<Container class="text-nowrap">
 		<div class="mt-5" />
 		<InputGroup>
-			<InputGroupText>Admin password is required:</InputGroupText>
+			<InputGroupText>{$_('setting.orgchart.adminpwd')}</InputGroupText>
 			<Input bind:value={admin_password} type="password" required={true} />
 		</InputGroup>
 		<InputGroup class="mt-2">
-			<InputGroupText>OU_ID:</InputGroupText>
+			<InputGroupText>{$_('setting.orgchart.ou_id')}</InputGroupText>
 			<Input bind:value={new_user_ou_id} />
-			<InputGroupText>Name:</InputGroupText>
+			<InputGroupText>{$_('setting.orgchart.emp_name')}</InputGroupText>
 			<Input bind:value={new_user_name} />
-			<InputGroupText>Email:</InputGroupText>
+			<InputGroupText>{$_('setting.orgchart.emp_email')}</InputGroupText>
 			<Input bind:value={new_user_email} />
-			<InputGroupText>Password:</InputGroupText>
+			<InputGroupText>{$_('setting.orgchart.emp_pwd')}</InputGroupText>
 			<Input bind:value={default_user_password} type="password" required={true} />
 			<Button
 				color="primary"
@@ -114,11 +115,11 @@
 					}
 				}}
 			>
-				New or update User
+				{$_('setting.orgchart.btn.emp_create')}
 			</Button>
 		</InputGroup>
 		<InputGroup class="mt-2">
-			<InputGroupText>Email:</InputGroupText>
+			<InputGroupText>{$_('setting.orgchart.emp_email')}</InputGroupText>
 			<Input bind:value={delete_user_email} />
 			<Button
 				color="primary"
@@ -140,13 +141,13 @@
 					}
 				}}
 			>
-				Delete User by email
+				{$_('setting.orgchart.btn.emp_delete')}l
 			</Button>
 		</InputGroup>
 		<InputGroup class="mt-2">
-			<InputGroupText>OU_ID:</InputGroupText>
+			<InputGroupText>{$_('setting.orgchart.ou_id')}</InputGroupText>
 			<Input bind:value={new_ou_id} />
-			<InputGroupText>Name:</InputGroupText>
+			<InputGroupText>{$_('setting.orgchart.ou_name')}</InputGroupText>
 			<Input bind:value={new_ou_name} />
 			<Button
 				color="primary"
@@ -168,11 +169,11 @@
 					}
 				}}
 			>
-				New or update OU
+				{$_('setting.orgchart.btn.ou_cretae')}
 			</Button>
 		</InputGroup>
 		<InputGroup class="mt-2">
-			<InputGroupText>OU_ID:</InputGroupText>
+			<InputGroupText>{$_('setting.orgchart.ou_id')}</InputGroupText>
 			<Input bind:value={delete_ou_id} />
 			<Button
 				color="primary"
@@ -194,11 +195,11 @@
 					}
 				}}
 			>
-				Delete OU by ID
+				{$_('setting.orgchart.btn.ou_delete')}
 			</Button>
 		</InputGroup>
 		<InputGroup class="mt-5">
-			<InputGroupText>Export the whole OrgChart to CSV file</InputGroupText>
+			<InputGroupText>{$_('setting.orgchart.exportcsv')}</InputGroupText>
 			<Button
 				size="sm"
 				color="primary"
@@ -216,13 +217,15 @@
 					}
 				}}
 			>
-				Export
+				{$_('setting.orgchart.btn.export')}
 			</Button>
 		</InputGroup>
 		<InputGroup class="mt-5">
-			<InputGroupText>Import from Orgchart CSV file</InputGroupText>
+			<InputGroupText>{$_('setting.orgchart.importcsv')}</InputGroupText>
 			<input class="form-control" name="file" type="file" bind:files />
-			<Button size="sm" on:click={uploadOrgChart} color="primary">Import</Button>
+			<Button size="sm" on:click={uploadOrgChart} color="primary"
+				>{$_('setting.orgchart.btn.import')}</Button
+			>
 		</InputGroup>
 		<OrgChartCsvFormat />
 		{#if errMsg}

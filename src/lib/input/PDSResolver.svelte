@@ -139,7 +139,7 @@
 			}
 		}}
 	>
-		{showExtra ? 'No Extra' : 'with Extra'}
+		{showExtra ? $_('pds.noextra') : $_('pds.withextra')}
 	</Button>
 	<Button
 		color="primary"
@@ -219,7 +219,7 @@
 
 {#if embed === false}
 	<Modal isOpen={openPDsResolver} toggle={togglePDsResolver} scrollable>
-		<ModalHeader toggle={togglePDsResolver}>PDS Resolver</ModalHeader>
+		<ModalHeader toggle={togglePDsResolver}>{$_('pds.resolver')}</ModalHeader>
 		<ModalBody>
 			<p style="min-height: 1500px;">
 				{#if theError}
@@ -234,7 +234,7 @@
 			</p>
 		</ModalBody>
 		<ModalFooter>
-			<Button on:click={togglePDsResolver}>Close</Button>
+			<Button on:click={togglePDsResolver}>{$_('button.close')}</Button>
 		</ModalFooter>
 	</Modal>
 {:else if theError}

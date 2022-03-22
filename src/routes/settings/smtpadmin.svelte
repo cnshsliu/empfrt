@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Container, Row, Col, Button, InputGroup, InputGroupText, Input } from 'sveltestrap';
+	import { _ } from '$lib/i18n';
 	import type { User, Org, SmtpDef } from '$lib/types';
 	let password_for_admin = '';
 	let smtp: SmtpDef = {
@@ -43,72 +44,62 @@
 			<Row cols="1">
 				<Col class="d-flex justify-content-end mt-2">
 					<InputGroup class="mb-1">
-						<InputGroupText>Admin Password:</InputGroupText>
+						<InputGroupText>{$_('setting.adminpwd')}</InputGroupText>
 						<Input
 							type="password"
 							bind:value={password_for_admin}
-							placeholder="Confirm with your password"
+							placeholder={$_('setting.adminpwd_ph')}
 						/>
 					</InputGroup>
 				</Col>
 				<Col class="d-flex justify-content-end mt-2">
-					<InputGroupText>SMTP Server:</InputGroupText>
+					<InputGroupText>{$_('setting.smtp.server')}</InputGroupText>
 					<InputGroup class="mb-1">
-						<Input
-							id="smtp_host"
-							type="text"
-							bind:value={smtp.host}
-							placeholder="SMTP server address"
-						/>
+						<Input id="smtp_host" type="text" bind:value={smtp.host} placeholder="" />
 					</InputGroup>
 				</Col>
 				<Col class="d-flex justify-content-end mt-2">
-					<InputGroupText>SMTP Server Port:</InputGroupText>
+					<InputGroupText>{$_('setting.smtp.port')}</InputGroupText>
 					<InputGroup class="mb-1">
-						<Input
-							id="smtp_port"
-							type="number"
-							bind:value={smtp.port}
-							placeholder="SMTP server port"
-						/>
+						<Input id="smtp_port" type="number" bind:value={smtp.port} placeholder="" />
 					</InputGroup>
 				</Col>
 				<Col class="d-flex justify-content-end mt-2">
-					<InputGroupText>Secure Connection:</InputGroupText>
+					<InputGroupText>{$_('setting.smtp.secure')}</InputGroupText>
 					<InputGroup class="mb-1">
 						<Input id="smtp_secure" type="checkbox" checked={smtp.secure} />
 					</InputGroup>
 				</Col>
 				<Col class="d-flex justify-content-end mt-2">
-					<InputGroupText>SMTP user name:</InputGroupText>
+					<InputGroupText>{$_('setting.smtp.user')}</InputGroupText>
 					<InputGroup class="mb-1">
 						<Input
 							id="smtp_username"
 							type="text"
 							bind:value={smtp.username}
-							placeholder="SMTP user name"
+							placeholder={$_('setting.smtp.user_ph')}
 						/>
 					</InputGroup>
 				</Col>
 				<Col class="d-flex justify-content-end mt-2">
-					<InputGroupText>SMTP user password:</InputGroupText>
+					<InputGroupText>{$_('setting.smtp.pwd')}</InputGroupText>
 					<InputGroup class="mb-1">
 						<Input
 							id="smtp_password"
 							type="password"
 							bind:value={smtp.password}
-							placeholder="SMTP user password"
+							placeholder={$_('setting.smtp.pwd_ph')}
 						/>
 					</InputGroup>
 				</Col>
 				<Col class="d-flex justify-content-end mt-2">
-					<InputGroupText>Sent from:</InputGroupText>
+					<InputGroupText>{$_('setting.smtp.from')}</InputGroupText>
 					<InputGroup class="mb-1">
 						<Input
 							id="smtp_from"
 							type="text"
 							bind:value={smtp.from}
-							placeholder="The sender's display name"
+							placeholder={$_('setting.smtp.from_ph')}
 						/>
 					</InputGroup>
 				</Col>
@@ -119,7 +110,7 @@
 							await saveSmtpSetting();
 						}}
 					>
-						Setting
+						{$_('setting.set')}
 					</Button>
 				</Col>
 			</Row>

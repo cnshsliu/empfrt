@@ -413,6 +413,8 @@
 	},
 	"setting": {
 		"set": "设置",
+		"adminpwd": "管理员密码",
+		"adminpwd_ph": "本页的操作均需要使用管理员密码已确认",
 		"tab": {
 			"personal": "个人设置",
 			"delegation": "工作委托",
@@ -442,6 +444,92 @@
 			"tome": "别人委托给我的",
 			"Delegatee": "被委托人",
 			"removeSelected": "中止接受委托"
+		},
+		"tenant": {
+			"administrator": "组织管理员",
+			"myrole": "我的角色",
+			"myorg": "组织",
+			"adminpwd": "管理员密码",
+			"adminpwd_ph": "本页的操作均需要使用管理员密码已确认",
+			"name": "设置组织名称",
+			"name_ph": "新的组织名称",
+			"theme": "自定义组织级别界面皮肤",
+			"theme_ph": "自定义组织级别界面皮肤CSS的URL地址",
+			"timezone": "设置工作时区为",
+			"orgtags": "组织级业务标签(;分割)",
+			"ocadmins": "组织结构管理员",
+			"ocadmins_ph": "谁能修改组织结构（请使用PDS格式指定）",
+			"myorg": "我的组织",
+			"myorgname": "我的组织名称",
+			"myorgtimezone": "时区",
+			"joincode": "加入组织的申请代码",
+			"currentcode": "当前申请代码",
+			"genjoincode": "生成申请代码",
+			"selfjoincode": "自定义申请代码",
+			"invite": "邀请他人加入组织",
+			"invite_ph": "用空格、逗号、分号分割的多个邮箱地址",
+			"joinapplication": "加入申请",
+			"refresh": "刷新",
+			"noapplication": "当前没有加入申请"
+		},
+		"orgchart": {
+			"query": "角色查询",
+			"withextra": "使用额外测试数据",
+			"comment": "关系类查询总是基于当前用户",
+			"adminpwd": "组织管理员密码需再次提供",
+			"ou_id": "OU_ID",
+			"ou_name": "部门名称",
+			"emp_name": "员工姓名",
+			"emp_email": "员工邮箱",
+			"emp_pwd": "员工密码",
+			"exportcsv": "导出组织结构到CSV文件",
+			"importcsv": "从CSV文件导入组织结构",
+			"btn": {
+				"refresh": "刷新",
+				"emp_create": "新建或删除员工",
+				"emp_delete": "删除员工",
+				"ou_create": "新建或修改部门",
+				"ou_delete": "删除部门",
+				"export": "导出",
+				"import": "导入"
+			},
+			"resolver_label": "组织内角色查询"
+		},
+		"members": {
+			"members": "团队成员管理",
+			"email": "邮箱",
+			"name": "姓名",
+			"group": "授权组",
+			"select": "选定",
+			"removeselected": "删除所选员工",
+			"remove": "从组织中删除已选择员工",
+			"setgroup": "为所选定员工设定授权组",
+			"setpwd": "为所选定员工设定密码"
+		},
+		"data": {
+			"list": "列表定义",
+			"team": "机动组定义"
+		},
+		"smtp": {
+			"onlyadmin": "只有管理员有权限设置SMTP",
+			"server": "SMTP服务器地址",
+			"port": "SMTP服务器端口",
+			"secure": "安全连接",
+			"user": "SMTP发件账号",
+			"user_ph": "用来发送邮件的账号",
+			"pwd": "SMTP发件账号密码",
+			"pwd_ph": "用来发送邮件的账号密码",
+			"from": "发送者邮箱地址",
+			"from_ph": "发送着的显示名称"
 		}
+	},
+	"pds": {
+		"withextra": "使用附加信息",
+		"noextra": "不使用附加信息"
+	},
+	"authgroup": {
+		"ADMIN": "管理员",
+		"OBSERVER": "观察者",
+		"DOER": "执行者"
 	}
 }
