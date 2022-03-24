@@ -1735,6 +1735,58 @@ ret='DEFAULT'; `
 		} else return null;
 	}
 
+	async changeId(oldId, newId) {
+		let that = this;
+		console.log(oldId, newId);
+		that.JC3.find(`#${oldId}`).attr('id', newId);
+		let connectsFromThis = that.JC3.find(`.connect[fid="${oldId}"]`);
+		for (let i = 0; i < connectsFromThis.length; i++) {
+			let jqC = $(connectsFromThis[i]);
+			let toId = jqC.attr('tid');
+			let oldClass = `connect_${oldId}_${toId}`;
+			let newClass = `connect_${newId}_${toId}`;
+			jqC.attr('id', newClass);
+			jqC.removeClass(oldClass).addClass(newClass);
+			jqC.attr('fid', newId);
+			let oldTriClass = `${oldClass}_triangle`;
+			let newTriClass = `${newClass}_triangle`;
+			that.JC3.find(`.${oldTriClass}`).removeClass(oldTriClass).addClass(newTriClass);
+
+			let oldTextClass = `${oldClass}_text`;
+			let newTextClass = `${newClass}_text`;
+			that.JC3.find(`.${oldTextClass}`).removeClass(oldTextClass).addClass(newTextClass);
+		}
+		let connectsToThis = that.JC3.find(`.connect[tid="${oldId}"]`);
+		for (let i = 0; i < connectsToThis.length; i++) {
+			let jqC = $(connectsToThis[i]);
+			let fromId = jqC.attr('fid');
+			let oldClass = `connect_${fromId}_${oldId}`;
+			let newClass = `connect_${fromId}_${newId}`;
+			jqC.attr('id', newClass);
+			jqC.removeClass(oldClass).addClass(newClass);
+			jqC.attr('tid', newId);
+			let oldTriClass = `${oldClass}_triangle`;
+			let newTriClass = `${newClass}_triangle`;
+			that.JC3.find(`.${oldTriClass}`).removeClass(oldTriClass).addClass(newTriClass);
+
+			let oldTextClass = `${oldClass}_text`;
+			let newTextClass = `${newClass}_text`;
+			that.JC3.find(`.${oldTextClass}`).removeClass(oldTextClass).addClass(newTextClass);
+		}
+		let jqDIV = that.JC3.find(`#${oldId}`);
+		jqDIV.attr('id', newId);
+		let tplLinks = that.tpl.find(`.link[from="${oldId}"]`);
+		for (let i = 0; i < tplLinks.length; i++) {
+			$(tplLinks[i]).attr('from', newId);
+		}
+		tplLinks = that.tpl.find(`.link[to="${oldId}"]`);
+		for (let i = 0; i < tplLinks.length; i++) {
+			$(tplLinks[i]).attr('to', newId);
+		}
+		that.redrawLinkLines(jqDIV, 'change ID', 'both');
+		that.onChange('change ID');
+	}
+
 	async setNodeEventHandler(jqNodeDIV: myJQuery, callback?: any, setDrag = true) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;

@@ -14,16 +14,20 @@
 		TabPane
 	} from 'sveltestrap';
 	import RolePicker from '$lib/designer/prop/RolePicker.svelte';
+	import ChangeID from './ChangeID.svelte';
 
 	export let nodeInfo;
 	export let roleOptions = [];
 	export let showHelp;
 	export let readonly;
+	export let jq;
+	export let KFK;
 	let helpShowing = false;
 </script>
 
 <Container>
 	<Row cols="1">
+		<ChangeID {jq} bind:idForInput={nodeInfo.nodeProps.INFORM.id} {KFK} {readonly} />
 		<Col>
 			<InputGroup size="sm">
 				<InputGroupText>
@@ -71,7 +75,6 @@
 	</TabContent>
 	<Row>
 		<Col class="d-flex mt-3">
-			<span class="kfk-property-id"> ID: {nodeInfo.nodeProps.INFORM.id} </span>
 			<NavLink
 				on:click={() => {
 					helpShowing ? showHelp() : showHelp('INFORM');

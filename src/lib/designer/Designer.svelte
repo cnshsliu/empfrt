@@ -600,17 +600,19 @@
 							{roleOptions}
 							{showHelp}
 							{readonly}
+							{jq}
+							{KFK}
 							bind:scenario={KFK.scenario}
 							{workid}
 						/>
 					{:else if nodeInfo.nodeType === 'INFORM'}
-						<Inform {nodeInfo} {roleOptions} {showHelp} {readonly} />
+						<Inform {nodeInfo} {roleOptions} {showHelp} {readonly} {jq} {KFK} />
 					{:else if nodeInfo.nodeType === 'SCRIPT'}
-						<ScriptProp {nodeInfo} {showHelp} {readonly} />
+						<ScriptProp {nodeInfo} {showHelp} {readonly} {jq} {KFK} />
 					{:else if nodeInfo.nodeType === 'TIMER'}
-						<Timer {nodeInfo} {showHelp} {readonly} />
+						<Timer {nodeInfo} {showHelp} {readonly} {jq} {KFK} />
 					{:else if nodeInfo.nodeType === 'SUB'}
-						<Sub {nodeInfo} {errMsg} {showHelp} {readonly} />
+						<Sub {nodeInfo} {errMsg} {showHelp} {readonly} {jq} {KFK} />
 					{:else if nodeInfo.nodeType === 'CONNECT'}
 						<Connect {nodeInfo} {showHelp} {readonly} />
 					{/if}

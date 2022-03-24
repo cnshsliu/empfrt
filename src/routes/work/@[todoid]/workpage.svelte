@@ -302,7 +302,7 @@
 	};
 </script>
 
-<!--pre><code>
+<!-- pre><code>
 {JSON.stringify(work, null, 2)}
 </code></pre -->
 {#if work && work.todoid}

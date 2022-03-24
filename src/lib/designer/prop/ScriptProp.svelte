@@ -14,11 +14,14 @@
 	} from 'sveltestrap';
 	import { session } from '$app/stores';
 	import Spinner from '$lib/Spinner.svelte';
+	import ChangeID from './ChangeID.svelte';
 
 	import * as api from '$lib/api';
 	export let nodeInfo;
 	export let showHelp;
 	export let readonly;
+	export let jq;
+	export let KFK;
 	let helpShowing = false;
 	let consoleMsg = '';
 	let user = $session.user;
@@ -28,6 +31,7 @@
 
 <Container>
 	<Row cols="1">
+		<ChangeID {jq} bind:idForInput={nodeInfo.nodeProps.SCRIPT.id} {KFK} {readonly} />
 		<Col>
 			<InputGroup size="sm">
 				<InputGroupText>
@@ -112,7 +116,6 @@
 			</Col>
 		{/if}
 		<Col class="d-flex mt-3">
-			<span class="kfk-property-id"> ID: {nodeInfo.nodeProps.SCRIPT.id} </span>
 			<NavLink
 				on:click={() => {
 					helpShowing ? showHelp() : showHelp('SCRIPT');

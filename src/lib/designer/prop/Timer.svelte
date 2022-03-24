@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { _ } from '$lib/i18n';
 	import Parser from '$lib/parser';
+	import ChangeID from './ChangeID.svelte';
 	import {
 		NavLink,
 		Icon,
@@ -15,6 +16,8 @@
 	export let nodeInfo;
 	export let showHelp;
 	export let readonly;
+	export let jq;
+	export let KFK;
 	let helpShowing = false;
 	let timerCodePrefix = '+';
 	if (Parser.isEmpty(nodeInfo.nodeProps.TIMER.code)) {
@@ -102,6 +105,7 @@
 
 <Container>
 	<Row cols="1">
+		<ChangeID {jq} bind:idForInput={nodeInfo.nodeProps.TIMER.id} {KFK} {readonly} />
 		<Col>
 			<InputGroup size="sm">
 				<InputGroupText>
@@ -203,7 +207,6 @@
 			</Container>
 		</Col>
 		<Col class="d-flex mt-3">
-			<span class="kfk-property-id"> ID: {nodeInfo.nodeProps.TIMER.id} </span>
 			<NavLink
 				on:click={() => {
 					helpShowing ? showHelp() : showHelp('TIMER');

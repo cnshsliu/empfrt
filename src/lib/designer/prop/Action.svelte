@@ -6,6 +6,7 @@
 	import { session } from '$app/stores';
 	import { qtb } from '$lib/utils';
 	import PDSResolver from '$lib/input/PDSResolver.svelte';
+	import ChangeID from './ChangeID.svelte';
 	import {
 		NavLink,
 		Icon,
@@ -31,7 +32,10 @@
 	export let readonly;
 	export let scenario;
 	export let workid;
+	export let jq;
+	export let KFK;
 	let todos = [];
+	let errmsg = '';
 
 	let TimeTool = null;
 	let helpShowing = false;
@@ -105,6 +109,9 @@
 
 <Container>
 	<Row cols="1">
+		<Col>
+			<ChangeID {jq} bind:idForInput={nodeInfo.nodeProps.ACTION.id} {KFK} {readonly} />
+		</Col>
 		<Col>
 			<InputGroup size="sm">
 				<InputGroupText>
@@ -547,9 +554,8 @@
 		{/if}
 		<!--variables-->
 	</TabContent>
-	<Row>
+	<Row cols="1">
 		<Col class="d-flex mt-3">
-			<span class="kfk-property-id"> ID: {nodeInfo.nodeProps.ACTION.id} </span>
 			<NavLink
 				on:click={() => {
 					helpShowing ? showHelp() : showHelp('ACTION');
