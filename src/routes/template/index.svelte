@@ -134,6 +134,9 @@
 
 	let currentTags = [];
 	const clearTag = function () {
+		setTimeout(async () => {
+			await reloadTags();
+		});
 		currentTags = [];
 		$filterStorage.tplTag = '';
 		if (theRemoteTable) {
