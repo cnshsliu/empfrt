@@ -552,5 +552,14 @@
 		"DEPLOYMENT": "DEPLOYMENT",
 		"paas": "Paas Service",
 		"privateinstall": "Private Install"
+	},
+	"changeid": {
+		"current": "Current ID: ",
+		"changeto": "Change ID to",
+		"set": "Set",
+		"tooshort": "id is too short",
+		"exist": "already exists",
+		"meaningful": "You may need to give it a meaningful unique ID",
+		"idformat": "This is not a valid node id"
 	}
 }

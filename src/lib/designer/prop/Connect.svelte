@@ -19,7 +19,8 @@
 	export let showHelp;
 	export let readonly;
 	let helpShowing = false;
-	let showEditor = false;
+	let showEditor = true;
+	if (readonly) showEditor = false;
 	if (Parser.isEmpty(nodeInfo.caseValue)) {
 		nodeInfo.caseValue = '';
 	}

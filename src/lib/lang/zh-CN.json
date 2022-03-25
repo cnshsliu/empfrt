@@ -550,5 +550,14 @@
 		"DEPLOYMENT": "部署方式",
 		"paas": "Paas服务",
 		"privateinstall": "独立部署"
+	},
+	"changeid": {
+		"current": "当前节点ID: ",
+		"changeto": "修改节点ID为",
+		"set": "修改",
+		"tooshort": "节点ID太短",
+		"exist": "already exists",
+		"meaningful": "缺省ID是自动生成的，你可能需要给它一个更加有意义的ID",
+		"idformat": "这个节点ID是不合法字符串"
 	}
 }

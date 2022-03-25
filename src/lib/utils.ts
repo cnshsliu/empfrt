@@ -42,3 +42,11 @@ export const qtb = function (str: string) {
 	str = str.replace(/》/g, '>');
 	return str;
 };
+
+export const formatId = function (id) {
+	if (id.match('^[A-Za-z][\\w]*$')) {
+		return '';
+	} else {
+		return 'wrong format';
+	}
+};
