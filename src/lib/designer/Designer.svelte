@@ -407,6 +407,10 @@
 		});
 	}
 
+	export async function showNodeIdDIV(flag) {
+		await KFK.showNodeIdDIV(flag);
+	}
+
 	export async function changeViewMode(tpl_mode: string) {
 		await KFK.loadTemplateDoc(template, tpl_mode);
 	}

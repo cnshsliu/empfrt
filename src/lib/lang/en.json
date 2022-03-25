@@ -337,7 +337,8 @@
 					"yes": "Reload"
 				}
 			}
-		}
+		},
+		"showid": "Show node ID"
 	},
 	"filepond": {
 		"labelIdle": {

@@ -334,7 +334,8 @@
 					"yes": "重新加载"
 				}
 			}
-		}
+		},
+		"showid": "显示节点ID"
 	},
 	"filepond": {
 		"labelIdle": {

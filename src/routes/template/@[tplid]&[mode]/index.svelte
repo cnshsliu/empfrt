@@ -46,7 +46,7 @@
 	import { session } from '$app/stores';
 	import { title } from '$lib/title';
 	import * as api from '$lib/api';
-	import { Row, Col, Nav, NavLink } from 'sveltestrap';
+	import { Row, Col, Nav, NavLink, Input } from 'sveltestrap';
 	import { Icon, Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'sveltestrap';
 	import { onMount } from 'svelte';
 	import { enhance } from '$lib/form';
@@ -60,6 +60,7 @@
 	let readonly = tpl_mode !== 'edit';
 	let recentTemplates = [];
 	let recentTeams = [];
+	let showNodeId = false;
 
 	const saveOneRecentTemplate = function (tplid) {
 		if (tplid === null || tplid === undefined || tplid === '') return;
@@ -194,6 +195,10 @@
 			type: type,
 			removeAfter: time
 		});
+	}
+
+	async function setShowNodeId(e) {
+		console.log(showNodeId);
 	}
 </script>
 
@@ -353,6 +358,17 @@
 						{/if}
 					{/if}
 				</Nav>
+				<div class="ms-5">
+					<input
+						type="checkbox"
+						class="form-check-input"
+						bind:checked={showNodeId}
+						on:change={async () => {
+							await theDesigner.showNodeIdDIV(showNodeId);
+						}}
+					/>
+					{$_('designer.showid')}
+				</div>
 			</Col>
 		</Row>
 		<Row class="mt-2 d-flex justify-content-center">

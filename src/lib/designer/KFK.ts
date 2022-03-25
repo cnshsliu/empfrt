@@ -328,6 +328,7 @@ class KFKclass {
 	user: User = null;
 	bwid: string = '';
 	isMobile: boolean = false;
+	showNodeId: boolean = false;
 
 	tobeRemovedConnectId: string = null;
 	oldTool = 'POINTER';
@@ -684,6 +685,7 @@ class KFKclass {
 	//删除添加eventHandler带来的额外的、会引起复制节点event响应不正常的内容
 	removeNodeEventFootprint(jqNodeDIV: myJQuery) {
 		jqNodeDIV.find('.mobilehandler').remove();
+		jqNodeDIV.find('.nodeidlabel').remove();
 		jqNodeDIV.find('.ui-resizable-handle').remove();
 		jqNodeDIV.find('.locklabel').remove();
 		jqNodeDIV.removeClass(
@@ -1738,7 +1740,9 @@ ret='DEFAULT'; `
 	async changeId(oldId, newId) {
 		let that = this;
 		console.log(oldId, newId);
-		that.JC3.find(`#${oldId}`).attr('id', newId);
+		let jqDIV = that.JC3.find(`#${oldId}`);
+		jqDIV.attr('id', newId);
+		jqDIV.find(`.nodeidlabel`).text(newId);
 		let connectsFromThis = that.JC3.find(`.connect[fid="${oldId}"]`);
 		for (let i = 0; i < connectsFromThis.length; i++) {
 			let jqC = $(connectsFromThis[i]);
@@ -1773,8 +1777,6 @@ ret='DEFAULT'; `
 			let newTextClass = `${newClass}_text`;
 			that.JC3.find(`.${oldTextClass}`).removeClass(oldTextClass).addClass(newTextClass);
 		}
-		let jqDIV = that.JC3.find(`#${oldId}`);
-		jqDIV.attr('id', newId);
 		let tplLinks = that.tpl.find(`.link[from="${oldId}"]`);
 		for (let i = 0; i < tplLinks.length; i++) {
 			$(tplLinks[i]).attr('from', newId);
@@ -2230,6 +2232,8 @@ ret='DEFAULT'; `
 				'',
 				''
 			);
+			that.addMobileHandler([jqDIV]);
+			that.addNodeIdDIV([jqDIV]);
 			that.focusOnNode(jqDIV);
 			that.yarkOpHistory({
 				obj: 'node',
@@ -4151,6 +4155,7 @@ ret='DEFAULT'; `
 			await that.JC3.append(nodes);
 			const guiNodes = that.JC3.find('.node');
 			await that.addMobileHandler(guiNodes);
+			await that.addNodeIdDIV(guiNodes);
 			for (let i = 0; i < guiNodes.length; i++) {
 				const jqNode = $(guiNodes[i]);
 				await that.setNodeEventHandler(jqNode);
@@ -4249,6 +4254,39 @@ ret='DEFAULT'; `
 		}
 	}
 
+	async addNodeIdDIV(guiNodes) {
+		let that = this;
+		//if (!that.isMobile) return;
+		for (let i = 0; i < guiNodes.length; i++) {
+			let kfkClass = that.getKfkClass($(guiNodes[i]));
+			if (['AND', 'OR', 'START', 'END', 'GROUND', 'THROUGH'].includes(kfkClass)) {
+				continue;
+			}
+			$(guiNodes[i]).append(
+				`<div class='nodeidlabel ${
+					that.showNodeId ? '' : 'nodisplay'
+				} m-0 p-0 inline-block text-center'>${$(guiNodes[i]).attr('id')}</div>`
+			);
+		}
+	}
+
+	async showNodeIdDIV(flag) {
+		let that = this;
+		that.showNodeId = flag;
+		if (flag) {
+			that.JC3.find('.nodeidlabel').removeClass('nodisplay');
+		} else {
+			that.JC3.find('.nodeidlabel').addClass('nodisplay');
+		}
+	}
+
+	async onCtrlDown() {
+		let that = this;
+	}
+	async onCtrlUp() {
+		let that = this;
+	}
+
 	/**
 	 * @type {}
 	 */
@@ -4276,6 +4314,7 @@ ret='DEFAULT'; `
 			await that.JC3.append(nodes);
 			const guiNodes = that.JC3.find('.node');
 			await that.addMobileHandler(guiNodes);
+			await that.addNodeIdDIV(guiNodes);
 			//在上面的that.JC3.append(nodes) 以后，
 			//会导致that.tpl变空（对一个包含很多节点的模板，会变空 .node
 			//和.link全部会丢失，当节点不多时，.node没有了，.link还在）
@@ -4358,6 +4397,7 @@ ret='DEFAULT'; `
 			y: that.TopB
 		});
 	}
+
 	scrollToStartNode() {
 		const that = this;
 		let startNode = that.JC3.find('.START').first();
@@ -4372,6 +4412,7 @@ ret='DEFAULT'; `
 			that.scrollToFirstPage();
 		}
 	}
+
 	scrollToPos(pos: Point) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -4401,6 +4442,7 @@ ret='DEFAULT'; `
 		that.toolboxMouseDown = true;
 		that.tool = tool;
 	}
+
 	onToolboxMouseUp() {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -4521,8 +4563,10 @@ ret='DEFAULT'; `
 					that.tmpTool = that.tool;
 					that.setTool('POINTER');
 				}
-			} else if (evt.key === 'Control') that.KEYDOWN.ctrl = true;
-			else if (evt.key === 'Alt') that.KEYDOWN.alt = true;
+			} else if (evt.key === 'Control') {
+				that.KEYDOWN.ctrl = true;
+				await that.onCtrlDown();
+			} else if (evt.key === 'Alt') that.KEYDOWN.alt = true;
 			else if (evt.key === 'Meta') that.KEYDOWN.meta = true;
 			//如果正处于编辑状态，则不做处理
 			//禁止Ctrl-A  and Ctrl-S
@@ -4613,11 +4657,10 @@ ret='DEFAULT'; `
 			}
 		});
 		//eslint-disable-next-line
-		$(document).keyup(function (evt) {
+		$(document).keyup(async function (evt) {
 			switch (evt.key) {
 				case 'Shift':
 					that.KEYDOWN.shift = false;
-					console.log('shift up');
 					if (that.tmpTool) {
 						that.setTool(that.tmpTool);
 						that.tmpTool = null;
@@ -4625,6 +4668,7 @@ ret='DEFAULT'; `
 					break;
 				case 'Control':
 					that.KEYDOWN.ctrl = false;
+					await that.onCtrlUp();
 					//that.stopZoomShape();
 					break;
 				case 'Alt':

@@ -1842,6 +1842,12 @@ svg text.selected tspan {
 	color: white;
 	font-size: 19px;
 }
+.node .nodeidlabel {
+	position: absolute;
+	top: -20px;
+	height: 24;
+	font-size: 12px;
+}
 div.work,
 div.pbo {
 	display: none;

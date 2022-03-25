@@ -13,7 +13,6 @@
 	const onInput = function (e) {
 		e.preventDefault();
 		let inputValue = e.target.value;
-		console.log(inputValue);
 		inputValue = inputValue.trim();
 		e.target.value = inputValue;
 		if (inputValue.length < 4) {
