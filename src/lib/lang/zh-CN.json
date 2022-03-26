@@ -219,6 +219,7 @@
 		"worklogof": "流程执行记录",
 		"monitor": "监控",
 		"print": "打印",
+		"showlog": "显示日志",
 		"startat": "启动于",
 		"startby": "启动者",
 		"nodevars": "节点参数",

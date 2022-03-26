@@ -485,7 +485,7 @@
 								<h5 class="">
 									<a
 										class="preview-link kfk-workflow-id tnt-workflow-id"
-										href="/workflow/@{row.wfid}/monitor"
+										href="/workflow/@{row.wfid}"
 									>
 										{row.wftitle}
 										{#if row.rehearsal}

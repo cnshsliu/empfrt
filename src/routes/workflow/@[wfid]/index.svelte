@@ -50,7 +50,7 @@
 	import { filterStorage } from '$lib/empstores';
 	import { onMount } from 'svelte';
 	import * as api from '$lib/api';
-	import { Container, Row, Col, Nav, NavLink, Button } from 'sveltestrap';
+	import { Container, Input, Row, Col, Nav, NavLink, Button } from 'sveltestrap';
 	import { ClientPermControl } from '$lib/clientperm';
 	export let workflow: Workflow;
 	export let wfid: string;
@@ -91,6 +91,15 @@
 		setTimeout(async () => {
 			$printing = false;
 		}, 3000);
+	};
+
+	let logs = '';
+	const refreshLog = async function () {
+		logs = (await api.post(
+			'/workflow/readlog',
+			{ wfid: wfid },
+			user.sessionToken
+		)) as unknown as string;
 	};
 </script>
 

@@ -11,9 +11,13 @@
 		Row,
 		Col,
 		NavLink,
-		Icon
+		Nav,
+		Icon,
+		Input
 	} from 'sveltestrap';
 	import { _, mtcDate } from '$lib/i18n';
+	import { printing } from '$lib/Stores';
+	import * as api from '$lib/api';
 	import DisplayTable from '$lib/display/Table.svelte';
 	import CommentEntry from '$lib/CommentEntry.svelte';
 	import { StatusClass } from '$lib/status';
@@ -41,6 +45,22 @@
 		if (_refreshWork) await _refreshWork(todoid);
 		else await goto(`/work/@${todoid}`, { noscroll: false });
 	}
+
+	let showLog = false;
+	let logs = '';
+	const onShowLog = async (e) => {
+		e.preventDefault();
+		showLog = true;
+		logs = (await api.post(
+			'workflow/readlog',
+			{ wfid: wfid },
+			user.sessionToken
+		)) as unknown as string;
+	};
+	const onCloseLog = async (e) => {
+		e.preventDefault();
+		showLog = false;
+	};
 </script>
 
 <Container class="mt-5">
@@ -57,17 +77,20 @@
 				{/if}
 			</Col>
 			<Col>{$_('todo.startby')}: {user.email === wf.starter ? 'Me' : wf.starter}</Col>
-			<Col class="w-100 d-flex justify-content-end">
-				<NavLink
-					class="m-0 p-0 fs-6"
-					on:click={(e) => {
-						e.preventDefault();
-						gotoWorkflowMonitor(wfid);
-					}}
-					><Icon name="kanban" />&nbsp;
-					{$_('todo.monitor')}
-				</NavLink>
-			</Col>
+			{#if $printing === false}
+				<Col class="w-100 d-flex justify-content-end">
+					<Nav>
+						<NavLink
+							on:click={(e) => {
+								e.preventDefault();
+								gotoWorkflowMonitor(wfid);
+							}}
+							><Icon name="kanban" />&nbsp;
+							{$_('todo.monitor')}
+						</NavLink>
+					</Nav>
+				</Col>
+			{/if}
 		</Row>
 	</Container>
 	<div class="fs-3 mt-3">
@@ -216,15 +239,35 @@
 				</div>
 			</Row>
 		{/each}
-		<Row>
-			<Col class="d-flex justify-content-end">
-				<NavLink on:click={printWindow}>
-					<i class="bi bi-printer" alt="Printer" />&nbsp;
-					{$_('todo.print')}
-				</NavLink>
-			</Col>
-		</Row>
+		{#if $printing === false}
+			<Row>
+				<Col class="w-100 d-flex justify-content-end">
+					<NavLink on:click={onShowLog}
+						><Icon name="kanban" />&nbsp;
+						{$_('todo.showlog')}
+					</NavLink>
+					<NavLink on:click={printWindow}>
+						<i class="bi bi-printer" alt="Printer" />&nbsp;
+						{$_('todo.print')}
+					</NavLink>
+				</Col>
+			</Row>
+		{/if}
 	</Container>
+	{#if showLog}
+		<Container>
+			<Row cols="1">
+				<Col class="w-100 d-flex justify-content-end">
+					<Button on:click={onCloseLog}>
+						<i class="bi bi-x" />
+					</Button>
+				</Col>
+				<Col>
+					<Input type="textarea" rows={10} value={logs} />
+				</Col>
+			</Row>
+		</Container>
+	{/if}
 </Container>
 
 <style>
