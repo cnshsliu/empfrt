@@ -48,14 +48,18 @@
 
 	let showLog = false;
 	let logs = '';
-	const onShowLog = async (e) => {
+	const onRefreshLog = async (e) => {
 		e.preventDefault();
-		showLog = true;
 		logs = (await api.post(
 			'workflow/readlog',
 			{ wfid: wfid },
 			user.sessionToken
 		)) as unknown as string;
+	};
+	const onShowLog = async (e) => {
+		e.preventDefault();
+		showLog = true;
+		await onRefreshLog(e);
 	};
 	const onCloseLog = async (e) => {
 		e.preventDefault();
@@ -242,8 +246,8 @@
 		{#if $printing === false}
 			<Row>
 				<Col class="w-100 d-flex justify-content-end">
-					<NavLink on:click={onShowLog}
-						><Icon name="kanban" />&nbsp;
+					<NavLink on:click={onShowLog}>
+						<Icon name="kanban" />&nbsp;
 						{$_('todo.showlog')}
 					</NavLink>
 					<NavLink on:click={printWindow}>
@@ -258,7 +262,10 @@
 		<Container>
 			<Row cols="1">
 				<Col class="w-100 d-flex justify-content-end">
-					<Button on:click={onCloseLog}>
+					<Button on:click={onRefreshLog}>
+						<i class="bi bi-arrow-clockwise" />
+					</Button>
+					<Button class="ms-1" on:click={onCloseLog}>
 						<i class="bi bi-x" />
 					</Button>
 				</Col>
