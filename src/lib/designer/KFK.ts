@@ -3045,6 +3045,35 @@ ret='DEFAULT'; `
 		}, 2000);
 		if (that.docIsReadOnly()) return;
 		//Delete node or connect
+		if (that.hoveredConnect) {
+			if (that.keypool === 'd') {
+				that.deleteObjects(evt, false);
+				that.keypool = '';
+			} else if (that.keypool === 'f' || that.keypool === 't') {
+				that.cancelLinkNode();
+				that.setTool('CONNECT');
+				that.tobeRemovedConnectId = that.hoveredConnect.attr('id');
+				that.movingConnect = true;
+				let jqFrom = $('#' + that.hoveredConnect.attr('fid'));
+				let jqTo = $('#' + that.hoveredConnect.attr('tid'));
+				that.clipboardConnectText = that.hoveredConnect.attr('case');
+				if (Parser.isEmpty(that.clipboardConnectText)) {
+					that.clipboardConnectText = null;
+				}
+				//CE: Connect  END node
+				if (that.keypool === 't') {
+					that.connectEndFirst = false;
+					that.movingEnd = true;
+					await that.yarkLinkNode(jqFrom);
+				} else {
+					//CB: Connect Begin node
+					that.connectEndFirst = true;
+					that.movingEnd = true;
+					await that.yarkLinkNode(jqTo, false);
+				}
+				that.keypool = '';
+			}
+		}
 		if (that.keypool === 'd') {
 			if (that.hoverJqDiv() || that.hoveredConnect) {
 				that.deleteObjects(evt, false);
