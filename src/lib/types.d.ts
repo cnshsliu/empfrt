@@ -275,8 +275,8 @@ export interface FilterPicks {
 	try_with_wfid?: string;
 	try_with_kvar?: string;
 	tspan: string;
-	col_per_row: number;
-	row_per_page: number;
+	col_per_row: any;
+	pageSize: number;
 	showprocesstrack: boolean;
 	debug: string;
 }

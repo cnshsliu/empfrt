@@ -4,6 +4,8 @@
 	import { _, date, time } from '$lib/i18n';
 	import * as api from '$lib/api';
 	import { filterStorage } from '$lib/empstores';
+	import ColPerRowSelection from '$lib/ColPerRowSelection.svelte';
+	import PageSize from '$lib/PageSize.svelte';
 	import { tspans } from '$lib/variables';
 	import Confirm from '$lib/confirm.svelte';
 	import Parser from '$lib/parser';
@@ -33,7 +35,6 @@
 	let rows: Workflow[] = [] as Workflow[];
 	let page = 0; //first page
 	let pageIndex = 0; //first row
-	let pageSize = user && user.ps ? user.ps : 10; //optional, 10 by default
 	let theConfirm;
 
 	let loading = true;
@@ -57,11 +58,12 @@
 
 	$: filteredRows = rows;
 
+	$: a = $filterStorage.pageSize && load(0);
 	setContext('state', {
 		getState: () => ({
 			page,
 			pageIndex,
-			pageSize,
+			pageSize: $filterStorage.pageSize,
 			rows,
 			filteredRows
 		}),
@@ -109,7 +111,7 @@
 			endpoint,
 			token,
 			_page,
-			pageSize,
+			$filterStorage.pageSize,
 			input_search,
 			sorting,
 			payload_extra
@@ -239,26 +241,14 @@
 	}
 
 	const stateContext = getContext('state');
-	let col_per_row = $filterStorage.col_per_row;
 	$: if ($filterStorage) {
 		filter_tspan = $filterStorage.tspan;
 		input_search = $filterStorage.wfTitlePattern;
 	}
 	let isMobile = false;
-	let row_per_page = $filterStorage.row_per_page;
-	pageSize = row_per_page;
 	onMount(async () => {
 		reload();
 		isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-		if (isMobile || [1, 2, 3, 4].includes(col_per_row) === false) {
-			col_per_row = 1;
-			$filterStorage.col_per_row = col_per_row;
-		}
-		if ([10, 20, 50, 100].includes(row_per_page) === false) {
-			row_per_page = 10;
-			$filterStorage.row_per_page = row_per_page;
-			pageSize = row_per_page;
-		}
 	});
 </script>
 
@@ -350,132 +340,16 @@
 			</Row>
 		</div>
 		<div class="flex-shrink-1">
-			<Dropdown class="m-0 p-0">
-				<DropdownToggle caret color="notexist" class="btn-sm">
-					{$_('remotetable.rowperpage')}
-				</DropdownToggle>
-				<DropdownMenu>
-					<DropdownItem>
-						<a
-							class="nav-link"
-							href={'#'}
-							on:click|preventDefault={async () => {
-								$filterStorage.row_per_page = 10;
-								row_per_page = 10;
-								pageSize = 10;
-								await load(0, 'on pageSize');
-							}}
-						>
-							{$_('remotetable.rows-10')}
-						</a>
-					</DropdownItem>
-					<DropdownItem>
-						<a
-							class="nav-link"
-							href={'#'}
-							on:click|preventDefault={async () => {
-								$filterStorage.row_per_page = 20;
-								row_per_page = 20;
-								pageSize = 20;
-								await load(0, 'on pageSize');
-							}}
-						>
-							{$_('remotetable.rows-20')}
-						</a>
-					</DropdownItem>
-					<DropdownItem>
-						<a
-							class="nav-link"
-							href={'#'}
-							on:click|preventDefault={async () => {
-								$filterStorage.row_per_page = 50;
-								row_per_page = 50;
-								pageSize = 50;
-								await load(0, 'on pageSize');
-							}}
-						>
-							{$_('remotetable.rows-50')}
-						</a>
-					</DropdownItem>
-					<DropdownItem>
-						<a
-							class="nav-link"
-							href={'#'}
-							on:click|preventDefault={async () => {
-								$filterStorage.row_per_page = 100;
-								row_per_page = 100;
-								pageSize = 100;
-								await load(0, 'on pageSize');
-							}}
-						>
-							{$_('remotetable.rows-100')}
-						</a>
-					</DropdownItem>
-				</DropdownMenu>
-			</Dropdown>
+			<PageSize />
 		</div>
 		<div class="flex-shrink-1">
-			<Dropdown class="m-0 p-0">
-				<DropdownToggle caret color="notexist" class="btn-sm">
-					{$_('remotetable.colperrow')}
-				</DropdownToggle>
-				<DropdownMenu>
-					<DropdownItem>
-						<a
-							class="nav-link"
-							href={'#'}
-							on:click|preventDefault={() => {
-								$filterStorage.col_per_row = 1;
-								col_per_row = 1;
-							}}
-						>
-							{$_('remotetable.cols-1')}
-						</a>
-					</DropdownItem>
-					<DropdownItem>
-						<a
-							class="nav-link"
-							href={'#'}
-							on:click|preventDefault={() => {
-								$filterStorage.col_per_row = 2;
-								col_per_row = 2;
-							}}
-						>
-							{$_('remotetable.cols-2')}
-						</a>
-					</DropdownItem>
-					<DropdownItem>
-						<a
-							class="nav-link"
-							href={'#'}
-							on:click|preventDefault={() => {
-								$filterStorage.col_per_row = 3;
-								col_per_row = 3;
-							}}
-						>
-							{$_('remotetable.cols-3')}
-						</a>
-					</DropdownItem>
-					<DropdownItem>
-						<a
-							class="nav-link"
-							href={'#'}
-							on:click|preventDefault={() => {
-								$filterStorage.col_per_row = 4;
-								col_per_row = 4;
-							}}
-						>
-							{$_('remotetable.cols-4')}
-						</a>
-					</DropdownItem>
-				</DropdownMenu>
-			</Dropdown>
+			<ColPerRowSelection />
 		</div>
 	</div>
 	<!-- code><pre>
 			{JSON.stringify(rows, null, 2)}
 	</pre></code -->
-	<Row cols={col_per_row}>
+	<Row cols={$filterStorage.col_per_row}>
 		{#each rows as row, index (row)}
 			<Col class="mb-2 card py-2">
 				<div class="">
@@ -720,7 +594,7 @@
 </Container>
 <Pagination
 	{page}
-	{pageSize}
+	pageSize={$filterStorage.pageSize}
 	count={rowsCount}
 	serverSide={true}
 	{isMobile}

@@ -302,9 +302,9 @@
 	};
 </script>
 
-<!-- pre><code>
+<pre><code>
 {JSON.stringify(work, null, 2)}
-</code></pre -->
+</code></pre>
 {#if work && work.todoid}
 	<Container id={'workitem_' + work.todoid} class={'mt-3 ' + ($printing ? 'nodisplay' : '')}>
 		<form>

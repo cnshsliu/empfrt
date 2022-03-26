@@ -3,8 +3,9 @@
 		"home": "Home",
 		"doc": "Doc",
 		"template": "Template",
-		"workflow": "Workflow",
-		"worklist": "Worklsit",
+		"planning": "Planning",
+		"workflow": "Monitoring",
+		"worklist": "My Works",
 		"settings": "Settings",
 		"teaming": "Teaming",
 		"messages": "Messages"

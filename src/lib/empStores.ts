@@ -48,8 +48,8 @@ export const filterStorage = storage<FilterPicks>('filter', {
 	try_with_email: '',
 	try_with_kvar: '',
 	try_with_wfid: '',
-	col_per_row: 1,
-	row_per_page: 10,
+	col_per_row: { xs: 1 },
+	pageSize: 10,
 	showprocesstrack: true,
 	debug: ''
 });

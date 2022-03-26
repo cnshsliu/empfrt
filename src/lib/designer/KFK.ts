@@ -3115,6 +3115,7 @@ ret='DEFAULT'; `
 			that.keypool = '';
 		} else if (['ct'].includes(that.keypool) && that.hoveredConnect) {
 			that.setConnectText(that.hoveredConnect, '', '');
+			that.keypool = '';
 		}
 	}
 
