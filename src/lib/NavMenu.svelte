@@ -209,7 +209,7 @@
 					{#if $session.user}
 						<NavItem>
 							<NavLink class="py-2 ps-0 pe-3" href="/template" active={$page.path === '/template'}>
-								{$_('navmenu.template')}
+								{$_('navmenu.planning')}
 							</NavLink>
 						</NavItem>
 						<NavItem>
