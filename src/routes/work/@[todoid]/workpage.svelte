@@ -319,8 +319,8 @@
 			</Container>
 			{#if work.instruct}
 				<div class="fs-5">
-					{$_('todo.instruction')}
-					<span class="mt-3 fs-3">
+					{$_('todo.instruction')}<br />
+					<span class="mt-3">
 						{@html Parser.base64ToCode(work.instruct, '')}
 					</span>
 				</div>
