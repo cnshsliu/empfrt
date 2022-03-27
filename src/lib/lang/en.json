@@ -120,7 +120,8 @@
 			"deleteThisTempalte": "Delete This Template",
 			"lastUpdate": "Last Update",
 			"exportdata": "Export Data",
-			"editlog": "Edit log"
+			"editors": "Editors",
+			"scheduler": "Scheduler"
 		}
 	},
 	"title": {

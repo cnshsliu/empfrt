@@ -986,6 +986,7 @@ ret='DEFAULT'; `
 			const appData_code = propJSON.sub.trim();
 			this.setNodeLabel(jqDIV, propJSON.label);
 			jqDIV.attr('sub', appData_code);
+			jqDIV.attr('alone', propJSON.alone ? 'yes' : 'no');
 			//alone: means not a sub process, but a standalone process
 			if (propJSON.alone) {
 				jqDIV.attr('alone', 'yes');

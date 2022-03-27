@@ -1891,6 +1891,9 @@ div.pbo {
 	background-size: contain;
 	background-image: url('/svg/SCRIPT.svg');
 }
+.node.SCRIPT[runmode='ASYNC'] {
+	background-color: #ff333366;
+}
 .node.TIMER {
 	left: 400px;
 	top: 300px;
@@ -1906,6 +1909,9 @@ div.pbo {
 	background-repeat: no-repeat; /* Do not repeat the image */
 	background-size: contain;
 	background-image: url('/svg/SUB.svg');
+}
+.node.SUB[alone='yes'] {
+	background-color: #ff333366;
 }
 .node.AND {
 	left: 400px;

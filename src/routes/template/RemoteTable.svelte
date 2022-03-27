@@ -58,6 +58,10 @@
 	export let rowsCount = 0;
 	let editlogfor = '';
 	let editlogs: any = [];
+	let editCronFor = '';
+	let cronStarters = '';
+	let cronExpr = '1 * * * *';
+	let crons = [];
 	let filter_author = '';
 	let input_search;
 	let sorting = { dir: 'desc', key: 'updatedAt' };
@@ -197,6 +201,27 @@
 		isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 	});
 	const stateContext = getContext('state');
+
+	const showCronTable = async function (e, tplid) {
+		e.preventDefault();
+		editCronFor = tplid;
+		crons = (await api.post(
+			'template/crons',
+			{ tplid: tplid },
+			user.sessionToken
+		)) as unknown as any[];
+		console.log(crons);
+	};
+
+	const addCron = async function (e, tplid) {
+		crons = (await api.post(
+			'template/addcron',
+			{ tplid: tplid, expr: cronExpr, starters: cronStarters },
+			user.sessionToken
+		)) as unknown as any[];
+		e.preventDefault();
+		console.log(crons);
+	};
 </script>
 
 <Container>
@@ -280,7 +305,7 @@
 							</div>
 							<div class="flex-shrink-1">
 								<Dropdown class="m-0 p-0">
-									<DropdownToggle caret color="notexist" class="btn-sm">
+									<DropdownToggle caret color="primary" class="btn-sm">
 										{$_('remotetable.actions')}
 									</DropdownToggle>
 									<DropdownMenu>
@@ -381,9 +406,21 @@
 													class="nav-link "
 												>
 													<Icon name="ui-checks-grid" />
-													{$_('remotetable.tplaction.editlog')}
+													{$_('remotetable.tplaction.editors')}
 												</a>
 											</DropdownItem>
+											<!-- DropdownItem>
+												<a
+													href={'#'}
+													on:click|preventDefault={(e) => {
+														showCronTable(e, row.tplid);
+													}}
+													class="nav-link "
+												>
+													<Icon name="ui-checks-grid" />
+													{$_('remotetable.tplaction.scheduler')}
+												</a>
+											</DropdownItem -->
 										{/if}
 									</DropdownMenu>
 								</Dropdown>
@@ -430,6 +467,44 @@
 										<Col>{elog.editor}</Col>
 									</Row>
 								{/each}
+							</Container>
+						{/if}
+						{#if editCronFor === row.tplid}
+							<Container>
+								<Row>
+									<!-- svelte-ignore missing-declaration -->
+									<Button
+										color="primary"
+										on:click={(e) => {
+											e.preventDefault();
+											editCronFor = '';
+										}}
+									>
+										Close
+									</Button>
+								</Row>
+								{#each crons as cron}
+									<Row>
+										<Col>{cron.starters}</Col><Col>{cron.expr}</Col>
+										<Col><Button size="sm">Del</Button></Col>
+									</Row>
+								{/each}
+								<Row>
+									<InputGroup>
+										{#if user.group === 'ADMIN'}
+											<InputGroupText>Starters</InputGroupText>
+											<Input bind:value={cronStarters} />
+										{/if}
+										<Input bind:value={cronExpr} />
+										<Button
+											on:click={(e) => {
+												addCron(e, row.tplid);
+											}}
+										>
+											Add
+										</Button>
+									</InputGroup>
+								</Row>
 							</Container>
 						{/if}
 						<ItemEditor

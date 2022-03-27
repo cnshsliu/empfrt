@@ -370,7 +370,7 @@
 							</div>
 							<div class="flex-shrink-1">
 								<Dropdown class="m-0 p-0">
-									<DropdownToggle caret color="notexist" class="btn-sm">
+									<DropdownToggle caret color="primary" class="btn-sm">
 										{$_('remotetable.actions')}
 									</DropdownToggle>
 									<DropdownMenu>
