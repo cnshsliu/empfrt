@@ -46,6 +46,7 @@
 	import type { EmpResponse, OrgMembers, oneArgFunc } from '$lib/types';
 	import SmtpAdmin from './smtpadmin.svelte';
 	import Personal from './personal.svelte';
+	import WeComBot from './wecombot.svelte';
 	import OrgChart from './orgchart.svelte';
 	import type { User } from '$lib/types';
 	import { onMount } from 'svelte';
@@ -471,6 +472,9 @@
 	>
 		<TabPane tabId="personal" tab={$_('setting.tab.personal')} active={isActive('personal')}>
 			<Personal {user} {setFadeMessage} />
+		</TabPane>
+		<TabPane tabId="wecombot" tab={$_('setting.tab.wecombot')} active={isActive('wecombot')}>
+			<WeComBot {user} {setFadeMessage} />
 		</TabPane>
 		<TabPane tabId="delegation" tab={$_('setting.tab.delegation')} active={isActive('delegation')}>
 			<Container class="mt-3">

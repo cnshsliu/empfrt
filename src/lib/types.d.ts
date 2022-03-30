@@ -32,7 +32,7 @@ export interface User {
 	avatar: string;
 	signature?: string;
 	bio: string;
-	ew: boolean;
+	ew: { email: boolean; wecom: boolean };
 	ps: number;
 	sessionToken: string;
 	password?: string;
@@ -210,6 +210,7 @@ export interface NodePropJSON {
 	subject: string;
 	content: string;
 	role: string;
+	bot: { wecom: boolean };
 	code: string;
 	runmode: string;
 	label: string;

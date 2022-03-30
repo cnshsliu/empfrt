@@ -121,6 +121,19 @@
 				<Input bind:value={nodeInfo.nodeProps.ACTION.label} disabled={readonly} />
 			</InputGroup>
 		</Col>
+		<Col>
+			<InputGroup size="sm">
+				<InputGroupText>
+					{$_('prop.bot')}
+				</InputGroupText>
+				{$_('prop.bot_wecom')}
+				<Input
+					type="checkbox"
+					bind:checked={nodeInfo.nodeProps.ACTION.bot.wecom}
+					disabled={readonly}
+				/>
+			</InputGroup>
+		</Col>
 	</Row>
 	<TabContent
 		pills

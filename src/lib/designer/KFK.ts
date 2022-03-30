@@ -785,6 +785,7 @@ class KFKclass {
 				id: '',
 				role: '',
 				label: '',
+				bot: { wecom: false },
 				kvars: '',
 				byall: true,
 				vote: '',
@@ -811,6 +812,8 @@ class KFKclass {
 			ret.ACTION.id = jqDIV.attr('id').trim();
 			ret.ACTION.role = blankToDefault(jqDIV.attr('role'), 'DEFAULT');
 			ret.ACTION.label = blankToDefault(jqDIV.find('p').first().text(), 'Activity').trim();
+			ret.ACTION.bot.wecom =
+				blankToDefault(jqDIV.attr('wecom'), 'false').toLowerCase() === 'true' ? true : false;
 			ret.label = ret.ACTION.label;
 			//TODO: here, read kvars from Mongo for workflow
 			let kvarsString = blankToDefault(jqDIV.find('.kvars').text(), 'e30=');
@@ -889,6 +892,7 @@ ret='DEFAULT'; `
 			propJSON = props.ACTION;
 			this.setNodeLabel(jqDIV, propJSON.label);
 			jqDIV.attr('role', propJSON.role.trim());
+			jqDIV.attr('wecom', propJSON.bot.wecom ? 'true' : 'false');
 			const kvars_json = Parser.arrayToKvars(props.kvarsArr);
 			const kvars_string = JSON.stringify(kvars_json);
 			const codeInBase64 = Parser.codeToBase64(kvars_string);

@@ -51,6 +51,7 @@
 		setAuthorFor: '',
 		setDescFor: '',
 		setTagFor: '',
+		setWeComBotFor: '',
 		settingFor: ''
 	};
 
@@ -220,6 +221,15 @@
 			user.sessionToken
 		)) as unknown as any[];
 		e.preventDefault();
+	};
+
+	const deleteCrontab = async function (e, tplid, cronId) {
+		crons = (await api.post(
+			'template/delcron',
+			{ id: cronId, tplid: tplid },
+			user.sessionToken
+		)) as unknown as any[];
+		e.preventDefault();
 		console.log(crons);
 	};
 </script>
@@ -308,7 +318,7 @@
 									<DropdownToggle caret color="primary" class="btn-sm">
 										{$_('remotetable.actions')}
 									</DropdownToggle>
-									<DropdownMenu>
+									<DropdownMenu class="bg-light">
 										<DropdownItem>
 											{$_('remotetable.tplaction.lastUpdate')}: {TimeTool.format(
 												row.updatedAt,
@@ -323,7 +333,8 @@
 														goto(`template/start?tplid=${row.tplid}`, { replaceState: false });
 													}}
 													class="nav-link "
-													><Icon name="caret-right-square" />
+												>
+													<Icon name="play-circle-fill" />
 													{$_('remotetable.tplaction.startIt')}
 												</a>
 											</DropdownItem>
@@ -362,6 +373,7 @@
 														SetFor.setAuthorFor = row.tplid;
 														SetFor.setDescFor = row.tplid;
 														SetFor.setTagFor = row.tplid;
+														SetFor.setWeComBotFor = row.tplid;
 														SetFor.settingFor = row.tplid;
 														row.checked = false;
 														visi_rds_input = row.visi;
@@ -386,7 +398,8 @@
 													href={'#'}
 													on:click|preventDefault={() => exportData(row.tplid)}
 													class="nav-link "
-													><Icon name="trash" />
+												>
+													<Icon name="cloud-download" />
 													{$_('remotetable.tplaction.exportdata')}
 												</a>
 											</DropdownItem>
@@ -409,7 +422,7 @@
 													{$_('remotetable.tplaction.editors')}
 												</a>
 											</DropdownItem>
-											<!-- DropdownItem>
+											<DropdownItem>
 												<a
 													href={'#'}
 													on:click|preventDefault={(e) => {
@@ -420,7 +433,7 @@
 													<Icon name="ui-checks-grid" />
 													{$_('remotetable.tplaction.scheduler')}
 												</a>
-											</DropdownItem -->
+											</DropdownItem>
 										{/if}
 									</DropdownMenu>
 								</Dropdown>
@@ -444,7 +457,7 @@
 										}}
 										class="nav-link "
 									>
-										<Icon name="caret-right-square" />
+										<Icon name="play-circle-fill" />
 										{$_('remotetable.startIt')}
 									</a>
 								{/if}
@@ -470,7 +483,7 @@
 							</Container>
 						{/if}
 						{#if editCronFor === row.tplid}
-							<Container>
+							<Container class="border border-2 rounded py-2">
 								<Row>
 									<!-- svelte-ignore missing-declaration -->
 									<Button
@@ -486,11 +499,20 @@
 								{#each crons as cron}
 									<Row>
 										<Col>{cron.starters}</Col><Col>{cron.expr}</Col>
-										<Col><Button size="sm">Del</Button></Col>
+										<Col>
+											<Button
+												size="sm"
+												on:click={async (e) => {
+													await deleteCrontab(e, cron.tplid, cron._id);
+												}}
+											>
+												Del
+											</Button>
+										</Col>
 									</Row>
 								{/each}
 								<Row>
-									<InputGroup>
+									<InputGroup class="p-0">
 										{#if user.group === 'ADMIN'}
 											<InputGroupText>Starters</InputGroupText>
 											<Input bind:value={cronStarters} />

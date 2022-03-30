@@ -255,6 +255,8 @@
 	},
 	"prop": {
 		"label": "Activity Description",
+		"bot": "Webhook",
+		"bot_wecom": "WeCom",
 		"action": {
 			"tab": {
 				"participant": "Participant",
@@ -424,6 +426,7 @@
 		"adminpwd_ph": "Admin password is required for security consideration",
 		"tab": {
 			"personal": "Personal",
+			"wecombot": "Wecom TODO Bot",
 			"delegation": "Delegation",
 			"tenant": "Tenant",
 			"orgset": "Org",
@@ -527,6 +530,10 @@
 			"pwd_ph": "Password of SMTP user",
 			"from": "Sent from",
 			"from_ph": "The sender's display name"
+		},
+		"wecombot": {
+			"tplid": "Template ID",
+			"key": "Bot Key"
 		}
 	},
 	"pds": {

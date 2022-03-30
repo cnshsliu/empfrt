@@ -6,6 +6,7 @@
 	import type { User, EmpResponse } from '$lib/types';
 	import { post } from '$lib/utils';
 	import * as api from '$lib/api';
+	import InformWebhooks from './InformWebhooks.svelte';
 	export let user: User;
 	export let setFadeMessage: any;
 	let uploadingFile: boolean;
@@ -21,6 +22,13 @@
 	let set_group_to = '';
 	let menu = '';
 	let in_progress = false;
+
+	//////////////////////////////////////////////////
+	//Compatible with old ew which is a boolean value
+	//////////////////////////////////////////////////
+	if (typeof user.ew === 'boolean') {
+		user.ew = { email: user.ew, wecom: false };
+	}
 
 	const setPersonal = async function (value) {
 		in_progress = true;
@@ -60,6 +68,9 @@
 			$session.user.sessionToken
 		);
 	}
+	let webhook_setting = {
+		wecombot_key: ''
+	};
 </script>
 
 <form>
@@ -154,7 +165,7 @@
 				<InputGroup class="mb-1">
 					<InputGroupText>{$_('setting.personal.sendmail')}</InputGroupText> &nbsp;&nbsp;
 					<span class="form-control">
-						<Input type="checkbox" bind:checked={user.ew} />
+						<Input type="checkbox" bind:checked={user.ew.email} />
 					</span>
 					<Button
 						on:click={async (e) => {

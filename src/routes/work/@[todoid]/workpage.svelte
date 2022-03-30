@@ -256,8 +256,11 @@
 		return null;
 	};
 	const splitWhen = (x) => {
-		let tmp = x.match(/(\w+)(\={1,3}|\>=?|\<=?|\!=)(\w+)/);
+		x = x.trim();
+		let tmp = x.match(/(\w+)(\={1,3}|\>=?|\<=?|\!=)(.+)/);
 		if (tmp) {
+			tmp[3] = tmp[3].replace(/^["\']/, '');
+			tmp[3] = tmp[3].replace(/["\']$/, '');
 			return [tmp[1], tmp[2], tmp[3]];
 		} else {
 			return null;
@@ -270,21 +273,40 @@
 		for (let i = 0; i < work.kvarsArr.length; i++) {
 			if (work.kvarsArr[i].when) {
 				showKVars[i] = false;
+				//如果有when的话，when的格式应该是正确的，否则splitWhen会出错
+				//所支持的语法包括  kvar_name[=|==|===|>|>=|<|<=|!=]value
+				//value的类型可视是string， boolean或number
+				//当为字符串时，出发是空字符，否则不必添加左右引号
+				//MTC会对value进行类型转换，转换为与kvar_name的值相同的类型，然后进行比较
+				//例如，如kvar checkbox_req为checkbox，那么它的值是boolean类型，当在这个checkbox被选定时，才需要输入一个值时，则可使用  checkbox_req=true
+				//判断一个数值大小， kvar名称为 number_amount, 其值的类型为number，则可以使用如下定义来判断是否这个值大于100
+				//  number_amount>100
+				//所支持的操作符如下：
+				//   =， ==， ===
+				//  >  >=  <   <=  !=
 				let tmp = splitWhen(work.kvarsArr[i].when);
-				let refValue = getKVarValue(tmp[0]);
-				showKVars[i] = ['=', '==', '==='].includes(tmp[1])
-					? refValue === tmp[2]
-					: ['>'].includes(tmp[1])
-					? refValue > tmp[2]
-					: ['>='].includes(tmp[1])
-					? refValue >= tmp[2]
-					: ['<'].includes(tmp[1])
-					? refValue < tmp[2]
-					: ['<='].includes(tmp[1])
-					? refValue <= tmp[2]
-					: ['!='].includes(tmp[1])
-					? refValue != tmp[2]
-					: false;
+				if (!tmp) {
+					console.error('Caution:', work.kvarsArr[i].when, 'split to ', tmp);
+				} else {
+					let refValue = getKVarValue(tmp[0]);
+					let chk = tmp[2];
+					chk = Parser.sameTypeValue(chk, refValue);
+					showKVars[i] = ['=', '==', '==='].includes(tmp[1])
+						? refValue === chk
+						: ['>'].includes(tmp[1])
+						? refValue > chk
+						: ['>='].includes(tmp[1])
+						? refValue >= chk
+						: ['<'].includes(tmp[1])
+						? refValue < chk
+						: ['<='].includes(tmp[1])
+						? refValue <= chk
+						: ['!='].includes(tmp[1])
+						? refValue != chk
+						: false;
+				}
+			} else {
+				console.log(i, 'NO when continue');
 			}
 		}
 		for (let i = 0; i < work.kvarsArr.length; i++) {

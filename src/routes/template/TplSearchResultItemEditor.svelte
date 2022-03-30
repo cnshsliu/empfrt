@@ -28,7 +28,7 @@
 {#if row.visi}
 	{#if row.author === user.email}
 		<div
-			class="ms-4 kfk-link"
+			class="kfk-link"
 			on:click={() => {
 				if (SetFor.setVisiFor !== row.tplid) {
 					SetFor.setVisiFor = row.tplid;
@@ -44,7 +44,7 @@
 			{row.visi}
 		</div>
 	{:else}
-		<div class="ms-4">
+		<div class="">
 			<AniIcon icon="people-fill" ani="aniShake" />
 			{row.visi}
 		</div>
@@ -53,7 +53,7 @@
 {#if row.desc && row.desc.trim().length > 0}
 	{#if row.author === user.email}
 		<div
-			class="ms-4 kfk-link"
+			class="kfk-link"
 			on:click={() => {
 				if (SetFor.setDescFor === row.tplid) {
 					desc_input = '';
@@ -68,7 +68,7 @@
 			{row.desc}
 		</div>
 	{:else}
-		<div class="ms-4">
+		<div class="">
 			<AniIcon icon="card-text" ani="aniShake" />
 			{row.desc}
 		</div>
@@ -76,7 +76,7 @@
 {/if}
 {#if Array.isArray(row.tags) && row.tags.length > 0}
 	<div
-		class="ms-4 kfk-link"
+		class="kfk-link"
 		on:click={() => {
 			if (SetFor.setTagFor !== row.tplid) {
 				SetFor.setTagFor = row.tplid;
@@ -120,6 +120,7 @@
 						SetFor.setTagFor = '';
 						SetFor.setAuthorFor = '';
 						SetFor.setDescFor = '';
+						SetFor.setWeComBotFor = '';
 						SetFor.setVisiFor = '';
 						visi_rds_input = '';
 					}}
@@ -326,6 +327,41 @@
 						}}
 					>
 						{$_('button.clear')}
+					</Button>
+				</InputGroup>
+			</Row>
+			<Row>
+				<InputGroup>
+					<div class="form-floating flex-fill">
+						<input
+							class="form-control"
+							id={'input-wecombotkey-' + index}
+							placeholder="WeComBot Key"
+							bind:value={row.wecombotkey}
+						/>
+						<label for={`input-wecombotkey-${index}`}>
+							{$_('remotetable.template.set.setwecombotkey')}</label
+						>
+					</div>
+					<Button
+						color="primary"
+						on:click={async (e) => {
+							e.preventDefault();
+							row.wecombotkey = row.wecombotkey.trim();
+							let ret = await api.post(
+								'template/set/wecombot',
+								{ tplid: row.tplid, key: row.wecombotkey },
+								token
+							);
+							if (ret.err) {
+								setFadeMessage(ret.message, 'warning');
+							} else {
+								setFadeMessage('Success', 'success');
+							}
+							rows = rows;
+						}}
+					>
+						{$_('button.set')}
 					</Button>
 				</InputGroup>
 			</Row>

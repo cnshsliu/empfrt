@@ -144,6 +144,24 @@ const Parser = {
 
 		console.log('Formula:', formula, 'Expr:', expr, 'Result:', result);
 		return result;
+	},
+
+	//转换value为与refValue类型相同，并返回转换后的值
+	//仅支持基本类型，string， boolean， number
+	sameTypeValue: function (value, refValue) {
+		let tmp = value;
+		if (typeof tmp !== 'string') {
+			tmp = '' + value;
+		}
+		if (typeof refValue === 'boolean') {
+			tmp = Boolean(tmp);
+			return tmp;
+		} else if (typeof refValue === 'number') {
+			tmp = parseFloat(tmp);
+			return tmp;
+		} else {
+			return value;
+		}
 	}
 };
 export default Parser;

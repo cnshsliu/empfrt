@@ -189,3 +189,6 @@
 	/>
 	<RemoteTable endpoint="workflow/search" {token} {user} bind:this={theRemoteTable} />
 </Container>
+{#if $filterStorage.tplid}
+	Report Table
+{/if}

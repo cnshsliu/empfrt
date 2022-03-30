@@ -254,6 +254,8 @@
 	},
 	"prop": {
 		"label": "任务描述",
+		"bot": "机器人",
+		"bot_wecom": "企微",
 		"action": {
 			"tab": {
 				"participant": "参与人",
@@ -421,6 +423,7 @@
 		"adminpwd_ph": "本页的操作均需要使用管理员密码已确认",
 		"tab": {
 			"personal": "个人设置",
+			"wecombot": "待办机器人",
 			"delegation": "工作委托",
 			"tenant": "企业租户",
 			"orgset": "组织设置",
@@ -525,6 +528,10 @@
 			"pwd_ph": "用来发送邮件的账号密码",
 			"from": "发送者邮箱地址",
 			"from_ph": "发送着的显示名称"
+		},
+		"wecombot": {
+			"tplid": "模版名称",
+			"key": "机器人Key"
 		}
 	},
 	"pds": {
