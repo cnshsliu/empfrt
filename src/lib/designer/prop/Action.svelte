@@ -105,6 +105,7 @@
 		TimeTool = (await import('$lib/TimeTool')).default;
 	});
 	let user = $session.user;
+	let previewInstruct = false;
 </script>
 
 <Container>
@@ -135,7 +136,7 @@
 			<Col>
 				<InputGroup size="sm">
 					<Input
-						id="c1"
+						id="chk_alldone"
 						type="checkbox"
 						label={$_('prop.action.p10t.alldone')}
 						bind:checked={nodeInfo.nodeProps.ACTION.byall}
@@ -180,7 +181,7 @@
 			<Col>
 				<InputGroup size="sm">
 					<Input
-						id="t1"
+						id="chk_transferable"
 						type="checkbox"
 						label={$_('prop.action.p10t.transferable')}
 						bind:checked={nodeInfo.nodeProps.ACTION.transferable}
@@ -191,7 +192,7 @@
 			<Col>
 				<InputGroup>
 					<Input
-						id="t1"
+						id="chk_sr"
 						type="checkbox"
 						label={$_('prop.action.p10t.sr')}
 						bind:checked={nodeInfo.nodeProps.ACTION.sr}
@@ -224,6 +225,23 @@
 					disabled={readonly}
 				/>
 			</InputGroup>
+			<Button
+				color="primary"
+				on:click={(e) => {
+					previewInstruct = !previewInstruct;
+				}}
+			>
+				{#if previewInstruct}
+					Close Preview
+				{:else}
+					Preview (Variables will not be inteperated in preview)
+				{/if}
+			</Button>
+			{#if previewInstruct === true}
+				<div id="preview">
+					{@html nodeInfo.nodeProps.ACTION.instruct}
+				</div>
+			{/if}
 		</TabPane>
 		<TabPane tabId="variables" tab={$_('prop.action.tab.variables')} active={isActive('variables')}>
 			{#if !readonly}
@@ -388,7 +406,7 @@
 														class="m-0 p-0"
 														on:click={(e) => {
 															e.preventDefault();
-															kvarsArr.splice(index, 0, {
+															kvarsArr.splice(index + 1, 0, {
 																name: '',
 																label: '',
 																value: '',
