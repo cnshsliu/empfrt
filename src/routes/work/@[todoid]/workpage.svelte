@@ -47,7 +47,6 @@
 			$printing = false;
 		}, 3000);
 	};
-	let isDebug = $debugOption === 'yes';
 
 	function _sendbackWork() {
 		//if (checkRequired() === false) return;
@@ -224,11 +223,6 @@
 			work.status === 'ST_RUN';
 		return is_doable;
 	};
-	onMount(async () => {
-		if (localStorage) {
-			recentUsers = JSON.parse(localStorage.getItem('recentUsers') ?? JSON.stringify([]));
-		}
-	});
 	const saveOneRecentUser = function (user) {
 		let tmp = recentUsers.indexOf(user);
 		if (tmp > -1) {
@@ -267,8 +261,7 @@
 		}
 	};
 
-	const caculateFormula = function (kvar) {
-		//console.log(kvar.name, ' new value: ', kvar.value);
+	const setShowKVars = function () {
 		if (work.kvarsArr.length <= 0) return;
 		for (let i = 0; i < work.kvarsArr.length; i++) {
 			if (work.kvarsArr[i].when) {
@@ -309,6 +302,11 @@
 				console.log(i, 'NO when continue');
 			}
 		}
+	};
+
+	const caculateFormula = function (kvar) {
+		if (work.kvarsArr.length <= 0) return;
+		setShowKVars();
 		for (let i = 0; i < work.kvarsArr.length; i++) {
 			if (work.kvarsArr[i].formula) {
 				//console.log(work.kvarsArr[i].formula);
@@ -322,11 +320,19 @@
 			}
 		}
 	};
+	onMount(async () => {
+		setShowKVars();
+		if (localStorage) {
+			recentUsers = JSON.parse(localStorage.getItem('recentUsers') ?? JSON.stringify([]));
+		}
+	});
 </script>
 
-<!-- pre><code>
+{#if $debugOption === 'all'}
+	<pre><code>
 {JSON.stringify(work, null, 2)}
-</code></pre -->
+</code></pre>
+{/if}
 {#if work && work.todoid}
 	<Container id={'workitem_' + work.todoid} class={'mt-3 ' + ($printing ? 'nodisplay' : '')}>
 		<form>

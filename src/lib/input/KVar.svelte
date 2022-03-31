@@ -20,7 +20,6 @@
 	let cssClasses: string = '';
 	let checkingMsgs = '';
 
-	let isDebug = $debugOption === 'yes';
 	const onInputUser = function (kvar, ser) {
 		kvar.class = 'LOADING';
 		if (check_timer) clearTimeout(check_timer);
@@ -49,7 +48,7 @@
 		<div class="w-100" />
 	{/if}
 	<Col class={' p-1 ' + (['textarea', 'tbl'].includes(kvar.type) ? ' w-100' : '')}>
-		{#if isDebug}
+		{#if $debugOption === 'yes'}
 			<div class="text-wrap text-break">{JSON.stringify(kvar)}</div>
 		{/if}
 		<FormGroup>

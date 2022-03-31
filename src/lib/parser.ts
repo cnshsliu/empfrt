@@ -37,7 +37,9 @@ const Parser = {
 				} */
 			}
 			if (tmp.formula) tmp.value = '=' + tmp.formula;
-			kvarsArr.push(tmp);
+			if ((tmp.name as unknown as string).startsWith('$') === false) {
+				kvarsArr.push(tmp);
+			}
 		}
 		return kvarsArr;
 	},

@@ -330,7 +330,7 @@
 					</Button>
 				</InputGroup>
 			</Row>
-			<Row>
+			<!--Row>
 				<InputGroup>
 					<div class="form-floating flex-fill">
 						<input
@@ -364,7 +364,7 @@
 						{$_('button.set')}
 					</Button>
 				</InputGroup>
-			</Row>
+			</Row -->
 			{#if Array.isArray(row.visipeople)}
 				<Row>
 					{#each row.visipeople as visiperson}
