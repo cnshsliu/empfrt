@@ -3086,7 +3086,7 @@ ret='DEFAULT'; `
 			}
 		} else if (
 			//GT: Connect to
-			'gt' === that.keypool &&
+			('t' === that.keypool || 'gt' === that.keypool) &&
 			that.hoverJqDiv() &&
 			that.hoverJqDiv().hasClass('END') === false
 		) {
