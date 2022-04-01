@@ -182,6 +182,7 @@ export interface KFKclass {
 	setTool: (tool: string, evt?: any) => any;
 	lastEvt: any;
 	loadTemplateDoc: (template: any, tpl_mode: string) => any;
+	reloadNodeProp: (nodeid: string) => any;
 	designerCallback: any;
 	addDocumentEventHandler: any;
 	setConnectProperties: any;

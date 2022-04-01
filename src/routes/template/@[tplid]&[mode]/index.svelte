@@ -663,7 +663,22 @@
 			</Col>
 		</Row>
 	</div>
-	<svelte:component this={Designer} bind:this={theDesigner} {template} {tpl_mode} />
+	<svelte:component
+		this={Designer}
+		bind:this={theDesigner}
+		{template}
+		{tpl_mode}
+		on:readInProp={(e) => {
+			change_mode('read');
+			console.log(e.detail);
+			//theDesigner.reloadNodeProp(e.detail);
+		}}
+		on:editInProp={(e) => {
+			change_mode('edit');
+			console.log(e.detail);
+			//theDesigner.reloadNodeProp(e.detail);
+		}}
+	/>
 {/if}
 
 <style>

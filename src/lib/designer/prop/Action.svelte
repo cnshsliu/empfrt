@@ -2,6 +2,7 @@
 	import { _ } from '$lib/i18n';
 	import Parser from '$lib/parser';
 	import { filterStorage } from '$lib/empstores';
+	import { ClientPermControl } from '$lib/clientperm';
 	import * as api from '$lib/api';
 	import { session } from '$app/stores';
 	import { qtb } from '$lib/utils';
@@ -41,6 +42,8 @@
 	let helpShowing = false;
 	let thePDSResolver;
 	const workflow: Workflow = getContext('workflow');
+	const template: Template = getContext('template');
+	const dispatch = createEventDispatcher();
 
 	let doerHTML = '';
 	if (nodeInfo.nodeProps.ACTION.doer) {
@@ -108,6 +111,27 @@
 	let previewInstruct = false;
 </script>
 
+<!--
+{#if ClientPermControl(user.perms, user.email, 'template', template, 'update')}
+	<NavLink
+		class="kfk-link"
+		on:click={async () => {
+			if (readonly) {
+				dispatch('editInProp', nodeInfo.nodeProps.ACTION.id);
+			} else {
+				dispatch('readInProp', nodeInfo.nodeProps.ACTION.id);
+			}
+		}}
+	>
+		{readonly ? $_('tpl.editit') : $_('tpl.viewit')}
+	</NavLink>
+{:else}
+	<NavLink disabled>
+		<Icon name={readonly ? 'pen' : 'eye'} />
+		{readonly ? $_('tpl.editit') : $_('tpl.viewit')}
+	</NavLink>
+{/if}
+-->
 <Container>
 	<Row cols="1">
 		<Col>

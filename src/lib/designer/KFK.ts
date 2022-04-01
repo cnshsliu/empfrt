@@ -5545,6 +5545,13 @@ ret='DEFAULT'; `
 		}
 	}
 
+	async reloadNodeProp(nodeid) {
+		let that = this;
+		console.log('KFK reloadNodeProp', nodeid);
+		let jqNodeDIV = that.JC3.find(`#${nodeid}`);
+		await that.showNodeProperties(jqNodeDIV);
+	}
+
 	async onClickNode(evt: MouseEvent, jqNodeDIV) {
 		let that = this;
 		if (that.tool === 'POINTER') {

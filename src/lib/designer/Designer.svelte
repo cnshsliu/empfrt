@@ -155,6 +155,11 @@
 			);
 		}
 	};
+
+	/* export async function reloadNodeProp(nodeid) {
+		await KFK.reloadNodeProp(nodeid);
+	} */
+
 	export function designerCallback(cmd: string, args: any): void {
 		switch (cmd) {
 			case 'setTemplate':
@@ -461,6 +466,7 @@
 	let user = $session.user;
 	if (workflow) setContext('workflow', workflow);
 	if (template) setContext('template', template);
+	setContext('theDesigner', this);
 </script>
 
 <div id="S1">
@@ -608,6 +614,8 @@
 							{KFK}
 							bind:scenario={KFK.scenario}
 							{workid}
+							on:readInProp
+							on:editInProp
 						/>
 					{:else if nodeInfo.nodeType === 'INFORM'}
 						<Inform {nodeInfo} {roleOptions} {showHelp} {readonly} {jq} {KFK} />
