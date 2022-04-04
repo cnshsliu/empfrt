@@ -5,6 +5,7 @@
 	import { Row, Col, Icon } from 'sveltestrap';
 	import Confirm from '$lib/confirm.svelte';
 	import { session } from '$app/stores';
+	import { createEventDispatcher, getContext } from 'svelte';
 	import FileUploader from '$lib/FileUploader.svelte';
 	import { ClientPermControl } from '$lib/clientperm';
 	let theConfirm;
@@ -12,6 +13,7 @@
 	let uploadedFiles = [];
 	let user = $session.user;
 
+	const dispatch = createEventDispatcher();
 	export let work = null;
 	export let workflow = null;
 	export let title;
@@ -20,6 +22,7 @@
 	export let forKey: string = 'unknown';
 	export let forKvar: string = null;
 	export let uploader = true;
+	export let filetype: string = 'file';
 	function downloadFile(wfid, serverId, realName, mode = 'download') {
 		fetch(`${API_SERVER}/wf/attach/viewer/${wfid}/${serverId}`, {
 			headers: {
@@ -68,113 +71,118 @@
 	let theWfid = work ? work.wfid : workflow ? workflow.wfid : '';
 </script>
 
-<Row>
-	<Col>
-		{#if title}
-			{title}
-		{/if}
-		{#each attachments as attach}
-			{#if typeof attach === 'string' && forKey === 'pbo'}
-				<div class=" ms-3 simplehover ">
-					<a href={attach} target="_blank">{attach}</a>
-				</div>
-			{:else if attach.forKey === forKey}
-				<div class=" ms-3 simplehover ">
-					{#if attach.serverId && attach.realName}
+{#if (work && (work.allowpbo || attachments.length > 0)) || forKey !== 'pbo'}
+	<Row>
+		<Col>
+			{#if title}
+				{title}
+			{/if}
+			{#each attachments as attach}
+				{#if typeof attach === 'string' && forKey === 'pbo'}
+					<div class="ms-3 simplehover ">
+						<a href={attach} target="_blank">{attach}</a>
+					</div>
+				{:else if attach.forKey === forKey}
+					<div class=" ms-3 simplehover ">
+						{#if attach.serverId && attach.realName}
+							<a
+								href={'#'}
+								on:click|preventDefault={() => {
+									downloadFile(theWfid, attach.serverId, attach.realName, 'newtab');
+								}}
+								>{attach.realName}
+								<Icon name="box-arrow-up-right" />
+							</a>
+						{:else}
+							<a href={attach} target="_blank"> {attach} </a>
+						{/if}
+						({attach.author ? attach.author.substring(0, attach.author.indexOf('@')) : ''})
 						<a
 							href={'#'}
 							on:click|preventDefault={() => {
-								downloadFile(theWfid, attach.serverId, attach.realName, 'newtab');
-							}}
-							>{attach.realName}
-							<Icon name="box-arrow-up-right" />
-						</a>
-					{:else}
-						<a href={attach} target="_blank"> {attach} </a>
-					{/if}
-					({attach.author ? attach.author.substring(0, attach.author.indexOf('@')) : ''})
-					<a
-						href={'#'}
-						on:click|preventDefault={() => {
-							downloadFile(theWfid, attach.serverId, attach.realName, 'download');
-						}}
-					>
-						<Icon name="download" />
-					</a>
-					<!-- 在当前提交时可以删除，一旦提交不能再删除-->
-					<!-- 管理员可以删除-->
-					<!-- 对当前活动拥有update权限可以删除-->
-					<!-- {#if (attach.stepid === work.todoid && work.status === 'ST_RUN' && attach.author === $session.user.email) || $session.user.group === 'ADMIN' || ClientPermControl(user.perms, user.email, 'work', work, 'update')} -->
-					{#if work && ((attach.stepid === work.todoid && work.status === 'ST_RUN' && attach.author === $session.user.email) || $session.user.group === 'ADMIN')}
-						<a
-							href={'#'}
-							on:click|preventDefault={(e) => {
-								theConfirm.title = $_('confirm.title.areyousure');
-								theConfirm.body = $_('confirm.body.deletefile');
-								theConfirm.buttons = [$_('confirm.button.delete')];
-								theConfirm.callbacks = [
-									async () => {
-										await removeAttachment(attach.serverId);
-									}
-								];
-								theConfirm.toggle();
+								downloadFile(theWfid, attach.serverId, attach.realName, 'download');
 							}}
 						>
-							<i class="bi bi-trash ms-1" />
+							<Icon name="download" />
 						</a>
-					{/if}
-				</div>
-			{/if}
-		{/each}
-	</Col>
-	<!-- 当前活动为Run，则当前用户可以上传，或者只要是对当前活动具有update权限，也可以上传 -->
-	{#if work && (work.status === 'ST_RUN' || ClientPermControl(user.perms, user.email, 'work', work, 'update')) && uploader}
-		<Col>
-			<FileUploader
-				allowRemove={false}
-				allowMultiple={true}
-				{forWhat}
-				{forWhich}
-				{forKey}
-				{forKvar}
-				stepid={work.todoid}
-				on:uploading={(e) => {
-					uploadingFile = true;
-				}}
-				on:remove={async (e) => {
-					//remove has been disabled
-					uploadingFile = false;
-					let serverId = null;
-					for (let i = 0; i < uploadedFiles.length; i++) {
-						if (uploadedFiles[i].id === e.detail.id) {
-							serverId = uploadedFiles[i].serverId;
-							break;
-						}
-					}
-					if (serverId) {
-						await removeAttachment(serverId);
-					}
-				}}
-				on:uploaded={async (e) => {
-					uploadingFile = false;
-					uploadedFiles = e.detail;
-					console.log(uploadedFiles);
-					await addPondFileToEntity();
-				}}
-				on:warning={async (e) => {
-					uploadingFile = false;
-					uploadedFiles = e.detail;
-					console.log(uploadedFiles);
-					await addPondFileToEntity();
-				}}
-				on:error={async (e) => {
-					uploadingFile = false;
-					uploadedFiles = e.detail;
-					console.log(uploadedFiles);
-					await addPondFileToEntity();
-				}}
-			/>
+						<!-- 在当前提交时可以删除，一旦提交不能再删除-->
+						<!-- 管理员可以删除-->
+						<!-- 对当前活动拥有update权限可以删除-->
+						<!-- {#if (attach.stepid === work.todoid && work.status === 'ST_RUN' && attach.author === $session.user.email) || $session.user.group === 'ADMIN' || ClientPermControl(user.perms, user.email, 'work', work, 'update')} -->
+						<!-- allowpbo 指的是是否允许编辑pbo -->
+						{#if work && work.allowpbo && ((attach.stepid === work.todoid && work.status === 'ST_RUN' && attach.author === $session.user.email) || $session.user.group === 'ADMIN')}
+							<a
+								href={'#'}
+								on:click|preventDefault={(e) => {
+									theConfirm.title = $_('confirm.title.areyousure');
+									theConfirm.body = $_('confirm.body.deletefile');
+									theConfirm.buttons = [$_('confirm.button.delete')];
+									theConfirm.callbacks = [
+										async () => {
+											await removeAttachment(attach.serverId);
+										}
+									];
+									theConfirm.toggle();
+								}}
+							>
+								<i class="bi bi-trash ms-1" />
+							</a>
+						{/if}
+					</div>
+				{/if}
+			{/each}
 		</Col>
-	{/if}
-</Row>
-<Confirm bind:this={theConfirm} />
+		<!-- 当前活动为Run，则当前用户可以上传，或者只要是对当前活动具有update权限，也可以上传 -->
+		{#if work && (forKey !== 'pbo' || (forKey === 'pbo' && work.allowpbo)) && (work.status === 'ST_RUN' || ClientPermControl(user.perms, user.email, 'work', work, 'update')) && uploader}
+			<Col>
+				<FileUploader
+					allowRemove={false}
+					allowMultiple={true}
+					{forWhat}
+					{forWhich}
+					{forKey}
+					{forKvar}
+					stepid={work.todoid}
+					on:uploading={(e) => {
+						uploadingFile = true;
+					}}
+					on:remove={async (e) => {
+						//remove has been disabled
+						uploadingFile = false;
+						let serverId = null;
+						for (let i = 0; i < uploadedFiles.length; i++) {
+							if (uploadedFiles[i].id === e.detail.id) {
+								serverId = uploadedFiles[i].serverId;
+								break;
+							}
+						}
+						if (serverId) {
+							await removeAttachment(serverId);
+							dispatch('remove', serverId);
+						}
+					}}
+					on:uploaded={async (e) => {
+						uploadingFile = false;
+						uploadedFiles = e.detail;
+						await addPondFileToEntity();
+						let serverId = uploadedFiles[0].serverId;
+						dispatch('uploaded', serverId);
+					}}
+					on:warning={async (e) => {
+						uploadingFile = false;
+						uploadedFiles = e.detail;
+						console.log(uploadedFiles);
+						await addPondFileToEntity();
+					}}
+					on:error={async (e) => {
+						uploadingFile = false;
+						uploadedFiles = e.detail;
+						console.log(uploadedFiles);
+						await addPondFileToEntity();
+					}}
+				/>
+			</Col>
+		{/if}
+	</Row>
+	<Confirm bind:this={theConfirm} />
+{/if}

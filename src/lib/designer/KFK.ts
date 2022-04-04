@@ -788,6 +788,9 @@ class KFKclass {
 				bot: { wecom: false },
 				kvars: '',
 				byall: true,
+				csv: '',
+				withcsv: false,
+				allowpbo: false,
 				vote: '',
 				vote_any: '',
 				vote_failto: '',
@@ -795,7 +798,11 @@ class KFKclass {
 				doer: '',
 				instruct: '',
 				transferable: false,
-				sr: false
+				sr: false,
+				withsb: false,
+				withrvk: false,
+				withadhoc: false,
+				withcmt: false
 			},
 			SCRIPT: { id: '', label: '', code: '', runmode: 'ASYNC' },
 			INFORM: { id: '', label: '', role: '', subject: '', content: '' },
@@ -820,6 +827,9 @@ class KFKclass {
 			kvarsString = that.base64ToCode(kvarsString); //TO JSON.stringified string
 			ret.ACTION.kvars = JSON.parse(kvarsString); //to JSON
 			ret.ACTION.byall = jqDIV.hasClass('BYALL');
+			ret.ACTION.csv = blankToDefault(jqDIV.attr('csv'), '');
+			ret.ACTION.withcsv = ret.ACTION.csv !== '';
+			ret.ACTION.allowpbo = blankToDefault(jqDIV.attr('pbo'), 'no') === 'yes';
 			ret.ACTION.vote = jqDIV.attr('vote') ? jqDIV.attr('vote').trim() : '';
 			ret.ACTION.vote_any = jqDIV.attr('vote_any') ? jqDIV.attr('vote_any').trim() : '';
 			ret.ACTION.vote_failto = jqDIV.attr('vote_failto') ? jqDIV.attr('vote_failto').trim() : '';
@@ -829,14 +839,18 @@ class KFKclass {
 			ret.ACTION.instruct = that.base64ToCode(blankToDefault(jqDIV.find('.instruct').text(), ''));
 			ret.ACTION.transferable = blankToDefault(jqDIV.attr('transferable'), 'false') === 'true';
 			ret.ACTION.sr = blankToDefault(jqDIV.attr('sr'), 'false') === 'true';
+			ret.ACTION.withsb = blankToDefault(jqDIV.attr('sb'), 'no') === 'yes';
+			ret.ACTION.withrvk = blankToDefault(jqDIV.attr('rvk'), 'no') === 'yes';
+			ret.ACTION.withadhoc = blankToDefault(jqDIV.attr('adhoc'), 'no') === 'yes';
+			ret.ACTION.withcmt = blankToDefault(jqDIV.attr('cmt'), 'no') === 'yes';
 
 			if (that.workflow) {
 				let theWork = jqDIV.find('.work').first();
-				ret.ACTION.kvars = await api.post(
+				ret.ACTION.kvars = (await api.post(
 					'workflow/kvars',
 					{ wfid: that.wfid, workid: theWork.attr('id') },
 					that.user.sessionToken
-				);
+				)) as any;
 				ret.ACTION.doer = theWork.attr('doer');
 				//let kvarsString = blankToDefault(theWork.find('.kvars').text(), 'e30=');
 				//kvarsString = that.base64ToCode(kvarsString);
@@ -885,7 +899,7 @@ ret='DEFAULT'; `
 		return ret;
 	}
 
-	setNodeDOMProperties(jqDIV: myJQuery, props: any) {
+	setNodeProperties(jqDIV: myJQuery, props: any) {
 		let that = this;
 		let propJSON: NodePropJSON;
 		if (jqDIV.hasClass('ACTION')) {
@@ -893,6 +907,11 @@ ret='DEFAULT'; `
 			this.setNodeLabel(jqDIV, propJSON.label);
 			jqDIV.attr('role', propJSON.role.trim());
 			jqDIV.attr('wecom', propJSON.bot.wecom ? 'true' : 'false');
+			if (propJSON.withcsv && propJSON.csv && propJSON.csv.trim())
+				jqDIV.attr('csv', propJSON.csv.trim());
+			else jqDIV.removeAttr('csv');
+			if (propJSON.allowpbo) jqDIV.attr('pbo', 'yes');
+			else jqDIV.removeAttr('pbo');
 			const kvars_json = Parser.arrayToKvars(props.kvarsArr);
 			const kvars_string = JSON.stringify(kvars_json);
 			const codeInBase64 = Parser.codeToBase64(kvars_string);
@@ -928,6 +947,10 @@ ret='DEFAULT'; `
 			if (propJSON.sr) {
 				jqDIV.attr('sr', propJSON.sr.toString());
 			}
+			propJSON.withsb ? jqDIV.attr('sb', 'yes') : jqDIV.removeAttr('sb');
+			propJSON.withrvk ? jqDIV.attr('rvk', 'yes') : jqDIV.removeAttr('rvk');
+			propJSON.withadhoc ? jqDIV.attr('adhoc', 'yes') : jqDIV.removeAttr('adhoc');
+			propJSON.withcmt ? jqDIV.attr('cmt', 'yes') : jqDIV.removeAttr('cmt');
 		} else if (jqDIV.hasClass('SCRIPT')) {
 			propJSON = props.SCRIPT;
 			this.setNodeLabel(jqDIV, propJSON.label);

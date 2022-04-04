@@ -146,7 +146,7 @@
 		}
 		toggle();
 		if (nodeInfo.nodeType !== 'TPL') {
-			KFK.setNodeDOMProperties(nodeInfo.jqDiv, nodeInfo.nodeProps);
+			KFK.setNodeProperties(nodeInfo.jqDiv, nodeInfo.nodeProps);
 		} else {
 			await api.post(
 				'template/set/pboat',

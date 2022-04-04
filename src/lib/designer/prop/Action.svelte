@@ -150,9 +150,10 @@
 				<InputGroupText>
 					{$_('prop.bot')}
 				</InputGroupText>
-				{$_('prop.bot_wecom')}
 				<Input
+					class="ms-1"
 					type="checkbox"
+					label="WECOM"
 					bind:checked={nodeInfo.nodeProps.ACTION.bot.wecom}
 					disabled={readonly}
 				/>
@@ -170,6 +171,20 @@
 			tab={$_('prop.action.tab.participant')}
 			active={isActive('participant')}
 		>
+			<Col>
+				<InputGroup size="sm">
+					<Input
+						id="chk_usercsv"
+						type="checkbox"
+						label={$_('prop.action.p10t.csv')}
+						bind:checked={nodeInfo.nodeProps.ACTION.withcsv}
+						disabled={readonly}
+					/>
+					{#if nodeInfo.nodeProps.ACTION.withcsv}
+						<Input bind:value={nodeInfo.nodeProps.ACTION.csv} disabled={readonly} />
+					{/if}
+				</InputGroup>
+			</Col>
 			<Col>
 				<InputGroup size="sm">
 					<Input
@@ -224,13 +239,10 @@
 						bind:checked={nodeInfo.nodeProps.ACTION.transferable}
 						disabled={readonly}
 					/>
-				</InputGroup>
-			</Col>
-			<Col>
-				<InputGroup>
 					<Input
 						id="chk_sr"
 						type="checkbox"
+						class="ms-3"
 						label={$_('prop.action.p10t.sr')}
 						bind:checked={nodeInfo.nodeProps.ACTION.sr}
 						disabled={readonly}
@@ -238,17 +250,58 @@
 				</InputGroup>
 			</Col>
 			<Col>
-				<div class="my-3">
-					<RolePicker
-						bind:role={nodeInfo.nodeProps.ACTION.role}
-						bind:existingRoles={roleOptions}
-						{readonly}
+				<InputGroup>
+					<Input
+						id="chk_sendback"
+						type="checkbox"
+						label={$_('prop.action.p10t.withsb')}
+						bind:checked={nodeInfo.nodeProps.ACTION.withsb}
+						disabled={readonly}
 					/>
-				</div>
+					<Input
+						class="ms-1"
+						id="chk_revoke"
+						type="checkbox"
+						label={$_('prop.action.p10t.withrvk')}
+						bind:checked={nodeInfo.nodeProps.ACTION.withrvk}
+						disabled={readonly}
+					/>
+					<Input
+						class="ms-1"
+						id="chk_revoke"
+						type="checkbox"
+						label={$_('prop.action.p10t.withadhoc')}
+						bind:checked={nodeInfo.nodeProps.ACTION.withadhoc}
+						disabled={readonly}
+					/>
+					<Input
+						class="ms-1"
+						id="chk_revoke"
+						type="checkbox"
+						label={$_('prop.action.p10t.withcmt')}
+						bind:checked={nodeInfo.nodeProps.ACTION.withcmt}
+						disabled={readonly}
+					/>
+				</InputGroup>
 			</Col>
-			{#if nodeInfo.nodeProps.ACTION.doer}
-				<Col class="mb-2">
-					Who: {doerHTML}
+			{#if nodeInfo.nodeProps.ACTION.withcsv === false}
+				<Col>
+					<div class="my-3">
+						<RolePicker
+							bind:role={nodeInfo.nodeProps.ACTION.role}
+							bind:existingRoles={roleOptions}
+							{readonly}
+						/>
+					</div>
+				</Col>
+				{#if nodeInfo.nodeProps.ACTION.doer}
+					<Col class="mb-2">
+						Who: {doerHTML}
+					</Col>
+				{/if}
+			{:else}
+				<Col>
+					<div class="my-3">Use participants defined in CSV.</div>
 				</Col>
 			{/if}
 		</TabPane>
@@ -302,10 +355,18 @@
 					>
 						{$_('prop.action.button.addnewvar')}
 					</Button>
+					<Input
+						id="chk_addpbo"
+						class="ms-auto"
+						type="checkbox"
+						label={$_('prop.action.p10t.allowpbo')}
+						bind:checked={nodeInfo.nodeProps.ACTION.allowpbo}
+						disabled={readonly}
+					/>
 				</InputGroup>
 			{/if}
 			{#each kvarsArr as kvar, index}
-				<div class="px-2 py-2 my-2 d-flex kfk-highlight-2">
+				<div class="px-0 py-2 my-2 d-flex kfk-highlight-2">
 					<div class="my-1 flex-grow-1">
 						<TabContent
 							vertical
@@ -316,7 +377,7 @@
 						>
 							<TabPane
 								tabId="basic"
-								class="w-100"
+								class="w-100 p-0"
 								tab={$_('prop.action.kvar.basic')}
 								active={isActive('basic', false)}
 							>
@@ -386,7 +447,7 @@
 							</TabPane>
 							<TabPane
 								tabId="extra"
-								class="w-100"
+								class="w-100 p-0"
 								tab={$_('prop.action.kvar.extra')}
 								active={isActive('extra', false)}
 							>

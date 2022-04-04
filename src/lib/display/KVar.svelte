@@ -5,6 +5,7 @@
 	import { debugOption } from '$lib/empstores';
 	import Parser from '$lib/parser';
 	import DisplayTable from '$lib/display/Table.svelte';
+	import CsvDisplay from '$lib/display/CsvDisplay.svelte';
 	import { text_area_resize } from '$lib/autoresize_textarea';
 	import List from '$lib/input/List.svelte';
 	import { session } from '$app/stores';
@@ -25,7 +26,7 @@
 		<div class="w-100" />
 	{/if}
 	<Col class={' p-2 ' + (['textarea', 'tbl'].includes(kvar.type) ? ' w-100' : '')}>
-		<div class="fs-5  border-bottom border-primary border-1">
+		<div class="border-bottom border-primary border-1">
 			{#if kvar.label === 'Starter'}
 				{$_('todo.Starter')}{@html work.rehearsal ? '<br/>' + kvar.name : ''}
 			{:else if kvar.label === 'StarterCN'}
@@ -56,6 +57,8 @@
 					forKvar={kvar.label}
 					uploader={false}
 				/>
+			{:else if kvar.type === 'csv'}
+				<CsvDisplay fileId={kvar.value} />
 			{:else if kvar.type === 'tbl'}
 				<DisplayTable {kvar} />
 			{:else if work.rehearsal}

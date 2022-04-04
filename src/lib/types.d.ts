@@ -105,6 +105,7 @@ export interface Work {
 	todoid: string;
 	nodeid: string;
 	workid: string;
+	cellInfo: string;
 	title: string;
 	status: string;
 	kvars: unknown;
@@ -124,6 +125,10 @@ export interface Work {
 	comment?: string;
 	routingOptions?: string;
 	from_nodeid?: string;
+	withsb?: boolean;
+	withrvk?: boolean;
+	withadhoc?: boolean;
+	withcmt?: boolean;
 }
 
 export interface TmapEntry {
@@ -217,6 +222,9 @@ export interface NodePropJSON {
 	label: string;
 	sub: string;
 	byall: boolean;
+	csv: string;
+	withcsv: boolean;
+	allowpbo: boolean;
 	vote: string;
 	vote_any: string;
 	vote_failto: string;
@@ -225,6 +233,10 @@ export interface NodePropJSON {
 	alone: boolean;
 	transferable: boolean;
 	sr: boolean;
+	withsb: boolean;
+	withrvk: boolean;
+	withadhoc: boolean;
+	withcmt: boolean;
 }
 
 export interface SearchResult {

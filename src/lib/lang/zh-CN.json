@@ -268,13 +268,19 @@
 			"p10t": {
 				"alldone": "多人参与时投票",
 				"transferable": "可转办",
+				"withsb": "打回按钮",
+				"withrvk": "撤回按钮",
+				"withadhoc": "独立任务按钮",
+				"withcmt": "附加备注",
 				"sr": "循环中出现时，始终单一工作项",
 				"pds": "参与者字符串",
 				"pick": "可参考定义",
 				"try": "测试参与者定义字符串",
 				"tryteam": "使用组队",
 				"tryuser": "使用用户",
-				"tryresult": "结果"
+				"tryresult": "结果",
+				"csv": "从CSV获取",
+				"allowpbo": "允许修改PBO"
 			},
 			"kvar": {
 				"basic": "基础",

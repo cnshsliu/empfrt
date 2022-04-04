@@ -73,6 +73,4 @@
 		</Button>
 	</InputGroup>
 	{msg}
-{:else}
-	{$_('todo.notTransferable')}
 {/if}

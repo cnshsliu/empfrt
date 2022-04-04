@@ -20,6 +20,7 @@
 	import * as api from '$lib/api';
 	import DisplayTable from '$lib/display/Table.svelte';
 	import CommentEntry from '$lib/CommentEntry.svelte';
+	import CsvDisplay from '$lib/display/CsvDisplay.svelte';
 	import { StatusClass } from '$lib/status';
 	import parser from '$lib/parser';
 	import { goto } from '$app/navigation';
@@ -214,6 +215,8 @@
 																{@html parser.newlineToBreak(kvar.value)}
 															</span>
 														</Col>
+													{:else if kvar.type === 'csv'}
+														<CsvDisplay fileId={kvar.value} />
 													{:else}
 														<Col class="p-2">
 															<div class="fs-5">{kvar.label}</div>

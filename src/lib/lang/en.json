@@ -269,6 +269,10 @@
 			"p10t": {
 				"alldone": "Vote if multiple participants",
 				"transferable": "Transferable",
+				"withsb": "with Sendback",
+				"withrvk": "with Revoke",
+				"withadhoc": "with Adhoc",
+				"withcmt": "with Comment",
 				"sr": "Keep single running task if looped",
 				"pds": "PDS",
 				"pick": "Pick PDS",
@@ -277,7 +281,9 @@
 				"tryuser": "with User",
 				"trykvar": "with KVar",
 				"trywfid": "with Wfid",
-				"tryresult": "Result"
+				"tryresult": "Result",
+				"csv": "From CSV",
+				"allowpbo": "Allow to edit PBO"
 			},
 			"kvar": {
 				"basic": "Basic",

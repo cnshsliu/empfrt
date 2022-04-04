@@ -9,6 +9,7 @@
 	import InputTable from '$lib/input/Table.svelte';
 	import { session } from '$app/stores';
 	import WorkFile from '$lib/workfile.svelte';
+	import CsvDisplay from '$lib/display/CsvDisplay.svelte';
 
 	let user = $session.user;
 	let check_timer = null;
@@ -19,6 +20,7 @@
 	export let i: number;
 	let cssClasses: string = '';
 	let checkingMsgs = '';
+	const FULLWITHINPUTTYPES = ['textarea', 'tbl', 'file', 'csv'];
 
 	const onInputUser = function (kvar, ser) {
 		kvar.class = 'LOADING';
@@ -38,16 +40,30 @@
 			check_timer = null;
 		}, 1000);
 	};
+
+	let csvFlag = {};
+	const removeCSV = function (fileIdOnServer, kvar) {
+		console.log('removeCSV:', fileIdOnServer);
+		kvar.value = '';
+		delete csvFlag[kvar.name];
+		kvar = kvar;
+	};
+	const uploadedCSV = function (fileIdOnServer, kvar) {
+		console.log('uploadedCSV:', fileIdOnServer);
+		kvar.value = fileIdOnServer;
+		csvFlag[kvar.name] = fileIdOnServer;
+		kvar = kvar;
+	};
 </script>
 
 {#if kvar.ui.includes('input')}
 	{#if kvar.breakrow}
 		<div class="w-100" />
 	{/if}
-	{#if ['textarea', 'tbl'].includes(kvar.type)}
+	{#if FULLWITHINPUTTYPES.includes(kvar.type)}
 		<div class="w-100" />
 	{/if}
-	<Col class={' p-1 ' + (['textarea', 'tbl'].includes(kvar.type) ? ' w-100' : '')}>
+	<Col class={' p-1 ' + (FULLWITHINPUTTYPES.includes(kvar.type) ? ' w-100' : '')}>
 		{#if $debugOption === 'yes'}
 			<div class="text-wrap text-break">{JSON.stringify(kvar)}</div>
 		{/if}
@@ -82,7 +98,30 @@
 					forWhich={work.wfid}
 					forKey={kvar.name}
 					forKvar={kvar.label}
+					filetype={'file'}
 				/>
+			{:else if kvar.type === 'csv'}
+				<WorkFile
+					{work}
+					title={null}
+					forWhat={'workflow'}
+					forWhich={work.wfid}
+					forKey={kvar.name}
+					forKvar={kvar.label}
+					filetype={'csv'}
+					on:remove={(e) => {
+						removeCSV(e.detail, kvar);
+					}}
+					on:uploaded={(e) => {
+						uploadedCSV(e.detail, kvar);
+					}}
+				/>
+				{#if kvar.value && (csvFlag[kvar.name] = kvar.value)}
+					CSV Data
+				{/if}
+				{#if csvFlag[kvar.name]}
+					<CsvDisplay fileId={csvFlag[kvar.name]} />
+				{/if}
 			{:else if ['select', 'checkbox', 'radio', 'user'].includes(kvar.type) === false}
 				<Input
 					type={['dt', 'datetime'].includes(kvar.type)
@@ -174,7 +213,7 @@
 			{/if}
 		</FormGroup>
 	</Col>
-	{#if ['textarea', 'tbl'].includes(kvar.type)}
+	{#if FULLWITHINPUTTYPES.includes(kvar.type)}
 		<div class="w-100" />
 	{/if}
 {/if}

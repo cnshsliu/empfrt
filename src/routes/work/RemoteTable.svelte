@@ -66,7 +66,6 @@
 	}
 
 	async function load(_page, reason) {
-		console.log('Load', _page, reason);
 		loading = true;
 		let fltSt = $filterStorage;
 		let payload_extra = {

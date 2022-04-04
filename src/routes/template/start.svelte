@@ -259,16 +259,6 @@
 									break;
 								}
 							}
-							if (serverId) {
-								/* let ret = await api.post(
-								'filepond/remove',
-								{ serverId: serverId },
-								user.sessionToken
-							);
-							if (ret.error) {
-								console.log(ret.message);
-							} */
-							}
 						}}
 						on:uploaded={async (e) => {
 							uploadingFile = false;

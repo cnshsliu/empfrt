@@ -353,13 +353,14 @@
 					</span>
 				</div>
 			{/if}
+			{@html work.cellInfo}
 			<!--- div class="w-100">
 				<iframe id="workInstruction" src="/work/instruct" title="YouTube video" width="100%" />
 			</div -->
 			<Container class="mt-3 kfk-highlight-2">
 				{#if checkDoable() && work.status === 'ST_RUN'}
 					{#if work.kvarsArr.length > 0}
-						{$_('todo.nodeInput')}
+						<span class="fw-bold fs-5">{$_('todo.nodeInput')}</span>
 						<Row cols={{ lg: 4, md: 2, xs: 1 }} class="m-2">
 							{#each work.kvarsArr as kvar, i}
 								{#if showKVars[i]}
@@ -376,7 +377,7 @@
 						</Row>
 					{/if}
 					<input type="hidden" name="todoid" value={work.todoid} />
-					{#if work.status === 'ST_RUN'}
+					{#if work.withcmt && work.status === 'ST_RUN'}
 						<textarea
 							placeholder="Comments: "
 							bind:value={comment}
@@ -418,7 +419,7 @@
 					{/if}
 
 					<Row class="mt-4">
-						{#if work.returnable}
+						{#if work.withsb && work.returnable}
 							<Col>
 								<Button
 									class="w-100"
@@ -430,7 +431,7 @@
 									{$_('button.sendback')}
 								</Button>
 							</Col>
-						{:else if work.revocable}
+						{:else if work.withrvk && work.revocable}
 							<Col>
 								<Button
 									class="w-100"
@@ -443,7 +444,7 @@
 								</Button>
 							</Col>
 						{/if}
-						{#if work.status === 'ST_RUN'}
+						{#if work.withadhoc && work.status === 'ST_RUN'}
 							<Col>
 								<Button
 									class="w-100"
@@ -460,7 +461,7 @@
 					</Row>
 					{#if showAdhocForm}
 						<Row cols="1" class="mt-2 kfk-highlight-2">
-							<div class="fs-3">Add an Adhoc Task</div>
+							<div class="fs-5">Add an Adhoc Task</div>
 							<Col class="my-1">
 								<div class="form-floating">
 									<Input
@@ -600,7 +601,7 @@
 		</form>
 		{#if work.wf.kvarsArr.length > 0}
 			<Container class="mt-3 kfk-highlight-2">
-				<div class="fs-3">{$_('todo.workflowcontext')}:</div>
+				<div class="fw-bold fs-5">{$_('todo.workflowcontext')}:</div>
 				<Row cols={{ lg: 4, md: 2, xs: 1 }}>
 					{#each work.wf.kvarsArr as kvar}
 						{#if kvar.name[0] !== '$'}
