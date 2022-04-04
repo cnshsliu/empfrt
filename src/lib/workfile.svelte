@@ -73,6 +73,57 @@
 
 {#if (work && (work.allowpbo || attachments.length > 0)) || forKey !== 'pbo'}
 	<Row>
+		{#if work && (forKey !== 'pbo' || (forKey === 'pbo' && work.allowpbo)) && (work.status === 'ST_RUN' || ClientPermControl(user.perms, user.email, 'work', work, 'update')) && uploader}
+			<Col>
+				<FileUploader
+					allowRemove={false}
+					allowMultiple={true}
+					{forWhat}
+					{forWhich}
+					{forKey}
+					{forKvar}
+					stepid={work.todoid}
+					on:uploading={(e) => {
+						uploadingFile = true;
+					}}
+					on:remove={async (e) => {
+						//remove has been disabled
+						uploadingFile = false;
+						let serverId = null;
+						for (let i = 0; i < uploadedFiles.length; i++) {
+							if (uploadedFiles[i].id === e.detail.id) {
+								serverId = uploadedFiles[i].serverId;
+								break;
+							}
+						}
+						if (serverId) {
+							await removeAttachment(serverId);
+							dispatch('remove', serverId);
+						}
+					}}
+					on:uploaded={async (e) => {
+						uploadingFile = false;
+						uploadedFiles = e.detail;
+						await addPondFileToEntity();
+						let serverId = uploadedFiles[0].serverId;
+						dispatch('uploaded', serverId);
+					}}
+					on:warning={async (e) => {
+						uploadingFile = false;
+						uploadedFiles = e.detail;
+						console.log(uploadedFiles);
+						await addPondFileToEntity();
+					}}
+					on:error={async (e) => {
+						uploadingFile = false;
+						uploadedFiles = e.detail;
+						console.log(uploadedFiles);
+						await addPondFileToEntity();
+					}}
+				/>
+				{filetype === 'csv' ? '请上传.csv文件' : ''}
+			</Col>
+		{/if}
 		<Col>
 			{#if title}
 				{title}
@@ -133,56 +184,6 @@
 			{/each}
 		</Col>
 		<!-- 当前活动为Run，则当前用户可以上传，或者只要是对当前活动具有update权限，也可以上传 -->
-		{#if work && (forKey !== 'pbo' || (forKey === 'pbo' && work.allowpbo)) && (work.status === 'ST_RUN' || ClientPermControl(user.perms, user.email, 'work', work, 'update')) && uploader}
-			<Col>
-				<FileUploader
-					allowRemove={false}
-					allowMultiple={true}
-					{forWhat}
-					{forWhich}
-					{forKey}
-					{forKvar}
-					stepid={work.todoid}
-					on:uploading={(e) => {
-						uploadingFile = true;
-					}}
-					on:remove={async (e) => {
-						//remove has been disabled
-						uploadingFile = false;
-						let serverId = null;
-						for (let i = 0; i < uploadedFiles.length; i++) {
-							if (uploadedFiles[i].id === e.detail.id) {
-								serverId = uploadedFiles[i].serverId;
-								break;
-							}
-						}
-						if (serverId) {
-							await removeAttachment(serverId);
-							dispatch('remove', serverId);
-						}
-					}}
-					on:uploaded={async (e) => {
-						uploadingFile = false;
-						uploadedFiles = e.detail;
-						await addPondFileToEntity();
-						let serverId = uploadedFiles[0].serverId;
-						dispatch('uploaded', serverId);
-					}}
-					on:warning={async (e) => {
-						uploadingFile = false;
-						uploadedFiles = e.detail;
-						console.log(uploadedFiles);
-						await addPondFileToEntity();
-					}}
-					on:error={async (e) => {
-						uploadingFile = false;
-						uploadedFiles = e.detail;
-						console.log(uploadedFiles);
-						await addPondFileToEntity();
-					}}
-				/>
-			</Col>
-		{/if}
 	</Row>
 	<Confirm bind:this={theConfirm} />
 {/if}

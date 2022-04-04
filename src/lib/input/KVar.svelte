@@ -69,7 +69,6 @@
 		{/if}
 		<FormGroup>
 			<Label>{kvar.label}{kvar.required ? '*' : ''}</Label>
-			{kvar.type}
 			{#if kvar.formula && kvar.formula.length > 0}
 				{#if work.rehearsal}
 					<div>{kvar.formula}</div>
