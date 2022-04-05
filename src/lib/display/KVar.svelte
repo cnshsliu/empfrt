@@ -26,7 +26,7 @@
 		<div class="w-100" />
 	{/if}
 	<Col class={' p-2 ' + (['textarea', 'tbl'].includes(kvar.type) ? ' w-100' : '')}>
-		<div class="border-bottom border-primary border-1">
+		<div class="border-bottom border-primary border-1 fw-bold">
 			{#if kvar.label === 'Starter'}
 				{$_('todo.Starter')}{@html work.rehearsal ? '<br/>' + kvar.name : ''}
 			{:else if kvar.label === 'StarterCN'}

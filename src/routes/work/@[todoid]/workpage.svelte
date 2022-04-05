@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { _ } from '$lib/i18n';
-	import { qtb } from '$lib/utils';
+	import { qtb, nbArray } from '$lib/utils';
 	import * as api from '$lib/api';
 	import { goto } from '$app/navigation';
 	import Parser from '$lib/parser';
@@ -377,7 +377,7 @@
 						</Row>
 					{/if}
 					<input type="hidden" name="todoid" value={work.todoid} />
-					{#if work.withcmt && work.status === 'ST_RUN'}
+					{#if work.nodeid === 'ADHOC' || (work.withcmt && work.status === 'ST_RUN')}
 						<textarea
 							placeholder="Comments: "
 							bind:value={comment}
@@ -460,8 +460,8 @@
 						{/if}
 					</Row>
 					{#if showAdhocForm}
-						<Row cols="1" class="mt-2 kfk-highlight-2">
-							<div class="fs-5">Add an Adhoc Task</div>
+						<Row cols="1" class="mx-5 my-2 kfk-highlight-2 ">
+							<div class="fs-5">{$_('adhoc.header')}</div>
 							<Col class="my-1">
 								<div class="form-floating">
 									<Input
@@ -469,9 +469,8 @@
 										id="input-adhoc-title"
 										class="form-control"
 										bind:value={adhocTaskTitle}
-										placeholder="What to do"
 									/>
-									<label for="input-adhoc-title">Adhoc Task Title</label>
+									<label for="input-adhoc-title">{$_('adhoc.title')}</label>
 								</div>
 							</Col>
 							<Col>
@@ -485,26 +484,27 @@
 											e.preventDefault();
 											adhocTaskDoer = qtb(adhocTaskDoer);
 										}}
-										placeholder="Who should do it"
 									/>
-									<label for="input-adhoc-doer">Who should do it (in PDS format)?</label>
+									<label for="input-adhoc-doer">{$_('adhoc.pds')}</label>
 								</div>
 							</Col>
-							<Container class="mt-2">
-								<span>Recent started:</span>
-								{#each recentUsers as aUser}
-									<Button
-										class="mx-1 badge bg-info text-dark"
-										on:click={async (e) => {
-											e.preventDefault();
-											adhocTaskDoer = aUser;
-											await checkAdhocTaskDoer(e, true);
-										}}
-									>
-										{aUser}
-									</Button>
-								{/each}
-							</Container>
+							{#if nbArray(recentUsers)}
+								<Col>
+									<span>{$_('adhoc.recent')}:</span>
+									{#each recentUsers as aUser}
+										<Button
+											class="mx-1 badge bg-info text-dark"
+											on:click={async (e) => {
+												e.preventDefault();
+												adhocTaskDoer = aUser;
+												await checkAdhocTaskDoer(e, true);
+											}}
+										>
+											{aUser}
+										</Button>
+									{/each}
+								</Col>
+							{/if}
 							<Col class="my-1">
 								<div class="form-floating">
 									<Input
@@ -514,7 +514,7 @@
 										bind:value={adhocTaskComment}
 										placeholder="Any extra comments"
 									/>
-									<label for="input-adhoc-comment">Any extra comments?</label>
+									<label for="input-adhoc-comment">{$_('adhoc.comment')}</label>
 								</div>
 							</Col>
 							<Button
@@ -524,7 +524,7 @@
 									await checkAdhocTaskDoer(e, true);
 								}}
 							>
-								{$_('button.check')}
+								{$_('button.checkdoer')}
 							</Button>
 							{#if adhocTaskDoerConfirmed}
 								<Col class="d-flex justify-content-end my-1">
@@ -550,11 +550,15 @@
 										{$_('button.cancel')}
 									</Button>
 								</Col>
-							{:else if Array.isArray(checkingAdhocResult) && checkingAdhocResult.length > 0}
-								There are {checkingAdhocResult.length} users, are you sure to continue?
-								{#each checkingAdhocResult as aUser}
-									{aUser.cn}({aUser.uid})
-								{/each}
+							{:else if nbArray(checkingAdhocResult)}
+								<p>
+									{$_('adhoc.founduser', { values: { num: checkingAdhocResult.length } })}
+								</p>
+								<p>
+									{#each checkingAdhocResult as aUser}
+										{aUser.cn}({aUser.uid})
+									{/each}
+								</p>
 								<Button
 									class="mt-1"
 									color="primary"
@@ -575,8 +579,6 @@
 								>
 									{$_('button.sendadhocReconsider')}
 								</Button>
-							{:else}
-								There are {checkingAdhocResult.length} users, are you sure to continue?
 							{/if}
 						</Row>
 					{/if}
@@ -600,8 +602,8 @@
 			</Container>
 		</form>
 		{#if work.wf.kvarsArr.length > 0}
-			<Container class="mt-3 kfk-highlight-2">
-				<div class="fw-bold fs-5">{$_('todo.workflowcontext')}:</div>
+			<Container class="mt-3 kfk-highlight-2 text-center">
+				<div class="fw-bold fs-5">{$_('todo.workflowcontext')}</div>
 				<Row cols={{ lg: 4, md: 2, xs: 1 }}>
 					{#each work.wf.kvarsArr as kvar}
 						{#if kvar.name[0] !== '$'}

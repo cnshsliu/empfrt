@@ -129,6 +129,14 @@
 		"workflow": "监控",
 		"worklist": "我的工作"
 	},
+	"adhoc": {
+		"header": "发送一个独立任务",
+		"title": "独立任务说明",
+		"pds": "独立任务承担人, 使用PDS格式",
+		"recent": "最近承担人",
+		"comment": "附加性说明",
+		"founduser": "找到{num}个用户"
+	},
 	"button": {
 		"resetQuery": "重置查询",
 		"create": "新建",
@@ -142,7 +150,7 @@
 		"adhoc": "新建独立任务",
 		"sendback": "打回上一步",
 		"revoke": "撤回",
-		"check": "检查",
+		"checkdoer": "检查任务承担人是否正确",
 		"resolve": "解析",
 		"sendadhoc": "送出任务",
 		"sendadhocConfirm": "确定，将任务发送给上述人员",
@@ -224,8 +232,8 @@
 		"showlog": "显示日志",
 		"startat": "启动于",
 		"startby": "启动者",
-		"nodevars": "节点参数",
-		"comments": "节点备注",
+		"nodevars": "数据",
+		"comments": "备注",
 		"restartrehearsal": "重新演练",
 		"cancelworkflowatfirststep": "放弃本流程",
 		"workflowcontext": "流程上下文信息",
@@ -576,5 +584,8 @@
 		"exist": "already exists",
 		"meaningful": "缺省ID是自动生成的，你可能需要给它一个更加有意义的ID",
 		"idformat": "这个节点ID是不合法字符串"
+	},
+	"csv": {
+		"uidnotfound": "错误: 以下用户ID不存在"
 	}
 }

@@ -2,6 +2,7 @@
 	import { createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 	import * as api from '$lib/api';
+	import { _ } from '$lib/i18n';
 	import { Col, FormGroup, Label, Input } from 'sveltestrap';
 	import { debugOption } from '$lib/empstores';
 	import { text_area_resize } from '$lib/autoresize_textarea';
@@ -41,17 +42,19 @@
 		}, 1000);
 	};
 
-	let csvFlag = {};
+	let csvUIDCheckResult = {};
+	let csvFileServerIds = {};
 	const removeCSV = function (fileIdOnServer, kvar) {
 		console.log('removeCSV:', fileIdOnServer);
 		kvar.value = '';
-		delete csvFlag[kvar.name];
+		delete csvFileServerIds[kvar.name];
+		delete csvUIDCheckResult[kvar.name];
 		kvar = kvar;
 	};
 	const uploadedCSV = function (fileIdOnServer, kvar) {
 		console.log('uploadedCSV:', fileIdOnServer);
 		kvar.value = fileIdOnServer;
-		csvFlag[kvar.name] = fileIdOnServer;
+		csvFileServerIds[kvar.name] = fileIdOnServer;
 		kvar = kvar;
 	};
 </script>
@@ -108,18 +111,32 @@
 					forKey={kvar.name}
 					forKvar={kvar.label}
 					filetype={'csv'}
+					on:uploading={(e) => {
+						delete csvUIDCheckResult[kvar.name];
+						console.log(csvUIDCheckResult[kvar.name]);
+						csvUIDCheckResult = csvUIDCheckResult;
+					}}
 					on:remove={(e) => {
 						removeCSV(e.detail, kvar);
+						delete csvUIDCheckResult[kvar.name];
+						console.log(csvUIDCheckResult[kvar.name]);
+						csvUIDCheckResult = csvUIDCheckResult;
 					}}
 					on:uploaded={(e) => {
 						uploadedCSV(e.detail, kvar);
 					}}
+					on:uidCheckResult={(e) => {
+						csvUIDCheckResult[kvar.name] = e.detail;
+						csvUIDCheckResult = csvUIDCheckResult;
+					}}
 				/>
-				{#if kvar.value && (csvFlag[kvar.name] = kvar.value)}
-					CSV Data
+				{#if csvUIDCheckResult[kvar.name]}
+					<div>{$_('csv.uidnotfound')}</div>
+					<div>{csvUIDCheckResult[kvar.name]}</div>
 				{/if}
-				{#if csvFlag[kvar.name]}
-					<CsvDisplay fileId={csvFlag[kvar.name]} />
+
+				{#if csvFileServerIds[kvar.name]}
+					<CsvDisplay fileId={csvFileServerIds[kvar.name]} />
 				{/if}
 			{:else if ['select', 'checkbox', 'radio', 'user'].includes(kvar.type) === false}
 				<Input

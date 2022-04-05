@@ -19,6 +19,9 @@ export const blankToDefault = function (val: string, defaultValue: string) {
 export const hasValue = function (val: string) {
 	return !isBlank(val);
 };
+export const nbArray = function (arr) {
+	return arr && Array.isArray(arr) && arr.length > 0;
+};
 
 /**
  * 全角转半角

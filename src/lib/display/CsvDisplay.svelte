@@ -2,4 +2,4 @@
 	export let fileId;
 </script>
 
-CSV Data: <a href="/csv/@{fileId}" target="_blank">View</a>
+<a href="/csv/@{fileId}" target="_blank">View Data</a>

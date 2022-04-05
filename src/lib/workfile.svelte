@@ -2,6 +2,7 @@
 	import { API_SERVER } from '$lib/Env';
 	import { _ } from '$lib/i18n';
 	import * as api from '$lib/api';
+	import { nbArray } from '$lib/utils';
 	import { Row, Col, Icon } from 'sveltestrap';
 	import Confirm from '$lib/confirm.svelte';
 	import { session } from '$app/stores';
@@ -51,10 +52,18 @@
 			{ wfid: work.wfid, pondfiles: uploadedFiles, forKey: forKey },
 			$session.user.sessionToken
 		);
-		if (ret && Array.isArray(ret)) {
-			work.wf.attachments = ret;
+		switch (filetype) {
+			case 'file':
+				if (ret && Array.isArray(ret)) {
+					work.wf.attachments = ret;
+				}
+				break;
+			case 'csv':
+				if (nbArray(ret)) dispatch('uidCheckResult', ret);
+				break;
 		}
 	}
+
 	const removeAttachment = async function (serverId) {
 		let ret = await api.post(
 			'workflow/removeAttachment',
@@ -85,6 +94,7 @@
 					stepid={work.todoid}
 					on:uploading={(e) => {
 						uploadingFile = true;
+						dispatch('uploading', true);
 					}}
 					on:remove={async (e) => {
 						//remove has been disabled

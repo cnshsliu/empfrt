@@ -837,8 +837,8 @@ class KFKclass {
 				? parseInt(jqDIV.attr('vote_percent').trim())
 				: 60;
 			ret.ACTION.instruct = that.base64ToCode(blankToDefault(jqDIV.find('.instruct').text(), ''));
-			ret.ACTION.transferable = blankToDefault(jqDIV.attr('transferable'), 'false') === 'true';
-			ret.ACTION.sr = blankToDefault(jqDIV.attr('sr'), 'false') === 'true';
+			ret.ACTION.transferable = blankToDefault(jqDIV.attr('transferable'), 'no') === 'yes';
+			ret.ACTION.sr = blankToDefault(jqDIV.attr('sr'), 'no') === 'yes';
 			ret.ACTION.withsb = blankToDefault(jqDIV.attr('sb'), 'no') === 'yes';
 			ret.ACTION.withrvk = blankToDefault(jqDIV.attr('rvk'), 'no') === 'yes';
 			ret.ACTION.withadhoc = blankToDefault(jqDIV.attr('adhoc'), 'no') === 'yes';
@@ -941,12 +941,8 @@ ret='DEFAULT'; `
 			} else {
 				jqDIV.removeClass('BYALL');
 			}
-			if (propJSON.transferable) {
-				jqDIV.attr('transferable', propJSON.transferable.toString());
-			}
-			if (propJSON.sr) {
-				jqDIV.attr('sr', propJSON.sr.toString());
-			}
+			propJSON.transferable ? jqDIV.attr('transferable', 'yes') : jqDIV.removeAttr('transferable');
+			propJSON.sr ? jqDIV.attr('sr', 'yes') : jqDIV.removeAttr('sr');
 			propJSON.withsb ? jqDIV.attr('sb', 'yes') : jqDIV.removeAttr('sb');
 			propJSON.withrvk ? jqDIV.attr('rvk', 'yes') : jqDIV.removeAttr('rvk');
 			propJSON.withadhoc ? jqDIV.attr('adhoc', 'yes') : jqDIV.removeAttr('adhoc');

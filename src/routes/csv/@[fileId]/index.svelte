@@ -13,6 +13,8 @@
 <script lang="ts">
 	import { session } from '$app/stores';
 	import * as api from '$lib/api';
+	import { _ } from '$lib/i18n';
+	import { nbArray } from '$lib/utils';
 	import { onMount } from 'svelte';
 	import type { EmpResponse } from '$lib/types';
 	export let fileId;
@@ -32,7 +34,7 @@
 
 {fileId}
 {#if errMsg !== ''}
-	{errMsg}
+	<div class="bg-danger">{errMsg}</div>
 {:else if csvRows && csvRows.cells}
 	<table class="celltable">
 		<thead>
@@ -47,13 +49,23 @@
 				{#if rindex > 0}
 					<tr>
 						{#each row as col, cindex}
-							<td>{col}</td>
+							{#if cindex === 0 && nbArray(csvRows.missedUIDs) && csvRows.missedUIDs.includes(col)}
+								<td class="bg-warning">{col}</td>
+							{:else}
+								<td>{col}</td>
+							{/if}
 						{/each}
 					</tr>
 				{/if}
 			{/each}
 		</tbody>
 	</table>
+	{#if nbArray(csvRows.missedUIDs)}
+		<div class="bg-warning mt-3">
+			<div>{$_('csv.uidnotfound')}</div>
+			<div>{csvRows.missedUIDs}</div>
+		</div>
+	{/if}
 {/if}
 
 <style>

@@ -129,6 +129,14 @@
 		"workflow": "Workflow",
 		"worklist": "Work list"
 	},
+	"adhoc": {
+		"header": "Send out an Adhoc Task",
+		"title": "Task description",
+		"pds": "Who should take it? (use PDS format)",
+		"recent": "Recent doers",
+		"comment": "Extra comments",
+		"foundduser": "Found {num} users"
+	},
 	"button": {
 		"resetQuery": "Reset Query",
 		"create": "Create",
@@ -142,7 +150,7 @@
 		"adhoc": "New Adhoc",
 		"sendback": "Push back",
 		"revoke": "Revoke",
-		"check": "Check",
+		"checkdoer": "Check PDS as your expectation",
 		"resolve": "Resolve",
 		"sendadhoc": "Send it out",
 		"sendadhocConfirm": "Yes, send task to above people",
@@ -225,8 +233,8 @@
 		"showlog": "Show log",
 		"startat": "Start at",
 		"startby": "Start by",
-		"nodevars": "Node Variables",
-		"comments": "User Comments",
+		"nodevars": "Data",
+		"comments": "Comments",
 		"restartrehearsal": "Restart Rehearsal",
 		"cancelworkflowatfirststep": "Abandon Process",
 		"workflowcontext": "Workflow Context",
@@ -578,5 +586,8 @@
 		"exist": "already exists",
 		"meaningful": "You may need to give it a meaningful unique ID",
 		"idformat": "This is not a valid node id"
+	},
+	"csv": {
+		"uidnotfound": "Error: User IDs not found:"
 	}
 }
