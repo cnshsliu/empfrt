@@ -692,12 +692,87 @@ class KFKclass {
 			'ui-resizable ui-draggable ui-draggable-handle ui-draggable-dragging ui-droppable selected ui-resizable-autohide shadow1 shadow2 lock'
 		);
 	}
+	idsOfNodesToThis(jcNode) {
+		let that = this;
+		let ret = [];
+		let connectsToThis = that.JC3.find(`.connect[tid="${jcNode.attr('id')}"]`);
+		let number = connectsToThis.length;
+		for (let i = 0; i < number; i++) {
+			let jqC = $(connectsToThis[i]);
+			let fid = jqC.attr('fid');
+			ret.push(fid);
+		}
+		return ret;
+	}
+
+	toStart(jcNode, backPaths) {
+		let that = this;
+		let id = jcNode.attr('id');
+		if (jcNode.hasClass('START')) {
+			backPaths.push(id);
+			return;
+		} else {
+			if (backPaths.includes(id)) return;
+			else {
+				backPaths.push(id);
+				let ids = that.idsOfNodesToThis(jcNode);
+				for (let i = 0; i < ids.length; i++) {
+					that.toStart(that.JC3.find('#' + ids[i]).first(), backPaths);
+				}
+			}
+		}
+	}
+
+	setAndORCounterPart(jcAnd) {
+		let that = this;
+		let andId = jcAnd.attr('id');
+		let ids = that.idsOfNodesToThis(jcAnd);
+		let paths = [];
+		for (let i = 0; i < ids.length; i++) {
+			paths.push([andId]);
+		}
+		for (let i = 0; i < ids.length; i++) {
+			that.toStart(that.JC3.find('#' + ids[i]).first(), paths[i]);
+		}
+		console.log(JSON.stringify(paths, null, 2));
+		//TODO: check paths
+		let counterPart = 'start';
+		//应该有多于一条的路径
+		if (paths.length > 1) {
+			let result = paths[0];
+			for (let i = 1; i < ids.length; i++) {
+				result = result.filter((x) => paths[i].includes(x));
+			}
+			if (result.length > 1) {
+				//除自身外（下标为0），第一个为counterPart（下标为1）
+				counterPart = result[1];
+			}
+		} else {
+			counterPart = paths[0][1];
+		}
+		jcAnd.attr('cp', counterPart);
+	}
+
+	setAndORGraph() {
+		let that = this;
+
+		//给每个AND找到自己的counterPart。
+		const andNodes = that.JC3.find('.node.AND');
+		for (let i = 0; i < andNodes.length; i++) {
+			that.setAndORCounterPart($(andNodes[i]));
+		}
+		const orNodes = that.JC3.find('.node.OR');
+		for (let i = 0; i < orNodes.length; i++) {
+			that.setAndORCounterPart($(orNodes[i]));
+		}
+	}
 
 	//onSave onsave on Save  on save
 	//on upload
 	drawingToTemplateDoc() {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
+		that.setAndORGraph();
 		const nodes = that.JC3.find('.node');
 		const connects = that.svgDraw.find('.connect');
 		let tplDocHtml = `<div class="template">`;
@@ -802,7 +877,7 @@ class KFKclass {
 				withsb: false,
 				withrvk: false,
 				withadhoc: false,
-				withcmt: false
+				withcmt: true
 			},
 			SCRIPT: { id: '', label: '', code: '', runmode: 'ASYNC' },
 			INFORM: { id: '', label: '', role: '', subject: '', content: '' },
@@ -842,7 +917,7 @@ class KFKclass {
 			ret.ACTION.withsb = blankToDefault(jqDIV.attr('sb'), 'no') === 'yes';
 			ret.ACTION.withrvk = blankToDefault(jqDIV.attr('rvk'), 'no') === 'yes';
 			ret.ACTION.withadhoc = blankToDefault(jqDIV.attr('adhoc'), 'no') === 'yes';
-			ret.ACTION.withcmt = blankToDefault(jqDIV.attr('cmt'), 'no') === 'yes';
+			ret.ACTION.withcmt = blankToDefault(jqDIV.attr('cmt'), 'yes') === 'yes';
 
 			if (that.workflow) {
 				let theWork = jqDIV.find('.work').first();
