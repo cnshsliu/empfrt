@@ -308,9 +308,12 @@
 						<div class="d-flex">
 							<div class="w-100">
 								<h5 class="">
-									<a class="kfk-workflow-id tnt-workflow-id" href={`/template/@${row.tplid}&read`}
-										>{row.tplid}</a
-									>
+									<a class="kfk-workflow-id tnt-workflow-id" href={`/template/@${row.tplid}&read`}>
+										{row.tplid}
+									</a>
+									{#if row.cron > 0}
+										<span class="ms-3">Cron</span>
+									{/if}
 								</h5>
 							</div>
 							<div class="flex-shrink-1">

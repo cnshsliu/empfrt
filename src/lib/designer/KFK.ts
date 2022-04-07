@@ -916,7 +916,7 @@ class KFKclass {
 			ret.ACTION.sr = blankToDefault(jqDIV.attr('sr'), 'no') === 'yes';
 			ret.ACTION.withsb = blankToDefault(jqDIV.attr('sb'), 'no') === 'yes';
 			ret.ACTION.withrvk = blankToDefault(jqDIV.attr('rvk'), 'no') === 'yes';
-			ret.ACTION.withadhoc = blankToDefault(jqDIV.attr('adhoc'), 'no') === 'yes';
+			ret.ACTION.withadhoc = blankToDefault(jqDIV.attr('adhoc'), 'yes') === 'yes';
 			ret.ACTION.withcmt = blankToDefault(jqDIV.attr('cmt'), 'yes') === 'yes';
 
 			if (that.workflow) {
@@ -1016,12 +1016,12 @@ ret='DEFAULT'; `
 			} else {
 				jqDIV.removeClass('BYALL');
 			}
-			propJSON.transferable ? jqDIV.attr('transferable', 'yes') : jqDIV.removeAttr('transferable');
-			propJSON.sr ? jqDIV.attr('sr', 'yes') : jqDIV.removeAttr('sr');
-			propJSON.withsb ? jqDIV.attr('sb', 'yes') : jqDIV.removeAttr('sb');
-			propJSON.withrvk ? jqDIV.attr('rvk', 'yes') : jqDIV.removeAttr('rvk');
-			propJSON.withadhoc ? jqDIV.attr('adhoc', 'yes') : jqDIV.removeAttr('adhoc');
-			propJSON.withcmt ? jqDIV.attr('cmt', 'yes') : jqDIV.removeAttr('cmt');
+			jqDIV.attr('transferable', propJSON.transferable ? 'yes' : 'no');
+			jqDIV.attr('sr', propJSON.sr ? 'yes' : 'no');
+			jqDIV.attr('sb', propJSON.withsb ? 'yes' : 'no');
+			jqDIV.attr('rvk', propJSON.withrvk ? 'yes' : 'no');
+			jqDIV.attr('adhoc', propJSON.withadhoc ? 'yes' : 'no');
+			jqDIV.attr('cmt', propJSON.withcmt ? 'yes' : 'no');
 		} else if (jqDIV.hasClass('SCRIPT')) {
 			propJSON = props.SCRIPT;
 			this.setNodeLabel(jqDIV, propJSON.label);
