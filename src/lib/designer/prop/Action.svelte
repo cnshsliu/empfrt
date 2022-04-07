@@ -589,14 +589,32 @@
 		</TabPane>
 		{#if scenario === 'workflow' && workid}
 			<TabPane tabId="tasks" tab="Tasks" active={isActive('tasks')}>
+				<InputGroup>
+					<InputGroupText>Reset work</InputGroupText>
+					<Button
+						on:click={async (e) => {
+							e.preventDefault();
+							await api.post(
+								'work/reset',
+								{
+									wfid: workflow.wfid,
+									workid: workid
+								},
+								user.sessionToken
+							);
+						}}
+					>
+						Reset(Caution)
+					</Button>
+				</InputGroup>
 				{#each todos as todo, index}
 					<Row>
 						{#if user.group === 'ADMIN' && todo.status === 'ST_RUN'}
-							workid: {workid}<br />
-							todoid: {todo.todoid}<br />
+							workid: {workid} / todoid: {todo.todoid}<br />
 							status: {todo.status}
 						{/if}
 						{#if todo.status === 'ST_DONE'}
+							<!-- if already ST_DONE -->
 							<a
 								href={`/work/@${todo.todoid}`}
 								target="_worktab"
@@ -606,6 +624,7 @@
 								<sup>{TimeTool.format(todo.doneat, 'LLL')}</sup>
 							</a>
 						{:else}
+							<!-- if not ST_DONE -->
 							<a
 								href={`/work/@${todo.todoid}`}
 								target="_worktab"
@@ -663,6 +682,7 @@
 									>
 								</InputGroup>
 							{/if}
+							<!-- if ADMIN and ST_RUN, change doer -->
 						{/if}
 					</Row>
 				{/each}

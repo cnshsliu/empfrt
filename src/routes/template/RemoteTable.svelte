@@ -317,8 +317,10 @@
 											on:click={(e) => {
 												e.preventDefault();
 												showCronTable(e, row.tplid);
-											}}>Cron</Button
+											}}
 										>
+											crontab
+										</Button>
 									{/if}
 								</h5>
 							</div>
