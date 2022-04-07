@@ -73,9 +73,14 @@
 			fileSaver = await import('file-saver');
 		}
 		var BOM = '\uFEFF';
-		res = res.map((x) => x + '\n');
-		var csvData = BOM + res;
-		var blob = new Blob([csvData], { type: 'text/csv;charset=UTF-8' });
+		res = res.map((x) => {
+			x = x.replace(/[\r|\n]/, '');
+			return x + '\n';
+			//return x;
+		});
+		res.unshift(BOM);
+		var csvData = res;
+		var blob = new Blob(csvData, { type: 'text/csv;charset=UTF-8' });
 		fileSaver.saveAs(blob, 'orgchart.csv');
 		//res.map((x) => console.log(x));
 	}

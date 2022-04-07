@@ -2043,6 +2043,10 @@ div.pbo {
 .kfk-tag a:hover {
 	text-decoration: none;
 }
+.kfk-highlight-3 {
+	background-color: rgba(255, 255, 255);
+	border-radius: 5px;
+}
 
 .kfk-highlight-2 {
 	background-color: rgba(255, 255, 255, 0.5);
@@ -2440,4 +2444,7 @@ div.pbo {
 	border-color: inherit;
 	-webkit-box-shadow: none;
 	box-shadow: none;
+}
+.kfk-trackentry {
+	background-color: rgba(0, 0, 0, 0.03);
 }

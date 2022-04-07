@@ -312,7 +312,13 @@
 										{row.tplid}
 									</a>
 									{#if row.cron > 0}
-										<span class="ms-3">Cron</span>
+										<Button
+											class="m-0 ms-3 p-0"
+											on:click={(e) => {
+												e.preventDefault();
+												showCronTable(e, row.tplid);
+											}}>Cron</Button
+										>
 									{/if}
 								</h5>
 							</div>
@@ -498,6 +504,11 @@
 									>
 										Close
 									</Button>
+									<div class="text-center">
+										<a href="https://crontab-generator.org" target="_crontabgenerator"
+											>Crontab Generator</a
+										>
+									</div>
 								</Row>
 								{#each crons as cron}
 									<Row>

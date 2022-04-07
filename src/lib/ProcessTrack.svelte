@@ -107,11 +107,11 @@
 	<Container class="my-0">
 		{#each wf.history as entry}
 			<Row
-				class={'mt-1 border rounded-3 pt-0 kfk-work-kvars tnt-work-kvars ' +
+				class={'mt-3 rounded-3 pt-0 kfk-trackentry kfk-work-kvars tnt-work-kvars ' +
 					(entry.isCurrent ? 'border-3' : '')}
 			>
-				<Col class="d-flex border-end col-3 card-header">
-					<div class="text-center px-0 w-100">
+				<Col class="d-flex border-end col-3">
+					<div class="text-center px-0 pt-3 w-100">
 						{#if workid === entry.workid}
 							{#if entry.nodeid === 'ADHOC'}
 								<Badge pill color={'light'}>

@@ -298,8 +298,6 @@
 						? refValue != chk
 						: false;
 				}
-			} else {
-				console.log(i, 'NO when continue');
 			}
 		}
 	};
