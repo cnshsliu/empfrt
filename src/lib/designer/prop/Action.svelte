@@ -368,118 +368,89 @@
 			{#each kvarsArr as kvar, index}
 				<div class="px-0 py-2 my-2 d-flex kfk-highlight-2">
 					<div class="my-1 flex-grow-1">
-						<TabContent
-							vertical
-							pills
-							on:tab={(e) => {
-								setTab(e.detail, false);
-							}}
-						>
-							<TabPane
-								tabId="basic"
-								class="w-100 p-0"
-								tab={$_('prop.action.kvar.basic')}
-								active={isActive('basic', false)}
-							>
-								<InputGroup size="sm">
-									<InputGroupText>
-										{$_('prop.action.kvar.name')}
-									</InputGroupText>
-									<Input
-										bind:value={kvar.name}
-										disabled={readonly}
-										on:blur={(e) => {
-											kvar.name = Parser.toValidVarName(kvar.name);
-										}}
-									/>
-								</InputGroup>
-								{#if kvar.name.startsWith('select_') || kvar.name.startsWith('sel_') || kvar.name.startsWith('sl_') || kvar.name.startsWith('radio_') || kvar.name.startsWith('ou_')}
-									<InputGroup size="sm">
-										<InputGroupText>
-											{kvar.name.startsWith('ou_')
-												? $_('prop.action.kvar.ou_options')
-												: $_('prop.action.kvar.sel_options')}
-										</InputGroupText>
-										<Input
-											bind:value={kvar.options}
-											on:change={(e) => {
-												kvar.options = qtb(kvar.options);
-											}}
-											disabled={readonly}
-											placeholder={kvar.name.startsWith('ou_')
-												? $_('prop.action.kvar.ou_placeholder')
-												: $_('prop.action.kvar.sel_placeholder')}
-										/>
-									</InputGroup>
-								{:else if kvar.name.startsWith('tbl_')}
-									<InputGroup size="sm">
-										<InputGroupText>
-											{$_('prop.action.kvar.tbl_options')}
-										</InputGroupText>
-										<Input
-											bind:value={kvar.coldef}
-											on:change={(e) => {
-												kvar.coldef = qtb(kvar.coldef);
-											}}
-											disabled={readonly}
-											placeholder={$_('prop.action.kvar.tbl_placeholder')}
-										/>
-									</InputGroup>
-								{/if}
+						<InputGroup size="sm">
+							<InputGroupText>
+								{$_('prop.action.kvar.name')}
+							</InputGroupText>
+							<Input
+								bind:value={kvar.name}
+								disabled={readonly}
+								on:blur={(e) => {
+									kvar.name = Parser.toValidVarName(kvar.name);
+								}}
+							/>
+							<InputGroupText>
+								{$_('prop.action.kvar.label')}
+							</InputGroupText>
+							<Input bind:value={kvar.label} disabled={readonly} />
+						</InputGroup>
+						{#if kvar.name.startsWith('select_') || kvar.name.startsWith('sel_') || kvar.name.startsWith('sl_') || kvar.name.startsWith('radio_') || kvar.name.startsWith('ou_')}
+							<InputGroup size="sm">
+								<InputGroupText>
+									{kvar.name.startsWith('ou_')
+										? $_('prop.action.kvar.ou_options')
+										: $_('prop.action.kvar.sel_options')}
+								</InputGroupText>
+								<Input
+									bind:value={kvar.options}
+									on:change={(e) => {
+										kvar.options = qtb(kvar.options);
+									}}
+									disabled={readonly}
+									placeholder={kvar.name.startsWith('ou_')
+										? $_('prop.action.kvar.ou_placeholder')
+										: $_('prop.action.kvar.sel_placeholder')}
+								/>
+							</InputGroup>
+						{:else if kvar.name.startsWith('tbl_')}
+							<InputGroup size="sm">
+								<InputGroupText>
+									{$_('prop.action.kvar.tbl_options')}
+								</InputGroupText>
+								<Input
+									bind:value={kvar.coldef}
+									on:change={(e) => {
+										kvar.coldef = qtb(kvar.coldef);
+									}}
+									disabled={readonly}
+									placeholder={$_('prop.action.kvar.tbl_placeholder')}
+								/>
+							</InputGroup>
+						{/if}
 
-								<InputGroup size="sm">
-									<InputGroupText>
-										{$_('prop.action.kvar.value')}
-									</InputGroupText>
-									{#if kvar.name.startsWith('textarea_') || kvar.name.startsWith('ta_')}
-										<Input type="textarea" bind:value={kvar.value} disabled={readonly} />
-									{:else}
-										<Input bind:value={kvar.value} disabled={readonly} />
-									{/if}
-								</InputGroup>
-
-								<InputGroup size="sm">
-									<InputGroupText>
-										{$_('prop.action.kvar.label')}
-									</InputGroupText>
-									<Input bind:value={kvar.label} disabled={readonly} />
-								</InputGroup>
-								<InputGroup size="sm">
-									<InputGroupText>
-										{$_('prop.action.kvar.when')}
-									</InputGroupText>
-									<Input bind:value={kvar.when} disabled={readonly} />
-								</InputGroup>
-							</TabPane>
-							<TabPane
-								tabId="extra"
-								class="w-100 p-0"
-								tab={$_('prop.action.kvar.extra')}
-								active={isActive('extra', false)}
-							>
-								<InputGroup size="sm">
-									<InputGroupText>
-										{$_('prop.action.kvar.placeholder')}
-									</InputGroupText>
-									<Input bind:value={kvar.placeholder} disabled={readonly} />
-								</InputGroup>
-								<InputGroup size="sm">
-									<InputGroupText>
-										{$_('prop.action.kvar.required')}
-									</InputGroupText>
-									<Input type="checkbox" bind:checked={kvar.required} disabled={readonly} />
-									<InputGroupText>
-										{$_('prop.action.kvar.breakrow')}
-									</InputGroupText>
-									<Input type="checkbox" bind:checked={kvar.breakrow} disabled={readonly} />
-									<InputGroupText>
-										{$_('prop.action.kvar.ID')}
-									</InputGroupText>
-									<Input bind:value={kvar.id} disabled={readonly} />
-								</InputGroup>
-								<PDSResolver bind:this={thePDSResolver} bind:value={kvar.visi} {readonly} />
-							</TabPane>
-						</TabContent>
+						<InputGroup size="sm">
+							<InputGroupText>
+								{$_('prop.action.kvar.value')}
+							</InputGroupText>
+							{#if kvar.name.startsWith('textarea_') || kvar.name.startsWith('ta_')}
+								<Input type="textarea" bind:value={kvar.value} disabled={readonly} />
+							{:else}
+								<Input bind:value={kvar.value} disabled={readonly} />
+							{/if}
+							<InputGroupText>
+								{$_('prop.action.kvar.when')}
+							</InputGroupText>
+							<Input bind:value={kvar.when} disabled={readonly} />
+						</InputGroup>
+						<PDSResolver bind:this={thePDSResolver} bind:value={kvar.visi} {readonly} />
+						<InputGroup size="sm">
+							<InputGroupText>
+								{$_('prop.action.kvar.placeholder')}
+							</InputGroupText>
+							<Input bind:value={kvar.placeholder} disabled={readonly} />
+							<InputGroupText>
+								{$_('prop.action.kvar.required')}
+							</InputGroupText>
+							<Input type="checkbox" bind:checked={kvar.required} disabled={readonly} />
+							<InputGroupText>
+								{$_('prop.action.kvar.breakrow')}
+							</InputGroupText>
+							<Input type="checkbox" bind:checked={kvar.breakrow} disabled={readonly} />
+							<InputGroupText>
+								{$_('prop.action.kvar.ID')}
+							</InputGroupText>
+							<Input bind:value={kvar.id} disabled={readonly} />
+						</InputGroup>
 					</div>
 					{#if !readonly}
 						<div class="shrink">
