@@ -444,6 +444,12 @@
 									</InputGroupText>
 									<Input bind:value={kvar.label} disabled={readonly} />
 								</InputGroup>
+								<InputGroup size="sm">
+									<InputGroupText>
+										{$_('prop.action.kvar.when')}
+									</InputGroupText>
+									<Input bind:value={kvar.when} disabled={readonly} />
+								</InputGroup>
 							</TabPane>
 							<TabPane
 								tabId="extra"
@@ -470,12 +476,6 @@
 										{$_('prop.action.kvar.ID')}
 									</InputGroupText>
 									<Input bind:value={kvar.id} disabled={readonly} />
-								</InputGroup>
-								<InputGroup size="sm">
-									<InputGroupText>
-										{$_('prop.action.kvar.when')}
-									</InputGroupText>
-									<Input bind:value={kvar.when} disabled={readonly} />
 								</InputGroup>
 								<PDSResolver bind:this={thePDSResolver} bind:value={kvar.visi} {readonly} />
 							</TabPane>

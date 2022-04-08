@@ -160,6 +160,8 @@
 						{$_('setting.set')}
 					</Button>
 				</InputGroup>
+				密码格式要求： 1. 总长度6-20之间； 2. 大小写字母、数字、特殊字符三类，每一类均至少包含一个；3.
+				特殊字符仅限!@#$%^&*
 			</Col>
 			<Col>
 				<InputGroup class="mb-1">
