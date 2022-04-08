@@ -128,4 +128,9 @@
 			</form>
 		</Col>
 	</Row>
+	<Row>
+		<div class="mt-3 text-center">
+			{$_('setting.personal.passwordhint')}
+		</div>
+	</Row>
 </Container>
