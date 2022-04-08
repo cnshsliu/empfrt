@@ -456,7 +456,8 @@
 			"currentpassword": "Current password",
 			"newpassword": "New password",
 			"sendmail": "Send email to me on new work comming",
-			"joincode": "Join Org with joincode"
+			"joincode": "Join Org with joincode",
+			"passwordhint": "Password validation： 1. length between 6 and 20; 2. at least 1 char for 3 groups, letter, number and spechars;  3. Spechars are !@#$%^&*"
 		},
 		"delegation": {
 			"delegation": "Delegation",
