@@ -26,6 +26,9 @@
 	//////////////////////////////////////////////////
 	//Compatible with old ew which is a boolean value
 	//////////////////////////////////////////////////
+	if (!user.ew) {
+		user.ew = { email: true, wecom: false };
+	}
 	if (typeof user.ew === 'boolean') {
 		user.ew = { email: user.ew, wecom: false };
 	}
