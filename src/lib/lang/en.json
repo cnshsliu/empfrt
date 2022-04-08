@@ -138,6 +138,7 @@
 		"foundduser": "Found {num} users"
 	},
 	"button": {
+		"check": "Check",
 		"resetQuery": "Reset Query",
 		"create": "Create",
 		"import": "Import",

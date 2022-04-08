@@ -138,6 +138,7 @@
 		"founduser": "找到{num}个用户"
 	},
 	"button": {
+		"check": "检查",
 		"resetQuery": "重置查询",
 		"create": "新建",
 		"import": "导入",
