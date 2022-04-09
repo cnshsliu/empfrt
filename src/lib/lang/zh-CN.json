@@ -38,7 +38,20 @@
 		"haveAnAccount": "已有账户?",
 		"yourDisplayName": "你的显示名称",
 		"choosePassword": "选择一个密码",
-		"verifyPassword": "验证你的密码"
+		"verifyPassword": "验证你的密码",
+		"resetpassword": "重设你的密码",
+		"verificationcode": "请输入你收到的验证码",
+		"sendvrfcode": "发送验证码",
+		"resendvrfcode": "重新发送验证码",
+		"vrfcodesent": "验证码已发送，请查收",
+		"changepassword": "提交密码",
+		"passwordchanged": "密码已修改，转向登录",
+		"resetPassword": {
+			"vrfcode_not_found": "验证码不正确或已过期",
+			"user_not_found": "用户不存在"
+		},
+		"usernotfound": "所输入的用户不存在",
+		"sendvrfcodeerror": "邮件输入有误"
 	},
 	"extrafilter": {
 		"template": "模板",
@@ -455,7 +468,12 @@
 			"newpassword": "新密码",
 			"sendmail": "有新任务时发送邮件给我",
 			"joincode": "使用joincode加入一个组织",
-			"passwordhint": "密码格式要求： 1. 总长度6-20之间； 2. 大小写字母、数字、特殊字符三类，每一类均至少包含一个；3. 特殊字符仅限!@#$%^&*"
+			"passwordhint": "长度6-20,必须包含大小写字母、数字和特殊字符个；特殊字符仅限!@#$%^&*",
+			"passwordtooshort": "密码过短",
+			"passwordtoolong": "密码过长",
+			"old_password_wrong": "旧密码输入错误",
+			"newpassword_wrong": "新密码格式有误，请检查",
+			"password2notsame": "密码不一致"
 		},
 		"delegation": {
 			"delegation": "委托",
@@ -589,5 +607,10 @@
 	},
 	"csv": {
 		"uidnotfound": "错误: 以下用户ID不存在"
+	},
+	"login": {
+		"reset_password": "忘记密码吗？如需重置密码点这里",
+		"needfullemail": "重置密码须使用完整邮箱地址",
+		"resetpasswordresult": "重置密码的指引已发送到你的邮箱，请查收"
 	}
 }

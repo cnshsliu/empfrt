@@ -32,6 +32,7 @@
 	if (typeof user.ew === 'boolean') {
 		user.ew = { email: user.ew, wecom: false };
 	}
+	let enableChangePasswordButton = false;
 
 	const setPersonal = async function (value) {
 		in_progress = true;
@@ -41,14 +42,18 @@
 		};
 		const response = (await post('auth/save', payload)) as unknown as EmpResponse;
 		if (response.error) {
-			if (response.error === 'Bad Request' && response.message.indexOf('old_password') > -1) {
-				if (response.message.indexOf('fails to match') > -1) {
-					response.message = 'The current password does not match required format';
-				} else {
-					response.message = response.message.replace('old_password', 'Current password');
-				}
+			if (
+				response.error === 'Bad Request' &&
+				response.message.indexOf('value.password') > -1 &&
+				response.message.indexOf('fails to match') > -1
+			) {
+				setFadeMessage($_('setting.personal.newpassword_wrong'));
+				enableChangePasswordButton = false;
+			} else if (response.error === 'wrong_password') {
+				setFadeMessage($_('setting.personal.old_password_wrong'));
+			} else {
+				setFadeMessage(response.error + ': ' + response.message);
 			}
-			setFadeMessage(response.error + ': ' + response.message);
 		} else {
 			//eslint-disable-next-line
 			if (response.user) {
@@ -73,6 +78,28 @@
 	}
 	let webhook_setting = {
 		wecombot_key: ''
+	};
+
+	let newPasswordCheckingMsgs = '';
+	let newPasswordCssClasses: string = 'form-control';
+	const pwdReg = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,20}$/;
+	const onInputNewPassword = function () {
+		if (user.password.match(pwdReg)) {
+			newPasswordCssClasses = 'form-control valid';
+			newPasswordCheckingMsgs = '';
+			enableChangePasswordButton = true;
+		} else if (user.password.length < 6) {
+			newPasswordCssClasses = 'form-control is-invalid';
+			newPasswordCheckingMsgs = $_('setting.personal.passwordtooshort');
+			enableChangePasswordButton = false;
+		} else if (user.password.length > 20) {
+			newPasswordCheckingMsgs = $_('setting.personal.passwordtoolong');
+			enableChangePasswordButton = false;
+		} else {
+			newPasswordCssClasses = 'form-control is-invalid';
+			newPasswordCheckingMsgs = $_('setting.personal.passwordhint');
+			enableChangePasswordButton = false;
+		}
 	};
 </script>
 
@@ -149,12 +176,18 @@
 					/>
 					<InputGroupText>{$_('setting.personal.newpassword')}</InputGroupText>
 					<input
-						class="form-control"
+						class={newPasswordCssClasses}
 						type="password"
 						placeholder="New Password"
 						bind:value={user.password}
+						on:input={(e) => {
+							e.preventDefault();
+							onInputNewPassword();
+						}}
+						aria-describedby={'validationNewPasswordFeedback'}
 					/>
 					<Button
+						disabled={enableChangePasswordButton === false}
 						on:click={async (e) => {
 							e.preventDefault();
 							await setPersonal({ password: user.password });
@@ -163,8 +196,16 @@
 						{$_('setting.set')}
 					</Button>
 				</InputGroup>
-				{$_('setting.personal.passwordhint')}
 			</Col>
+			{#if newPasswordCssClasses === 'form-control is-invalid'}
+				<Col class="d-flex justify-content-end">
+					<div class="me-5">
+						<div class="me-5">
+							{newPasswordCheckingMsgs}
+						</div>
+					</div>
+				</Col>
+			{/if}
 			<Col>
 				<InputGroup class="mb-1">
 					<InputGroupText>{$_('setting.personal.sendmail')}</InputGroupText> &nbsp;&nbsp;

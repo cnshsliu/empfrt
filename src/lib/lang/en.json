@@ -38,7 +38,20 @@
 		"haveAnAccount": "Have an account?",
 		"yourDisplayName": "Your display name",
 		"choosePassword": "Choose your password",
-		"verifyPassword": "Verify your password"
+		"verifyPassword": "Verify your password",
+		"resetpassword": "Reset your password",
+		"verificationcode": "Input Verification Code You Received",
+		"sendvrfcode": "Send Verification Code",
+		"resendvrfcode": "Resend Verification Code",
+		"vrfcodesent": "Verification Code Sent, Check your email pls",
+		"changepassword": "Submit New Password",
+		"passwordchanged": "Password reset done, goto Login",
+		"resetPassword": {
+			"vrfcode_not_found": "Verification Code not correct or expired",
+			"user_not_found": "User not found"
+		},
+		"usernotfound": "User not found",
+		"sendvrfcodeerror": "Email is invalid"
 	},
 	"extrafilter": {
 		"template": "Template",
@@ -458,7 +471,12 @@
 			"newpassword": "New password",
 			"sendmail": "Send email to me on new work comming",
 			"joincode": "Join Org with joincode",
-			"passwordhint": "Password validation： 1. length between 6 and 20; 2. at least 1 char for 3 groups, letter, number and spechars;  3. Spechars are !@#$%^&*"
+			"passwordhint": "1. length between 6 and 20; 2. Must has letter, number and spechars;  3. Spechars are !@#$%^&*",
+			"passwordtooshort": "Too short",
+			"passwordtoolong": "Too long",
+			"old_password_wrong": "Old password is wrong",
+			"newpassword_wrong": "New password is invalid",
+			"password2notsame": "Passwords not the same"
 		},
 		"delegation": {
 			"delegation": "Delegation",
@@ -591,5 +609,10 @@
 	},
 	"csv": {
 		"uidnotfound": "Error: User IDs not found:"
+	},
+	"login": {
+		"reset_password": "Forget password? reset it here",
+		"needfullemail": "Full email address is required",
+		"resetpasswordresult": "Reset password instruction has been sent to your email, check your email now please"
 	}
 }

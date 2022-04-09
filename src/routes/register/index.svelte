@@ -56,6 +56,58 @@
 			goto('/');
 		}
 	}
+	let passwordCheckingMsgs = '';
+	let password2CheckingMsgs = '';
+	let passwordCssClasses: string = '';
+	let password2CssClasses: string = '';
+	let enableSigninButton = false;
+	const pwdReg = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,20}$/;
+	const onInputPassword = function () {
+		if (password.match(pwdReg)) {
+			passwordCssClasses = 'valid';
+			passwordCheckingMsgs = '';
+			if (password === password2) {
+				password2CheckingMsgs = '';
+				enableSigninButton = true;
+			} else {
+				password2CheckingMsgs = $_('setting.personal.password2notsame');
+				enableSigninButton = false;
+			}
+		} else {
+			if (password.length < 6) {
+				passwordCssClasses = 'invalid';
+				passwordCheckingMsgs = $_('setting.personal.passwordtooshort');
+				enableSigninButton = false;
+			} else if (password.length > 20) {
+				passwordCssClasses = 'invalid';
+				passwordCheckingMsgs = $_('setting.personal.passwordtoolong');
+				enableSigninButton = false;
+			} else {
+				passwordCssClasses = 'is-invalid';
+				passwordCheckingMsgs = $_('setting.personal.passwordhint');
+				enableSigninButton = false;
+			}
+		}
+	};
+	const onInputPassword2 = function () {
+		if (password2 !== password) {
+			password2CssClasses = 'is-invalid';
+			password2CheckingMsgs = $_('setting.personal.password2notsame');
+			enableSigninButton = false;
+		} else {
+			if (password.match(pwdReg)) {
+				passwordCssClasses = 'valid';
+				password2CssClasses = 'valid';
+				passwordCheckingMsgs = '';
+				password2CheckingMsgs = '';
+				enableSigninButton = true;
+			} else {
+				passwordCssClasses = 'is-invalid';
+				passwordCheckingMsgs = $_('setting.personal.passwordhint');
+				enableSigninButton = false;
+			}
+		}
+	};
 </script>
 
 <svelte:head>
@@ -107,9 +159,15 @@
 						placeholder="Password"
 						autocomplete="new-password"
 						bind:value={password}
+						on:input={(e) => {
+							e.preventDefault();
+							onInputPassword();
+						}}
 					/>
 					<label for="input-password"> {$_('account.choosePassword')}</label>
+					{passwordCheckingMsgs}
 				</div>
+				<!-- svelte-ignore missing-declaration -->
 				<div class="form-floating">
 					<input
 						class="form-control form-control-lg mt-2"
@@ -119,18 +177,21 @@
 						placeholder="Password Repeat"
 						autocomplete="new-password"
 						bind:value={password2}
+						on:input={(e) => {
+							e.preventDefault();
+							onInputPassword2();
+						}}
 					/>
 					<label for="input-password-repeat"> {$_('account.verifyPassword')}</label>
+					{password2CheckingMsgs}
 				</div>
-				<button class="w-100 btn btn-lg btn-primary pull-xs-right mt-3">
+				<button
+					class="w-100 btn btn-lg btn-primary pull-xs-right mt-3"
+					disabled={enableSigninButton === false}
+				>
 					{$_('account.signup')}</button
 				>
 			</form>
 		</Col>
-	</Row>
-	<Row>
-		<div class="mt-3 text-center">
-			{$_('setting.personal.passwordhint')}
-		</div>
 	</Row>
 </Container>

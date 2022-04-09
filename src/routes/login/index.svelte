@@ -33,6 +33,9 @@
 	let errResponse: any = { error: '', message: '' };
 	let isUserValid = '';
 	let isPwdValid = '';
+	let showResetPassword = false;
+	let passwordErrorCount = 0;
+	let resetPasswordResult = '';
 
 	function setFadeMessage(message: string, type = 'warning', pos = 'bottom-right', time = 2000) {
 		(addNotification as oneArgFunc)({
@@ -51,6 +54,8 @@
 		if (response.error) {
 			if (response.error === 'NO_BRUTE') {
 				login_wait = 10;
+				showResetPassword = true;
+				resetPasswordResult = '';
 				if (login_wait_interval) {
 					clearInterval(login_wait_interval);
 				}
@@ -66,6 +71,7 @@
 			} else {
 				isUserValid = '';
 				isPwdValid = ' is-invalid';
+				passwordErrorCount++;
 			}
 			if (response.error === 'login_emailVerified_false') {
 				show_resend_email_verification = true;
@@ -91,6 +97,8 @@
 			setFadeMessage('Please check your mailbox');
 		}
 	}
+
+	let needFullEmailToResetPassword = '';
 </script>
 
 <svelte:head>
@@ -129,6 +137,9 @@
 						{/if}
 					</div>
 				</div>
+				{#if needFullEmailToResetPassword}
+					{needFullEmailToResetPassword}
+				{/if}
 				<div class="form-floating flex-fill has-validation">
 					<Input
 						class={'form-control form-control-lg mt-2 ' + isPwdValid}
@@ -159,6 +170,31 @@
 				</div>
 			</form>
 		</Col>
+		{#if showResetPassword}
+			<Col class="text-center mt-5">
+				<NavLink
+					on:click={() => {
+						//检查是否为完整邮箱地址
+						if (email.indexOf('@') < 0 || email.match(/^[^@]+@[^@]+$/) === null) {
+							//如非完整地址，提醒用户
+							needFullEmailToResetPassword = $_('login.needfullemail');
+						} else {
+							//如为完整地址，则发送重置邮件
+							needFullEmailToResetPassword = '';
+							$session.rstPwdFor = email;
+							goto('/resetpassword');
+						}
+					}}
+				>
+					{$_('login.reset_password')}
+				</NavLink>
+			</Col>
+		{/if}
+		{#if resetPasswordResult}
+			<Col class="text-center mt-5">
+				{resetPasswordResult}
+			</Col>
+		{/if}
 		<Col>
 			{#if show_resend_email_verification && resendCountdown < 1}
 				<NavLink

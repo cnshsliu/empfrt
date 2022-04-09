@@ -3,7 +3,6 @@
 	export async function load({ page, fetch, session }) {
 		const tplid = page.params.tplid;
 		const tpl_mode = page.params.mode;
-		console.log('readlod............');
 		const jsonUrl = `/template/@${tplid}&${tpl_mode}.json`;
 		try {
 			const res = await fetch(jsonUrl);
