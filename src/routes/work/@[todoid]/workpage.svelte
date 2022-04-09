@@ -38,6 +38,7 @@
 	let adhocTaskDoerConfirmed = false;
 	let checkingTimer = null;
 	let checkingAdhocResult = [];
+	let anyUserNotExists = {};
 	import { getNotificationsContext } from 'svelte-notifications';
 	const { addNotification } = getNotificationsContext();
 
@@ -49,7 +50,7 @@
 	};
 
 	function _sendbackWork() {
-		//if (checkRequired() === false) return;
+		//if (checkRequiredAndError() === false) return;
 		let payload: any = {
 			wfid: work.wfid,
 			todoid: work.todoid,
@@ -66,7 +67,7 @@
 		}, 500);
 	}
 	function _revokeWork() {
-		//if (checkRequired() === false) return;
+		//if (checkRequiredAndError() === false) return;
 		let payload: any = {
 			wfid: work.wfid,
 			todoid: work.todoid,
@@ -141,12 +142,19 @@
 			setFadeMessage('Adhoc Task created successfully');
 		}
 	};
-	function checkRequired() {
+	function checkRequiredAndError() {
 		let errMsg = '';
 		for (let i = 0; i < work.kvarsArr.length; i++) {
+			if (work.kvarsArr[i].error) {
+				errMsg = `${work.kvarsArr[i].label} is invalid`;
+				break;
+			}
 			if (work.kvarsArr[i].required && showKVars[i]) {
 				if (work.kvarsArr[i].type === 'checkbox') {
-					if (work.kvarsArr[i].value !== true && work.kvarsArr[i].value !== false) {
+					if (
+						(work.kvarsArr[i].value as unknown) !== true &&
+						(work.kvarsArr[i].value as unknown) !== false
+					) {
 						errMsg = `${work.kvarsArr[i].label} should hava value`;
 						break;
 					}
@@ -178,7 +186,7 @@
 		return true;
 	}
 	async function _doneWork(user_choice = null) {
-		if (checkRequired() === false) return;
+		if (checkRequiredAndError() === false) return;
 		let payload: any = {
 			doer: work.doer,
 			todoid: work.todoid,
@@ -360,12 +368,12 @@
 					{#if work.kvarsArr.length > 0}
 						<span class="fw-bold fs-5">{$_('todo.nodeInput')}</span>
 						<Row cols={{ lg: 4, md: 2, xs: 1 }} class="m-2">
-							{#each work.kvarsArr as kvar, i}
-								{#if showKVars[i]}
+							{#each work.kvarsArr as kvar, kvarIndex}
+								{#if showKVars[kvarIndex]}
 									<InputKVar
 										{work}
 										{kvar}
-										{i}
+										{kvarIndex}
 										on:kvar_value_input_changed={async (e) => {
 											await caculateFormula(e.detail);
 										}}

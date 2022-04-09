@@ -5,6 +5,7 @@
 	import { _ } from '$lib/i18n';
 	import { Col, FormGroup, Label, Input } from 'sveltestrap';
 	import { debugOption } from '$lib/empstores';
+	import { onMount } from 'svelte';
 	import { text_area_resize } from '$lib/autoresize_textarea';
 	import List from '$lib/input/List.svelte';
 	import InputTable from '$lib/input/Table.svelte';
@@ -18,7 +19,7 @@
 	let serverListKey: string = '';
 	export let work: any;
 	export let kvar: any;
-	export let i: number;
+	export let kvarIndex: number;
 	let cssClasses: string = '';
 	let checkingMsgs = '';
 	const FULLWITHINPUTTYPES = ['textarea', 'tbl', 'file', 'csv'];
@@ -29,9 +30,11 @@
 		check_timer = setTimeout(async () => {
 			let ret = await api.post('check/coworker', { whom: kvar.value }, user.sessionToken);
 			if (ret.error) {
+				kvar.error = true;
 				cssClasses = 'is-invalid';
 				checkingMsgs = ret.message;
 			} else {
+				delete kvar.error;
 				cssClasses = 'valid';
 				checkingMsgs = `${ret.username}(${ret.email})`;
 				kvar.value = ret.email;
@@ -45,18 +48,24 @@
 	let csvUIDCheckResult = {};
 	let csvFileServerIds = {};
 	const removeCSV = function (fileIdOnServer, kvar) {
-		console.log('removeCSV:', fileIdOnServer);
 		kvar.value = '';
 		delete csvFileServerIds[kvar.name];
 		delete csvUIDCheckResult[kvar.name];
 		kvar = kvar;
 	};
 	const uploadedCSV = function (fileIdOnServer, kvar) {
-		console.log('uploadedCSV:', fileIdOnServer);
 		kvar.value = fileIdOnServer;
 		csvFileServerIds[kvar.name] = fileIdOnServer;
 		kvar = kvar;
 	};
+
+	onMount(async () => {
+		if (kvar.type === 'user') {
+			if (kvar.value) {
+				onInputUser(kvar, kvarIndex);
+			}
+		}
+	});
 </script>
 
 {#if kvar.ui.includes('input')}
@@ -166,15 +175,15 @@
 					autocomplete="off"
 					on:input={(e) => {
 						e.preventDefault();
-						onInputUser(kvar, i);
+						onInputUser(kvar, kvarIndex);
 					}}
 					on:change={(e) => {
 						e.preventDefault();
 						dispatch('kvar_value_input_changed', kvar);
 					}}
-					aria-describedby={'validationServerUsernameFeedback' + i}
+					aria-describedby={'validationServerUsernameFeedback' + kvarIndex}
 				/>
-				<div id={'validationServerUsernameFeedback' + i} class="invalid-feedback">
+				<div id={'validationServerUsernameFeedback' + kvarIndex} class="invalid-feedback">
 					{checkingMsgs}
 				</div>
 				{#if cssClasses === 'valid'}
