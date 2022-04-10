@@ -36,7 +36,6 @@
 	import { DEPLOY_MODE } from '$lib/Env';
 	import { whichTabStorage } from '$lib/empstores';
 	import { onMount } from 'svelte';
-	export let user;
 
 	let isMenuOpen = true;
 
