@@ -32,6 +32,7 @@
 		"signout": "Sign Out",
 		"logout": "Log out",
 		"register": "Register",
+		"nofreereg": "self-registration is not allowed, contact your admin",
 		"needAnAccount": "Need an account?",
 		"yourEmail": "Your email",
 		"password": "Password",

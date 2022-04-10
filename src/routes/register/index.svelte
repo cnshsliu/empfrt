@@ -27,6 +27,7 @@
 	let password2: string = '';
 	let errors = null;
 	let fade_timer;
+	let errMsg = '';
 
 	function setFadeMessage(message: string, type = 'warning', pos = 'bottom-right', time = 2000) {
 		(addNotification as oneArgFunc)({
@@ -48,7 +49,13 @@
 		})) as unknown as EmpResponse;
 
 		if (response.error) {
-			setFadeMessage(response.message);
+			console.log(response);
+			if (response.error === 'NO_FREE_REG') {
+				errMsg = email.substring(email.indexOf('@') + 1) + $_('account.nofreereg');
+			} else {
+				setFadeMessage(response.message);
+				errMsg = response.message;
+			}
 		}
 
 		if (response.user) {
@@ -192,6 +199,7 @@
 					{$_('account.signup')}</button
 				>
 			</form>
+			{errMsg}
 		</Col>
 	</Row>
 </Container>
