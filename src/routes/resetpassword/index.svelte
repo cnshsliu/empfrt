@@ -11,8 +11,6 @@
 	import { whichTabStorage } from '$lib/empstores';
 	const { addNotification } = getNotificationsContext();
 
-	export let rstPwdToken: string;
-
 	let password: string = '';
 	let password2: string = '';
 	let errors = null;
@@ -227,7 +225,7 @@
 						</div>
 					{/each}
 				</Row>
-				{#if verifyCodeHas6Chars}
+				{#if verifyCodeHas6Chars && !showDirectLogin}
 					<form>
 						<div class="form-floating">
 							<input
@@ -305,7 +303,7 @@
 		{#if showDirectLogin}
 			<Col class="d-flex justify-content-center mt-3">
 				<a
-					href="#"
+					href={'#'}
 					class="nav-link fs-3"
 					on:click|preventDefault={async (e) => {
 						await post(`/auth/logout`);
