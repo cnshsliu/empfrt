@@ -1,3 +1,7 @@
+<script context="module" lang="ts">
+	export const ssr = false;
+</script>
+
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { _ } from '$lib/i18n';

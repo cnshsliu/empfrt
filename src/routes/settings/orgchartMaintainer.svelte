@@ -7,7 +7,7 @@
 	import OrgChartCsvFormat from './orgchartcsvformat.svelte';
 	const { addNotification } = getNotificationsContext();
 	import type { EmpResponse, OrgMembers, oneArgFunc } from '$lib/types';
-	import { Input, InputGroupText, InputGroup, Container, Button } from 'sveltestrap';
+	import { Input, InputGroupText, InputGroup, Container, Button, Row, Col } from 'sveltestrap';
 	let files: any;
 	let content;
 	let errMsg;
@@ -84,6 +84,18 @@
 		fileSaver.saveAs(blob, 'orgchart.csv');
 		//res.map((x) => console.log(x));
 	}
+
+	let usersNotStaff = [];
+
+	const getUserNotStaff = async function () {
+		usersNotStaff = (await api.post('users/notstaff', {}, user.sessionToken)) as any;
+	};
+	const deleteUser = async function (email) {
+		(await api.post('account/remove', { emailtobedel: email }, user.sessionToken)) as any;
+		usersNotStaff = usersNotStaff.filter((u) => {
+			return u.email !== email;
+		});
+	};
 </script>
 
 <form class="new" enctype="multipart/form-data">
@@ -230,8 +242,8 @@
 		<InputGroup class="mt-5">
 			<InputGroupText>{$_('setting.orgchart.importcsv')}</InputGroupText>
 			<input class="form-control" name="file" type="file" bind:files />
-			<Button size="sm" on:click={uploadOrgChart} color="primary"
-				>{$_('setting.orgchart.btn.import')}</Button
+			<Button size="sm" on:click={uploadOrgChart} color="primary">
+				{$_('setting.orgchart.btn.import')}</Button
 			>
 		</InputGroup>
 		<OrgChartCsvFormat />
@@ -240,3 +252,26 @@
 		{/if}
 	</Container>
 </form>
+<Button on:click={getUserNotStaff}>Get users who are not in Orgchart</Button>
+<Container>
+	<Row cols="1">
+		{#each usersNotStaff as uns, index}
+			<Col>
+				<Row>
+					<Col>
+						{uns.username}({uns.email})
+					</Col>
+					<Col
+						><Button
+							on:click={async (e) => {
+								await deleteUser(uns.email);
+							}}
+						>
+							Delete
+						</Button></Col
+					>
+				</Row>
+			</Col>
+		{/each}
+	</Row>
+</Container>
