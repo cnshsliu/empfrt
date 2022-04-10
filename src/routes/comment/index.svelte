@@ -11,8 +11,9 @@
 </script>
 
 <script type="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import * as api from '$lib/api';
+	import Avatar from '$lib/avatar.svelte';
 	import Parser from '$lib/parser';
 	import CommentEntry from '$lib/CommentEntry.svelte';
 	import { goto } from '$app/navigation';
@@ -35,7 +36,6 @@
 	onMount(async () => {
 		let ret = (await api.post('comment/list', {}, user.sessionToken)) as unknown as any[] | any;
 		if (ret.error) {
-			console.error(ret.message);
 			//eslint-disable-next-line
 			(addNotification as oneArgFunc)({
 				text: ret.message,
@@ -58,7 +58,12 @@
 	};
 
 	const gotoWork = async function (comment) {
-		goto(`/work/@${comment.todoid}`);
+		await tick();
+		await goto(`/work/@${comment.todoid}`);
+	};
+	const gotoProcess = async function (comment) {
+		await tick();
+		await goto(`/workflow/@${comment.wfid}`);
 	};
 	let commentIsBase64 = false;
 </script>
@@ -93,22 +98,51 @@
 		</Col>
 	</Row>
 	{#each comments as comment}
-		<Row class="mb-2">
+		<Row class="">
 			<Col>
-				<div>{TimeTool.fromNow(comment.createdAt)}</div>
-				<div class="ms-3">
-					{comment.content}
-					-- {comment.cn}
-					<span
-						class="usertag"
-						on:click={(e) => {
-							e.preventDefault();
-							gotoWork(comment);
-						}}
-					>
-						Goto work
-					</span>
-				</div>
+				<Row>
+					<Col>
+						{TimeTool.fromNow(comment.createdAt)}
+					</Col>
+				</Row>
+				<Row>
+					<Col class="ms-3 border-start border-3 border-primary pb-3">
+						<Row>
+							<Col class="col-auto">
+								<Avatar avatar={comment.avatar} name={comment.cn} />
+							</Col>
+							<Col class="">
+								<Row><Col class="col-auto">{comment.content}</Col></Row>
+								<Row>
+									<Col class="col-auto">
+										<a
+											class="nav-link m-0 p-0"
+											href={'#'}
+											on:click={async (e) => {
+												e.preventDefault();
+												await gotoWork(comment);
+											}}
+										>
+											Work
+										</a>
+									</Col>
+									<Col class="col-auto">
+										<a
+											class="nav-link m-0 p-0"
+											href={'#'}
+											on:click={async (e) => {
+												e.preventDefault();
+												await gotoProcess(comment);
+											}}
+										>
+											Process
+										</a>
+									</Col>
+								</Row>
+							</Col>
+						</Row>
+					</Col>
+				</Row>
 			</Col>
 		</Row>
 	{/each}

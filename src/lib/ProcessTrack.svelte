@@ -17,6 +17,7 @@
 	} from 'sveltestrap';
 	import { _, mtcDate } from '$lib/i18n';
 	import { printing } from '$lib/Stores';
+	import { tick } from 'svelte';
 	import * as api from '$lib/api';
 	import DisplayTable from '$lib/display/Table.svelte';
 	import CommentEntry from '$lib/CommentEntry.svelte';
@@ -155,7 +156,10 @@
 							{#each entry.doers as aDoer}
 								<Col class="text-center">
 									<div
-										on:click|preventDefault={(e) => goto(`/work/@${aDoer.todoid}`)}
+										on:click|preventDefault={async (e) => {
+											await tick();
+											goto(`/work/@${aDoer.todoid}`);
+										}}
 										class="clickable btn btn-sm"
 									>
 										{#if aDoer.status === 'ST_DONE'}
