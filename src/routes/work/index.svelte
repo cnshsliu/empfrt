@@ -1,5 +1,6 @@
 <script context="module" lang="ts">
 	import * as Utils from '$lib/utils';
+	import { tick } from 'svelte';
 	export async function load({ page, session }) {
 		let iframeMode = false;
 		if (page.query.has('iframe')) {
@@ -133,15 +134,15 @@
 	}
 
 	onMount(async () => {
+		$filterStorage.workStatus = 'ST_RUN';
+		$filterStorage.tplid = '';
+		$filterStorage.workTitlePattern = '';
+		$filterStorage.tplTag = '';
+		await tick();
 		let existingTags = $filterStorage.tplTag;
 		if (Parser.hasValue(existingTags)) {
 			let existingArr = existingTags.split(';');
 			currentTags = existingArr;
-		}
-
-		if ($filterStorage.gotoUID) {
-			$filterStorage.doer = $filterStorage.gotoUID + user.email.substring(user.email.indexOf('@'));
-			$filterStorage.gotoUID = undefined;
 		}
 
 		await setTemplates();

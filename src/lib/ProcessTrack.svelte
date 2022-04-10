@@ -143,8 +143,8 @@
 						{/if}
 					</div>
 				</Col>
-				<Col class="col-9 text-center">
-					<div>
+				<Col class="col-9">
+					<div class="text-center">
 						<!-- History entry header -->
 						<Row class="d-flex px-3  py-1 border-bottom">
 							<span class="ms-0">

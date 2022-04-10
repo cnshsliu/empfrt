@@ -608,7 +608,7 @@
 			</Container>
 		</form>
 		{#if work.wf.kvarsArr.length > 0}
-			<Container class="mt-3 kfk-highlight-2 text-center">
+			<Container class="mt-3 kfk-highlight-2">
 				<div class="fw-bold fs-5">{$_('todo.workflowcontext')}</div>
 				<Row cols={{ lg: 4, md: 2, xs: 1 }}>
 					{#each work.wf.kvarsArr as kvar}
