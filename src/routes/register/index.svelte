@@ -12,6 +12,7 @@
 
 <script lang="ts">
 	import { _ } from '$lib/i18n';
+	import * as api from '$lib/api';
 	import { session } from '$app/stores';
 	import { Container, Row, Col } from 'sveltestrap';
 	import type { EmpResponse } from '$lib/types';
@@ -115,6 +116,21 @@
 			}
 		}
 	};
+
+	const checkFreeReg = async function () {
+		console.log('Checking freereg', email);
+		let ret = await api.post('check/freereg', { email: email });
+		if (ret.error) {
+			if (ret.error === 'NO_FREE_REG') {
+				errMsg = email.substring(email.indexOf('@') + 1) + $_('account.nofreereg');
+			} else {
+				errMsg = ret.message;
+			}
+		}
+	};
+	const emailInputting = function () {
+		errMsg = '';
+	};
 </script>
 
 <svelte:head>
@@ -142,62 +158,67 @@
 						name="email"
 						placeholder="Email"
 						bind:value={email}
+						on:change={checkFreeReg}
+						on:blur={checkFreeReg}
+						on:input={emailInputting}
 					/>
 					<label for="input-email"> {$_('account.yourEmail')}</label>
 				</div>
-				<div class="form-floating">
-					<input
-						class="form-control form-control-lg mt-2"
-						type="text"
-						id="input-username"
-						required
-						placeholder="Your display name"
-						bind:value={username}
-					/>
-					<label for="input-username"> {$_('account.yourDisplayName')}</label>
-				</div>
-				<div class="form-floating">
-					<input
-						class="form-control form-control-lg mt-2"
-						type="password"
-						id="input-password"
-						name="new-password"
-						required
-						placeholder="Password"
-						autocomplete="new-password"
-						bind:value={password}
-						on:input={(e) => {
-							e.preventDefault();
-							onInputPassword();
-						}}
-					/>
-					<label for="input-password"> {$_('account.choosePassword')}</label>
-					{passwordCheckingMsgs}
-				</div>
-				<!-- svelte-ignore missing-declaration -->
-				<div class="form-floating">
-					<input
-						class="form-control form-control-lg mt-2"
-						type="password"
-						id="input-password-repeat"
-						required
-						placeholder="Password Repeat"
-						autocomplete="new-password"
-						bind:value={password2}
-						on:input={(e) => {
-							e.preventDefault();
-							onInputPassword2();
-						}}
-					/>
-					<label for="input-password-repeat"> {$_('account.verifyPassword')}</label>
-					{password2CheckingMsgs}
-				</div>
-				<button
-					class="w-100 btn btn-lg btn-primary pull-xs-right mt-3"
-					disabled={enableSigninButton === false}
-				>
-					{$_('account.signup')}</button
-				>
+				{#if errMsg === ''}
+					<div class="form-floating">
+						<input
+							class="form-control form-control-lg mt-2"
+							type="text"
+							id="input-username"
+							required
+							placeholder="Your display name"
+							bind:value={username}
+						/>
+						<label for="input-username"> {$_('account.yourDisplayName')}</label>
+					</div>
+					<div class="form-floating">
+						<input
+							class="form-control form-control-lg mt-2"
+							type="password"
+							id="input-password"
+							name="new-password"
+							required
+							placeholder="Password"
+							autocomplete="new-password"
+							bind:value={password}
+							on:input={(e) => {
+								e.preventDefault();
+								onInputPassword();
+							}}
+						/>
+						<label for="input-password"> {$_('account.choosePassword')}</label>
+						{passwordCheckingMsgs}
+					</div>
+					<!-- svelte-ignore missing-declaration -->
+					<div class="form-floating">
+						<input
+							class="form-control form-control-lg mt-2"
+							type="password"
+							id="input-password-repeat"
+							required
+							placeholder="Password Repeat"
+							autocomplete="new-password"
+							bind:value={password2}
+							on:input={(e) => {
+								e.preventDefault();
+								onInputPassword2();
+							}}
+						/>
+						<label for="input-password-repeat"> {$_('account.verifyPassword')}</label>
+						{password2CheckingMsgs}
+					</div>
+					<button
+						class="w-100 btn btn-lg btn-primary pull-xs-right mt-3"
+						disabled={enableSigninButton === false}
+					>
+						{$_('account.signup')}
+					</button>
+				{/if}
 			</form>
 			{errMsg}
 		</Col>
