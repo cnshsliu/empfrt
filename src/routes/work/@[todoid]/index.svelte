@@ -71,34 +71,19 @@
 	let cheatCode = [];
 	let unlock = false;
 
-	onMount(() => {
-		//console.log('work onMount', JSON.stringify(work, null, 2));
+	onMount(async () => {
 		document.onkeypress = function (event) {
 			let key = event.key;
-			console.log(event.ctrlKey);
 			if (event.ctrlKey && key === 'g') {
 				tick().then((res) => {
 					goto('/work');
 				});
 			}
-
-			/*
-			// queue structure: keep latest 5 key presses
-			if (cheatCode.length > 4) {
-				[, ...cheatCode] = cheatCode;
-			}
-
-			cheatCode = [...cheatCode, key];
-			console.log(cheatCode);
-
-			// check cheat
-			if (cheatCode.toString() === 'i,d,d,q,d') {
-				unlock = true;
-			}
-				*/
 		};
 	});
-	onDestroy(() => {});
+	onDestroy(async () => {
+		document.onkeypress = undefined;
+	});
 </script>
 
 {#if work && work.doer}
