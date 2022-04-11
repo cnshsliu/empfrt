@@ -75,12 +75,12 @@
 	onMount(async () => {
 		document.onkeypress = function (event) {
 			let key = event.key;
-			if (event.ctrlKey && key === 'g') {
+			if (event.ctrlKey && key === 't') {
 				tick().then((res) => {
 					goto('/work');
 				});
 			}
-			if (event.ctrlKey && key === 't') {
+			if (event.ctrlKey && key === 'g') {
 				tick().then((res) => {
 					theWorkPage.focusOnComment();
 				});
