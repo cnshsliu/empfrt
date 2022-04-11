@@ -16,6 +16,7 @@
 	import { _ } from '$lib/i18n';
 	import { nbArray } from '$lib/utils';
 	import { onMount } from 'svelte';
+	import { Row, Col } from 'sveltestrap';
 	import type { EmpResponse } from '$lib/types';
 	export let fileId;
 	let user = $session.user;
@@ -60,6 +61,22 @@
 			{/each}
 		</tbody>
 	</table>
+	<!-- div class="w-100 d-flex justify-content-center">
+		<div>
+			{#each csvRows.cells as row, rindex}
+				{#if rindex > 0}
+					<Row>
+						{#each row as col, cindex}
+							<Col class="border border-success col-auto">
+								<Row class="bg-success text-light"><Col>{csvRows.cells[0][cindex]}</Col></Row>
+								<Row><Col>{col}</Col></Row>
+							</Col>
+						{/each}
+					</Row>
+				{/if}
+			{/each}
+		</div>
+	</div -->
 	{#if nbArray(csvRows.missedUIDs)}
 		<div class="bg-warning mt-3">
 			<div>{$_('csv.uidnotfound')}</div>

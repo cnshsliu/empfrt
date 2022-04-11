@@ -43,13 +43,14 @@
 </script>
 
 <script lang="ts">
+	import { tick } from 'svelte';
 	import { _, mtcDate } from '$lib/i18n';
 	import { goto } from '$app/navigation';
 	import Confirm from '$lib/confirm.svelte';
 	import * as api from '$lib/api';
 	import type { User, Work } from '$lib/types';
 	import { title } from '$lib/title';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import WorkPage from './workpage.svelte';
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
 	import { StatusClass, StatusLabel } from '$lib/status';
@@ -63,15 +64,41 @@
 	let theConfirm;
 
 	let browser_locale = window.navigator.language;
-	console.log(browser_locale);
 
 	$title = work.title;
 
 	export let iframeMode;
+	let cheatCode = [];
+	let unlock = false;
 
 	onMount(() => {
 		//console.log('work onMount', JSON.stringify(work, null, 2));
+		document.onkeypress = function (event) {
+			let key = event.key;
+			console.log(event.ctrlKey);
+			if (event.ctrlKey && key === 'g') {
+				tick().then((res) => {
+					goto('/work');
+				});
+			}
+
+			/*
+			// queue structure: keep latest 5 key presses
+			if (cheatCode.length > 4) {
+				[, ...cheatCode] = cheatCode;
+			}
+
+			cheatCode = [...cheatCode, key];
+			console.log(cheatCode);
+
+			// check cheat
+			if (cheatCode.toString() === 'i,d,d,q,d') {
+				unlock = true;
+			}
+				*/
+		};
 	});
+	onDestroy(() => {});
 </script>
 
 {#if work && work.doer}

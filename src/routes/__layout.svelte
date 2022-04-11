@@ -86,7 +86,6 @@
 				await setI18N('en');
 			}
 		} else {
-			console.log('I18N: ', locale);
 			await setupI18n({ withLocale: locale });
 		}
 	};
