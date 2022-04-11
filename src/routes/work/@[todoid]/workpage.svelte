@@ -24,6 +24,7 @@
 	export let user: User;
 	export let delegators: String[];
 	export let iframeMode: boolean;
+	let commentInput;
 	let recentUsers = [];
 	let check_timer = null;
 	let checkingStatus = '';
@@ -326,6 +327,9 @@
 			}
 		}
 	};
+	export const focusOnComment = () => {
+		if (commentInput) commentInput.focus();
+	};
 	onMount(async () => {
 		setShowKVars();
 		if (localStorage) {
@@ -387,6 +391,7 @@
 						<textarea
 							placeholder="Comments: "
 							bind:value={comment}
+							bind:this={commentInput}
 							use:text_area_resize
 							class="form-control"
 						/>

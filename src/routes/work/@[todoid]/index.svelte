@@ -70,6 +70,7 @@
 	export let iframeMode;
 	let cheatCode = [];
 	let unlock = false;
+	let theWorkPage;
 
 	onMount(async () => {
 		document.onkeypress = function (event) {
@@ -77,6 +78,11 @@
 			if (event.ctrlKey && key === 'g') {
 				tick().then((res) => {
 					goto('/work');
+				});
+			}
+			if (event.ctrlKey && key === 't') {
+				tick().then((res) => {
+					theWorkPage.focusOnComment();
 				});
 			}
 		};
@@ -185,7 +191,7 @@
 			</Col>
 			<Col />
 		</Row>
-		<WorkPage {work} {user} {iframeMode} {delegators} />
+		<WorkPage {work} {user} {iframeMode} {delegators} bind:this={theWorkPage} />
 	</Container>
 {:else}
 	<ErrorNotify
