@@ -147,11 +147,16 @@
 		let errMsg = '';
 		for (let i = 0; i < work.kvarsArr.length; i++) {
 			if (work.kvarsArr[i].required && showKVars[i]) {
-				if (work.kvarsArr[i].wrong_input) {
-					errMsg = `${work.kvarsArr[i].label}: ${work.kvarsArr[i].wrong_input}`;
-					break;
-				}
-				if (work.kvarsArr[i].type === 'checkbox') {
+				if (work.kvarsArr[i].type === 'user') {
+					if (work.kvarsArr[i].value === '' || (work.kvarsArr[i].value as string).trim() === '') {
+						errMsg = `${work.kvarsArr[i].label}: should have a value`;
+						break;
+					}
+					if (work.kvarsArr[i].wrong_input) {
+						errMsg = `${work.kvarsArr[i].label}: ${work.kvarsArr[i].wrong_input}`;
+						break;
+					}
+				} else if (work.kvarsArr[i].type === 'checkbox') {
 					if (
 						(work.kvarsArr[i].value as unknown) !== true &&
 						(work.kvarsArr[i].value as unknown) !== false

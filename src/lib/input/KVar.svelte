@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createEventDispatcher } from 'svelte';
+	import { tick, createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 	import * as api from '$lib/api';
 	import { _ } from '$lib/i18n';
@@ -21,27 +21,34 @@
 	export let kvar: any;
 	export let kvarIndex: number;
 	let cssClasses: string = '';
-	let checkingMsgs = '';
+	let userCheckingResult = '';
 	const FULLWITHINPUTTYPES = ['textarea', 'tbl', 'file', 'csv'];
 
-	const onInputUser = function (kvar, ser) {
+	const onInputUser = async function (kvar, ser) {
 		kvar.class = 'LOADING';
 		if (check_timer) clearTimeout(check_timer);
+		await tick();
+		console.log(kvar);
 		check_timer = setTimeout(async () => {
-			let ret = await api.post('check/coworker', { whom: kvar.value }, user.sessionToken);
-			if (ret.error) {
-				kvar.wrong_input = `${kvar.value} does not exist`;
-				cssClasses = 'is-invalid';
-				checkingMsgs = ret.message;
+			if (kvar.value === '' || kvar.value.trim() === '') {
+				kvar.wrong_input = `${kvar.label} should not be empty`;
+				userCheckingResult = kvar.wrong_input;
 			} else {
-				delete kvar.wrong_input;
-				cssClasses = 'valid';
-				checkingMsgs = `${ret.username}(${ret.email})`;
-				kvar.value = ret.email;
-				work.kvarsArr = work.kvarsArr;
-			}
+				let ret = await api.post('check/coworker', { whom: kvar.value }, user.sessionToken);
+				if (ret.error) {
+					kvar.wrong_input = `${kvar.value} does not exist`;
+					cssClasses = 'is-invalid';
+					userCheckingResult = ret.message;
+				} else {
+					delete kvar.wrong_input;
+					cssClasses = 'valid';
+					userCheckingResult = `${ret.username}(${ret.email})`;
+					kvar.value = ret.email;
+					work.kvarsArr = work.kvarsArr;
+				}
 
-			check_timer = null;
+				check_timer = null;
+			}
 		}, 1000);
 	};
 
@@ -62,7 +69,7 @@
 	onMount(async () => {
 		if (kvar.type === 'user') {
 			if (kvar.value) {
-				onInputUser(kvar, kvarIndex);
+				await onInputUser(kvar, kvarIndex);
 			}
 		}
 	});
@@ -173,7 +180,7 @@
 					placeholder={kvar.placeholder}
 					required={kvar.required}
 					autocomplete="off"
-					on:input={(e) => {
+					on:input={async (e) => {
 						e.preventDefault();
 						onInputUser(kvar, kvarIndex);
 					}}
@@ -183,11 +190,14 @@
 					}}
 					aria-describedby={'validationServerUsernameFeedback' + kvarIndex}
 				/>
-				<div id={'validationServerUsernameFeedback' + kvarIndex} class="invalid-feedback">
-					{checkingMsgs}
+				<div
+					id={'validationServerUsernameFeedback' + kvarIndex}
+					class="invalid-feedback text-danger"
+				>
+					{userCheckingResult}
 				</div>
 				{#if cssClasses === 'valid'}
-					{checkingMsgs}
+					<span class="text-danger">{userCheckingResult}</span>
 				{/if}
 			{:else if kvar.type === 'checkbox'}
 				<div class="form-check form-switch">
