@@ -30,11 +30,11 @@
 		check_timer = setTimeout(async () => {
 			let ret = await api.post('check/coworker', { whom: kvar.value }, user.sessionToken);
 			if (ret.error) {
-				kvar.error = true;
+				kvar.wrong_input = `${kvar.value} does not exist`;
 				cssClasses = 'is-invalid';
 				checkingMsgs = ret.message;
 			} else {
-				delete kvar.error;
+				delete kvar.wrong_input;
 				cssClasses = 'valid';
 				checkingMsgs = `${ret.username}(${ret.email})`;
 				kvar.value = ret.email;

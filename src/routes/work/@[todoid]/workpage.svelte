@@ -146,11 +146,11 @@
 	function checkRequiredAndError() {
 		let errMsg = '';
 		for (let i = 0; i < work.kvarsArr.length; i++) {
-			if (work.kvarsArr[i].error) {
-				errMsg = `${work.kvarsArr[i].label} is invalid`;
-				break;
-			}
 			if (work.kvarsArr[i].required && showKVars[i]) {
+				if (work.kvarsArr[i].wrong_input) {
+					errMsg = `${work.kvarsArr[i].label}: ${work.kvarsArr[i].wrong_input}`;
+					break;
+				}
 				if (work.kvarsArr[i].type === 'checkbox') {
 					if (
 						(work.kvarsArr[i].value as unknown) !== true &&

@@ -166,7 +166,7 @@ export interface kvarDef {
 	hide?: string;
 	ui?: string | string[];
 	formula?: string;
-	error?: boolean;
+	wrong_input?: string;
 }
 export interface KVarDefInput {
 	name: string;
