@@ -28,7 +28,6 @@
 		kvar.class = 'LOADING';
 		if (check_timer) clearTimeout(check_timer);
 		await tick();
-		console.log(kvar);
 		check_timer = setTimeout(async () => {
 			if (kvar.value === '' || kvar.value.trim() === '') {
 				kvar.wrong_input = `${kvar.label} should not be empty`;

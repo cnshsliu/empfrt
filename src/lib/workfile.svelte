@@ -131,7 +131,7 @@
 						await addPondFileToEntity();
 					}}
 				/>
-				{filetype === 'csv' ? '请上传.csv文件' : ''}
+				{filetype === 'csv' ? '请上传.csv文件或xlsx文件，不支持旧格式后缀为xls的文件' : ''}
 			</Col>
 		{/if}
 		<Col>
