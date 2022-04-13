@@ -1,15 +1,14 @@
 <script type="ts">
+	import { API_SERVER } from '$lib/Env';
 	import { Button, Container, Row, Col, InputGroup, InputGroupText, Input } from 'sveltestrap';
+	import Avatar from '$lib/display/Avatar.svelte';
 	import { session } from '$app/stores';
 	import { _ } from '$lib/i18n';
-	import FileUploader from '$lib/FileUploader.svelte';
 	import type { User, EmpResponse } from '$lib/types';
 	import { post } from '$lib/utils';
 	import * as api from '$lib/api';
-	import InformWebhooks from './InformWebhooks.svelte';
 	export let user: User;
 	export let setFadeMessage: any;
-	let uploadingFile: boolean;
 	let uploadedFiles = [];
 	let joinorgwithcode = '';
 	const joinOrgWithCode = async function () {
@@ -17,10 +16,7 @@
 		if (res.error) setFadeMessage(res.message, 'warning');
 	};
 
-	let password_for_admin = '';
 	let my_old_password = '';
-	let set_group_to = '';
-	let menu = '';
 	let in_progress = false;
 
 	//////////////////////////////////////////////////
@@ -80,6 +76,9 @@
 		wecombot_key: ''
 	};
 
+	let avatarInput;
+	let theAvatar;
+
 	let newPasswordCheckingMsgs = '';
 	let newPasswordCssClasses: string = 'form-control';
 	const pwdReg = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,20}$/;
@@ -101,36 +100,91 @@
 			enableChangePasswordButton = false;
 		}
 	};
+	async function uploadAvatar(e: Event) {
+		e.preventDefault();
+		const formData = new FormData();
+		formData.append('avatar', e.target.files[0]);
+		try {
+			await fetch(`${API_SERVER}/account/avatar`, {
+				method: 'POST',
+				headers: {
+					Authorization: user.sessionToken
+				},
+				body: formData
+			})
+				.then((response) => response.json())
+				.then(async (result) => {
+					if (result.error) {
+						setFadeMessage(result.message, 'warning');
+					} else {
+						setTimeout(async () => {
+							theAvatar.refresh();
+							//这个数字变化时，NavMenu.svelte中会检测到，然后更新菜单栏中的Avatar
+							let acf = $session.avatarChangedFlag;
+							$session.avatarChangedFlag = acf ? acf + 1 : 1;
+						}, 1000);
+					}
+				})
+				.catch((error) => {
+					console.error('Error:', error);
+					setFadeMessage(error.message, 'warning');
+				});
+		} catch (err) {
+			console.error('Error:', err);
+			setFadeMessage(err.message, 'warning');
+		}
+	}
 </script>
 
 <form>
 	<Container class="mt-3">
-		<div class="w-100 text-center fs-3">
-			{user.email}
-			<br />
-			{user.group}
-		</div>
-		<Row cols="1" class="mt-3">
-			<Col>
-				<InputGroup class="mb-1">
-					<InputGroupText>{$_('setting.personal.avatar')}</InputGroupText>
-					<img alt="avatar" src={`${user.avatar}`} class="kfk-avatar-small" />
-					<input
-						class="form-control"
-						type="text"
-						placeholder="URL of profile picture"
-						bind:value={user.avatar}
-					/>
-					<Button
-						on:click={async (e) => {
-							e.preventDefault();
-							await setPersonal({ avatar: user.avatar });
-						}}
-					>
-						{$_('setting.set')}
-					</Button>
-				</InputGroup>
+		<Row cols="1">
+			<Col class="w-100 text-center fs-3">
+				{user.email}
+				<br />
+				{user.group}
 			</Col>
+			<Col class="d-flex justify-content-center mt-2">
+				<div>
+					<Avatar
+						uid={user.userid}
+						uname={user.username}
+						style={'avatar40'}
+						bind:this={theAvatar}
+					/>
+				</div>
+			</Col>
+			<Col class="d-flex justify-content-center mt-2">
+				<!-- Input class="form-control" name="file" type="file" bind:files={avatarFiles} / -->
+				<img
+					class="upload"
+					src="https://static.thenounproject.com/png/625182-200.png"
+					alt=""
+					on:click={() => {
+						avatarInput.click();
+					}}
+				/>
+			</Col>
+			<Col class="d-flex justify-content-center">
+				<div
+					class="chan"
+					on:click={() => {
+						avatarInput.click();
+					}}
+				>
+					{$_('setting.personal.chooseavatar')}
+				</div>
+				<input
+					style="display:none;"
+					name="file"
+					type="file"
+					accept=".jpg, .jpeg, .png"
+					on:change={(e) => uploadAvatar(e)}
+					bind:this={avatarInput}
+				/>
+			</Col>
+		</Row>
+		<Row cols="1" class="mt-3">
 			<Col>
 				<InputGroup class="mb-1">
 					<InputGroupText>{$_('setting.personal.signature')}</InputGroupText>
@@ -244,3 +298,18 @@
 		</Row>
 	</Container>
 </form>
+
+<style>
+	.upload {
+		display: flex;
+		height: 40px;
+		width: 40px;
+		cursor: pointer;
+	}
+	.chan {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-flow: column;
+	}
+</style>

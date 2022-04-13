@@ -463,6 +463,8 @@
 		},
 		"personal": {
 			"avatar": "头像",
+			"chooseavatar": "选择头像上传",
+			"choosesignature": "选择签名档上传",
 			"signature": "签名档",
 			"cn": "显示名称",
 			"currentpassword": "当前密码",

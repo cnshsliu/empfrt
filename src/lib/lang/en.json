@@ -466,6 +466,8 @@
 		},
 		"personal": {
 			"avatar": "Your Avatar",
+			"chooseavatar": "Choose Avatar Image",
+			"choosesignature": "Choose Signature Image",
 			"signature": "Signature",
 			"cn": "Display Name",
 			"currentpassword": "Current password",

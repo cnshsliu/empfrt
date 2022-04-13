@@ -36,8 +36,11 @@
 	import { DEPLOY_MODE } from '$lib/Env';
 	import { whichTabStorage } from '$lib/empstores';
 	import { onMount } from 'svelte';
+	import Avatar from '$lib/display/Avatar.svelte';
 
+	let user = $session.user;
 	let isMenuOpen = true;
+	let theAvatar;
 
 	const toggle = () => (isMenuOpen = !isMenuOpen);
 	async function logout() {
@@ -84,6 +87,8 @@
 			}
 		};
 	});
+
+	$: if ($session.avatarChangedFlag) theAvatar.refresh();
 </script>
 
 {#if $session.user && $session.user.tenant && $session.user.tenant.css}
@@ -110,17 +115,14 @@
 		</div>
 		{#if $session.user}
 			<Dropdown class="navbar-expand-sm">
-				{#if $session.user && $session.user.avatar}
-					<DropdownToggle nav>
-						<img src={$session.user.avatar} class="kfk-avatar-small" alt={$session.user.username} />
-					</DropdownToggle>
-				{:else}
-					<DropdownToggle nav>
-						<div class="kfk-avatar-letter-small text-center">
-							{$session.user ? $session.user.username : 'ME'}
-						</div>
-					</DropdownToggle>
-				{/if}
+				<DropdownToggle nav>
+					<Avatar
+						uid={user.userid}
+						uname={user.username}
+						style={'avatar40'}
+						bind:this={theAvatar}
+					/>
+				</DropdownToggle>
 				<DropdownMenu end>
 					<Container style="width:300px; text-align:center;">
 						<Row cols="1">
