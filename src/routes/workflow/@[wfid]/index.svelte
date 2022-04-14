@@ -1,15 +1,12 @@
 <script context="module" lang="ts">
 	export const ssr = false;
-	let TimeTool = null;
 	export async function load({ page, fetch, session }) {
-		TimeTool = (await import('$lib/TimeTool')).default;
 		const wfid = page.params.wfid;
 		const workflow = await api.post(
 			'workflow/read',
 			{ wfid: wfid, withdoc: false },
 			session.user.sessionToken
 		);
-		console.log(workflow);
 		if (workflow.error) {
 			workflow.wftitle = 'Not Found';
 		}

@@ -108,127 +108,132 @@
 	</code></pre -->
 	<Container class="my-0">
 		{#each wf.history as entry}
-			<Row
-				class={'mt-3 rounded-3 pt-0 kfk-trackentry kfk-work-kvars tnt-work-kvars ' +
-					(entry.isCurrent ? 'border-3' : '')}
-			>
-				<Col class="d-flex border-end col-3">
-					<div class="text-center px-0 pt-3 w-100">
-						{#if workid === entry.workid}
-							{#if entry.nodeid === 'ADHOC'}
-								<Badge pill color={'light'}>
-									<span class="text-primary">Adhoc</span>
-								</Badge>
-							{/if}
-							<Badge pill color={'light'}>
-								<span class="text-primary">{$_('status.' + entry.status)}</span>
-							</Badge>
-						{:else}
-							{#if entry.nodeid === 'ADHOC'}
-								<Badge pill class="bg-white border border-primary">
-									<span class={StatusClass(entry.status)}> ADHOC </span>
-								</Badge>
-							{/if}
-							<Badge pill class="bg-white border border-primary">
-								<span class={StatusClass(entry.status)}>
-									{$_('status.' + entry.status)}
-								</span>
-							</Badge>
-						{/if}
-						{#if entry.doneat}
-							<br />{mtcDate(entry.doneat)}
-						{/if}
-						{#if entry.workDecision}
-							<div class="pt-3 text-center fs-2 kfk-kvar-value-display">
-								{entry.workDecision}
-							</div>
-						{/if}
-					</div>
-				</Col>
-				<Col class="col-9">
-					<div class="text-center">
-						<!-- History entry header -->
-						<Row class="d-flex px-3  py-1 border-bottom">
-							<span class="ms-0">
-								<span class="fs-5">{entry.title}</span>
-							</span>
-						</Row>
-						<Row class="ms-3 d-flex">
-							{#each entry.doers as aDoer}
-								<Col class="text-center">
-									<div
-										on:click|preventDefault={async (e) => {
-											await tick();
-											goto(`/work/@${aDoer.todoid}`);
-										}}
-										class="clickable btn btn-sm"
-									>
-										{#if aDoer.status === 'ST_DONE'}
-											<div>{@html aDoer.decision ? aDoer.decision : '&nbsp;'}</div>
-											{#if aDoer.signature}
-												<img src={aDoer.signature} class="kfk-signature" alt={aDoer.cn} />
-											{:else}
-												<div class="user-emoji d-flex align-items-center  justify-content-center">
-													<i class="fs-2 text-success bi bi-emoji-sunglasses" alt="Done" />
-												</div>
-											{/if}
-											<div>{aDoer.cn}</div>
-											<div>{mtcDate(aDoer.doneat)}</div>
-										{:else if aDoer.status === 'ST_IGNORE'}
-											<div>&nbsp;</div>
-											<div class="user-emoji d-flex align-items-center  justify-content-center">
-												<i class="bi text-black-50 bi-emoji-smile-upside-down" alt="Ignored" />
-											</div>
-											<div>{aDoer.cn}</div>
-											<div>&nbsp;</div>
-										{:else}
-											<div>&nbsp;</div>
-											<div class="user-emoji d-flex align-items-center  justify-content-center">
-												<i class="bi bi-emoji-expressionless" alt="notdone" />
-											</div>
-											<div>{aDoer.cn}</div>
-											<div>&nbsp;</div>
-										{/if}
+			<Row cols="1">
+				<Col>
+					<Row
+						class={'mt-3 rounded-3 pt-0 kfk-trackentry kfk-work-kvars tnt-work-kvars ' +
+							(entry.isCurrent ? 'border-3' : '')}
+					>
+						<Col class="d-flex border-end col-3">
+							<div class="text-center px-0 pt-3 w-100">
+								{#if workid === entry.workid}
+									{#if entry.nodeid === 'ADHOC'}
+										<Badge pill color={'light'}>
+											<span class="text-primary">Adhoc</span>
+										</Badge>
+									{/if}
+									<Badge pill color={'light'}>
+										<span class="text-primary">{$_('status.' + entry.status)}</span>
+									</Badge>
+								{:else}
+									{#if entry.nodeid === 'ADHOC'}
+										<Badge pill class="bg-white border border-primary">
+											<span class={StatusClass(entry.status)}> ADHOC </span>
+										</Badge>
+									{/if}
+									<Badge pill class="bg-white border border-primary">
+										<span class={StatusClass(entry.status)}>
+											{$_('status.' + entry.status)}
+										</span>
+									</Badge>
+								{/if}
+								{#if entry.doneat}
+									<br />{mtcDate(entry.doneat)}
+								{/if}
+								{#if entry.workDecision}
+									<div class="pt-3 text-center fs-2 kfk-kvar-value-display">
+										{entry.workDecision}
 									</div>
-								</Col>
-							{/each}
-						</Row>
-					</div>
-					<div>
-						<!-- variables and comment -->
-						{#if entry.kvarsArr.filter((x) => x.name[0] != '$').length > 0 || (Array.isArray(entry.comment) && entry.comment.length > 0)}
-							{#if entry.kvarsArr.filter((x) => x.name[0] != '$').length > 0}
-								<Row
-									cols={{ xs: 1, md: 2, lg: 4 }}
-									class="kfk-work-kvars tnt-work-kvars border-top"
-								>
-									{#each entry.kvarsArr.filter((x) => x.name[0] != '$') as kvar}
-										<!-- table, textarea width = 100% -->
-										<Col
-											class={'p-2 border ' +
-												(['tbl', 'textarea'].includes(kvar.type) ? 'w-100' : '')}
-										>
-											{#if kvar.type === 'tbl'}
-												<div class="fw-bold">{kvar.label}</div>
-												<DisplayTable {kvar} />
-											{:else if kvar.type === 'textarea'}
-												<div class="fw-bold">{kvar.label}</div>
-												<span class="kfk-kvar-value-display">
-													{@html parser.newlineToBreak(kvar.value)}
-												</span>
-											{:else if kvar.type === 'csv'}
-												<div class="fw-bold">{kvar.label}</div>
-												<CsvDisplay fileId={kvar.value} />
-											{:else}
-												<div class="fw-bold">{kvar.label}</div>
-												<span class="kfk-kvar-value-display">
-													{kvar.display ? kvar.display : kvar.value}
-												</span>
-											{/if}
+								{/if}
+							</div>
+						</Col>
+						<Col class="col-9">
+							<div class="text-center">
+								<!-- History entry header -->
+								<Row class="d-flex px-3  py-1 border-bottom">
+									<span class="ms-0">
+										<span class="fs-5">{entry.title}</span>
+									</span>
+								</Row>
+								<Row class="ms-3 d-flex">
+									{#each entry.doers as aDoer}
+										<Col class="text-center">
+											<div
+												on:click|preventDefault={async (e) => {
+													await tick();
+													goto(`/work/@${aDoer.todoid}`);
+												}}
+												class="clickable btn btn-sm"
+											>
+												{#if aDoer.status === 'ST_DONE'}
+													<div>{@html aDoer.decision ? aDoer.decision : '&nbsp;'}</div>
+													{#if aDoer.signature}
+														<img src={aDoer.signature} class="kfk-signature" alt={aDoer.cn} />
+													{:else}
+														<div
+															class="user-emoji d-flex align-items-center  justify-content-center"
+														>
+															<i class="fs-2 text-success bi bi-emoji-sunglasses" alt="Done" />
+														</div>
+													{/if}
+													<div>{aDoer.cn}</div>
+													<div>{mtcDate(aDoer.doneat)}</div>
+												{:else if aDoer.status === 'ST_IGNORE'}
+													<div>&nbsp;</div>
+													<div class="user-emoji d-flex align-items-center  justify-content-center">
+														<i class="bi text-black-50 bi-emoji-smile-upside-down" alt="Ignored" />
+													</div>
+													<div>{aDoer.cn}</div>
+													<div>&nbsp;</div>
+												{:else}
+													<div>&nbsp;</div>
+													<div class="user-emoji d-flex align-items-center  justify-content-center">
+														<i class="bi bi-emoji-expressionless" alt="notdone" />
+													</div>
+													<div>{aDoer.cn}</div>
+													<div>&nbsp;</div>
+												{/if}
+											</div>
 										</Col>
 									{/each}
 								</Row>
-							{/if}
+							</div>
+							<div>
+								<!-- variables and comment -->
+								{#if entry.kvarsArr.filter((x) => x.name[0] != '$').length > 0 || (Array.isArray(entry.comment) && entry.comment.length > 0)}
+									{#if entry.kvarsArr.filter((x) => x.name[0] != '$').length > 0}
+										<Row
+											cols={{ xs: 1, md: 2, lg: 4 }}
+											class="kfk-work-kvars tnt-work-kvars border-top"
+										>
+											{#each entry.kvarsArr.filter((x) => x.name[0] != '$') as kvar}
+												<!-- table, textarea width = 100% -->
+												<Col
+													class={'p-2 border ' +
+														(['tbl', 'textarea'].includes(kvar.type) ? 'w-100' : '')}
+												>
+													{#if kvar.type === 'tbl'}
+														<div class="fw-bold">{kvar.label}</div>
+														<DisplayTable {kvar} />
+													{:else if kvar.type === 'textarea'}
+														<div class="fw-bold">{kvar.label}</div>
+														<span class="kfk-kvar-value-display">
+															{@html parser.newlineToBreak(kvar.value)}
+														</span>
+													{:else if kvar.type === 'csv'}
+														<div class="fw-bold">{kvar.label}</div>
+														<CsvDisplay fileId={kvar.value} />
+													{:else}
+														<div class="fw-bold">{kvar.label}</div>
+														<span class="kfk-kvar-value-display">
+															{kvar.display ? kvar.display : kvar.value}
+														</span>
+													{/if}
+												</Col>
+											{/each}
+										</Row>
+									{/if}
+									<!--
 							{#if Array.isArray(entry.comment) && entry.comment.length > 0}
 								<Row cols="1" class="border-top">
 									<Col class="px-3 d-flex">
@@ -239,19 +244,17 @@
 									</Col>
 								</Row>
 							{/if}
-							{#if Array.isArray(entry.comments) && entry.comments.length > 0}
-								<Row cols="1" class="border-top">
-									<Col class="px-3 d-flex">
-										<div class="text-nowrap">{$_('todo.comments')}</div>
-										<div class="ps-3">
-											<Comments bind:comments={entry.comments} />
-										</div>
-									</Col>
-								</Row>
-							{/if}
-						{/if}
-					</div>
+							-->
+								{/if}
+							</div>
+						</Col>
+					</Row>
 				</Col>
+				{#if Array.isArray(entry.comments) && entry.comments.length > 0}
+					<Col class="px-3">
+						<Comments bind:comments={entry.comments} />
+					</Col>
+				{/if}
 			</Row>
 		{/each}
 		{#if $printing === false}

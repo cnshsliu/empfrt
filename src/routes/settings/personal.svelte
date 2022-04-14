@@ -158,7 +158,7 @@
 				<!-- Input class="form-control" name="file" type="file" bind:files={avatarFiles} / -->
 				<img
 					class="upload"
-					src="https://static.thenounproject.com/png/625182-200.png"
+					src="/images/camera_upload.png"
 					alt=""
 					on:click={() => {
 						avatarInput.click();

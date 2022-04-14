@@ -1,32 +1,36 @@
-<script context="module" lang="ts">
-</script>
-
 <script lang="ts">
 	import Avatar from '$lib/display/Avatar.svelte';
-	import TimeTool from '$lib/TimeTool';
+	import * as api from '$lib/api';
+	import { onMount } from 'svelte';
+	import { session } from '$app/stores';
 	import { Row, Col, Button, InputGroup, Input } from 'sveltestrap';
+	let TimeTool = null;
 	export let comments;
 	let replyToCmtId;
+
+	onMount(async () => {
+		TimeTool = (await import('$lib/TimeTool')).default;
+	});
 </script>
 
-<pre><code>
-			{JSON.stringify(comments, null, 2)}
-</code></pre>
 {#each comments as cmt, cmtIndex}
 	<Row>
 		<Col class="d-flex col-auto">
 			<Avatar uid={cmt.who} uname={cmt.whoCN} style={'avatar40'} />
 		</Col>
 		<Col>
-			{cmt.whoCN} @{cmt.who.substring(0, cmt.who.indexOf('@'))}
-			{TimeTool ? TimeTool.fromNow(cmt.createdAt) : ''}
-			<br />
+			<span class="fw-bold">
+				{cmt.whoCN} @{cmt.who.substring(0, cmt.who.indexOf('@'))}
+				{TimeTool ? TimeTool.fromNow(cmt.createdAt) : ''}
+			</span>
 			<a
 				href={'#'}
 				on:click|preventDefault={(e) => {
 					replyToCmtId = cmt._id;
-				}}>Reply</a
+				}}
 			>
+				Reply
+			</a>
 		</Col>
 	</Row>
 	{#if replyToCmtId === cmt._id}
@@ -35,8 +39,20 @@
 				<InputGroup>
 					<Input type="textarea" bind:value={cmt.reply} />
 					<Button
-						on:click={(e) => {
+						on:click={async (e) => {
 							e.preventDefault();
+							if (cmt.reply.trim() === '') return;
+							replyToCmtId = '';
+							let res = await api.post(
+								'comment/add',
+								{
+									cmtid: cmt._id,
+									content: cmt.reply.trim()
+								},
+								$session.user.sessionToken
+							);
+							console.log(res);
+							cmt.children = res;
 						}}
 					>
 						Reply
@@ -45,26 +61,31 @@
 			</Col>
 		</Row>
 	{/if}
-	<Row>
-		<Col class="ms-5 ps-3">
-			{#each cmt.splitted as seg}
-				{#if seg.startsWith('@')}
-					<a
-						href={'#'}
-						class="usertag text-decoration-none"
-						on:click={(e) => {
-							e.preventDefault();
-							//gotoUser(seg);
-						}}
-					>
+	<Row cols="1" class="ms-3 border-start border-primary">
+		<Col>
+			<div class="ms-5 mb-3">
+				{#each cmt.splitted as seg}
+					{#if seg.startsWith('@')}
+						<a
+							href={'#'}
+							class="usertag text-decoration-none"
+							on:click={(e) => {
+								e.preventDefault();
+								//gotoUser(seg);
+							}}
+						>
+							{seg + ' '}
+						</a>
+					{:else if seg.startsWith('http')}
+						{@html `<a href='${seg}' target='_blank'>${seg}</a> `}
+					{:else}
 						{seg + ' '}
-					</a>
-				{:else if seg.startsWith('http')}
-					{@html `<a href='${seg}' target='_blank'>${seg}</a> `}
-				{:else}
-					{seg + ' '}
-				{/if}
-			{/each}
+					{/if}
+				{/each}
+			</div>
+		</Col>
+		<Col>
+			<svelte:self bind:comments={cmt.children} />
 		</Col>
 	</Row>
 {/each}
