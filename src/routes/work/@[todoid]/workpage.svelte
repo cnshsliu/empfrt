@@ -12,7 +12,7 @@
 	import KVarDisplay from '$lib/display/KVar.svelte';
 	import TransferWork from './_transfer.svelte';
 	import { Container, Row, Col, Icon } from 'sveltestrap';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { FormGroup, Input, Label, InputGroup, InputGroupText } from 'sveltestrap';
 	import { Button } from 'sveltestrap';
 	import { debugOption } from '$lib/empstores';
@@ -213,7 +213,9 @@
 			setFadeMessage('Completed', 'success');
 		}
 		//goto(iframeMode ? '/work?iframe' : '/work');
-		await _refreshWork(work.todoid);
+		tick().then(() => {
+			_refreshWork(work.todoid).then(() => {});
+		});
 	}
 
 	export async function _refreshWork(todoid) {

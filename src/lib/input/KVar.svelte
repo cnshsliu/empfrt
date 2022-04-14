@@ -196,7 +196,7 @@
 					{userCheckingResult}
 				</div>
 				{#if cssClasses === 'valid'}
-					<span class="text-danger">{userCheckingResult}</span>
+					<span class="text-info">{userCheckingResult}</span>
 				{/if}
 			{:else if kvar.type === 'checkbox'}
 				<div class="form-check form-switch">

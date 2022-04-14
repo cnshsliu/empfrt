@@ -21,6 +21,7 @@
 	import * as api from '$lib/api';
 	import DisplayTable from '$lib/display/Table.svelte';
 	import CommentEntry from '$lib/CommentEntry.svelte';
+	import Comments from '$lib/Comments.svelte';
 	import CsvDisplay from '$lib/display/CsvDisplay.svelte';
 	import { StatusClass } from '$lib/status';
 	import parser from '$lib/parser';
@@ -234,6 +235,16 @@
 										<div class="text-nowrap">{$_('todo.comments')}</div>
 										<div class="ps-3">
 											<CommentEntry bind:comment={entry.comment} />
+										</div>
+									</Col>
+								</Row>
+							{/if}
+							{#if Array.isArray(entry.comments) && entry.comments.length > 0}
+								<Row cols="1" class="border-top">
+									<Col class="px-3 d-flex">
+										<div class="text-nowrap">{$_('todo.comments')}</div>
+										<div class="ps-3">
+											<Comments bind:comments={entry.comments} />
 										</div>
 									</Col>
 								</Row>

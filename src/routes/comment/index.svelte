@@ -1,13 +1,4 @@
 <script context="module" lang="ts">
-	let TimeTool = null;
-	export async function load({ page, fetch, session }) {
-		TimeTool = (await import('$lib/TimeTool')).default;
-		return {
-			props: {
-				user: session.user
-			}
-		};
-	}
 </script>
 
 <script type="ts">
@@ -29,6 +20,7 @@
 	} from 'sveltestrap';
 	import type { User, oneArgFunc } from '$lib/types';
 	import { getNotificationsContext } from 'svelte-notifications';
+	import TimeTool from '$lib/TimeTool';
 	const { addNotification } = getNotificationsContext();
 	export let user: User;
 
