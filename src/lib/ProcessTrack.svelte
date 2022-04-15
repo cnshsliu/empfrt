@@ -20,7 +20,7 @@
 	import { tick } from 'svelte';
 	import * as api from '$lib/api';
 	import DisplayTable from '$lib/display/Table.svelte';
-	import CommentEntry from '$lib/CommentEntry.svelte';
+	//import CommentEntry from '$lib/CommentEntry.svelte';
 	import Comments from '$lib/Comments.svelte';
 	import CsvDisplay from '$lib/display/CsvDisplay.svelte';
 	import { StatusClass } from '$lib/status';
@@ -250,7 +250,7 @@
 						</Col>
 					</Row>
 				</Col>
-				{#if Array.isArray(entry.comments) && entry.comments.length > 0}
+				{#if entry.comments && entry.comments.cmts && entry.comments.cmts.length > 0}
 					<Col class="px-3">
 						<Comments bind:comments={entry.comments} />
 					</Col>

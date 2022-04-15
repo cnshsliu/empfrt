@@ -123,6 +123,7 @@ export interface Work {
 	doneby?: string;
 	doneat?: date;
 	comment?: string;
+	comments?: any;
 	routingOptions?: string;
 	from_nodeid?: string;
 	withsb?: boolean;

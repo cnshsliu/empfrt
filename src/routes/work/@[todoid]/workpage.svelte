@@ -6,7 +6,8 @@
 	import Parser from '$lib/parser';
 	import { filterStorage } from '$lib/empstores';
 	import { text_area_resize } from '$lib/autoresize_textarea';
-	import CommentEntry from '$lib/CommentEntry.svelte';
+	//import CommentEntry from '$lib/CommentEntry.svelte';
+	import Comments from '$lib/Comments.svelte';
 	import ProcessTrack from '$lib/ProcessTrack.svelte';
 	import InputKVar from '$lib/input/KVar.svelte';
 	import KVarDisplay from '$lib/display/KVar.svelte';
@@ -40,6 +41,7 @@
 	let checkingTimer = null;
 	let checkingAdhocResult = [];
 	let anyUserNotExists = {};
+	let newComment = '';
 	import { getNotificationsContext } from 'svelte-notifications';
 	const { addNotification } = getNotificationsContext();
 
@@ -631,9 +633,46 @@
 				</Row>
 			</Container>
 		{/if}
+		<!--
 		{#if work.comment}
 			<CommentEntry bind:comment={work.comment} />
 		{/if}
+		-->
+		<Row class="px-1">
+			<Col>
+				<InputGroup>
+					<Input bind:value={newComment} placeholder="Discussion..." />
+					<Button
+						on:click={async (e) => {
+							e.preventDefault();
+							if (newComment.trim().length === 0) return;
+							newComment = newComment.trim();
+							console.log('post ', newComment);
+							let res = await api.post(
+								'comment/addforbiz',
+								{
+									objtype: 'TODO',
+									objid: work.todoid,
+									content: newComment
+								},
+								user.sessionToken
+							);
+							work.comments = res;
+							newComment = '';
+						}}
+					>
+						<i class="bi bi-chat-left-dots" />
+					</Button>
+				</InputGroup>
+			</Col>
+		</Row>
+		<Row class="px-3">
+			<Col>
+				{#if work.comments && work.comments.cmts && work.comments.cmts.length > 0}
+					<Comments bind:comments={work.comments} />
+				{/if}
+			</Col>
+		</Row>
 		{#if work.rehearsal}
 			<div class="fs-3">Rehearsal Information:</div>
 			<p>
