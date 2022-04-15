@@ -9,12 +9,17 @@
 	export let uname;
 	export let style;
 	let avatar = true;
+	let imgUrl = `${API_SERVER}/account/avatar/${uid}`;
 	onMount(async () => {});
+	export let refresh = () => {
+		avatar = true;
+		imgUrl = imgUrl + '?' + Math.floor(Math.random() * 10000) + 1;
+	};
 </script>
 
 {#if avatar}
 	<img
-		src={`${API_SERVER}/account/avatar/${uid}`}
+		src={imgUrl}
 		class={style}
 		alt="avatar"
 		on:error={(e) => {

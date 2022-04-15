@@ -122,7 +122,7 @@
 							//这个数字变化时，NavMenu.svelte中会检测到，然后更新菜单栏中的Avatar
 							let acf = $session.avatarChangedFlag;
 							$session.avatarChangedFlag = acf ? acf + 1 : 1;
-						}, 1000);
+						}, 1);
 					}
 				})
 				.catch((error) => {
@@ -179,7 +179,7 @@
 					name="file"
 					type="file"
 					accept=".jpg, .jpeg, .png"
-					on:change={(e) => uploadAvatar(e)}
+					on:change={async (e) => await uploadAvatar(e)}
 					bind:this={avatarInput}
 				/>
 			</Col>
