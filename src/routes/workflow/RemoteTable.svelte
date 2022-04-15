@@ -58,7 +58,6 @@
 
 	$: filteredRows = rows;
 
-	$: a = $filterStorage.pageSize && load(0);
 	setContext('state', {
 		getState: () => ({
 			page,
@@ -340,7 +339,11 @@
 			</Row>
 		</div>
 		<div class="flex-shrink-1">
-			<PageSize />
+			<PageSize
+				on:pagesize={async (e) => {
+					await load(0);
+				}}
+			/>
 		</div>
 		<div class="flex-shrink-1">
 			<ColPerRowSelection />

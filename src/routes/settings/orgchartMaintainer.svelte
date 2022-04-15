@@ -188,7 +188,7 @@
 					}
 				}}
 			>
-				{$_('setting.orgchart.btn.ou_cretae')}
+				{$_('setting.orgchart.btn.ou_create')}
 			</Button>
 		</InputGroup>
 		<InputGroup class="mt-2">

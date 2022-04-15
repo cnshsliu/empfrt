@@ -11,7 +11,7 @@
 	let avatar = true;
 	let imgUrl = `${API_SERVER}/account/avatar/${uid}`;
 	onMount(async () => {});
-	export let refresh = () => {
+	export const refresh = () => {
 		avatar = true;
 		imgUrl = imgUrl + '?' + Math.floor(Math.random() * 10000) + 1;
 	};

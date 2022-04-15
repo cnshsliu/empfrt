@@ -75,6 +75,9 @@
 	export let myorg: any;
 	export let delegationFromMe: any;
 	import { title } from '$lib/title';
+	let tobeDeleteWorkflowId = '';
+	let tobeDeleteWorkflowTitle = '';
+	let tobeDeleteWorkflowTplid = '';
 	$title = 'HyperFlow';
 	let menu = '';
 	let password_for_admin = '';
@@ -459,6 +462,30 @@
 	api.post('orgchart/authorized/admin', {}, user.sessionToken).then((res) => {
 		authorizedAdmin = res as unknown as boolean;
 	});
+	const deleteWorkflow = async (mode) => {
+		switch (mode) {
+			case 'byid':
+				tobeDeleteWorkflowId = tobeDeleteWorkflowId.trim();
+				await api.post('workflow/destroy', { wfid: tobeDeleteWorkflowId }, user.sessionToken);
+				break;
+			case 'bytitle':
+				tobeDeleteWorkflowTitle = tobeDeleteWorkflowTitle.trim();
+				await api.post(
+					'workflow/destroy/by/title',
+					{ wftitle: tobeDeleteWorkflowTitle },
+					user.sessionToken
+				);
+				break;
+			case 'bytplid':
+				tobeDeleteWorkflowTplid = tobeDeleteWorkflowTplid.trim();
+				await api.post(
+					'workflow/destroy/by/tplid',
+					{ tplid: tobeDeleteWorkflowTplid },
+					user.sessionToken
+				);
+				break;
+		}
+	};
 </script>
 
 <svelte:head>
@@ -913,6 +940,56 @@
 				<li><a href="/team">{$_('setting.data.team')}</a></li>
 			</ul>
 		</TabPane>
+		{#if user.group === 'ADMIN'}
+			<TabPane
+				tabId="maintainance"
+				tab={$_('setting.tab.maintainance')}
+				active={isActive('maintainance')}
+			>
+				Maintainance
+				<Container>
+					<Row>
+						<Col>
+							<InputGroup>
+								<Input bind:value={tobeDeleteWorkflowId} />
+								<Button
+									on:click={async (e) => {
+										e.preventDefault();
+										await deleteWorkflow('byid');
+									}}>Delete</Button
+								>
+							</InputGroup>
+						</Col>
+					</Row>
+					<Row>
+						<Col>
+							<InputGroup>
+								<Input bind:value={tobeDeleteWorkflowTitle} />
+								<Button
+									on:click={async (e) => {
+										e.preventDefault();
+										await deleteWorkflow('bytitle');
+									}}>Delete</Button
+								>
+							</InputGroup>
+						</Col>
+					</Row>
+					<Row>
+						<Col>
+							<InputGroup>
+								<Input bind:value={tobeDeleteWorkflowTplid} />
+								<Button
+									on:click={async (e) => {
+										e.preventDefault();
+										await deleteWorkflow('bytplid');
+									}}>Delete</Button
+								>
+							</InputGroup>
+						</Col>
+					</Row>
+				</Container>
+			</TabPane>
+		{/if}
 	</TabContent>
 </Container>
 

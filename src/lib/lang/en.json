@@ -462,7 +462,8 @@
 			"orgchart": "Orgchart",
 			"members": "Members",
 			"smtp": "SMTP",
-			"data": "Data"
+			"data": "Data",
+			"maintainance": "Maintainance"
 		},
 		"personal": {
 			"avatar": "Your Avatar",

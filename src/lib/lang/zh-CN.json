@@ -459,7 +459,8 @@
 			"orgchart": "组织结构",
 			"members": "组织成员",
 			"smtp": "SMTP",
-			"data": "数据列表"
+			"data": "数据列表",
+			"maintainance": "维护"
 		},
 		"personal": {
 			"avatar": "头像",
