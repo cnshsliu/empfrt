@@ -114,7 +114,8 @@
 								},
 								$session.user.sessionToken
 							);
-							comments = res;
+							comments.count = res.count;
+							comments.cmts = [...comments.cmts, ...res.cmts];
 						}}
 					>
 						<i class="bi bi-three-dots" />
