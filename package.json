@@ -43,6 +43,7 @@
 		"bootstrap-icons": "^1.7.1",
 		"buffer": "^6.0.3",
 		"cookie": "^0.4.1",
+		"dayjs": "^1.11.1",
 		"file-saver": "^2.0.5",
 		"filepond": "^4.30.3",
 		"filepond-plugin-image-exif-orientation": "^1.0.11",

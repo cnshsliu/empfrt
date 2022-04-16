@@ -141,6 +141,7 @@
 		input_search = '';
 	}
 	export function reload() {
+		debugger;
 		input_search = $filterStorage.workTitlePattern;
 	}
 
@@ -180,7 +181,6 @@
 	const stateContext = getContext('state');
 	let isMobile = false;
 	onMount(async () => {
-		reload();
 		isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 	});
 </script>

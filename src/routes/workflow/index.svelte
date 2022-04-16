@@ -158,7 +158,6 @@
 					clearTag();
 					theExtraFilter.reset();
 					theRemoteTable.reset();
-					refreshList();
 				}}
 				class="m-0 p-1"
 			>

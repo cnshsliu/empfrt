@@ -78,6 +78,7 @@
 	let tobeDeleteWorkflowId = '';
 	let tobeDeleteWorkflowTitle = '';
 	let tobeDeleteWorkflowTplid = '';
+	let tobeDeleteWorkflowStatus = 'ST_STOP';
 	$title = 'HyperFlow';
 	let menu = '';
 	let password_for_admin = '';
@@ -950,40 +951,57 @@
 				<Container>
 					<Row>
 						<Col>
+							<Input type="select" bind:value={tobeDeleteWorkflowStatus}>
+								<option value="ALL">All</option>
+								<option value="ST_RUN">ST_RUN</option>
+								<option value="ST_DONE">ST_DONE</option>
+								<option value="ST_PAUSE">ST_PAUSE</option>
+								<option value="ST_STOP">ST_STOP</option>
+							</Input>
+						</Col>
+					</Row>
+					<Row>
+						<Col>
 							<InputGroup>
-								<Input bind:value={tobeDeleteWorkflowId} />
+								<Input bind:value={tobeDeleteWorkflowId} placeholder="By workflow wfid" />
 								<Button
 									on:click={async (e) => {
 										e.preventDefault();
 										await deleteWorkflow('byid');
-									}}>Delete</Button
+									}}
 								>
+									Delete {tobeDeleteWorkflowStatus} Workflow
+								</Button>
 							</InputGroup>
 						</Col>
 					</Row>
 					<Row>
 						<Col>
 							<InputGroup>
-								<Input bind:value={tobeDeleteWorkflowTitle} />
+								<Input bind:value={tobeDeleteWorkflowTitle} placeholder="by workflow title" />
 								<Button
 									on:click={async (e) => {
 										e.preventDefault();
 										await deleteWorkflow('bytitle');
-									}}>Delete</Button
+									}}
 								>
+									Delete {tobeDeleteWorkflowStatus} Workflow
+								</Button>
 							</InputGroup>
 						</Col>
 					</Row>
 					<Row>
 						<Col>
 							<InputGroup>
-								<Input bind:value={tobeDeleteWorkflowTplid} />
+								<Input bind:value={tobeDeleteWorkflowTplid} placeholder="by template tplid" />
 								<Button
 									on:click={async (e) => {
 										e.preventDefault();
 										await deleteWorkflow('bytplid');
-									}}>Delete</Button
+									}}
 								>
+									Delete {tobeDeleteWorkflowStatus} Workflow
+								</Button>
 							</InputGroup>
 						</Col>
 					</Row>

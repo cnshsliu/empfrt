@@ -17,6 +17,7 @@
 
 	if (myorg.smtp) {
 		smtp = myorg.smtp;
+		delete smtp._id;
 	}
 	import * as api from '$lib/api';
 	const saveSmtpSetting = async () => {

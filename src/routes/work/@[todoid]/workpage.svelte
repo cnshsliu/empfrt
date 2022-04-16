@@ -666,13 +666,13 @@
 				</InputGroup>
 			</Col>
 		</Row>
-		<Row class="px-3">
-			<Col>
-				{#if work.comments && work.comments.cmts && work.comments.cmts.length > 0}
+		{#if work.comments && work.comments.cmts && work.comments.cmts.length > 0}
+			<Row class="px-3 pt-3">
+				<Col>
 					<Comments bind:comments={work.comments} />
-				{/if}
-			</Col>
-		</Row>
+				</Col>
+			</Row>
+		{/if}
 		{#if work.rehearsal}
 			<div class="fs-3">Rehearsal Information:</div>
 			<p>

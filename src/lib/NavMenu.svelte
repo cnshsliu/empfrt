@@ -91,8 +91,8 @@
 	$: if ($session.avatarChangedFlag) theAvatar.refresh();
 </script>
 
-{#if $session.user && $session.user.tenant && $session.user.tenant.css}
-	<link href={$session.user.tenant.css} rel="stylesheet" type="text/css" />
+{#if user && user.tenant && user.tenant.css}
+	<link href={user.tenant.css} rel="stylesheet" type="text/css" />
 {/if}
 <div class={navmenu_class}>
 	<Navbar id="myNavBar" class="flex-fill" expand="sm">
@@ -110,10 +110,10 @@
 			<div
 				class="d-inline-block col-6 ms-3 align-self-center kfk-header-username tnt-header-username"
 			>
-				{$session.user ? $session.user.username : 'Metatocome'}
+				{user ? user.username : 'Metatocome'}
 			</div>
 		</div>
-		{#if $session.user}
+		{#if user}
 			<Dropdown class="navbar-expand-sm">
 				<DropdownToggle nav>
 					<Avatar
@@ -127,28 +127,21 @@
 					<Container style="width:300px; text-align:center;">
 						<Row cols="1">
 							<Col style="text-align:center;">
-								{#if $session.user}
-									{#if $session.user.avatar}
-										<img
-											src={$session.user.avatar}
-											class="kfk-avatar-middle  img-thumbnail"
-											alt={$session.user.username}
-										/>
-									{:else}
-										<div class="w-100 d-flex justify-content-center">
-											<div class="kfk-avatar-letter-middle img-thumbnail">
-												{$session.user.username}
-											</div>
-										</div>
-									{/if}
+								{#if user}
+									<Avatar
+										uid={user.userid}
+										uname={user.username}
+										style={'avatar80-round10'}
+										bind:this={theAvatar}
+									/>
 								{:else}
 									<div class="w-100 d-flex justify-content-center">
 										<div class="kfk-avatar-letter-middle img-thumbnail">ME</div>
 									</div>
 								{/if}
 							</Col>
-							<Col class="fw-bold mt-2">{$session.user ? $session.user.username : ''}</Col>
-							<Col>{$session.user && $session.user.tenant ? $session.user.tenant.name : ''}</Col>
+							<Col class="fw-bold mt-2">{user ? user.username : ''}</Col>
+							<Col>{user && user.tenant ? user.tenant.name : ''}</Col>
 							<Col>{DEPLOY_MODE}</Col>
 						</Row>
 						<InputGroup>
@@ -206,7 +199,7 @@
 						{$_('navmenu.doc')}
 					</NavLink>
 				</NavItem>
-				{#if $session.user}
+				{#if user}
 					<NavItem>
 						<NavLink class="py-2 ps-0 pe-3" href="/template" active={$page.path === '/template'}>
 							{$_('navmenu.planning')}

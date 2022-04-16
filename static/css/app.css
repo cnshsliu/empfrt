@@ -2458,3 +2458,13 @@ div.pbo {
 	height: 40px;
 	border-radius: 20px;
 }
+.avatar40-round5 {
+	width: 40px;
+	height: 40px;
+	border-radius: 5px;
+}
+.avatar80-round10 {
+	width: 80px;
+	height: 80px;
+	border-radius: 10px;
+}
