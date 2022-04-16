@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { _ } from '$lib/i18n';
+	import { _, locale } from '$lib/i18n';
 	import { qtb, nbArray } from '$lib/utils';
 	import * as api from '$lib/api';
 	import { goto } from '$app/navigation';
@@ -42,6 +42,7 @@
 	let checkingAdhocResult = [];
 	let anyUserNotExists = {};
 	let newComment = '';
+	let TimeTool = null;
 	import { getNotificationsContext } from 'svelte-notifications';
 	const { addNotification } = getNotificationsContext();
 
@@ -340,6 +341,8 @@
 		if (commentInput) commentInput.focus();
 	};
 	onMount(async () => {
+		TimeTool = (await import('$lib/TimeTool')).default;
+		TimeTool.setLocale($locale);
 		setShowKVars();
 		if (localStorage) {
 			recentUsers = JSON.parse(localStorage.getItem('recentUsers') ?? JSON.stringify([]));
@@ -669,7 +672,7 @@
 		{#if work.comments && work.comments.cmts && work.comments.cmts.length > 0}
 			<Row class="px-3 pt-3">
 				<Col>
-					<Comments bind:comments={work.comments} />
+					<Comments bind:comments={work.comments} bind:TimeTool />
 				</Col>
 			</Row>
 		{/if}

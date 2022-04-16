@@ -4,13 +4,9 @@
 	import { onMount } from 'svelte';
 	import { session } from '$app/stores';
 	import { Row, Col, Button, InputGroup, Input } from 'sveltestrap';
-	let TimeTool = null;
+	export let TimeTool = null;
 	export let comments = { count: 0, cmts: [] };
 	let replyToCmtId;
-
-	onMount(async () => {
-		TimeTool = (await import('$lib/TimeTool')).default;
-	});
 </script>
 
 {#if comments}
