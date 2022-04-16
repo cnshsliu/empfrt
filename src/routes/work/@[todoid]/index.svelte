@@ -6,6 +6,7 @@
 	export async function load({ page, fetch, session }) {
 		TimeTool = (await import('$lib/TimeTool')).default;
 		let todoid = page.params.todoid;
+		let anchor = page.query.get('anchor');
 		let iframeMode = false;
 		if (page.query.has('iframe')) {
 			iframeMode = true;
@@ -36,7 +37,8 @@
 				work: theWork,
 				iframeMode: iframeMode,
 				user: session.user,
-				delegators: delegators
+				delegators: delegators,
+				anchor: anchor
 			}
 		};
 	}
@@ -59,17 +61,14 @@
 	export let user: User;
 	export let delegators: any[];
 	export let todoid;
+	export let anchor;
 
 	let radioGroup;
 	let theConfirm;
 
-	let browser_locale = window.navigator.language;
-
 	$title = work.title;
 
 	export let iframeMode;
-	let cheatCode = [];
-	let unlock = false;
 	let theWorkPage;
 
 	onMount(async () => {
@@ -90,6 +89,24 @@
 	onDestroy(async () => {
 		document.onkeypress = undefined;
 	});
+	let findAnchorInterval = null;
+	let findAnchorCount = 0;
+	if (anchor) {
+		findAnchorInterval = setInterval(() => {
+			let elem = document.querySelector(`#${anchor}`);
+			if (elem) {
+				elem.scrollIntoView(true);
+				clearInterval(findAnchorInterval);
+			} else {
+				findAnchorCount++;
+				if (findAnchorCount >= 5) {
+					let elem = document.querySelector(`todo_comments`);
+					if (elem) elem.scrollIntoView(true);
+					clearInterval(findAnchorInterval);
+				}
+			}
+		}, 1000);
+	}
 </script>
 
 {#if work && work.doer}

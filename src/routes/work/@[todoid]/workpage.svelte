@@ -670,7 +670,7 @@
 			</Col>
 		</Row>
 		{#if work.comments && work.comments.cmts && work.comments.cmts.length > 0}
-			<Row class="px-3 pt-3">
+			<Row class="px-3 pt-3" id="todo_comments">
 				<Col>
 					<Comments bind:comments={work.comments} bind:TimeTool />
 				</Col>

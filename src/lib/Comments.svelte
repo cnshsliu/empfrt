@@ -11,13 +11,13 @@
 
 {#if comments}
 	{#each comments.cmts as cmt, cmtIndex}
-		<Row>
+		<Row id={'tcmt_' + cmt._id}>
 			<Col class="d-flex col-auto">
 				<Avatar uid={cmt.who} uname={cmt.whoCN} style={'avatar40-round5'} />
 			</Col>
 			<Col>
-				<Row
-					><Col>
+				<Row>
+					<Col>
 						<span class="fw-bold me-2">
 							{cmt.whoCN} @{cmt.who.substring(0, cmt.who.indexOf('@'))}
 						</span>
