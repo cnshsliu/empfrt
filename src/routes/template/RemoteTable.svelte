@@ -224,6 +224,15 @@
 		e.preventDefault();
 	};
 
+	const startNow = async function (e, tplid) {
+		e.preventDefault();
+		await api.post(
+			'template/batch/start',
+			{ tplid: tplid, starters: cronStarters },
+			user.sessionToken
+		);
+	};
+
 	const deleteCrontab = async function (e, tplid, cronId) {
 		crons = (await api.post(
 			'template/delcron',
@@ -499,7 +508,7 @@
 							</Container>
 						{/if}
 						{#if editCronFor === row.tplid}
-							<Container class="border border-2 rounded py-2">
+							<Container class="border border-2 rounded py-2 bg-light">
 								<Row>
 									<!-- svelte-ignore missing-declaration -->
 									<Button
@@ -536,8 +545,6 @@
 									<InputGroup class="p-0">
 										<!-- 只有管理员可以指定其它用户，普通用户没有这个输入框，只能自己用 -->
 										{#if user.group === 'ADMIN'}
-											<InputGroupText>Starters</InputGroupText>
-											<Input bind:value={cronStarters} />
 											<PDSResolver
 												bind:this={thePdsResolver}
 												bind:value={cronStarters}
