@@ -306,7 +306,9 @@
 				"trywfid": "with Wfid",
 				"tryresult": "Result",
 				"csv": "From CSV",
-				"allowpbo": "Allow to edit PBO"
+				"allowpbo": "Allow to edit PBO",
+				"trykvar": "Try with Vars",
+				"trywfid": "Try with wfid"
 			},
 			"kvar": {
 				"basic": "Basic",

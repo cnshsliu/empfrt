@@ -303,7 +303,9 @@
 				"tryuser": "使用用户",
 				"tryresult": "结果",
 				"csv": "从CSV获取",
-				"allowpbo": "允许修改PBO"
+				"allowpbo": "允许修改PBO",
+				"trykvar": "测试变量",
+				"trywfid": "测试流程"
 			},
 			"kvar": {
 				"basic": "基础",

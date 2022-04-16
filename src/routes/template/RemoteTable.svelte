@@ -16,6 +16,7 @@
 	import { qtb } from '$lib/utils';
 	import { filterStorage } from '$lib/empstores';
 	import { ClientPermControl } from '$lib/clientperm';
+	import PDSResolver from '$lib/input/PDSResolver.svelte';
 	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
 	import { goto } from '$app/navigation';
 	import {
@@ -65,6 +66,7 @@
 	let crons = [];
 	let filter_author = '';
 	let input_search;
+	let thePdsResolver;
 	let sorting = { dir: 'desc', key: 'updatedAt' };
 	let storeSorting = $filterStorage.tplSorting;
 	if (storeSorting) {
@@ -532,17 +534,34 @@
 								{/each}
 								<Row>
 									<InputGroup class="p-0">
+										<!-- 只有管理员可以指定其它用户，普通用户没有这个输入框，只能自己用 -->
 										{#if user.group === 'ADMIN'}
 											<InputGroupText>Starters</InputGroupText>
 											<Input bind:value={cronStarters} />
+											<PDSResolver
+												bind:this={thePdsResolver}
+												bind:value={cronStarters}
+												readonly={false}
+												label={'Starters'}
+												btnText={'Check'}
+											/>
 										{/if}
 										<Input bind:value={cronExpr} />
 										<Button
+											color="primary"
 											on:click={(e) => {
 												addCron(e, row.tplid);
 											}}
 										>
 											Add
+										</Button>
+										<Button
+											class="ms-1"
+											on:click={(e) => {
+												startNow(e, row.tplid);
+											}}
+										>
+											Start Now
 										</Button>
 									</InputGroup>
 								</Row>
