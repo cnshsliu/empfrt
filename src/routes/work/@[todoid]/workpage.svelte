@@ -44,6 +44,7 @@
 	let newComment = '';
 	let TimeTool = null;
 	import { getNotificationsContext } from 'svelte-notifications';
+	import CommentInput from '$lib/input/CommentInput.svelte';
 	const { addNotification } = getNotificationsContext();
 
 	const onPrint = async function () {
@@ -643,30 +644,23 @@
 		-->
 		<Row class="px-1">
 			<Col>
-				<InputGroup>
-					<Input bind:value={newComment} placeholder="Discussion..." />
-					<Button
-						on:click={async (e) => {
-							e.preventDefault();
-							if (newComment.trim().length === 0) return;
-							newComment = newComment.trim();
-							console.log('post ', newComment);
-							let res = await api.post(
-								'comment/addforbiz',
-								{
-									objtype: 'TODO',
-									objid: work.todoid,
-									content: newComment
-								},
-								user.sessionToken
-							);
-							work.comments = res;
-							newComment = '';
-						}}
-					>
-						<i class="bi bi-chat-left-dots" />
-					</Button>
-				</InputGroup>
+				<CommentInput
+					bind:value={newComment}
+					placeholder={'Discussion...'}
+					on:comment={async (e) => {
+						let res = await api.post(
+							'comment/addforbiz',
+							{
+								objtype: 'TODO',
+								objid: work.todoid,
+								content: e.detail
+							},
+							user.sessionToken
+						);
+						work.comments = res;
+						newComment = '';
+					}}
+				/>
 			</Col>
 		</Row>
 		{#if work.comments && work.comments.cmts && work.comments.cmts.length > 0}

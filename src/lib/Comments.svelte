@@ -4,6 +4,7 @@
 	import { onMount } from 'svelte';
 	import { session } from '$app/stores';
 	import { Row, Col, Button, InputGroup, Input } from 'sveltestrap';
+	import CommentInput from '$lib/input/CommentInput.svelte';
 	export let TimeTool = null;
 	export let comments = { count: 0, cmts: [] };
 	let replyToCmtId;
@@ -65,28 +66,24 @@
 		{#if replyToCmtId === cmt._id}
 			<Row cols="1" class="ms-3 border-start border-primary">
 				<Col class="px-5">
-					<InputGroup class="ps-3">
-						<Input type="textarea" bind:value={cmt.reply} />
-						<Button
-							on:click={async (e) => {
-								e.preventDefault();
-								replyToCmtId = '';
-								if (cmt.reply.trim() === '') return;
-								let res = await api.post(
-									'comment/add',
-									{
-										cmtid: cmt._id,
-										content: cmt.reply.trim()
-									},
-									$session.user.sessionToken
-								);
-								cmt.children = res;
-								cmt.reply = '';
-							}}
-						>
-							<i class="bi bi-reply" />
-						</Button>
-					</InputGroup>
+					<CommentInput
+						bind:value={cmt.reply}
+						placeholder={'Your reply...'}
+						on:comment={async (e) => {
+							e.preventDefault();
+							replyToCmtId = '';
+							let res = await api.post(
+								'comment/add',
+								{
+									cmtid: cmt._id,
+									content: e.detail
+								},
+								$session.user.sessionToken
+							);
+							cmt.children = res;
+							cmt.reply = '';
+						}}
+					/>
 				</Col>
 			</Row>
 		{/if}
