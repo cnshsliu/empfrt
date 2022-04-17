@@ -400,10 +400,7 @@
 						</Row>
 					{/if}
 					<input type="hidden" name="todoid" value={work.todoid} />
-					<!-- 
 					{#if work.nodeid === 'ADHOC' || (work.withcmt && work.status === 'ST_RUN')}
-					-->
-					{#if work.nodeid === 'ADHOC'}
 						<textarea
 							placeholder="Comments: "
 							bind:value={comment}
