@@ -402,7 +402,7 @@
 					<input type="hidden" name="todoid" value={work.todoid} />
 					{#if work.nodeid === 'ADHOC' || (work.withcmt && work.status === 'ST_RUN')}
 						<textarea
-							placeholder="Comments: "
+							placeholder="Quick Comments: "
 							bind:value={comment}
 							bind:this={commentInput}
 							use:text_area_resize
