@@ -250,7 +250,7 @@
 						</Col>
 					</Row>
 				</Col>
-				{#if entry.comments && entry.comments.cmts && entry.comments.cmts.length > 0}
+				{#if entry.workid !== workid && entry.comments && entry.comments.cmts && entry.comments.cmts.length > 0}
 					<Col class="px-3">
 						<Comments bind:comments={entry.comments} />
 					</Col>
