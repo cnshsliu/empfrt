@@ -21,6 +21,7 @@
 	import * as api from '$lib/api';
 	import { Input, Card, NavLink } from 'sveltestrap';
 	import { getNotificationsContext } from 'svelte-notifications';
+	import { filterStorage } from '$lib/empstores';
 	const { addNotification } = getNotificationsContext();
 	import Countdown from '$lib/Countdown.svelte';
 
@@ -81,6 +82,7 @@
 		} else {
 			login_wait = -1;
 			if (response.user) {
+				delete $filterStorage.doer;
 				$session.user = response.user;
 				goto('/work');
 			}

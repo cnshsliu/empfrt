@@ -45,6 +45,7 @@
 	let calendar_begin = '';
 	let calendar_end = '';
 	let sorting = { dir: 'desc', key: 'lastdays' };
+	let checkDoer = '';
 	let storeSorting = $filterStorage.workSorting;
 	let user = $session.user;
 
@@ -70,9 +71,12 @@
 		let fltSt = $filterStorage;
 		let payload_extra = {
 			status: fltSt.workStatus,
-			doer: fltSt.doer,
 			tspan: fltSt.tspan
 		};
+		if (fltSt.doer) {
+			payload_extra['doer'] = fltSt.doer;
+			fltSt.doer = user.email;
+		}
 		if (fltSt.tplTag) {
 			payload_extra['tagsForFilter'] = fltSt.tplTag.split(';');
 		}

@@ -123,10 +123,14 @@
 	}
 	function refreshList() {
 		checkStore();
-		theRemoteTable && theRemoteTable.refresh({});
+		theRemoteTable && theRemoteTable.refresh();
 	}
 	function filterStatusChanged(event) {
 		$filterStorage.workStatus = event.detail;
+		refreshList();
+	}
+	function filterDoerChanged(event) {
+		$filterStorage.doer = event.detail;
 		refreshList();
 	}
 	function filterTemplateChanged(event) {
@@ -187,7 +191,7 @@
 		bind:this={theExtraFilter}
 		{user}
 		{delegators}
-		on:filterDoerChange={refreshList}
+		on:filterDoerChange={filterDoerChanged}
 		on:filterStatusChange={filterStatusChanged}
 		on:filterTemplateChange={filterTemplateChanged}
 		fields="{user.group === 'ADMIN'

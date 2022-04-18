@@ -65,8 +65,7 @@
 		if (filter_doer.indexOf('@') < 0) {
 			filter_doer += user.email.substring(user.email.indexOf('@'));
 		}
-		$filterStorage.doer = filter_doer;
-		dispatch('filterDoerChange');
+		dispatch('filterDoerChange', filter_doer);
 	}
 
 	function getStatusMessage(aStatus) {
