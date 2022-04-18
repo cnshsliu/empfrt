@@ -21,6 +21,13 @@ const config = {
 			},
 			build: {
 				chunkSizeWarningLimit: 500
+			},
+			server: {
+				hmr: {
+					protocol: 'ws',
+					host: 'localhost',
+					port: 24678
+				}
 			}
 		}
 	}
