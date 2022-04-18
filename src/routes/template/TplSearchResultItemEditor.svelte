@@ -5,7 +5,7 @@
 	import type { User } from '$lib/types';
 	import BadgeWithDel from '$lib/input/BadgeWithDel.svelte';
 	import AniIcon from '$lib/AniIcon.svelte';
-	import { createEventDispatcher } from 'svelte';
+	import { tick, createEventDispatcher } from 'svelte';
 	const dispatch = createEventDispatcher();
 	import { Badge, Button, Icon, Row, Col, InputGroup } from 'sveltestrap';
 	import { session } from '$app/stores';
@@ -17,7 +17,8 @@
 	export let row: any;
 	export let visi_rds_input: string;
 	export let index: any;
-	export let desc_input: string;
+	export let desc_input: string = row.desc;
+	export let tplid_input: string = row.tplid;
 	export let author_input: string = '';
 	let tag_input: string = '';
 	export let setFadeMessage: any;
@@ -130,6 +131,40 @@
 			</InputGroup>
 		</div>
 		<div class="card-body">
+			<Row>
+				<InputGroup>
+					<div class="form-floating flex-fill">
+						<input
+							class="form-control"
+							id={'input-tplid-' + index}
+							placeholder="Template ID"
+							bind:value={tplid_input}
+						/>
+						<label for={`input-tplid-${index}`}> {$_('remotetable.template.set.tplid')}</label>
+					</div>
+					<Button
+						color="primary"
+						on:click={async (e) => {
+							e.preventDefault();
+							tplid_input = tplid_input.trim();
+							let ret = await api.post(
+								'template/rename',
+								{ fromid: row.tplid, tplid: tplid_input },
+								token
+							);
+							if (ret.error) {
+								setFadeMessage(ret.message, 'warning');
+							} else {
+								setFadeMessage('Success', 'success');
+								row.tplid = ret;
+								dispatch('tplidSet', row);
+							}
+						}}
+					>
+						{$_('button.set')}
+					</Button>
+				</InputGroup>
+			</Row>
 			<Row>
 				<InputGroup>
 					<div class="form-floating flex-fill">

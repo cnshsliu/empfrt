@@ -580,10 +580,13 @@
 							{visi_rds_input}
 							{user}
 							{index}
-							{desc_input}
 							{setFadeMessage}
 							{reloadTags}
 							{SetFor}
+							on:tplidSet={(e) => {
+								row = e.detail;
+								rows[index] = row;
+							}}
 							on:authorSet={(e) => {
 								row = e.detail;
 								rows[index] = row;

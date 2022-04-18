@@ -101,7 +101,8 @@
 				"settags": "Set tags (delimited by spaces)",
 				"setauthor": "Set author to（user id/email prefix）",
 				"setdesc": "Set description",
-				"setvisito": "Set visible for (specify with PDS format): "
+				"setvisito": "Set visible for (specify with PDS format)",
+				"tplid": "Rename Template ID"
 			}
 		},
 		"me": "Me",
