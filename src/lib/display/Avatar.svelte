@@ -12,8 +12,10 @@
 	let imgUrl = `${API_SERVER}/account/avatar/${uid}`;
 	onMount(async () => {});
 	export const refresh = () => {
+		console.log('Refresh avatar');
 		avatar = true;
-		imgUrl = imgUrl + '?' + Math.floor(Math.random() * 10000) + 1;
+		imgUrl = `${API_SERVER}/account/avatar/${uid}`;
+		imgUrl = imgUrl + '?t=' + new Date().getTime();
 	};
 </script>
 
