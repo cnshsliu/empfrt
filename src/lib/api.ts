@@ -4,6 +4,7 @@ import ErrorProcessor from '$lib/errorProcessor';
 type OPTS = {
 	method: string;
 	headers: unknown;
+	mode?: string;
 	body?: string;
 };
 export async function sendSimple({ method, path, data = null, token = null }) {
@@ -23,6 +24,7 @@ export async function sendSimple({ method, path, data = null, token = null }) {
 }
 async function send({ method, path, data = null, token = null }) {
 	const opts: OPTS = { method, headers: {} };
+	opts.mode = 'no-cors';
 
 	if (data) {
 		opts.headers['Content-Type'] = 'application/json';
