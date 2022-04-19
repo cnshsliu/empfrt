@@ -1,8 +1,6 @@
 <script lang="ts">
 	import Avatar from '$lib/display/Avatar.svelte';
 	import * as api from '$lib/api';
-	import { fade, slide } from 'svelte/transition';
-	import { quintOut } from 'svelte/easing';
 	import { onMount } from 'svelte';
 	import { session } from '$app/stores';
 	import AniIcon from '$lib/AniIcon.svelte';
@@ -128,10 +126,7 @@
 			</Col>
 		</Row>
 		{#if replyToCmtId === cmt._id}
-			<div
-				class="ms-3 border-start border-primary comment-input row row-cols-1"
-				transition:slide={{ delay: 250, duration: 300, easing: quintOut }}
-			>
+			<div class="ms-3 border-start border-primary comment-input row row-cols-1">
 				<div class="col px-5 pb-2">
 					<CommentInput
 						bind:value={cmt.reply}
@@ -180,10 +175,7 @@
 			</div>
 		{/if}
 		{#if cmt.children && cmt.showChildren}
-			<div
-				class="ms-3 border-start border-primary comment-child row row-cols-1"
-				transition:fade={{ delay: 250, duration: 300 }}
-			>
+			<div class="ms-3 border-start border-primary comment-child row row-cols-1">
 				<div class="col">
 					<svelte:self
 						bind:comments={cmt.children}
