@@ -6,6 +6,7 @@
 	const dispatch = createEventDispatcher();
 	export let value = '';
 	export let placeholder = '';
+	export let cmtid = '';
 
 	let checkingUserTimer = null;
 	let checkingUserResult = '';
@@ -46,6 +47,7 @@
 			<Col>
 				<textarea
 					bind:value
+					id={'cmtinput_for_' + cmtid}
 					{placeholder}
 					on:input={inputing}
 					class="border-0 form-control"

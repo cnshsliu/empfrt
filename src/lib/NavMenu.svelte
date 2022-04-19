@@ -35,7 +35,7 @@
 	import { post } from '$lib/utils';
 	import { DEPLOY_MODE } from '$lib/Env';
 	import { whichTabStorage } from '$lib/empstores';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import Avatar from '$lib/display/Avatar.svelte';
 
 	let isMenuOpen = true;
@@ -79,13 +79,28 @@
 		}; */
 		document.onkeyup = (e) => {
 			if (e.ctrlKey && e.key === '1') {
+				console.log('goto /template');
 				goto('/template');
 			} else if (e.ctrlKey && e.key === '2') {
+				console.log('goto /workflow');
 				goto('/workflow');
 			} else if (e.ctrlKey && e.key === '3') {
+				console.log('goto /work');
 				goto('/work');
+			} else if (e.ctrlKey && e.key === '4') {
+				console.log('scroll vairalbe into view');
+				let elem = document.getElementById('todo_variable_area');
+				elem && elem.scrollIntoView(true);
+			} else if (e.ctrlKey && e.key === 'g') {
+				console.log('focus input todo ');
+				let elem = document.getElementById('cmtinput_for_todo');
+				elem && elem.focus();
 			}
 		};
+	});
+
+	onDestroy(async () => {
+		document.onkeyup = null;
 	});
 
 	$: if ($session.avatarChangedFlag) {

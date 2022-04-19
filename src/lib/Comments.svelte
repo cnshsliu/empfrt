@@ -135,6 +135,7 @@
 				<div class="col px-5 pb-2">
 					<CommentInput
 						bind:value={cmt.reply}
+						cmtid={cmt._id}
 						placeholder={'Your reply...'}
 						on:comment={async (e) => {
 							e.preventDefault();

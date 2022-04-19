@@ -384,15 +384,18 @@
 					</span>
 				</div>
 			{/if}
+			<!-- 这里显示excel上传的内容 START -->
 			{@html work.cellInfo}
+			<!-- 这里显示excel上传的内容 END -->
 			<!--- div class="w-100">
 				<iframe id="workInstruction" src="/work/instruct" title="YouTube video" width="100%" />
 			</div -->
 			<Container class="mt-3 kfk-highlight-2">
 				{#if checkDoable() && work.status === 'ST_RUN'}
+					<!-- 参数输入区  START -->
 					{#if work.kvarsArr.length > 0}
 						<span class="fw-bold fs-5">{$_('todo.nodeInput')}</span>
-						<Row cols={{ lg: 4, md: 2, xs: 1 }} class="m-2">
+						<Row cols={{ lg: 4, md: 2, xs: 1 }} class="m-2" id="todo_variable_area">
 							{#each work.kvarsArr as kvar, kvarIndex}
 								{#if showKVars[kvarIndex]}
 									<InputKVar
@@ -407,6 +410,7 @@
 							{/each}
 						</Row>
 					{/if}
+					<!-- 参数输入区  END -->
 					<input type="hidden" name="todoid" value={work.todoid} />
 					{#if work.nodeid === 'ADHOC' || (work.withcmt && work.status === 'ST_RUN')}
 						<textarea
@@ -416,8 +420,9 @@
 							class="form-control"
 						/>
 					{/if}
+					<!-- 按钮区 START -->
 					{#if work.status === 'ST_RUN'}
-						<Row class="mt-2">
+						<Row class="mt-2" id="todo_buttons_area">
 							{#if work.routingOptions.length === 0}
 								<Col>
 									<Button
@@ -448,6 +453,7 @@
 							{/each}
 						</Row>
 					{/if}
+					<!-- 按钮区 END -->
 
 					<Row class="mt-4">
 						{#if work.withsb && work.returnable}
@@ -653,6 +659,7 @@
 			<Col>
 				<CommentInput
 					bind:value={newComment}
+					cmtid={'todo'}
 					bind:this={theCommentInput}
 					placeholder={'Discussion...'}
 					on:comment={async (e) => {

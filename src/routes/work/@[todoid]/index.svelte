@@ -72,41 +72,25 @@
 	let theWorkPage;
 
 	onMount(async () => {
-		document.onkeypress = function (event) {
-			let key = event.key;
-			if (event.ctrlKey && key === 't') {
-				tick().then((res) => {
-					goto('/work');
-				});
-			}
-			if (event.ctrlKey && key === 'g') {
-				tick().then((res) => {
-					theWorkPage.focusOnComment();
-				});
-			}
-		};
-	});
-	onDestroy(async () => {
-		document.onkeypress = undefined;
-	});
-	let findAnchorInterval = null;
-	let findAnchorCount = 0;
-	if (anchor) {
-		findAnchorInterval = setInterval(() => {
-			let elem = document.querySelector(`#${anchor}`);
-			if (elem) {
-				elem.scrollIntoView(true);
-				clearInterval(findAnchorInterval);
-			} else {
-				findAnchorCount++;
-				if (findAnchorCount >= 5) {
-					let elem = document.querySelector(`todo_comments`);
-					if (elem) elem.scrollIntoView(true);
+		let findAnchorInterval = null;
+		let findAnchorCount = 0;
+		if (anchor) {
+			findAnchorInterval = setInterval(() => {
+				let elem = document.querySelector(`#${anchor}`);
+				if (elem) {
+					elem.scrollIntoView(true);
 					clearInterval(findAnchorInterval);
+				} else {
+					findAnchorCount++;
+					if (findAnchorCount >= 5) {
+						let elem = document.querySelector(`todo_comments`);
+						if (elem) elem.scrollIntoView(true);
+						clearInterval(findAnchorInterval);
+					}
 				}
-			}
-		}, 1000);
-	}
+			}, 1000);
+		}
+	});
 </script>
 
 {#if work && work.doer}
