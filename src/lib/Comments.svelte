@@ -4,7 +4,7 @@
 	import { onMount } from 'svelte';
 	import { session } from '$app/stores';
 	import AniIcon from '$lib/AniIcon.svelte';
-	import { Row, Col, Button, InputGroup, Input } from 'sveltestrap';
+	import { Row, Col } from 'sveltestrap';
 	import CommentInput from '$lib/input/CommentInput.svelte';
 	export let TimeTool = null;
 	export let comments = { count: 0, cmts: [] };
