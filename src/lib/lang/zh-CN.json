@@ -619,5 +619,9 @@
 		"reset_password": "忘记密码吗？如需重置密码点这里",
 		"needfullemail": "重置密码须使用完整邮箱地址",
 		"resetpasswordresult": "重置密码的指引已发送到你的邮箱，请查收"
+	},
+	"comment": {
+		"hide": "收起讨论区",
+		"show": "展开讨论区"
 	}
 }

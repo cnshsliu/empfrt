@@ -25,7 +25,7 @@
 	export let user: User;
 	export let delegators: String[];
 	export let iframeMode: boolean;
-	let commentInput;
+	let theCommentInput;
 	let recentUsers = [];
 	let check_timer = null;
 	let checkingStatus = '';
@@ -43,6 +43,10 @@
 	let anyUserNotExists = {};
 	let newComment = '';
 	let TimeTool = null;
+	let deletableCommentIds = new Set();
+	let timeoutHash = {};
+	let showTodoComment = true;
+	let deleteNewCommentTimeout = 30;
 	import { getNotificationsContext } from 'svelte-notifications';
 	import CommentInput from '$lib/input/CommentInput.svelte';
 	const { addNotification } = getNotificationsContext();
@@ -339,11 +343,15 @@
 		}
 	};
 	export const focusOnComment = () => {
-		if (commentInput) commentInput.focus();
+		theCommentInput && theCommentInput.focus();
 	};
 	onMount(async () => {
 		TimeTool = (await import('$lib/TimeTool')).default;
 		TimeTool.setLocale($locale);
+		let res = await api.post('comment/delnewtimeout', {}, user.sessionToken);
+		if (!res.error) {
+			deleteNewCommentTimeout = res.timeout;
+		}
 		setShowKVars();
 		if (localStorage) {
 			recentUsers = JSON.parse(localStorage.getItem('recentUsers') ?? JSON.stringify([]));
@@ -404,7 +412,6 @@
 						<textarea
 							placeholder="Quick Comments: "
 							bind:value={comment}
-							bind:this={commentInput}
 							use:text_area_resize
 							class="form-control"
 						/>
@@ -646,6 +653,7 @@
 			<Col>
 				<CommentInput
 					bind:value={newComment}
+					bind:this={theCommentInput}
 					placeholder={'Discussion...'}
 					on:comment={async (e) => {
 						let res = await api.post(
@@ -657,18 +665,63 @@
 							},
 							user.sessionToken
 						);
-						work.comments = res;
-						newComment = '';
+						if (res.error) {
+							console.log(res.message);
+						} else {
+							work.comments = res.comments;
+							for (let i = 0; i < work.comments.cmts.length; i++) {
+								work.comments.cmts[i].showChildren = true;
+							}
+							newComment = '';
+							let thisId = res.thisComment._id;
+							deletableCommentIds.add(thisId);
+							let timeout = deleteNewCommentTimeout;
+							timeoutHash[thisId] = timeout;
+							let timeoutInterval = setInterval(() => {
+								if (timeout === 0) {
+									deletableCommentIds.delete(thisId);
+									deletableCommentIds = deletableCommentIds;
+									clearInterval(timeoutInterval);
+									delete timeoutHash[thisId];
+									timeoutHash = timeoutHash;
+								} else {
+									timeout--;
+									timeoutHash[thisId] = timeout;
+									timeoutHash = timeoutHash;
+								}
+							}, 1000);
+						}
 					}}
 				/>
 			</Col>
 		</Row>
 		{#if work.comments && work.comments.cmts && work.comments.cmts.length > 0}
-			<Row class="px-3 pt-3" id="todo_comments">
-				<Col>
-					<Comments bind:comments={work.comments} bind:TimeTool />
-				</Col>
+			<Row class="px-3 pt-3">
+				<Button
+					on:click={() => {
+						showTodoComment = !showTodoComment;
+					}}
+				>
+					{#if showTodoComment}
+						<i class="bi bi-chevron-up" /> {$_('comment.hide')}
+					{:else}
+						<i class="bi bi-chevron-down" /> {$_('comment.show')}
+					{/if}
+				</Button>
 			</Row>
+			{#if showTodoComment}
+				<Row class="px-3 pt-1" id="todo_comments">
+					<Col>
+						<Comments
+							bind:comments={work.comments}
+							bind:deletableCommentIds
+							bind:timeoutHash
+							bind:TimeTool
+							bind:deleteNewCommentTimeout
+						/>
+					</Col>
+				</Row>
+			{/if}
 		{/if}
 		{#if work.rehearsal}
 			<div class="fs-3">Rehearsal Information:</div>

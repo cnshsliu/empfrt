@@ -10,6 +10,11 @@
 	let checkingUserTimer = null;
 	let checkingUserResult = '';
 	let user = $session.user;
+	let theCommentInputTextArea;
+
+	export function focus() {
+		theCommentInputTextArea && theCommentInputTextArea.focus();
+	}
 
 	function valueChagned() {
 		dispatch('input', value);
@@ -39,7 +44,13 @@
 	<Col class="border border-1 border-primary">
 		<Row>
 			<Col>
-				<Input type="textarea" bind:value {placeholder} on:input={inputing} class="border-0" />
+				<textarea
+					bind:value
+					{placeholder}
+					on:input={inputing}
+					class="border-0 form-control"
+					bind:this={theCommentInputTextArea}
+				/>
 			</Col>
 		</Row>
 		{#if checkingUserResult}

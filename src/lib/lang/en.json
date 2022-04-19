@@ -621,5 +621,9 @@
 		"reset_password": "Forget password? reset it here",
 		"needfullemail": "Full email address is required",
 		"resetpasswordresult": "Reset password instruction has been sent to your email, check your email now please"
+	},
+	"comment": {
+		"hide": "Hide Discussion",
+		"show": "Show Discussion"
 	}
 }
