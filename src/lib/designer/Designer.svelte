@@ -620,7 +620,7 @@
 					{:else if nodeInfo.nodeType === 'INFORM'}
 						<Inform {nodeInfo} {roleOptions} {showHelp} {readonly} {jq} {KFK} />
 					{:else if nodeInfo.nodeType === 'SCRIPT'}
-						<ScriptProp {nodeInfo} {showHelp} {readonly} {jq} {KFK} />
+						<ScriptProp {nodeInfo} {showHelp} {readonly} {jq} {KFK} scenario={KFK.scenario} />
 					{:else if nodeInfo.nodeType === 'TIMER'}
 						<Timer {nodeInfo} {showHelp} {readonly} {jq} {KFK} />
 					{:else if nodeInfo.nodeType === 'SUB'}

@@ -12,6 +12,7 @@
 		InputGroupText,
 		Input
 	} from 'sveltestrap';
+	import { onMount } from 'svelte';
 	import { session } from '$app/stores';
 	import Spinner from '$lib/Spinner.svelte';
 	import ChangeID from './ChangeID.svelte';
@@ -20,6 +21,7 @@
 	export let nodeInfo;
 	export let showHelp;
 	export let readonly;
+	export let scenario;
 	export let jq;
 	export let KFK;
 	let helpShowing = false;
@@ -27,6 +29,13 @@
 	let user = $session.user;
 	let checkingStatus = '';
 	let checkingMsg = '';
+	let enableRerun = false;
+	onMount(async () => {
+		enableRerun =
+			scenario === 'workflow' &&
+			KFK.theWf.status === 'ST_RUN' &&
+			jq('#' + nodeInfo.nodeProps.SCRIPT.id).hasClass('ST_DONE') === true;
+	});
 </script>
 
 <Container>
@@ -68,6 +77,23 @@
 				disabled={readonly}
 			/>
 		</Col>
+		{#if enableRerun}
+			<Button
+				class="btn-warning"
+				on:click={async () => {
+					let ret = await api.post(
+						'workflow/node/rerun',
+						{ wfid: KFK.theWf.wfid, nodeid: nodeInfo.nodeProps.SCRIPT.id },
+						user.sessionToken
+					);
+					console.log(ret);
+					enableRerun = false;
+				}}
+			>
+				Rerun This Script <br />
+				(Lab Function, may cause problems)
+			</Button>
+		{/if}
 		<Col>
 			<Row class="mt-2">
 				<Col>

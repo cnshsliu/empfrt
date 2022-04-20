@@ -560,24 +560,29 @@
 		</TabPane>
 		{#if scenario === 'workflow' && workid}
 			<TabPane tabId="tasks" tab="Tasks" active={isActive('tasks')}>
-				<InputGroup>
-					<InputGroupText>Reset work</InputGroupText>
-					<Button
-						on:click={async (e) => {
-							e.preventDefault();
-							await api.post(
-								'work/reset',
-								{
-									wfid: workflow.wfid,
-									workid: workid
-								},
-								user.sessionToken
-							);
-						}}
-					>
-						Reset(Caution)
-					</Button>
-				</InputGroup>
+				<Row>
+					<Col class="d-flex justify-content-center">
+						<InputGroup class="text-center">
+							<Button
+								class="my-1 w-100 btn-warning"
+								on:click={async (e) => {
+									e.preventDefault();
+									await api.post(
+										'work/reset',
+										{
+											wfid: workflow.wfid,
+											workid: workid
+										},
+										user.sessionToken
+									);
+								}}
+							>
+								Reset <br />
+								(Lab Function, may cause problems)
+							</Button>
+						</InputGroup>
+					</Col>
+				</Row>
 				{#each todos as todo, index}
 					<Row>
 						{#if user.group === 'ADMIN' && todo.status === 'ST_RUN'}

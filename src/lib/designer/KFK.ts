@@ -128,6 +128,7 @@ class KFKclass {
 	tpl: myJQuery = null;
 	tplid: string = '';
 	wfid: string = '';
+	theWf: any = null;
 	tpl_mode: string = 'read';
 	version: string = '1.0';
 	inNoteEditor: boolean = false;
@@ -4422,6 +4423,7 @@ ret='DEFAULT'; `
 	async loadWorkflowDoc(wfobj: any, routeStatus: any[]) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
+		that.theWf = wfobj;
 		that.wfid = wfobj.wfid;
 		await that.cleanupJC3();
 		// clear以后，所有的球都可以正常运行了。
