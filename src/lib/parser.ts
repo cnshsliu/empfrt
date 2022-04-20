@@ -156,7 +156,7 @@ const Parser = {
 			tmp = '' + value;
 		}
 		if (typeof refValue === 'boolean') {
-			tmp = Boolean(tmp);
+			tmp = value === 'true';
 			return tmp;
 		} else if (typeof refValue === 'number') {
 			tmp = parseFloat(tmp);
