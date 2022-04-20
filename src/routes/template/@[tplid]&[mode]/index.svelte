@@ -235,15 +235,15 @@
 		<Row class="mt-1 d-flex justify-content-center">
 			<Col class="d-flex justify-content-center">
 				<Nav>
-					<!-- NavLink
+					<NavLink
 						class="kfk-link"
 						on:click={() => {
 							theDesigner.showTplProp();
 						}}
 					>
-						<AniIcon icon="plus-circle" ani="aniShake" />
+						<AniIcon icon="app" ani="aniShake" />
 						{$_('tpl.prop')}
-					</NavLink -->
+					</NavLink>
 					{#if ClientPermControl(user.perms, user.email, 'template', template, 'create')}
 						<NavLink
 							class="kfk-link"
@@ -302,6 +302,7 @@
 								{$_('tpl.rename')}
 							</NavLink>
 						{/if}
+						<!--
 						{#if ClientPermControl(user.perms, user.email, 'template', template, 'delete')}
 							<NavLink
 								class="kfk-link"
@@ -318,6 +319,7 @@
 								{$_('tpl.delete')}
 							</NavLink>
 						{/if}
+						-->
 						{#if ClientPermControl(user.perms, user.email, 'template', template, 'update')}
 							<NavLink
 								class="kfk-link"

@@ -219,6 +219,45 @@
 			setFadeMessage(ret.message, 'error');
 		} else {
 			setFadeMessage('Completed', 'success');
+			//If have endpoint, post to endpoint
+			if (work.wf.endpoint && work.wf.endpoint.startsWith('http')) {
+				let tmpvars = payload.kvars;
+				for (const [key, valueDef] of Object.entries(tmpvars)) {
+					delete (valueDef as any).breakrow;
+					delete (valueDef as any).placeholder;
+					delete (valueDef as any).type;
+					delete (valueDef as any).ui;
+				}
+				let data = {
+					context: {
+						tplid: work.wf.tplid,
+						wfid: work.wf.wfid,
+						wftitle: work.wf.wftitle,
+						todoid: work.todoid,
+						title: work.title,
+						doer: work.doer
+					},
+					route: payload.route,
+					kvars: tmpvars
+				};
+				let opts = {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(data)
+				};
+				try {
+					fetch(`${work.wf.endpoint}`, opts as RequestInit)
+						.then((r) => {
+							console.log(r.text());
+						})
+						.catch((error) => console.log(error))
+						.finally(() => console.log(`Callback ${work.wf.endpoint} finished`));
+				} catch (error) {
+					console.error(error.message);
+				}
+			}
 		}
 		//goto(iframeMode ? '/work?iframe' : '/work');
 		tick().then(() => {
@@ -348,10 +387,12 @@
 	onMount(async () => {
 		TimeTool = (await import('$lib/TimeTool')).default;
 		TimeTool.setLocale($locale);
+		//Get timeout setting of delete timeout from server
 		let res = await api.post('comment/delnewtimeout', {}, user.sessionToken);
 		if (!res.error) {
 			deleteNewCommentTimeout = res.timeout;
 		}
+		//根据参数的When设置计算是否显示
 		setShowKVars();
 		if (localStorage) {
 			recentUsers = JSON.parse(localStorage.getItem('recentUsers') ?? JSON.stringify([]));

@@ -22,7 +22,7 @@
 	const { addNotification } = getNotificationsContext();
 	import type { oneArgFunc } from '$lib/types';
 	import { onMount, onDestroy } from 'svelte';
-	import { Input } from 'sveltestrap';
+	import { Input, InputGroup, InputGroupText } from 'sveltestrap';
 	import {
 		Container,
 		Row,
@@ -149,8 +149,8 @@
 			KFK.setNodeProperties(nodeInfo.jqDiv, nodeInfo.nodeProps);
 		} else {
 			await api.post(
-				'template/set/pboat',
-				{ tplid: template.tplid, pboat: template.pboat },
+				'template/set/prop',
+				{ tplid: template.tplid, pboat: template.pboat, endpoint: template.endpoint },
 				user.sessionToken
 			);
 		}
@@ -579,9 +579,10 @@
 			<Row>
 				<Col>
 					{#if nodeInfo.nodeType === 'TPL'}
-						<div>TPLID: {template.tplid}</div>
-						<div>Readonly: {readonly}</div>
-						<div>Allow set PBO when</div>
+						<div><span class="fw-bold">TPLID:</span> {template.tplid}</div>
+						<div><span class="fw-bold">Readonly:</span> {readonly}</div>
+						<!--
+						<div><span class="fw-bold">Allow set PBO when</span></div>
 						{#if readonly}
 							{template.pboat === 'STARTER_START'
 								? 'At start only'
@@ -602,6 +603,15 @@
 								<option value="ANY_RUNNING">anyone at running task</option>
 								<option value="ANY_ANY">anyone at anytime</option>
 							</Input>
+						{/if}
+						-->
+						{#if readonly}
+							<div><span class="fw-bold">Callback:</span> <br /> {template.endpoint}</div>
+						{:else}
+							<InputGroup>
+								<InputGroupText>Callback</InputGroupText>
+								<Input bind:value={template.endpoint} />
+							</InputGroup>
 						{/if}
 					{:else if nodeInfo.nodeType === 'ACTION'}
 						<Action
