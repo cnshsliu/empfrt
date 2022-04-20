@@ -89,7 +89,7 @@
 				goto('/work');
 			} else if (e.ctrlKey && e.key === '4') {
 				console.log('scroll vairalbe into view');
-				let elem = document.getElementById('todo_variable_area');
+				let elem = document.getElementById('todo_title_area');
 				elem && elem.scrollIntoView(true);
 			} else if (e.ctrlKey && e.key === 'g') {
 				console.log('focus input todo ');

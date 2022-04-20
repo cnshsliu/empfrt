@@ -96,7 +96,7 @@
 {#if work && work.doer}
 	<Container class="mt-2">
 		<div class="d-flex">
-			<div class="flex-shrink-0">
+			<div class="flex-shrink-0" id="todo_title_area">
 				<h3>
 					{work.title}
 					<sup>
