@@ -22,7 +22,7 @@
 	const { addNotification } = getNotificationsContext();
 	import type { oneArgFunc } from '$lib/types';
 	import { onMount, onDestroy } from 'svelte';
-	import { Input, InputGroup, InputGroupText } from 'sveltestrap';
+	import { Input, InputGroup, InputGroupText, FormGroup } from 'sveltestrap';
 	import {
 		Container,
 		Row,
@@ -150,7 +150,12 @@
 		} else {
 			await api.post(
 				'template/set/prop',
-				{ tplid: template.tplid, pboat: template.pboat, endpoint: template.endpoint },
+				{
+					tplid: template.tplid,
+					pboat: template.pboat,
+					endpoint: template.endpoint,
+					endpointmode: template.endpointmode
+				},
 				user.sessionToken
 			);
 		}
@@ -607,11 +612,35 @@
 						-->
 						{#if readonly}
 							<div><span class="fw-bold">Callback:</span> <br /> {template.endpoint}</div>
+							<div><span class="fw-bold">Callback Mode:</span> <br /> {template.endpointmode}</div>
 						{:else}
 							<InputGroup>
 								<InputGroupText>Callback</InputGroupText>
 								<Input bind:value={template.endpoint} />
 							</InputGroup>
+							<FormGroup>
+								<Input
+									id="em_all"
+									type="radio"
+									bind:group={template.endpointmode}
+									value="both"
+									label="用户端和服务端"
+								/>
+								<Input
+									id="em_user"
+									type="radio"
+									bind:group={template.endpointmode}
+									value="user"
+									label="仅用户端"
+								/>
+								<Input
+									id="em_server"
+									type="radio"
+									bind:group={template.endpointmode}
+									value="server"
+									label="仅服务端"
+								/>
+							</FormGroup>
 						{/if}
 					{:else if nodeInfo.nodeType === 'ACTION'}
 						<Action

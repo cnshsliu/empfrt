@@ -6,7 +6,7 @@
 	import Parser from '$lib/parser';
 	import { filterStorage } from '$lib/empstores';
 	import { text_area_resize } from '$lib/autoresize_textarea';
-	//import CommentEntry from '$lib/CommentEntry.svelte';
+	import CommentEntry from '$lib/CommentEntry.svelte';
 	import Comments from '$lib/Comments.svelte';
 	import ProcessTrack from '$lib/ProcessTrack.svelte';
 	import InputKVar from '$lib/input/KVar.svelte';
@@ -220,25 +220,36 @@
 		} else {
 			setFadeMessage('Completed', 'success');
 			//If have endpoint, post to endpoint
-			if (work.wf.endpoint && work.wf.endpoint.startsWith('http')) {
+			if (
+				work.wf.endpoint &&
+				work.wf.endpoint.startsWith('http') &&
+				['both', 'user'].includes(work.wf.endpointmode)
+			) {
 				let tmpvars = payload.kvars;
 				for (const [key, valueDef] of Object.entries(tmpvars)) {
 					delete (valueDef as any).breakrow;
 					delete (valueDef as any).placeholder;
 					delete (valueDef as any).type;
 					delete (valueDef as any).ui;
+					delete (valueDef as any).required;
+					delete (valueDef as any).id;
+					delete (valueDef as any).visi;
+					delete (valueDef as any).when;
 				}
 				let data = {
-					context: {
-						tplid: work.wf.tplid,
-						wfid: work.wf.wfid,
-						wftitle: work.wf.wftitle,
-						todoid: work.todoid,
-						title: work.title,
-						doer: work.doer
-					},
-					route: payload.route,
-					kvars: tmpvars
+					mtcdata: {
+						mode: 'client',
+						context: {
+							tplid: work.wf.tplid,
+							wfid: work.wf.wfid,
+							wftitle: work.wf.wftitle,
+							todoid: work.todoid,
+							title: work.title,
+							doer: work.doer
+						},
+						route: payload.route,
+						kvars: tmpvars
+					}
 				};
 				let opts = {
 					method: 'POST',
@@ -691,11 +702,9 @@
 				</Row>
 			</Container>
 		{/if}
-		<!--
 		{#if work.comment}
 			<CommentEntry bind:comment={work.comment} />
 		{/if}
-		-->
 		<Row class="px-1">
 			<Col>
 				<CommentInput

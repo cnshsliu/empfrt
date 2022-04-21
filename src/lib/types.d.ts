@@ -63,6 +63,7 @@ export interface Template {
 	tenant: string;
 	pboat: string;
 	endpoint: string;
+	endpointmode: string;
 	tplid: string;
 	author: string;
 	doc: string;
@@ -76,6 +77,7 @@ export interface Workflow {
 	pbo: [string];
 	pboat: string;
 	endpoint: string;
+	endpointmode: string;
 	wfid: string;
 	tenant: string;
 	wftitle: string;
