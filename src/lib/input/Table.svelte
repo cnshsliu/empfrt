@@ -18,8 +18,8 @@
 	let rows = [];
 	let avgrow = [];
 	let sumrow = [];
+	let onInputTimer = null;
 	if (readonly) {
-		console.log(kvar);
 		if (typeof kvar.value === 'string') {
 			try {
 				kvar.value = JSON.parse(Parser.base64ToCode(kvar.value));
@@ -61,7 +61,6 @@
 			}
 		}
 
-		console.log(theTableValue);
 		//kvar.value = Parser.codeToBase64(JSON.stringify(theTableValue));
 		kvar.value = theTableValue;
 	};
@@ -172,12 +171,15 @@
 									type={colDef.type !== 'datetime' ? colDef.type : 'datetime-local'}
 									name={colDef.name + '_' + rowIndex + '_' + colIndex}
 									bind:value={rows[rowIndex][colIndex]}
-									on:change={async (e) => {
+									on:input={async (e) => {
 										e.preventDefault();
-										console.log(rows);
-										setTimeout(async () => {
+										if (onInputTimer) {
+											clearTimeout(onInputTimer);
+										}
+										onInputTimer = setTimeout(async () => {
 											row = await ColDefCompiler.caculateRow(user, colDefs, row, rowIndex);
 											resetKVarValue();
+											onInputTimer = null;
 										}, 200);
 									}}
 								>

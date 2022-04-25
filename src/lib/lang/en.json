@@ -155,6 +155,7 @@
 	"button": {
 		"check": "Check",
 		"resetQuery": "Reset Query",
+		"refreshtodos": "Refresh Worklist",
 		"create": "Create",
 		"import": "Import",
 		"okay": "Okay",

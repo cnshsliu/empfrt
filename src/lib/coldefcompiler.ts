@@ -48,7 +48,7 @@ internals.compileColDef = function (kvar) {
 		}
 		colDefString = colDefString.replace(/\[[^\]]*\]/g, '');
 		if (colDefString.startsWith('=')) {
-			console.log('this is a formula', colDefString);
+			//console.log('this is a formula', colDefString);
 			colDefs.push({
 				name: 'FMLA' + i,
 				label: colTitle ? colTitle : 'FMLA',
@@ -62,7 +62,7 @@ internals.compileColDef = function (kvar) {
 			let matchResult = colDefString.match(
 				'(email|password|url|range|number|dt|datetime|date|time|color|search|select|sl|sel|textarea|ta|file|radio|checkbox|cb|ou|usr|user|tbl)_'
 			);
-			tmp.type = 'plaintext';
+			tmp.type = 'text';
 			if (matchResult) {
 				tmp.type = matchResult[1];
 			}
@@ -87,7 +87,7 @@ internals.compileColDef = function (kvar) {
 			if (m) {
 				colDefStringWithoutOptions = m[1];
 				tmp.options = Parser.splitStringToArray(m[2], ':');
-				console.log(tmp.options);
+				//console.log(tmp.options);
 			} else {
 				colDefStringWithoutOptions = colDefString;
 			}
@@ -164,6 +164,7 @@ internals.caculateRow = async function (user, colDefs, row, whichRow) {
 		}
 		return days;
 	};
+
 	for (let i = 0; i < colDefs.length; i++) {
 		if (colDefs[i].type === 'formula') {
 			let expr = replaceColValue(colDefs[i].formula);

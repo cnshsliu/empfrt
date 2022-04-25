@@ -130,7 +130,6 @@ const Parser = {
 	},
 
 	evalFormula: async function (user, kvarArr, formula): Promise<any> {
-		console.log('formula:', formula);
 		const replaceKvar = function (formula) {
 			for (let i = 0; i < kvarArr.length; i++) {
 				var re = new RegExp(`\\b${kvarArr[i].name}\\b`, 'g');
@@ -144,7 +143,7 @@ const Parser = {
 		let expr = replaceKvar(formula);
 		let result = await api.post('formula/eval', { expr: expr }, user.sessionToken);
 
-		console.log('Formula:', formula, 'Expr:', expr, 'Result:', result);
+		//console.log('Formula:', formula, 'Expr:', expr, 'Result:', result);
 		return result;
 	},
 

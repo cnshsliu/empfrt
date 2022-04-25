@@ -9,7 +9,7 @@
 	import PageSize from '$lib/PageSize.svelte';
 	import Confirm from '$lib/confirm.svelte';
 	import { tspans } from '$lib/variables';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import Parser from '$lib/parser';
 	import { StatusLabel } from '$lib/status';
 	import type { Workflow, Work } from '$lib/types';
@@ -48,6 +48,8 @@
 	let checkDoer = '';
 	let storeSorting = $filterStorage.workSorting;
 	let user = $session.user;
+	let autoRefreshInterval = null;
+	let autoRefreshTimes = 0;
 
 	$filterStorage.calendar_begin = '';
 	$filterStorage.calendar_end = '';
@@ -139,13 +141,25 @@
 		if (detail && detail.page) page = detail.page;
 		if (detail && detail.sorting) sorting = detail.sorting;
 		await load(page, 'refresh');
+		if (rowsCount === 0) {
+			autoRefreshInterval = setInterval(async () => {
+				console.log(`Auto refresh ${autoRefreshTimes + 1}/10`);
+				await load(0, 'autoRefreshInterval');
+				autoRefreshTimes++;
+				if (rowsCount > 0 || autoRefreshTimes > 10) {
+					clearInterval(autoRefreshInterval);
+					autoRefreshTimes = 0;
+				}
+			}, 3000);
+		} else {
+			clearInterval(autoRefreshInterval);
+		}
 	}
 
 	export function reset() {
 		input_search = '';
 	}
 	export function reload() {
-		debugger;
 		input_search = $filterStorage.workTitlePattern;
 	}
 
@@ -186,6 +200,11 @@
 	let isMobile = false;
 	onMount(async () => {
 		isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+	});
+	onDestroy(async () => {
+		if (autoRefreshInterval) {
+			clearInterval(autoRefreshInterval);
+		}
 	});
 </script>
 

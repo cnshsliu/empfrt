@@ -49,6 +49,7 @@
 	let showTodoComment = true;
 	let deleteNewCommentTimeout = 30;
 	let workJustDone = null;
+	let caculateFormulaTimer = null;
 	import { getNotificationsContext } from 'svelte-notifications';
 	import CommentInput from '$lib/input/CommentInput.svelte';
 	const { addNotification } = getNotificationsContext();
@@ -187,6 +188,11 @@
 						break;
 					} else {
 						console.log(work.kvarsArr[i].label, file_number);
+					}
+				} else if (work.kvarsArr[i].type === 'number' || work.kvarsArr[i].type === 'range') {
+					if (typeof work.kvarsArr[i].value !== 'number') {
+						errMsg = `${work.kvarsArr[i].label} should hava number value`;
+						break;
 					}
 				} else {
 					if (!work.kvarsArr[i].value) {
@@ -381,21 +387,50 @@
 		}
 	};
 
-	const caculateFormula = function (kvar) {
-		if (work.kvarsArr.length <= 0) return;
-		setShowKVars();
+	//对数字类输入值进行自动处理
+	const autoSetDefaultValue = function () {
 		for (let i = 0; i < work.kvarsArr.length; i++) {
-			if (work.kvarsArr[i].formula) {
-				//console.log(work.kvarsArr[i].formula);
-				try {
-					Parser.evalFormula(user, work.kvarsArr, work.kvarsArr[i].formula).then((result) => {
-						work.kvarsArr[i].value = result;
-					});
-				} catch (e) {
-					console.warn(e);
+			if (work.kvarsArr[i].value === '') {
+				//数字栏位如果为空，自动设为0
+				if (work.kvarsArr[i].type === 'number' || work.kvarsArr[i].type === 'range') {
+					work.kvarsArr[i].value = 0;
+				}
+			} else {
+				if (work.kvarsArr[i].type === 'number' || work.kvarsArr[i].type === 'range') {
+					//数字栏位不是空，进行类型转换
+					let tmp = Number(work.kvarsArr[i].value);
+					work.kvarsArr[i].value = tmp === NaN ? 0 : tmp;
 				}
 			}
 		}
+	};
+
+	const caculateFormula = function (kvar) {
+		if (work.kvarsArr.length <= 0) return;
+		if (caculateFormulaTimer) {
+			clearTimeout(caculateFormulaTimer);
+			caculateFormulaTimer = null;
+		}
+		caculateFormulaTimer = setTimeout(async () => {
+			try {
+				setShowKVars();
+				autoSetDefaultValue();
+				for (let i = 0; i < work.kvarsArr.length; i++) {
+					if (work.kvarsArr[i].formula) {
+						//console.log(work.kvarsArr[i].formula);
+						try {
+							Parser.evalFormula(user, work.kvarsArr, work.kvarsArr[i].formula).then((result) => {
+								work.kvarsArr[i].value = result;
+							});
+						} catch (e) {
+							console.warn(e);
+						}
+					}
+				}
+			} finally {
+				caculateFormulaTimer = null;
+			}
+		}, 500);
 	};
 	export const focusOnComment = () => {
 		theCommentInput && theCommentInput.focus();
@@ -413,6 +448,7 @@
 		if (localStorage) {
 			recentUsers = JSON.parse(localStorage.getItem('recentUsers') ?? JSON.stringify([]));
 		}
+		await caculateFormula(null);
 	});
 </script>
 

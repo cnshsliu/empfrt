@@ -81,7 +81,11 @@
 	{#if FULLWITHINPUTTYPES.includes(kvar.type)}
 		<div class="w-100" />
 	{/if}
-	<Col class={' p-1 ' + (FULLWITHINPUTTYPES.includes(kvar.type) ? ' w-100' : '')}>
+	<Col
+		class={kvar.type === 'tbl'
+			? 'p-3  w-100 border border-1 rounded w-100'
+			: ' p-1 ' + (FULLWITHINPUTTYPES.includes(kvar.type) ? ' w-100' : '')}
+	>
 		{#if $debugOption === 'yes'}
 			<div class="text-wrap text-break">{JSON.stringify(kvar)}</div>
 		{/if}

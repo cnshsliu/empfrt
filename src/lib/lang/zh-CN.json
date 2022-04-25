@@ -155,6 +155,7 @@
 	"button": {
 		"check": "检查",
 		"resetQuery": "重置查询",
+		"refreshtodos": "刷新工作列表",
 		"create": "新建",
 		"import": "导入",
 		"okay": "确定",
