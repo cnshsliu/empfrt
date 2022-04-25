@@ -23,26 +23,41 @@
 
 	let user = $session.user;
 
+	let status = '';
 	let wfid = $page.params.wfid;
 	let todoid = 'tobefind';
-	setTimeout(async () => {
+	let checkTimers = 0;
+	let checkInterval = null;
+	checkInterval = setInterval(async () => {
 		todoid = (await api.post(
 			'workflow/get/firsttodoid',
 			{ wfid: wfid },
 			user.sessionToken
 		)) as unknown as string;
-		if (todoid.length > 0) goto(`/work/@${todoid}`, { replaceState: true });
-	});
+		if (todoid.length > 0) {
+			status = '';
+			clearInterval(checkInterval);
+			goto(`/work/@${todoid}`, { replaceState: true });
+		} else {
+			checkTimers++;
+			status = 'checking';
+			if (checkTimers > 10) {
+				clearInterval(checkInterval);
+			}
+		}
+	}, 300);
 </script>
 
-{#if todoid.length === 0}
+{#if status === 'NOT_FOUND'}
 	<ErrorNotify
 		title="Error Found"
-		subtitle="Workflow not found"
+		subtitle="Workflow first todo not found"
 		info={`Work does not exist`}
 		btnTitle="Back"
 		callback={() => {
 			goto('/work');
 		}}
 	/>
+{:else if status === 'checking'}
+	<div class="row text-center">Checking</div>
 {/if}

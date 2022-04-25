@@ -56,6 +56,7 @@
 			case 'file':
 				if (ret && Array.isArray(ret)) {
 					work.wf.attachments = ret;
+					attachments = ret;
 				}
 				break;
 			case 'csv':
@@ -74,6 +75,7 @@
 			console.log(ret.message);
 		} else {
 			work.wf.attachments = ret;
+			attachments = ret;
 		}
 	};
 	let attachments = work ? work.wf.attachments : workflow ? workflow.attachments : [];

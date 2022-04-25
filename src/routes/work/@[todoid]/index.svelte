@@ -164,7 +164,7 @@
 		</div>
 	</Container>
 	<Container class="mt-3 kfk-highlight-2">
-		<Row>
+		<Row cols={{ lg: 4, md: 2, xs: 1 }}>
 			<!--Col>
 						<span class="fw-bold fs-5">Starter:</span>
 						<div class="fw-light">{work.wf.starter}</div>
@@ -190,9 +190,27 @@
 					<div class="fw-light">{mtcDate(work.doneat)}</div>
 				{/if}
 			</Col>
-			<Col />
+			<Col>
+				{#if work.wf && work.wf.kvars && work.wf.kvars.starterCN}
+					<span class="fw-bold fs-5">
+						{$_('todo.StarterCN')}
+					</span>
+
+					<div class="fw-light">{work.wf.kvars.starterCN.value}</div>
+				{/if}
+			</Col>
 		</Row>
-		<WorkPage {work} {user} {iframeMode} {delegators} bind:this={theWorkPage} />
+		<WorkPage
+			{work}
+			{user}
+			{iframeMode}
+			{delegators}
+			bind:this={theWorkPage}
+			on:statusChanged={(e) => {
+				work.status = e.detail.status;
+				work.doneat = e.detail.doneat;
+			}}
+		/>
 	</Container>
 {:else}
 	<ErrorNotify

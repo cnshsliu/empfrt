@@ -6,6 +6,7 @@
 	import Parser from '$lib/parser';
 	import { filterStorage } from '$lib/empstores';
 	import { text_area_resize } from '$lib/autoresize_textarea';
+	import { createEventDispatcher } from 'svelte';
 	import CommentEntry from '$lib/CommentEntry.svelte';
 	import Comments from '$lib/Comments.svelte';
 	import ProcessTrack from '$lib/ProcessTrack.svelte';
@@ -47,9 +48,11 @@
 	let timeoutHash = {};
 	let showTodoComment = true;
 	let deleteNewCommentTimeout = 30;
+	let workJustDone = null;
 	import { getNotificationsContext } from 'svelte-notifications';
 	import CommentInput from '$lib/input/CommentInput.svelte';
 	const { addNotification } = getNotificationsContext();
+	const dispatch = createEventDispatcher();
 
 	const onPrint = async function () {
 		$printing = true;
@@ -218,6 +221,7 @@
 		if (ret.error) {
 			setFadeMessage(ret.message, 'error');
 		} else {
+			dispatch('statusChanged', ret);
 			setFadeMessage('Completed', 'success');
 			//If have endpoint, post to endpoint
 			if (
@@ -271,6 +275,7 @@
 			}
 		}
 		//goto(iframeMode ? '/work?iframe' : '/work');
+		workJustDone = work;
 		tick().then(() => {
 			_refreshWork(work.todoid).then(() => {});
 		});
@@ -285,7 +290,7 @@
 			)) as unknown as Work;
 			//console.log(JSON.stringify(work, null, 2));
 			work.wf.kvarsArr = work.wf.kvarsArr;
-		}, 500);
+		}, 3000);
 		comment = '';
 	}
 
@@ -852,6 +857,11 @@
 			{onPrint}
 			{_refreshWork}
 			{iframeMode}
+			{deletableCommentIds}
+			{timeoutHash}
+			{TimeTool}
+			{workJustDone}
+			{deleteNewCommentTimeout}
 		/>
 	{/if}
 {:else}

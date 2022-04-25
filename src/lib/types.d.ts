@@ -96,6 +96,8 @@ export interface Workflow {
 	pnodeid?: string;
 	pworkid?: string;
 	cselector?: string[];
+	kvars?: any;
+	history?: any;
 }
 
 export interface Work {
