@@ -12,7 +12,7 @@
 
 	export let kvar;
 	console.log(kvar);
-	let compileResult = ColDefCompiler.compileColDef(kvar);
+	let compileResult = ColDefCompiler.compileColDef(kvar.coldef);
 	let colDefs = compileResult.colDefs;
 	let rows = [];
 	let avgrow = [];

@@ -3,7 +3,7 @@
 <script type="ts">
 	import { _, date, time } from '$lib/i18n';
 	import * as api from '$lib/api';
-	import { session } from '$app/stores';
+	import { navigating, session } from '$app/stores';
 	import { filterStorage } from '$lib/empstores';
 	import ColPerRowSelection from '$lib/ColPerRowSelection.svelte';
 	import PageSize from '$lib/PageSize.svelte';

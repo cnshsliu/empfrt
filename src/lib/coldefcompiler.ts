@@ -2,11 +2,11 @@ import Parser from '$lib/parser';
 import * as api from '$lib/api';
 const internals: any = {};
 
-internals.compileColDef = function (kvar) {
+internals.compileColDef = function (theColDefString) {
 	let hasAvgRow = false;
 	let hasSumRow = false;
 	let colDefs = [];
-	let colDefArr = kvar.coldef.split('|');
+	let colDefArr = theColDefString.split('|');
 	interface ColDef {
 		name: string;
 		label: string;
@@ -16,15 +16,18 @@ internals.compileColDef = function (kvar) {
 		defaultValue?: string | boolean | number;
 		avg: boolean;
 		sum: boolean;
+		origin: string;
 	}
 	//default row for input
 	let row = [];
 	let m = null;
 	for (let i = 0; i < colDefArr.length; i++) {
-		let tmp: ColDef = { name: '', label: '', type: '', avg: false, sum: false };
+		let tmp: ColDef = { name: '', label: '', type: '', avg: false, sum: false, origin: '' };
 		let colDefString = colDefArr[i];
 		let colTitle = null;
 		let colDefaultValue = null;
+
+		tmp.origin = colDefString;
 
 		//like [default=abcd], with get 'abcd' as defaultValue;
 		m = colDefString.match(/\[default=([^\]]+)\]/);
@@ -54,8 +57,10 @@ internals.compileColDef = function (kvar) {
 				label: colTitle ? colTitle : 'FMLA',
 				type: 'formula',
 				formula: colDefString,
+				defaultValue: colDefaultValue,
 				sum: tmp.sum,
-				avg: tmp.avg
+				avg: tmp.avg,
+				origin: tmp.origin
 			});
 			row.push(colDefaultValue ? colDefaultValue : '');
 		} else {

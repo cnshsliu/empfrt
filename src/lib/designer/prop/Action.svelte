@@ -633,8 +633,10 @@
 												todo.doer = ret.newdoer;
 												todo.cn = ret.newcn;
 											}
-										}}>For this</Button
+										}}
 									>
+										For this
+									</Button>
 									<Button
 										on:click={async (e) => {
 											e.preventDefault();
@@ -654,8 +656,10 @@
 												todo.doer = ret.newdoer;
 												todo.cn = ret.newcn;
 											}
-										}}>For all</Button
+										}}
 									>
+										For all
+									</Button>
 								</InputGroup>
 							{/if}
 							<!-- if ADMIN and ST_RUN, change doer -->

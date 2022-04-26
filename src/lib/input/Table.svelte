@@ -13,7 +13,7 @@
 	export let kvar: any;
 	export let rehearsal: boolean = false;
 	export let readonly: boolean = false;
-	let compileResult = ColDefCompiler.compileColDef(kvar);
+	let compileResult = ColDefCompiler.compileColDef(kvar.coldef);
 	let colDefs = compileResult.colDefs;
 	let rows = [];
 	let avgrow = [];

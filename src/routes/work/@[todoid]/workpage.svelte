@@ -10,8 +10,8 @@
 	import CommentEntry from '$lib/CommentEntry.svelte';
 	import Comments from '$lib/Comments.svelte';
 	import ProcessTrack from '$lib/ProcessTrack.svelte';
-	import InputKVar from '$lib/input/KVar.svelte';
-	import KVarDisplay from '$lib/display/KVar.svelte';
+	import InputKVar from '$lib/input/KVarInput.svelte';
+	import KVarDisplay from '$lib/display/KVarDisplay.svelte';
 	import TransferWork from './_transfer.svelte';
 	import { Container, Row, Col, Icon } from 'sveltestrap';
 	import { onMount, tick } from 'svelte';
