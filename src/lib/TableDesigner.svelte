@@ -252,148 +252,150 @@
 	};
 </script>
 
-<Row>
-	{#each colDefs as colDef, colIndex}
-		<div
-			role="button"
-			class={'col ' + (mouseoverColIndex === colIndex ? 'bg-light' : '')}
-			on:click={(e) => {
-				if (mouseoverColIndex === colIndex) {
-					mouseoverColIndex = -1;
-					resetColInput(e);
-				} else {
-					mouseoverColIndex = colIndex;
-					copyColDefToNewColInput(colIndex);
-				}
-			}}
-		>
-			<Row>
-				<FormGroup>
-					<FormText color="muted">
-						<span role="button">{colDef.label}</span>
-					</FormText>
-					<div>{colDef.origin}</div>
-				</FormGroup>
-			</Row>
-			{#if mouseoverColIndex === colIndex}
-				<Row cols="4">
-					<Col>
-						<Button class="m-0 p-0" on:click={moveToFirst}>
-							<Icon name="chevron-double-left" />
-						</Button>
-					</Col><Col>
-						<Button class="m-0 p-0" on:click={moveToPrev}>
-							<Icon name="chevron-left" />
-						</Button>
-					</Col><Col>
-						<Button class="m-0 p-0" on:click={moveToNext}>
-							<Icon name="chevron-right" />
-						</Button>
-					</Col><Col>
-						<Button class="m-0 p-0" on:click={moveToLast}>
-							<Icon name="chevron-double-right" />
-						</Button>
-					</Col>
-				</Row>
-			{/if}
-		</div>
-	{/each}
-</Row>
-<form>
-	<!--{newCol.colString} -->
-	<Row cols={{ xs: 1, sm: 2, md: 4 }} class="px-3">
-		<Col class="col-auto">
-			<FormText>IsFormula</FormText>
-			<div class="form-check">
-				<input
-					class="form-check-input"
-					type="checkbox"
-					bind:checked={newCol.isFormula}
-					on:change={buildColumnStringFromInput}
-				/>
-				{#if newCol.isFormula}
-					<Input bind:value={newCol.formula} on:change={buildColumnStringFromInput} />
-				{/if}
-			</div>
-		</Col>
-		{#if newCol.isFormula === false}
-			<Col>
-				<FormText>Name</FormText>
-				<Input bind:value={newCol.name} on:change={buildColumnStringFromInput} />
-			</Col>
-		{/if}
-		<Col>
-			<FormText>Label</FormText>
-			<Input bind:value={newCol.label} on:change={buildColumnStringFromInput} />
-		</Col>
-		<Col>
-			<FormText>Default</FormText>
-			<Input bind:value={newCol.defaultValue} on:change={buildColumnStringFromInput} />
-		</Col>
-		<div class="w-100" />
-		<Col class="col-auto mt-3">
-			<FormText>IsSelect</FormText>
-			<div class="form-check">
-				<input
-					class="form-check-input"
-					type="checkbox"
-					bind:checked={newCol.isSelect}
-					on:change={buildColumnStringFromInput}
-				/>
-				{#if newCol.isSelect}
-					<FormText>Options</FormText>
-					{#each newCol.options as option}
-						<span class="badge rounded-pill bg-info text-dark">{option}</span>
-					{/each}
-					<Input bind:value={newCol.optionsString} on:input={splitOptionStringToArray} />
-				{/if}
-			</div>
-		</Col>
-		<Col class="col-auto mt-3">
-			<FormText>Avg</FormText>
-			<div class="form-check">
-				<input
-					class="form-check-input"
-					type="checkbox"
-					bind:checked={newCol.avg}
-					on:change={buildColumnStringFromInput}
-				/>
-			</div>
-		</Col>
-		<Col class="col-auto mt-3">
-			<FormText>Sum</FormText>
-			<div class="form-check">
-				<input
-					class="form-check-input"
-					type="checkbox"
-					bind:checked={newCol.sum}
-					on:change={buildColumnStringFromInput}
-				/>
-			</div>
-		</Col>
-	</Row>
-	<Row class="ms-5 ps-5">
-		<Col class="col-auto mt-3">
-			<Button color="primary" disabled={inputForIndex < 0} on:click={setToCurrent}>Set</Button>
-		</Col>
-		<Col class="col-auto mt-3">
-			<Button color="primary" disabled={inputForIndex < 0} on:click={copyCurrent}>Copy</Button>
-		</Col>
-		<Col class="col-auto mt-3">
-			<Button color="primary" on:click={addToBegin}>Add to Head</Button>
-		</Col>
-		<Col class="col-auto mt-3">
-			<Button color="primary" on:click={addToEnd}>Append</Button>
-		</Col>
-		<Col class="col-auto mt-3">
-			<Button
-				color="primary"
-				disabled={inputForIndex < 0 || colDefs.length <= 1}
-				on:click={deleteCurrent}>Delete</Button
+<div class="border border-1 rounded pb-1">
+	<Row>
+		{#each colDefs as colDef, colIndex}
+			<div
+				role="button"
+				class={'col ' + (mouseoverColIndex === colIndex ? 'bg-light' : '')}
+				on:click={(e) => {
+					if (mouseoverColIndex === colIndex) {
+						mouseoverColIndex = -1;
+						resetColInput(e);
+					} else {
+						mouseoverColIndex = colIndex;
+						copyColDefToNewColInput(colIndex);
+					}
+				}}
 			>
-		</Col>
-		<Col class="col-auto mt-3">
-			<Button color="primary" on:click={resetColInput}>ReSet</Button>
-		</Col>
+				<Row>
+					<FormGroup>
+						<FormText color="muted">
+							<span role="button">{colDef.label}</span>
+						</FormText>
+						<!-- div>{colDef.origin}</div -->
+					</FormGroup>
+				</Row>
+				{#if mouseoverColIndex === colIndex}
+					<Row cols="4">
+						<Col>
+							<Button class="m-0 p-0" on:click={moveToFirst}>
+								<Icon name="chevron-double-left" />
+							</Button>
+						</Col><Col>
+							<Button class="m-0 p-0" on:click={moveToPrev}>
+								<Icon name="chevron-left" />
+							</Button>
+						</Col><Col>
+							<Button class="m-0 p-0" on:click={moveToNext}>
+								<Icon name="chevron-right" />
+							</Button>
+						</Col><Col>
+							<Button class="m-0 p-0" on:click={moveToLast}>
+								<Icon name="chevron-double-right" />
+							</Button>
+						</Col>
+					</Row>
+				{/if}
+			</div>
+		{/each}
 	</Row>
-</form>
+	<form>
+		<!--{newCol.colString} -->
+		<Row cols={{ xs: 1, sm: 2, md: 4 }} class="px-3">
+			<Col class="col-auto">
+				<FormText>IsFormula</FormText>
+				<div class="form-check">
+					<input
+						class="form-check-input"
+						type="checkbox"
+						bind:checked={newCol.isFormula}
+						on:change={buildColumnStringFromInput}
+					/>
+					{#if newCol.isFormula}
+						<Input bind:value={newCol.formula} on:change={buildColumnStringFromInput} />
+					{/if}
+				</div>
+			</Col>
+			{#if newCol.isFormula === false}
+				<Col>
+					<FormText>Name</FormText>
+					<Input bind:value={newCol.name} on:change={buildColumnStringFromInput} />
+				</Col>
+			{/if}
+			<Col>
+				<FormText>Label</FormText>
+				<Input bind:value={newCol.label} on:change={buildColumnStringFromInput} />
+			</Col>
+			<Col>
+				<FormText>Default</FormText>
+				<Input bind:value={newCol.defaultValue} on:change={buildColumnStringFromInput} />
+			</Col>
+			<div class="w-100" />
+			<Col class="col-auto mt-3">
+				<FormText>IsSelect</FormText>
+				<div class="form-check">
+					<input
+						class="form-check-input"
+						type="checkbox"
+						bind:checked={newCol.isSelect}
+						on:change={buildColumnStringFromInput}
+					/>
+					{#if newCol.isSelect}
+						<FormText>Options</FormText>
+						{#each newCol.options as option}
+							<span class="badge rounded-pill bg-info text-dark">{option}</span>
+						{/each}
+						<Input bind:value={newCol.optionsString} on:input={splitOptionStringToArray} />
+					{/if}
+				</div>
+			</Col>
+			<Col class="col-auto mt-3">
+				<FormText>Avg</FormText>
+				<div class="form-check">
+					<input
+						class="form-check-input"
+						type="checkbox"
+						bind:checked={newCol.avg}
+						on:change={buildColumnStringFromInput}
+					/>
+				</div>
+			</Col>
+			<Col class="col-auto mt-3">
+				<FormText>Sum</FormText>
+				<div class="form-check">
+					<input
+						class="form-check-input"
+						type="checkbox"
+						bind:checked={newCol.sum}
+						on:change={buildColumnStringFromInput}
+					/>
+				</div>
+			</Col>
+		</Row>
+		<Row class="ms-5 ps-5">
+			<Col class="col-auto mt-3">
+				<Button color="primary" disabled={inputForIndex < 0} on:click={setToCurrent}>Set</Button>
+			</Col>
+			<Col class="col-auto mt-3">
+				<Button color="primary" disabled={inputForIndex < 0} on:click={copyCurrent}>Copy</Button>
+			</Col>
+			<Col class="col-auto mt-3">
+				<Button color="primary" on:click={addToBegin}>Add to Head</Button>
+			</Col>
+			<Col class="col-auto mt-3">
+				<Button color="primary" on:click={addToEnd}>Append</Button>
+			</Col>
+			<Col class="col-auto mt-3">
+				<Button
+					color="primary"
+					disabled={inputForIndex < 0 || colDefs.length <= 1}
+					on:click={deleteCurrent}>Delete</Button
+				>
+			</Col>
+			<Col class="col-auto mt-3">
+				<Button color="primary" on:click={resetColInput}>ReSet</Button>
+			</Col>
+		</Row>
+	</form>
+</div>

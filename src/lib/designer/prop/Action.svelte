@@ -5,6 +5,7 @@
 	import { ClientPermControl } from '$lib/clientperm';
 	import * as api from '$lib/api';
 	import { session } from '$app/stores';
+	import TableDesigner from '$lib/TableDesigner.svelte';
 	import { qtb } from '$lib/utils';
 	import PDSResolver from '$lib/input/PDSResolver.svelte';
 	import ChangeID from './ChangeID.svelte';
@@ -364,6 +365,17 @@
 						disabled={readonly}
 					/>
 				</InputGroup>
+			{:else}
+				<InputGroup size="sm">
+					<Input
+						id="chk_addpbo"
+						class="ms-auto"
+						type="checkbox"
+						label={$_('prop.action.p10t.allowpbo')}
+						bind:checked={nodeInfo.nodeProps.ACTION.allowpbo}
+						disabled={readonly}
+					/>
+				</InputGroup>
 			{/if}
 			{#each kvarsArr as kvar, index}
 				<div class="px-0 py-2 my-2 d-flex kfk-highlight-2">
@@ -416,6 +428,9 @@
 									placeholder={$_('prop.action.kvar.tbl_placeholder')}
 								/>
 							</InputGroup>
+							{#if !readonly}
+								<TableDesigner bind:tableDefString={kvar.coldef} />
+							{/if}
 						{/if}
 
 						<InputGroup size="sm">
