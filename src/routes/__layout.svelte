@@ -113,10 +113,6 @@
 		(() => {
 			setFadeMessage($notifyMessage);
 		})(); */
-
-	setInterval(() => {
-		$notifyMessage = new Date().getTime() + ' ... ';
-	}, 3000);
 </script>
 
 <svelte:head>
