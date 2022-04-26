@@ -4,6 +4,20 @@ interface KVars {
 	name: string;
 	def: unknown;
 }
+const createWorker = (funcContent) => {
+	var blob = new Blob([funcContent]);
+	var url = window.URL.createObjectURL(blob);
+	var worker = new Worker(url);
+	return worker;
+};
+const workerFunctionContent = function (expr) {
+	return `(function(e){
+		let res = ${expr};
+		self.postMessage(res);
+		self.close();
+})()`;
+};
+
 const Parser = {
 	isEmpty: function (str: string | number): boolean {
 		if (str === undefined || str === null) return true;
@@ -129,7 +143,33 @@ const Parser = {
 		return tmp.trim().replace(/^[^a-zA-Z_$]|[^\w$]/g, '_');
 	},
 
-	evalFormula: async function (user, kvarArr, formula): Promise<any> {
+	evalFormula: function (user, kvarArr, formula): Promise<any> {
+		let that = this;
+		const replaceKvar = function (formula) {
+			for (let i = 0; i < kvarArr.length; i++) {
+				var re = new RegExp(`\\b${kvarArr[i].name}\\b`, 'g');
+				if (kvarArr[i].type === 'number' || kvarArr[i].type === 'range')
+					formula = formula.replace(re, kvarArr[i].value);
+				else formula = formula.replace(re, '"' + kvarArr[i].value + '"');
+			}
+			return formula;
+		};
+
+		let expr = replaceKvar(formula);
+		//let result = await api.post('formula/eval', { expr: expr }, user.sessionToken);
+
+		return new Promise(function (resolve, reject) {
+			let pollingWorker = createWorker(workerFunctionContent(expr));
+
+			pollingWorker.onmessage = function (e) {
+				let result = e.data;
+				if (typeof result === 'number' && isNaN(result)) result = 0;
+				resolve(result);
+			};
+		});
+	},
+
+	evalFormula_use_server_backend: async function (user, kvarArr, formula): Promise<any> {
 		const replaceKvar = function (formula) {
 			for (let i = 0; i < kvarArr.length; i++) {
 				var re = new RegExp(`\\b${kvarArr[i].name}\\b`, 'g');

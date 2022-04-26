@@ -168,6 +168,7 @@
 								<div>{row[colIndex]}</div>
 							{:else}
 								<Input
+									class="kfk-table-input-field"
 									type={colDef.type !== 'datetime' ? colDef.type : 'datetime-local'}
 									name={colDef.name + '_' + rowIndex + '_' + colIndex}
 									bind:value={rows[rowIndex][colIndex]}

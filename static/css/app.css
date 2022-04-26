@@ -2448,6 +2448,9 @@ div.pbo {
 .kfk-trackentry {
 	background-color: rgba(0, 0, 0, 0.03);
 }
+.kfk-table-input-field {
+	min-width: 160px;
+}
 .avatar32 {
 	width: 32px;
 	height: 32px;

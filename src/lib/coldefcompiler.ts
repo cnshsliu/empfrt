@@ -135,41 +135,69 @@ internals.caculateRow = async function (user, colDefs, row, whichRow) {
 		}
 		return formula;
 	};
-	const datediff = function (s1, s2) {
-		let d1 = Date.parse(s1);
-		let d2 = Date.parse(s2);
-		let diffInMs = Math.abs(d2 - d1);
-		return diffInMs / (1000 * 60 * 60 * 24);
-	};
 
-	const lastingdays = function (s1, s2, roundTo) {
-		let d1 = Date.parse(s1);
-		let d2 = Date.parse(s2);
-		let diffInMs = Math.abs(d2 - d1);
-		let days = diffInMs / (1000 * 60 * 60 * 24);
-		let ceil = Math.ceil(days);
-		let floor = Math.floor(days);
-		if (roundTo === 0) {
-			days = floor;
-		} else if (roundTo === 0.5) {
-			if (days === floor) {
+	const createWorker = (funcContent) => {
+		var blob = new Blob([funcContent]);
+		var url = window.URL.createObjectURL(blob);
+		var worker = new Worker(url);
+		return worker;
+	};
+	const workerFunctionContent = function (expr) {
+		return `(function(e){
+		const datediff = function (s1, s2) {
+			let d1 = Date.parse(s1);
+			let d2 = Date.parse(s2);
+			let diffInMs = Math.abs(d2 - d1);
+			return diffInMs / (1000 * 60 * 60 * 24);
+		};
+
+		const lastingdays = function (s1, s2, roundTo) {
+			let d1 = Date.parse(s1);
+			let d2 = Date.parse(s2);
+			let diffInMs = Math.abs(d2 - d1);
+			let days = diffInMs / (1000 * 60 * 60 * 24);
+			let ceil = Math.ceil(days);
+			let floor = Math.floor(days);
+			if (roundTo === 0) {
 				days = floor;
-			} else if (days <= floor + 0.5) {
-				days = floor + 0.5;
-			} else if (days <= ceil) {
+			} else if (roundTo === 0.5) {
+				if (days === floor) {
+					days = floor;
+				} else if (days <= floor + 0.5) {
+					days = floor + 0.5;
+				} else if (days <= ceil) {
+					days = ceil;
+				}
+			} else {
 				days = ceil;
 			}
-		} else {
-			days = ceil;
-		}
-		return days;
+			return days;
+		};
+		let res = ${expr};
+		self.postMessage(res);
+		self.close();
+})()`;
+	};
+
+	const evalFormula = function (expr): Promise<any> {
+		let that = this;
+		return new Promise(function (resolve, reject) {
+			let pollingWorker = createWorker(workerFunctionContent(expr));
+
+			pollingWorker.onmessage = function (e) {
+				let result = e.data;
+				if (typeof result === 'number' && isNaN(result)) result = 0;
+				resolve(result);
+			};
+		});
 	};
 
 	for (let i = 0; i < colDefs.length; i++) {
 		if (colDefs[i].type === 'formula') {
 			let expr = replaceColValue(colDefs[i].formula);
 			if (expr.startsWith('=')) expr = expr.substring(1);
-			let result = await api.post('formula/eval', { expr: expr }, user.sessionToken);
+			//let result = await api.post('formula/eval', { expr: expr }, user.sessionToken);
+			let result = await evalFormula(expr);
 			row[i] = result;
 		}
 	}
