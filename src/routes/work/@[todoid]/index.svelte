@@ -1,5 +1,6 @@
 <script context="module" lang="ts">
 	import { post } from '$lib/utils';
+	import * as api from '$lib/api';
 	import { Button } from 'sveltestrap';
 	export const ssr = false;
 	let TimeTool = null;
@@ -30,6 +31,26 @@
 		} catch (e) {
 			console.error(e);
 		}
+		//console.log('Load workflow comments...');
+		if (session.comment_wfid === theWork.wfid) {
+			//console.log('use session comments');
+			theWork.comments = session.comments;
+		} else {
+			let cmtRes = await api.post(
+				'comment/workflow/load',
+				{ todoid: theWork.todoid, wfid: theWork.wfid },
+				session.user.sessionToken
+			);
+			if (cmtRes.error) {
+				console.log(cmtRes.message);
+				delete session.comment_wfid;
+				delete session.comments;
+			} else {
+				theWork.comments = cmtRes as any;
+				session.comment_wfid = theWork.wfid;
+				session.comments = theWork.comments;
+			}
+		}
 
 		return {
 			props: {
@@ -48,8 +69,8 @@
 	import { tick } from 'svelte';
 	import { _, mtcDate } from '$lib/i18n';
 	import { goto } from '$app/navigation';
+	import { session } from '$app/stores';
 	import Confirm from '$lib/confirm.svelte';
-	import * as api from '$lib/api';
 	import type { User, Work } from '$lib/types';
 	import { title } from '$lib/title';
 	import { onMount, onDestroy } from 'svelte';
@@ -61,6 +82,7 @@
 	export let user: User;
 	export let delegators: any[];
 	export let todoid;
+
 	export let anchor;
 
 	let radioGroup;
@@ -90,6 +112,11 @@
 				}
 			}, 1000);
 		}
+	});
+	onDestroy(async () => {
+		//console.log('Delete comment buffer');
+		delete $session.comment_wfid;
+		delete $session.comments;
 	});
 </script>
 

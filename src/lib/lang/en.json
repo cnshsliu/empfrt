@@ -626,6 +626,7 @@
 	},
 	"comment": {
 		"hide": "Hide Discussion",
-		"show": "Show Discussion"
+		"show": "Show Discussion",
+		"fortodo": "comment: "
 	}
 }

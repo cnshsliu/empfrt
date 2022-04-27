@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { _, locale } from '$lib/i18n';
 	import Avatar from '$lib/display/Avatar.svelte';
 	import * as api from '$lib/api';
 	import { onMount } from 'svelte';
@@ -8,10 +9,8 @@
 	import CommentInput from '$lib/input/CommentInput.svelte';
 	export let TimeTool = null;
 	export let comments = { count: 0, cmts: [] };
-	export let deletableCommentIds = new Set();
-	export let timeoutHash = {};
-	export let deleteNewCommentTimeout;
 	let replyToCmtId;
+	let user = $session.user;
 
 	onMount(async () => {
 		for (let i = 0; i < comments.cmts.length; i++) {
@@ -20,7 +19,7 @@
 	});
 </script>
 
-{#if comments}
+{#if comments && comments.count > 0}
 	{#each comments.cmts as cmt, cmtIndex}
 		<Row id={'tcmt_' + cmt._id}>
 			<Col class="d-flex col-auto">
@@ -69,7 +68,7 @@
 							</span>
 						{/if}
 					</Col>
-					{#if deletableCommentIds.has(cmt._id)}
+					{#if (!cmt.children || (cmt.children && cmt.children.cmts && cmt.children.cmts.length === 0)) && cmt.who === user.email}
 						<Col class="col-auto">
 							<a
 								href={'#'}
@@ -84,19 +83,26 @@
 									if (res.error) {
 										console.log(res.message);
 									} else {
-										comments = res.comments;
+										comments.cmts.splice(cmtIndex, 1);
+										comments.count--;
+										comments = comments;
 									}
 								}}
 							>
 								<AniIcon icon="trash" ani="aniShake" />
 							</a>
-							{(timeoutHash[cmt._id] >= 10 ? '' : '0') + timeoutHash[cmt._id]}
 						</Col>
 					{/if}
 				</Row>
 				<Row>
 					<Col class="fs-6">
 						{TimeTool ? TimeTool.fromNow(cmt.createdAt) : ''}
+						{#if cmt.todoTitle}
+							{$_('comment.fortodo')}
+							<a href={`/work/@${cmt.context.todoid}`} role="button">
+								{cmt.todoTitle} ({cmt.todoDoerCN})
+							</a>
+						{/if}
 					</Col>
 				</Row>
 			</Col>
@@ -151,23 +157,6 @@
 									cmt.children.cmts[i].showChildren = true;
 								}
 								cmt.reply = '';
-								let thisId = res.thisComment._id;
-								deletableCommentIds.add(thisId);
-								let timeout = deleteNewCommentTimeout;
-								timeoutHash[thisId] = timeout;
-								let timeoutInterval = setInterval(() => {
-									if (timeout === 0) {
-										deletableCommentIds.delete(thisId);
-										deletableCommentIds = deletableCommentIds;
-										clearInterval(timeoutInterval);
-										delete timeoutHash[thisId];
-										timeoutHash = timeoutHash;
-									} else {
-										timeout--;
-										timeoutHash[thisId] = timeout;
-										timeoutHash = timeoutHash;
-									}
-								}, 1000);
 							}
 						}}
 					/>
@@ -177,13 +166,7 @@
 		{#if cmt.children && cmt.showChildren}
 			<div class="ms-3 border-start border-primary comment-child row row-cols-1">
 				<div class="col">
-					<svelte:self
-						bind:comments={cmt.children}
-						bind:deletableCommentIds
-						bind:timeoutHash
-						bind:TimeTool
-						bind:deleteNewCommentTimeout
-					/>
+					<svelte:self bind:comments={cmt.children} bind:TimeTool />
 				</div>
 			</div>
 		{/if}

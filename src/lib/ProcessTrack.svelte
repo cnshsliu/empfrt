@@ -34,10 +34,7 @@
 	export let user;
 	export let _refreshWork = null;
 	export let onPrint;
-	export let deletableCommentIds;
-	export let timeoutHash;
 	export let TimeTool;
-	export let deleteNewCommentTimeout;
 	export let workJustDone;
 	function gotoWorkflowMonitor(wfid: string) {
 		goto(iframeMode ? `/workflow/@${wfid}/monitor?iframe` : `/workflow/@${wfid}/monitor`);
@@ -264,17 +261,6 @@
 					</div>
 				</Col>
 			</Row>
-			{#if entry.workid !== workid && entry.comments && entry.comments.cmts && entry.comments.cmts.length > 0}
-				<Row class="px-3">
-					<Comments
-						bind:comments={entry.comments}
-						{deletableCommentIds}
-						{timeoutHash}
-						{TimeTool}
-						{deleteNewCommentTimeout}
-					/>
-				</Row>
-			{/if}
 		{/each}
 		{#if $printing === false}
 			<Row>

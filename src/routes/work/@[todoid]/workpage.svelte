@@ -44,10 +44,7 @@
 	let anyUserNotExists = {};
 	let newComment = '';
 	let TimeTool = null;
-	let deletableCommentIds = new Set();
-	let timeoutHash = {};
 	let showTodoComment = true;
-	let deleteNewCommentTimeout = 30;
 	let workJustDone = null;
 	let caculateFormulaTimer = null;
 	import { getNotificationsContext } from 'svelte-notifications';
@@ -439,10 +436,6 @@
 		TimeTool = (await import('$lib/TimeTool')).default;
 		TimeTool.setLocale($locale);
 		//Get timeout setting of delete timeout from server
-		let res = await api.post('comment/delnewtimeout', {}, user.sessionToken);
-		if (!res.error) {
-			deleteNewCommentTimeout = res.timeout;
-		}
 		//根据参数的When设置计算是否显示
 		setShowKVars();
 		if (localStorage) {
@@ -766,28 +759,11 @@
 						if (res.error) {
 							console.log(res.message);
 						} else {
-							work.comments = res.comments;
-							for (let i = 0; i < work.comments.cmts.length; i++) {
-								work.comments.cmts[i].showChildren = true;
-							}
+							work.comments.count++;
+							work.comments.cmts.unshift(res.thisComment);
+							work.comments = work.comments;
+
 							newComment = '';
-							let thisId = res.thisComment._id;
-							deletableCommentIds.add(thisId);
-							let timeout = deleteNewCommentTimeout;
-							timeoutHash[thisId] = timeout;
-							let timeoutInterval = setInterval(() => {
-								if (timeout === 0) {
-									deletableCommentIds.delete(thisId);
-									deletableCommentIds = deletableCommentIds;
-									clearInterval(timeoutInterval);
-									delete timeoutHash[thisId];
-									timeoutHash = timeoutHash;
-								} else {
-									timeout--;
-									timeoutHash[thisId] = timeout;
-									timeoutHash = timeoutHash;
-								}
-							}, 1000);
 						}
 					}}
 				/>
@@ -810,13 +786,7 @@
 			{#if showTodoComment}
 				<Row class="px-3 pt-1" id="todo_comments">
 					<Col>
-						<Comments
-							bind:comments={work.comments}
-							bind:deletableCommentIds
-							bind:timeoutHash
-							bind:TimeTool
-							bind:deleteNewCommentTimeout
-						/>
+						<Comments bind:comments={work.comments} bind:TimeTool />
 					</Col>
 				</Row>
 			{/if}
@@ -893,11 +863,8 @@
 			{onPrint}
 			{_refreshWork}
 			{iframeMode}
-			{deletableCommentIds}
-			{timeoutHash}
 			{TimeTool}
 			{workJustDone}
-			{deleteNewCommentTimeout}
 		/>
 	{/if}
 {:else}
