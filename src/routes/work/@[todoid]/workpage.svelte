@@ -759,8 +759,7 @@
 						if (res.error) {
 							console.log(res.message);
 						} else {
-							work.comments.count++;
-							work.comments.cmts.unshift(res.thisComment);
+							work.comments.unshift(res.thisComment);
 							work.comments = work.comments;
 
 							newComment = '';
@@ -769,7 +768,7 @@
 				/>
 			</Col>
 		</Row>
-		{#if work.comments && work.comments.cmts && work.comments.cmts.length > 0}
+		{#if work.comments && work.comments.length > 0}
 			<Row class="px-3 pt-3">
 				<Button
 					on:click={() => {
@@ -863,7 +862,6 @@
 			{onPrint}
 			{_refreshWork}
 			{iframeMode}
-			{TimeTool}
 			{workJustDone}
 		/>
 	{/if}

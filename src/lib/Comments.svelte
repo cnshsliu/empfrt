@@ -1,6 +1,11 @@
+<script context="module" lang="ts">
+	export async function load({ page, fetch, session }) {}
+</script>
+
 <script lang="ts">
 	import { _, locale } from '$lib/i18n';
 	import Avatar from '$lib/display/Avatar.svelte';
+	import Transition from '$lib/Transition.svelte';
 	import * as api from '$lib/api';
 	import { onMount } from 'svelte';
 	import { session } from '$app/stores';
@@ -8,19 +13,15 @@
 	import { Row, Col } from 'sveltestrap';
 	import CommentInput from '$lib/input/CommentInput.svelte';
 	export let TimeTool = null;
-	export let comments = { count: 0, cmts: [] };
+	export let comments;
 	let replyToCmtId;
 	let user = $session.user;
 
-	onMount(async () => {
-		for (let i = 0; i < comments.cmts.length; i++) {
-			comments.cmts[i].showChildren = true;
-		}
-	});
+	onMount(async () => {});
 </script>
 
-{#if comments && comments.count > 0}
-	{#each comments.cmts as cmt, cmtIndex}
+{#each comments as cmt, cmtIndex}
+	<Transition enable={cmt.transition}>
 		<Row id={'tcmt_' + cmt._id}>
 			<Col class="d-flex col-auto">
 				<Avatar uid={cmt.who} uname={cmt.whoCN} style={'avatar40-round5'} />
@@ -50,7 +51,7 @@
 								{/if}
 							</a>
 						</span>
-						{#if cmt.children && cmt.children.cmts && cmt.children.cmts.length}
+						{#if cmt.children && cmt.children && cmt.children.length}
 							<span class="ms-3">
 								<a
 									class="kfk-link"
@@ -68,7 +69,7 @@
 							</span>
 						{/if}
 					</Col>
-					{#if (!cmt.children || (cmt.children && cmt.children.cmts && cmt.children.cmts.length === 0)) && cmt.who === user.email}
+					{#if (!cmt.children || (cmt.children && cmt.children.length === 0)) && cmt.who === user.email}
 						<Col class="col-auto">
 							<a
 								href={'#'}
@@ -83,8 +84,7 @@
 									if (res.error) {
 										console.log(res.message);
 									} else {
-										comments.cmts.splice(cmtIndex, 1);
-										comments.count--;
+										comments.splice(cmtIndex, 1);
 										comments = comments;
 									}
 								}}
@@ -152,10 +152,10 @@
 							if (res.error) {
 								console.log(res.message);
 							} else {
-								cmt.children = res.comments;
-								for (let i = 0; i < cmt.children.cmts.length; i++) {
-									cmt.children.cmts[i].showChildren = true;
-								}
+								//cmt.children = res.comments;
+								cmt.children.unshift(res.thisComment);
+								cmt.children = cmt.children;
+								cmt.showChildren = true;
 								cmt.reply = '';
 							}
 						}}
@@ -163,37 +163,12 @@
 				</div>
 			</div>
 		{/if}
-		{#if cmt.children && cmt.showChildren}
+		{#if cmt.showChildren && cmt.children.length > 0}
 			<div class="ms-3 border-start border-primary comment-child row row-cols-1">
 				<div class="col">
 					<svelte:self bind:comments={cmt.children} bind:TimeTool />
 				</div>
 			</div>
 		{/if}
-		{#if comments.count > comments.cmts.length && cmtIndex === comments.cmts.length - 1}
-			<Row class="ms-1">
-				<Col class="d-flex col-auto">
-					<a
-						href={'#'}
-						class="usertag text-decoration-none"
-						on:click|preventDefault={async (e) => {
-							let res = await api.post(
-								'comment/loadmorepeers',
-								{
-									cmtid: cmt._id,
-									currentlength: comments.cmts.length
-								},
-								$session.user.sessionToken
-							);
-							comments.count = res.count;
-							comments.cmts = [...comments.cmts, ...res.cmts];
-						}}
-					>
-						<i class="bi bi-three-dots" />
-					</a>
-				</Col>
-				<Col>&nbsp;</Col>
-			</Row>
-		{/if}
-	{/each}
-{/if}
+	</Transition>
+{/each}

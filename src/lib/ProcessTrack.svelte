@@ -34,7 +34,6 @@
 	export let user;
 	export let _refreshWork = null;
 	export let onPrint;
-	export let TimeTool;
 	export let workJustDone;
 	function gotoWorkflowMonitor(wfid: string) {
 		goto(iframeMode ? `/workflow/@${wfid}/monitor?iframe` : `/workflow/@${wfid}/monitor`);
