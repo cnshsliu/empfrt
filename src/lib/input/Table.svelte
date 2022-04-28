@@ -94,6 +94,7 @@
 							{$_('inputtable.copyto.below')}
 						</DropdownItem>
 						<DropdownItem
+							disabled={rows.length === 1}
 							on:click={() => {
 								rows.splice(rowIndex, 1);
 								rows = rows;
@@ -103,6 +104,7 @@
 							{$_('inputtable.delete')}
 						</DropdownItem>
 						<DropdownItem
+							disabled={rowIndex === 0}
 							on:click={() => {
 								if (rowIndex > 0) {
 									rows.splice(rowIndex - 1, 0, rows.splice(rowIndex, 1)[0]);
@@ -114,6 +116,7 @@
 							{$_('inputtable.move.up')}
 						</DropdownItem>
 						<DropdownItem
+							disabled={rowIndex === rows.length - 1}
 							on:click={() => {
 								if (rowIndex < rows.length - 1) {
 									rows.splice(rowIndex + 1, 0, rows.splice(rowIndex, 1)[0]);
@@ -125,6 +128,7 @@
 							{$_('inputtable.move.down')}
 						</DropdownItem>
 						<DropdownItem
+							disabled={rowIndex === 0}
 							on:click={() => {
 								if (rowIndex > 0) {
 									rows.splice(0, 0, rows.splice(rowIndex, 1)[0]);
@@ -136,6 +140,7 @@
 							{$_('inputtable.move.top')}
 						</DropdownItem>
 						<DropdownItem
+							disabled={rowIndex === rows.length - 1}
 							on:click={() => {
 								if (rowIndex < rows.length - 1) {
 									rows.push(rows.splice(rowIndex, 1)[0]);
