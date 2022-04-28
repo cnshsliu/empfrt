@@ -3,6 +3,8 @@
 <script type="ts">
 	import { _, date, time } from '$lib/i18n';
 	import * as api from '$lib/api';
+	import { slide, fade } from 'svelte/transition';
+	import Transition from '$lib/Transition.svelte';
 	import { navigating, session } from '$app/stores';
 	import { filterStorage } from '$lib/empstores';
 	import ColPerRowSelection from '$lib/ColPerRowSelection.svelte';
@@ -140,20 +142,21 @@
 	export async function refresh(detail) {
 		if (detail && detail.page) page = detail.page;
 		if (detail && detail.sorting) sorting = detail.sorting;
-		await load(page, 'refresh');
-		if (rowsCount === 0) {
-			autoRefreshInterval = setInterval(async () => {
-				console.log(`Auto refresh ${autoRefreshTimes + 1}/10`);
-				await load(0, 'autoRefreshInterval');
-				autoRefreshTimes++;
-				if (rowsCount > 0 || autoRefreshTimes > 10) {
-					clearInterval(autoRefreshInterval);
-					autoRefreshTimes = 0;
-				}
-			}, 3000);
-		} else {
-			clearInterval(autoRefreshInterval);
-		}
+		setTimeout(async () => {
+			await load(page, 'refresh');
+			if (rowsCount === 0) {
+				autoRefreshInterval = setInterval(async () => {
+					await load(0, 'autoRefreshInterval');
+					autoRefreshTimes++;
+					if (rowsCount > 0 || autoRefreshTimes >= 6) {
+						clearInterval(autoRefreshInterval);
+						autoRefreshTimes = 0;
+					}
+				}, 5000);
+			} else {
+				clearInterval(autoRefreshInterval);
+			}
+		}, 20);
 	}
 
 	export function reset() {
@@ -302,78 +305,80 @@
 			<ColPerRowSelection />
 		</div>
 	</div>
-	<Row cols={$filterStorage.col_per_row}>
-		{#each rows as row, index (row)}
-			<Col class="mb-2 card py-2">
-				<div class="">
+	<Transition effect={fade} enable={true} duration={400}>
+		<Row cols={$filterStorage.col_per_row}>
+			{#each rows as row, index (row)}
+				<Col class="mb-2 card p-2">
 					<div class="">
-						<div class="d-flex">
-							<div class="w-100">
-								<h5 class="">
+						<div class="">
+							<div class="d-flex">
+								<div class="w-100">
+									<h5 class="">
+										<a
+											class="preview-link   kfk-work-id tnt-work-id"
+											href={'#'}
+											on:click|preventDefault={(e) => {
+												e.preventDefault();
+												gotoWorkitem(row);
+											}}
+										>
+											{row.title}
+											<sup>
+												{#if row.nodeid === 'ADHOC'}
+													/ adhoc
+												{/if}
+												{#if row.rehearsal}
+													/ <i class="bi-patch-check-fill" />
+													{Parser.userDisplay(row.doer, user.email)}
+												{/if}
+											</sup>
+										</a>
+									</h5>
+								</div>
+								<div class="flex-shrink-1 text-nowrap ">
+									{$_('remotetable.lasting')}:
+									{row.lastdays}
+								</div>
+							</div>
+							<Row cols={{ md: 2, xs: 1 }}>
+								<Col>
+									{$_('remotetable.status')}:
+									{$_('status.' + row.status)}
+								</Col>
+								<Col>
+									<div>
+										{$_('remotetable.updatedAt')}:
+										{#if row.doneat}
+											{$date(new Date(row.doneat))}
+											{$time(new Date(row.doneat))}
+										{:else}
+											{$date(new Date(row.createdAt))}
+											{$time(new Date(row.createdAt))}
+										{/if}
+									</div>
+								</Col>
+							</Row>
+							<Row class="fs-6">
+								<Col>
+									{$_('remotetable.belongTo')}:
 									<a
-										class="preview-link   kfk-work-id tnt-work-id"
+										class="kfk-link fs-6"
 										href={'#'}
-										on:click|preventDefault={(e) => {
+										on:click={(e) => {
 											e.preventDefault();
-											gotoWorkitem(row);
+											gotoWorkflow(row.wfid);
 										}}
 									>
-										{row.title}
-										<sup>
-											{#if row.nodeid === 'ADHOC'}
-												/ adhoc
-											{/if}
-											{#if row.rehearsal}
-												/ <i class="bi-patch-check-fill" />
-												{Parser.userDisplay(row.doer, user.email)}
-											{/if}
-										</sup>
+										{row.wftitle}
 									</a>
-								</h5>
-							</div>
-							<div class="flex-shrink-1 text-nowrap ">
-								{$_('remotetable.lasting')}:
-								{row.lastdays}
-							</div>
+								</Col>
+							</Row>
 						</div>
-						<Row cols={{ md: 2, xs: 1 }}>
-							<Col>
-								{$_('remotetable.status')}:
-								{$_('status.' + row.status)}
-							</Col>
-							<Col>
-								<div>
-									{$_('remotetable.updatedAt')}:
-									{#if row.doneat}
-										{$date(new Date(row.doneat))}
-										{$time(new Date(row.doneat))}
-									{:else}
-										{$date(new Date(row.createdAt))}
-										{$time(new Date(row.createdAt))}
-									{/if}
-								</div>
-							</Col>
-						</Row>
-						<Row class="fs-6">
-							<Col>
-								{$_('remotetable.belongTo')}:
-								<a
-									class="kfk-link fs-6"
-									href={'#'}
-									on:click={(e) => {
-										e.preventDefault();
-										gotoWorkflow(row.wfid);
-									}}
-								>
-									{row.wftitle}
-								</a>
-							</Col>
-						</Row>
 					</div>
-				</div>
-			</Col>
-		{/each}
-	</Row>
+				</Col>
+			{/each}
+		</Row>
+	</Transition>
 </Container>
 
 <Pagination

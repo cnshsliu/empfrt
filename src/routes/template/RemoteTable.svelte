@@ -6,6 +6,8 @@
 	import { _, date, time } from '$lib/i18n';
 	import * as api from '$lib/api';
 	import Confirm from '$lib/confirm.svelte';
+	import { slide, fade } from 'svelte/transition';
+	import Transition from '$lib/Transition.svelte';
 	import { session } from '$app/stores';
 	import ItemEditor from './TplSearchResultItemEditor.svelte';
 	import ColPerRowSelection from '$lib/ColPerRowSelection.svelte';
@@ -314,290 +316,296 @@
 	<!-- code><pre>
 			{JSON.stringify(rows, null, 2)}
 	</pre></code -->
-	<Row cols={$filterStorage.col_per_row}>
-		{#each rows as row, index (row)}
-			<Col class="mb-2 card py-2">
-				<div class="">
+	<Transition effect={fade} enable={true} duration={400}>
+		<Row cols={$filterStorage.col_per_row}>
+			{#each rows as row, index (row)}
+				<Col class="mb-2 card p-2">
 					<div class="">
-						<div class="d-flex">
-							<div class="w-100">
-								<h5 class="">
-									<a class="kfk-workflow-id tnt-workflow-id" href={`/template/@${row.tplid}&read`}>
-										{row.tplid}
-									</a>
-									{#if row.cron > 0}
-										<Button
-											class="m-0 ms-3 p-0"
-											on:click={(e) => {
-												e.preventDefault();
-												showCronTable(e, row.tplid);
-											}}
+						<div class="">
+							<div class="d-flex">
+								<div class="w-100">
+									<h5 class="">
+										<a
+											class="kfk-workflow-id tnt-workflow-id"
+											href={`/template/@${row.tplid}&read`}
 										>
-											crontab
-										</Button>
-									{/if}
-								</h5>
-							</div>
-							<div class="flex-shrink-1">
-								<Dropdown class="m-0 p-0">
-									<DropdownToggle caret color="primary" class="btn-sm">
-										{$_('remotetable.actions')}
-									</DropdownToggle>
-									<DropdownMenu class="bg-light">
-										<DropdownItem>
-											{$_('remotetable.tplaction.lastUpdate')}: {TimeTool.format(
-												row.updatedAt,
-												'lll'
-											)}
-										</DropdownItem>
-										{#if user.perms && ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
-											<DropdownItem>
-												<a
-													href={'#'}
-													on:click|preventDefault={() => {
-														goto(`template/start?tplid=${row.tplid}`, { replaceState: false });
-													}}
-													class="nav-link "
-												>
-													<Icon name="play-circle-fill" />
-													{$_('remotetable.tplaction.startIt')}
-												</a>
-											</DropdownItem>
-										{/if}
-										<DropdownItem>
-											<a
-												href={'#'}
-												on:click|preventDefault={async () => {
-													$filterStorage.tplid = row.tplid;
-													goto('/workflow');
-												}}
-												class="nav-link "
-												><Icon name="bar-chart-steps" />
-												{$_('remotetable.tplaction.seeWorkflows')}
-											</a>
-										</DropdownItem>
-										<DropdownItem>
-											<a
-												href={'#'}
-												on:click|preventDefault={async () => {
-													$filterStorage.tplid = row.tplid;
-													goto('/work');
-												}}
-												class="nav-link "
-												><Icon name="bar-chart-steps" />
-												{$_('remotetable.tplaction.seeWorklist')}
-											</a>
-										</DropdownItem>
-										{#if user.perms && ClientPermControl(user.perms, user.email, 'template', row, 'delete')}
-											<DropdownItem>
-												<a
-													href={'#'}
-													on:click|preventDefault={(e) => {
-														e.preventDefault();
-														SetFor.setVisiFor = row.tplid;
-														SetFor.setAuthorFor = row.tplid;
-														SetFor.setDescFor = row.tplid;
-														SetFor.setTagFor = row.tplid;
-														SetFor.setWeComBotFor = row.tplid;
-														SetFor.settingFor = row.tplid;
-														row.checked = false;
-														visi_rds_input = row.visi;
-													}}
-													class="nav-link "
-												>
-													<Icon name="ui-checks-grid" />
-													{$_('remotetable.tplaction.set')}
-												</a>
-											</DropdownItem>
-											<DropdownItem>
-												<a
-													href={'#'}
-													on:click|preventDefault={() => deleteRow(row.tplid)}
-													class="nav-link "
-													><Icon name="trash" />
-													{$_('remotetable.tplaction.deleteThisTempalte')}
-												</a>
-											</DropdownItem>
-											<DropdownItem>
-												<a
-													href={'#'}
-													on:click|preventDefault={() => exportData(row.tplid)}
-													class="nav-link "
-												>
-													<Icon name="cloud-download" />
-													{$_('remotetable.tplaction.exportdata')}
-												</a>
-											</DropdownItem>
-											<DropdownItem>
-												<a
-													href={'#'}
-													on:click|preventDefault={async (e) => {
-														e.preventDefault();
-														editlogs = await api.post(
-															'/template/editlog',
-															{ tplid: row.tplid },
-															user.sessionToken
-														);
-														editlogfor = row.tplid;
-														visi_rds_input = row.visi;
-													}}
-													class="nav-link "
-												>
-													<Icon name="ui-checks-grid" />
-													{$_('remotetable.tplaction.editors')}
-												</a>
-											</DropdownItem>
-											<DropdownItem>
-												<a
-													href={'#'}
-													on:click|preventDefault={(e) => {
-														showCronTable(e, row.tplid);
-													}}
-													class="nav-link "
-												>
-													<Icon name="ui-checks-grid" />
-													{$_('remotetable.tplaction.scheduler')}
-												</a>
-											</DropdownItem>
-										{/if}
-									</DropdownMenu>
-								</Dropdown>
-							</div>
-						</div>
-						<Row cols={{ md: 2, xs: 1 }}>
-							<Col>
-								{$_('remotetable.author')}:
-								{row.authorName
-									? row.authorName
-									: row.author.indexOf('@') > -1
-									? row.author.substring(0, row.author.indexOf('@'))
-									: row.author}
-							</Col>
-							<Col>
-								{#if user.perms && ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
-									<a
-										href={'#'}
-										on:click|preventDefault={() => {
-											goto(`template/start?tplid=${row.tplid}`, { replaceState: false });
-										}}
-										class="nav-link "
-									>
-										<Icon name="play-circle-fill" />
-										{$_('remotetable.startIt')}
-									</a>
-								{/if}
-							</Col>
-						</Row>
-						{#if editlogfor === row.tplid}
-							<Container>
-								<Row>
-									<Button
-										color="primary"
-										on:click={(e) => {
-											e.preventDefault();
-											editlogfor = '';
-										}}>Close</Button
-									>
-								</Row>
-								{#each editlogs as elog}
-									<Row>
-										<Col>{TimeTool.format(elog.updatedAt, 'lll')}</Col><Col>{elog.editorName}</Col>
-										<Col>{elog.editor}</Col>
-									</Row>
-								{/each}
-							</Container>
-						{/if}
-						{#if editCronFor === row.tplid}
-							<Container class="border border-2 rounded py-2 bg-light">
-								<Row>
-									<!-- svelte-ignore missing-declaration -->
-									<Button
-										color="primary"
-										on:click={(e) => {
-											e.preventDefault();
-											editCronFor = '';
-										}}
-									>
-										Close
-									</Button>
-									<div class="text-center">
-										<a href="https://crontab-generator.org" target="_crontabgenerator"
-											>Crontab Generator</a
-										>
-									</div>
-								</Row>
-								{#each crons as cron}
-									<Row>
-										<Col>{cron.starters}</Col><Col>{cron.expr}</Col>
-										<Col>
+											{row.tplid}
+										</a>
+										{#if row.cron > 0}
 											<Button
-												size="sm"
-												on:click={async (e) => {
-													await deleteCrontab(e, cron.tplid, cron._id);
+												class="m-0 ms-3 p-0"
+												on:click={(e) => {
+													e.preventDefault();
+													showCronTable(e, row.tplid);
 												}}
 											>
-												Del
+												crontab
 											</Button>
-										</Col>
-									</Row>
-								{/each}
-								<Row>
-									<InputGroup class="p-0">
-										<!-- 只有管理员可以指定其它用户，普通用户没有这个输入框，只能自己用 -->
-										{#if user.group === 'ADMIN'}
-											<PDSResolver
-												bind:this={thePdsResolver}
-												bind:value={cronStarters}
-												readonly={false}
-												label={'Starters'}
-												btnText={'Check'}
-											/>
 										{/if}
-										<Input bind:value={cronExpr} />
+									</h5>
+								</div>
+								<div class="flex-shrink-1">
+									<Dropdown class="m-0 p-0">
+										<DropdownToggle caret color="primary" class="btn-sm">
+											{$_('remotetable.actions')}
+										</DropdownToggle>
+										<DropdownMenu class="bg-light">
+											<DropdownItem>
+												{$_('remotetable.tplaction.lastUpdate')}: {TimeTool.format(
+													row.updatedAt,
+													'lll'
+												)}
+											</DropdownItem>
+											{#if user.perms && ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
+												<DropdownItem>
+													<a
+														href={'#'}
+														on:click|preventDefault={() => {
+															goto(`template/start?tplid=${row.tplid}`, { replaceState: false });
+														}}
+														class="nav-link "
+													>
+														<Icon name="play-circle-fill" />
+														{$_('remotetable.tplaction.startIt')}
+													</a>
+												</DropdownItem>
+											{/if}
+											<DropdownItem>
+												<a
+													href={'#'}
+													on:click|preventDefault={async () => {
+														$filterStorage.tplid = row.tplid;
+														goto('/workflow');
+													}}
+													class="nav-link "
+													><Icon name="bar-chart-steps" />
+													{$_('remotetable.tplaction.seeWorkflows')}
+												</a>
+											</DropdownItem>
+											<DropdownItem>
+												<a
+													href={'#'}
+													on:click|preventDefault={async () => {
+														$filterStorage.tplid = row.tplid;
+														goto('/work');
+													}}
+													class="nav-link "
+													><Icon name="bar-chart-steps" />
+													{$_('remotetable.tplaction.seeWorklist')}
+												</a>
+											</DropdownItem>
+											{#if user.perms && ClientPermControl(user.perms, user.email, 'template', row, 'delete')}
+												<DropdownItem>
+													<a
+														href={'#'}
+														on:click|preventDefault={(e) => {
+															e.preventDefault();
+															SetFor.setVisiFor = row.tplid;
+															SetFor.setAuthorFor = row.tplid;
+															SetFor.setDescFor = row.tplid;
+															SetFor.setTagFor = row.tplid;
+															SetFor.setWeComBotFor = row.tplid;
+															SetFor.settingFor = row.tplid;
+															row.checked = false;
+															visi_rds_input = row.visi;
+														}}
+														class="nav-link "
+													>
+														<Icon name="ui-checks-grid" />
+														{$_('remotetable.tplaction.set')}
+													</a>
+												</DropdownItem>
+												<DropdownItem>
+													<a
+														href={'#'}
+														on:click|preventDefault={() => deleteRow(row.tplid)}
+														class="nav-link "
+														><Icon name="trash" />
+														{$_('remotetable.tplaction.deleteThisTempalte')}
+													</a>
+												</DropdownItem>
+												<DropdownItem>
+													<a
+														href={'#'}
+														on:click|preventDefault={() => exportData(row.tplid)}
+														class="nav-link "
+													>
+														<Icon name="cloud-download" />
+														{$_('remotetable.tplaction.exportdata')}
+													</a>
+												</DropdownItem>
+												<DropdownItem>
+													<a
+														href={'#'}
+														on:click|preventDefault={async (e) => {
+															e.preventDefault();
+															editlogs = await api.post(
+																'/template/editlog',
+																{ tplid: row.tplid },
+																user.sessionToken
+															);
+															editlogfor = row.tplid;
+															visi_rds_input = row.visi;
+														}}
+														class="nav-link "
+													>
+														<Icon name="ui-checks-grid" />
+														{$_('remotetable.tplaction.editors')}
+													</a>
+												</DropdownItem>
+												<DropdownItem>
+													<a
+														href={'#'}
+														on:click|preventDefault={(e) => {
+															showCronTable(e, row.tplid);
+														}}
+														class="nav-link "
+													>
+														<Icon name="ui-checks-grid" />
+														{$_('remotetable.tplaction.scheduler')}
+													</a>
+												</DropdownItem>
+											{/if}
+										</DropdownMenu>
+									</Dropdown>
+								</div>
+							</div>
+							<Row cols={{ md: 2, xs: 1 }}>
+								<Col>
+									{$_('remotetable.author')}:
+									{row.authorName
+										? row.authorName
+										: row.author.indexOf('@') > -1
+										? row.author.substring(0, row.author.indexOf('@'))
+										: row.author}
+								</Col>
+								<Col>
+									{#if user.perms && ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
+										<a
+											href={'#'}
+											on:click|preventDefault={() => {
+												goto(`template/start?tplid=${row.tplid}`, { replaceState: false });
+											}}
+											class="nav-link "
+										>
+											<Icon name="play-circle-fill" />
+											{$_('remotetable.startIt')}
+										</a>
+									{/if}
+								</Col>
+							</Row>
+							{#if editlogfor === row.tplid}
+								<Container>
+									<Row>
 										<Button
 											color="primary"
 											on:click={(e) => {
-												addCron(e, row.tplid);
-											}}
+												e.preventDefault();
+												editlogfor = '';
+											}}>Close</Button
 										>
-											Add
-										</Button>
+									</Row>
+									{#each editlogs as elog}
+										<Row>
+											<Col>{TimeTool.format(elog.updatedAt, 'lll')}</Col><Col>{elog.editorName}</Col
+											>
+											<Col>{elog.editor}</Col>
+										</Row>
+									{/each}
+								</Container>
+							{/if}
+							{#if editCronFor === row.tplid}
+								<Container class="border border-2 rounded py-2 bg-light">
+									<Row>
+										<!-- svelte-ignore missing-declaration -->
 										<Button
-											class="ms-1"
+											color="primary"
 											on:click={(e) => {
-												startNow(e, row.tplid);
+												e.preventDefault();
+												editCronFor = '';
 											}}
 										>
-											Start Now
+											Close
 										</Button>
-									</InputGroup>
-								</Row>
-							</Container>
-						{/if}
-						<ItemEditor
-							{rows}
-							{row}
-							{visi_rds_input}
-							{user}
-							{index}
-							{setFadeMessage}
-							{reloadTags}
-							{SetFor}
-							on:tplidSet={(e) => {
-								row = e.detail;
-								rows[index] = row;
-							}}
-							on:authorSet={(e) => {
-								row = e.detail;
-								rows[index] = row;
-								SetFor.setAuthorFor = '';
-							}}
-						/>
+										<div class="text-center">
+											<a href="https://crontab-generator.org" target="_crontabgenerator"
+												>Crontab Generator</a
+											>
+										</div>
+									</Row>
+									{#each crons as cron}
+										<Row>
+											<Col>{cron.starters}</Col><Col>{cron.expr}</Col>
+											<Col>
+												<Button
+													size="sm"
+													on:click={async (e) => {
+														await deleteCrontab(e, cron.tplid, cron._id);
+													}}
+												>
+													Del
+												</Button>
+											</Col>
+										</Row>
+									{/each}
+									<Row>
+										<InputGroup class="p-0">
+											<!-- 只有管理员可以指定其它用户，普通用户没有这个输入框，只能自己用 -->
+											{#if user.group === 'ADMIN'}
+												<PDSResolver
+													bind:this={thePdsResolver}
+													bind:value={cronStarters}
+													readonly={false}
+													label={'Starters'}
+													btnText={'Check'}
+												/>
+											{/if}
+											<Input bind:value={cronExpr} />
+											<Button
+												color="primary"
+												on:click={(e) => {
+													addCron(e, row.tplid);
+												}}
+											>
+												Add
+											</Button>
+											<Button
+												class="ms-1"
+												on:click={(e) => {
+													startNow(e, row.tplid);
+												}}
+											>
+												Start Now
+											</Button>
+										</InputGroup>
+									</Row>
+								</Container>
+							{/if}
+							<ItemEditor
+								{rows}
+								{row}
+								{visi_rds_input}
+								{user}
+								{index}
+								{setFadeMessage}
+								{reloadTags}
+								{SetFor}
+								on:tplidSet={(e) => {
+									row = e.detail;
+									rows[index] = row;
+								}}
+								on:authorSet={(e) => {
+									row = e.detail;
+									rows[index] = row;
+									SetFor.setAuthorFor = '';
+								}}
+							/>
+						</div>
 					</div>
-				</div>
-			</Col>
-		{/each}
-	</Row>
+				</Col>
+			{/each}
+		</Row>
+	</Transition>
 </Container>
 <Pagination
 	{page}

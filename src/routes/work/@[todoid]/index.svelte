@@ -47,7 +47,6 @@
 				delete session.comments;
 			} else {
 				theWork.comments = cmtRes as any;
-				console.log(theWork.comments);
 				//session.comment_wfid = theWork.wfid;
 				//session.comments = theWork.comments;
 			}

@@ -5,6 +5,7 @@
 <script lang="ts">
 	import { _, locale } from '$lib/i18n';
 	import Avatar from '$lib/display/Avatar.svelte';
+	import { slide, fade, blur } from 'svelte/transition';
 	import Transition from '$lib/Transition.svelte';
 	import * as api from '$lib/api';
 	import { onMount } from 'svelte';
@@ -21,7 +22,7 @@
 </script>
 
 {#each comments as cmt, cmtIndex}
-	<Transition enable={cmt.transition}>
+	<Transition effect={slide} enable={cmt.transition}>
 		<Row id={'tcmt_' + cmt._id}>
 			<Col class="d-flex col-auto">
 				<Avatar uid={cmt.who} uname={cmt.whoCN} style={'avatar40-round5'} />
@@ -153,7 +154,14 @@
 								console.log(res.message);
 							} else {
 								//cmt.children = res.comments;
+								if (cmt.children === undefined) {
+									cmt.children = [];
+								}
+								cmt.transition = false;
 								cmt.children.unshift(res.thisComment);
+								for (let i = 0; i < cmt.children.length; i++) {
+									cmt.children[i].transition = i === 0;
+								}
 								cmt.children = cmt.children;
 								cmt.showChildren = true;
 								cmt.reply = '';

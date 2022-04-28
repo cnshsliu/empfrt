@@ -760,8 +760,10 @@
 							console.log(res.message);
 						} else {
 							work.comments.unshift(res.thisComment);
+							for (let i = 0; i < work.comments.length; i++) {
+								work.comments[i].transition = i === 0;
+							}
 							work.comments = work.comments;
-
 							newComment = '';
 						}
 					}}

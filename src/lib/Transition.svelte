@@ -1,14 +1,13 @@
 <!-- Transition.svelte -->
 <script lang="ts">
-	import { slide } from 'svelte/transition';
-
 	export let enable: boolean = true;
 	export let duration: number = 500;
+	export let effect: any;
 	if (enable === undefined) enable = false;
 </script>
 
 {#if enable}
-	<div in:slide={{ duration }}>
+	<div in:effect={{ duration }}>
 		<slot />
 	</div>
 {:else}
