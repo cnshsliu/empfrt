@@ -259,9 +259,11 @@
 													<DisplayTable {kvar} />
 												{:else if kvar.type === 'textarea'}
 													<div class="fw-bold">{kvar.label}</div>
-													<span class="kfk-kvar-value-display">
-														{@html parser.newlineToBreak(kvar.value)}
-													</span>
+													<div class="text-start">
+														<span class="kfk-kvar-value-display">
+															{@html parser.newlineToBreak(kvar.value)}
+														</span>
+													</div>
 												{:else if kvar.type === 'csv'}
 													<div class="fw-bold">{kvar.label}</div>
 													<CsvDisplay fileId={kvar.value} />
