@@ -1,8 +1,7 @@
 import Parser from '$lib/parser';
-import * as api from '$lib/api';
 const internals: any = {};
 
-internals.compileColDef = function (theColDefString) {
+internals.compileColDef = function (theColDefString: string) {
 	let hasAvgRow = false;
 	let hasSumRow = false;
 	let colDefs = [];
@@ -130,8 +129,8 @@ internals.compileColDef = function (theColDefString) {
 	return { row, colDefs, hasSumRow, hasAvgRow };
 };
 
-internals.caculateRow = async function (user, colDefs, row, whichRow) {
-	const replaceColValue = function (formula) {
+internals.caculateRow = async function (colDefs: any, row: any, rowIndex: number) {
+	const replaceColValue = function (formula: string) {
 		for (let i = 0; i < colDefs.length; i++) {
 			var re = new RegExp(`${colDefs[i].name}`, 'g');
 			if (colDefs[i].type === 'number' || colDefs[i].type === 'range')
@@ -141,13 +140,13 @@ internals.caculateRow = async function (user, colDefs, row, whichRow) {
 		return formula;
 	};
 
-	const createWorker = (funcContent) => {
+	const createWorker = (funcContent: string) => {
 		var blob = new Blob([funcContent]);
 		var url = window.URL.createObjectURL(blob);
 		var worker = new Worker(url);
 		return worker;
 	};
-	const workerFunctionContent = function (expr) {
+	const workerFunctionContent = function (expr: string) {
 		return `(function(e){
 		const datediff = function (s1, s2) {
 			let d1 = Date.parse(s1);
@@ -178,14 +177,14 @@ internals.caculateRow = async function (user, colDefs, row, whichRow) {
 			}
 			return days;
 		};
+		let rowIndex = ${rowIndex};
 		let res = ${expr};
 		self.postMessage(res);
 		self.close();
 })()`;
 	};
 
-	const evalFormula = function (expr): Promise<any> {
-		let that = this;
+	const evalFormula = function (expr: string): Promise<any> {
 		return new Promise(function (resolve, reject) {
 			let pollingWorker = createWorker(workerFunctionContent(expr));
 
@@ -193,6 +192,9 @@ internals.caculateRow = async function (user, colDefs, row, whichRow) {
 				let result = e.data;
 				if (typeof result === 'number' && isNaN(result)) result = 0;
 				resolve(result);
+			};
+			pollingWorker.onerror = function (e) {
+				reject(e.message);
 			};
 		});
 	};

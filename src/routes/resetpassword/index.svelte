@@ -7,9 +7,8 @@
 	import type { oneArgFunc } from '$lib/types';
 	import { post } from '$lib/utils';
 	import * as api from '$lib/api';
-	import { getNotificationsContext } from 'svelte-notifications';
+	import { setFadeMessage } from '$lib/Notifier';
 	import { whichTabStorage } from '$lib/empstores';
-	const { addNotification } = getNotificationsContext();
 
 	let password: string = '';
 	let password2: string = '';
@@ -17,14 +16,6 @@
 	let fade_timer;
 	let email = $session.rstPwdFor;
 
-	function setFadeMessage(message: string, type = 'warning', pos = 'bottom-right', time = 2000) {
-		(addNotification as oneArgFunc)({
-			text: message,
-			position: pos,
-			type: type,
-			removeAfter: time
-		});
-	}
 	async function submit(event) {
 		if (password !== password2) {
 			setFadeMessage('Passwords are not equal');

@@ -1,5 +1,5 @@
 <script context="module">
-	export async function load({ page, fetch, session }) {
+	export async function load({ url, params, fetch, session }) {
 		const { user } = session;
 		if (!user) {
 			return {

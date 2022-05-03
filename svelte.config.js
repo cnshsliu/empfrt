@@ -9,7 +9,7 @@ const config = {
 
 	kit: {
 		// hydrate the <div id="svelte"> element in src/app.html
-		target: '#svelte',
+		//target: '#svelte',
 		//https://www.npmjs.com/package/svelte-kit-cookie-session
 		adapter: adapter({
 			out: 'build',
@@ -17,12 +17,15 @@ const config = {
 		}),
 		vite: {
 			optimizeDeps: {
-				exclude: ['svelte-kit-cookie-session']
+				exclude: ['svelte-kit-cookie-session', '@popperjs']
 			},
 			build: {
 				chunkSizeWarningLimit: 500
 			},
 			server: {
+				fs: {
+					allow: ['thirdparty']
+				},
 				hmr: {
 					protocol: 'ws',
 					host: 'localhost',

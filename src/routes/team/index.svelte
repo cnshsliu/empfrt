@@ -1,6 +1,6 @@
 <script context="module" lang="ts">
 	let TimeTool = null;
-	export async function load({ page, fetch, session }) {
+	export async function load({ fetch, session }) {
 		TimeTool = (await import('$lib/TimeTool')).default;
 		const res = await fetch('/team.json');
 

@@ -1,9 +1,9 @@
 <script context="module" lang="ts">
 	import type { SearchResult } from '$lib/types';
 	let TimeTool = null;
-	export async function load({ page, fetch, session }) {
+	export async function load({ url, params, fetch, session }) {
 		TimeTool = (await import('$lib/TimeTool')).default;
-		const tplid = page.query.get('tplid');
+		const tplid = url.searchParams.get('tplid');
 		const tpl_mode = 'read';
 		const res_team: SearchResult = (await api.post(
 			'team/search',
@@ -26,11 +26,10 @@
 	import { _ } from '$lib/i18n';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { setFadeMessage } from '$lib/Notifier';
 	import FileUploader from '$lib/FileUploader.svelte';
 	import { filterStorage } from '$lib/empstores';
 	import type { User, Template, Team, oneArgFunc } from '$lib/types';
-	import { getNotificationsContext } from 'svelte-notifications';
-	const { addNotification } = getNotificationsContext();
 	import * as api from '$lib/api';
 	import {
 		Container,
@@ -75,15 +74,6 @@
 	const toggle = () => {
 		showConfirmModal = !showConfirmModal;
 	};
-
-	function setFadeMessage(message: string, type = 'warning', pos = 'bottom-right', time = 2000) {
-		(addNotification as oneArgFunc)({
-			text: message,
-			position: pos,
-			type: type,
-			removeAfter: time
-		});
-	}
 
 	const pickTeam = function (teamId: string) {
 		team_id_for_search = teamId;
@@ -203,7 +193,7 @@
 		</Col>
 		<Col class="d-flex justify-content-center">
 			<span class="text-xs-center fs-5">
-				<a class="preview-link kfk-template-id tnt-template-id" href="/template/@{tplid}&read">
+				<a class="preview-link kfk-template-id tnt-template-id" href="/template/{tplid}&read">
 					{tplid}
 				</a>
 			</span>
@@ -424,7 +414,7 @@
 					color="primary"
 					on:click={(e) => {
 						e.preventDefault();
-						goto(`/workflow/@${startedWorkflow.wfid}`);
+						goto(`/workflow/${startedWorkflow.wfid}`);
 					}}
 				>
 					{$_('start.checkitout')}
@@ -434,7 +424,7 @@
 					color="primary"
 					on:click={(e) => {
 						e.preventDefault();
-						goto(`/workflow/@${startedWorkflow.wfid}/monitor`);
+						goto(`/workflow/${startedWorkflow.wfid}/monitor`);
 					}}
 				>
 					{$_('start.monitorit')}
@@ -445,7 +435,7 @@
 					on:click={(e) => {
 						e.preventDefault();
 						starting = 0;
-						goto(`/workflow/@${startedWorkflow.wfid}/gotofirststep`);
+						goto(`/workflow/${startedWorkflow.wfid}/gotofirststep`);
 					}}
 				>
 					{$_('start.firststep')}

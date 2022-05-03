@@ -2056,6 +2056,11 @@ div.pbo {
 	background-color: #2726ff;
 	color: white;
 }
+.kfk-comment-section {
+	background-color: #33333333;
+	border-radius: 5px;
+}
+
 .kfk-bottom-10 {
 	padding-bottom: 10px;
 	border-bottom-style: solid;
@@ -2470,4 +2475,15 @@ div.pbo {
 	width: 80px;
 	height: 80px;
 	border-radius: 10px;
+}
+div#todo_comments img {
+	max-width: 400px;
+}
+.comment_uid {
+	color: #2776ffaa;
+}
+.cover-90 {
+	width: 90px;
+	height: 60px;
+	border-radius: 5px;
 }

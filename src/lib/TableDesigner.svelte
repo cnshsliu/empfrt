@@ -381,7 +381,7 @@
 				<Button color="primary" disabled={inputForIndex < 0} on:click={copyCurrent}>Copy</Button>
 			</Col>
 			<Col class="col-auto mt-3">
-				<Button color="primary" on:click={addToBegin}>Add to Head</Button>
+				<Button color="primary" on:click={addToBegin}>First</Button>
 			</Col>
 			<Col class="col-auto mt-3">
 				<Button color="primary" on:click={addToEnd}>Append</Button>

@@ -1,7 +1,6 @@
 <script context="module" lang="ts">
-	export const ssr = false;
-	export async function load({ page, fetch, session }) {
-		const wfid = page.params.wfid;
+	export async function load({ url, params, fetch, session }) {
+		const wfid = params.wfid;
 		const workflow = await api.post(
 			'workflow/read',
 			{ wfid: wfid, withdoc: true },
@@ -18,7 +17,7 @@
 				props: {
 					workflow: workflow,
 					routeStatus: routeStatus,
-					wfid: page.params.wfid,
+					wfid: params.wfid,
 					user: session.user
 				}
 			};
@@ -30,7 +29,7 @@
 						wftitle: 'Not Found'
 					},
 					routeStatus: [],
-					wfid: page.params.wfid,
+					wfid: params.wfid,
 					user: session.user
 				}
 			};
@@ -43,11 +42,11 @@
 	import { session } from '$app/stores';
 	import AniIcon from '$lib/AniIcon.svelte';
 	import { filterStorage } from '$lib/empstores';
-	import Notifier from '$lib/notifier.svelte';
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
 	import { goto } from '$app/navigation';
 	import { title } from '$lib/title';
 	import { onMount } from 'svelte';
+	import { setFadeMessage } from '$lib/Notifier';
 	import * as api from '$lib/api';
 	import { InputGroup, Button, Row, Col, Nav, NavLink, InputGroupText } from 'sveltestrap';
 	import { Icon } from 'sveltestrap';
@@ -162,7 +161,7 @@
 						on:click={(e) => {
 							e.preventDefault();
 							opWorkflow(workflow.wfid, 'restart');
-							goto(`/template/@${workflow.tplid}&read`);
+							goto(`/template/${workflow.tplid}&read`);
 						}}
 					>
 						<AniIcon icon="bar-chart-steps" ani="aniShake" />
@@ -215,12 +214,12 @@
 								user.sessionToken
 							);
 							if (res.error) {
-								theNotifier.setFadeMessage(res.message, 'warning');
+								setFadeMessage(res.message, 'warning');
 							} else {
-								theNotifier.setFadeMessage('Success', 'success');
+								setFadeMessage('Success', 'success');
 							}
 						} catch (err) {
-							theNotifier.setFadeMessage(err.message, 'error');
+							setFadeMessage(err.message, 'error');
 						}
 					}}
 					>Rename it
@@ -242,4 +241,3 @@
 		}}
 	/>
 {/if}
-<Notifier bind:this={theNotifier} />

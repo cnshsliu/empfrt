@@ -6,6 +6,7 @@
 	import { _, date, time } from '$lib/i18n';
 	import * as api from '$lib/api';
 	import Confirm from '$lib/confirm.svelte';
+	import Cover from '$lib/display/Cover.svelte';
 	import { slide, fade } from 'svelte/transition';
 	import Transition from '$lib/Transition.svelte';
 	import { session } from '$app/stores';
@@ -19,7 +20,10 @@
 	import { filterStorage } from '$lib/empstores';
 	import { ClientPermControl } from '$lib/clientperm';
 	import PDSResolver from '$lib/input/PDSResolver.svelte';
-	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
+	import Table from '$lib/pagination/Table.svelte';
+	import Pagination from '$lib/pagination/Pagination.svelte';
+	import Search from '$lib/pagination/Search.svelte';
+	import Sort from '$lib/pagination/Sort.svelte';
 	import { goto } from '$app/navigation';
 	import {
 		Dropdown,
@@ -37,7 +41,7 @@
 		Button,
 		Badge
 	} from 'sveltestrap';
-	import { getData } from '$lib/pagination/Server.js';
+	import { getData } from '$lib/pagination/Server';
 	import { createEventDispatcher, getContext, setContext } from 'svelte';
 
 	export let TimeTool;
@@ -320,15 +324,18 @@
 		<Row cols={$filterStorage.col_per_row}>
 			{#each rows as row, index (row)}
 				<Col class="mb-2 card p-2">
-					<div class="">
-						<div class="">
+					<Row>
+						{#if row.hasCover}
+							<Col class="col-auto">
+								<Cover tplid={row.tplid} style={'cover-90'} />
+							</Col>
+						{/if}
+						<Col>
 							<div class="d-flex">
+								<!-- 模版名称 即 下拉菜单行  -->
 								<div class="w-100">
 									<h5 class="">
-										<a
-											class="kfk-workflow-id tnt-workflow-id"
-											href={`/template/@${row.tplid}&read`}
-										>
+										<a class="kfk-workflow-id tnt-workflow-id" href={`/template/${row.tplid}&read`}>
 											{row.tplid}
 										</a>
 										{#if row.cron > 0}
@@ -345,6 +352,7 @@
 									</h5>
 								</div>
 								<div class="flex-shrink-1">
+									<!-- 当个模版的下拉菜单 -->
 									<Dropdown class="m-0 p-0">
 										<DropdownToggle caret color="primary" class="btn-sm">
 											{$_('remotetable.actions')}
@@ -469,7 +477,9 @@
 										</DropdownMenu>
 									</Dropdown>
 								</div>
+								<!-- END of 当个模版的下拉菜单 -->
 							</div>
+							<!-- 模版名称 即 下拉菜单行  -->
 							<Row cols={{ md: 2, xs: 1 }}>
 								<Col>
 									{$_('remotetable.author')}:
@@ -600,8 +610,8 @@
 									SetFor.setAuthorFor = '';
 								}}
 							/>
-						</div>
-					</div>
+						</Col>
+					</Row>
 				</Col>
 			{/each}
 		</Row>

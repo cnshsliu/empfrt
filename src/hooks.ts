@@ -1,25 +1,23 @@
 import cookie from 'cookie';
-import Parser from '$lib/parser';
 
-export async function handle({ request, resolve }) {
-	/*
-	const cookies = cookie.parse(request.headers.cookie || '');
-	request.locals.user = cookies.user;
-
-	const response = await resolve(request);
-	response.headers['set-cookie'] = `user=${request.locals.user || ''}; Path=/; HttpOnly`;
-
+export async function handle({ event, resolve }) {
+	if (event && event.request) {
+		let cookieString = event.request.headers.get('cookie');
+		const cookies = cookie.parse(cookieString || '');
+		const jwt = cookies.jwt && Buffer.from(cookies.jwt, 'base64').toString('utf-8');
+		event.locals.user = jwt ? JSON.parse(jwt) : null;
+	}
+	const response = await resolve(event, {
+		//ssr: true
+		ssr: !event.url.pathname.startsWith('/admin')
+	});
 	return response;
-	*/
-	const cookies = cookie.parse(request.headers.cookie || '');
-	const jwt = cookies.jwt && Buffer.from(cookies.jwt, 'base64').toString('utf-8');
-	request.locals.user = jwt ? JSON.parse(jwt) : null;
-	return await resolve(request);
 }
 
-export function getSession({ locals }) {
-	let ret = {
-		user: locals.user
-	};
-	return ret;
+export function getSession(event: any) {
+	return event.locals.user
+		? {
+				user: event.locals.user
+		  }
+		: { user: null };
 }

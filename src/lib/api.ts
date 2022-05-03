@@ -17,12 +17,12 @@ export async function sendSimple({ method, path, data = null, token = null }) {
 	//console.debug(path, opts.body);
 
 	if (token) {
-		opts.headers['Authorization'] = token;
+		opts.headers['authorization'] = token;
 	}
 
 	return await fetch(`${API_SERVER}/${path}`, opts as RequestInit);
 }
-async function send({ method, path, data = null, token = null }) {
+async function send({ method, path, data = null, token = null }): Promise<any> {
 	const opts: OPTS = { method, headers: {} };
 
 	if (data) {
@@ -32,7 +32,14 @@ async function send({ method, path, data = null, token = null }) {
 	//console.debug(path, opts.body);
 
 	if (token) {
-		opts.headers['Authorization'] = token;
+		//HAPI.dev中的extract.js会从从多处取tokens
+		// 如下
+		//  const cookieKey = customOrDefaultKey(options, 'cookieKey', 'token');
+		//const headerKey = customOrDefaultKey(options, 'headerKey', 'authorization');
+		//const urlKey = customOrDefaultKey(options, 'urlKey', 'token');
+		//const payloadKey = customOrDefaultKey(options, 'payloadKey', 'token');
+		//const pattern = new RegExp(options.tokenType + '\\s+([^$]+)', 'i');
+		opts.headers['authorization'] = token;
 	}
 
 	let fullPath = path.startsWith('/') ? `${API_SERVER}${path}` : `${API_SERVER}/${path}`;
@@ -52,22 +59,18 @@ async function send({ method, path, data = null, token = null }) {
 		});
 }
 
-export function get(path: string, token: string): Promise<unknown> {
+export function get(path: string, token: string): Promise<any> {
 	return send({ method: 'GET', path, data: null, token });
 }
 
-export function del(path: string, token: string): Promise<unknown> {
+export function del(path: string, token: string): Promise<any> {
 	return send({ method: 'DELETE', path, data: null, token });
 }
 
-export function post(
-	path: string,
-	data: any = null,
-	token: string = null
-): Promise<Record<string, any>> {
+export function post(path: string, data: any = null, token: string = null): Promise<any> {
 	return send({ method: 'POST', path, data, token });
 }
 
-export function put(path: string, data: JSON, token: string): Promise<unknown> {
+export function put(path: string, data: JSON, token: string): Promise<any> {
 	return send({ method: 'PUT', path, data, token });
 }

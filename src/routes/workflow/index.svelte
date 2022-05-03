@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-	export async function load({ page, fetch, session }) {
+	export async function load({ url, params, fetch, session }) {
 		return {
 			props: {
 				user: session.user
@@ -27,7 +27,6 @@
 	export let form_status = { create: false, search: false, sort: false, import: false };
 	import { title } from '$lib/title';
 	$title = 'Process';
-	$: token = user.sessionToken;
 	let theExtraFilter: any;
 	let filter_template;
 	let theRemoteTable;
@@ -186,7 +185,7 @@
 		]}
 		{templates}
 	/>
-	<RemoteTable endpoint="workflow/search" {token} {user} bind:this={theRemoteTable} />
+	<RemoteTable endpoint="workflow/search" {user} bind:this={theRemoteTable} />
 </Container>
 {#if $filterStorage.tplid}
 	Report Table

@@ -2,9 +2,11 @@
 	import { _, locale } from '$lib/i18n';
 	import { qtb, nbArray } from '$lib/utils';
 	import * as api from '$lib/api';
+	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import Parser from '$lib/parser';
 	import { filterStorage } from '$lib/empstores';
+	import { setFadeMessage } from '$lib/Notifier';
 	import { text_area_resize } from '$lib/autoresize_textarea';
 	import { createEventDispatcher } from 'svelte';
 	import CommentEntry from '$lib/CommentEntry.svelte';
@@ -20,7 +22,7 @@
 	import { debugOption } from '$lib/empstores';
 	import WorkFile from '$lib/workfile.svelte';
 	import List from '$lib/input/List.svelte';
-	import { printing } from '$lib/Stores';
+	import { printing, notifyMessage } from '$lib/Stores';
 	import type { User, Work, oneArgFunc } from '$lib/types';
 	export let work: Work;
 	export let user: User;
@@ -47,9 +49,7 @@
 	let showTodoComment = true;
 	let workJustDone = null;
 	let caculateFormulaTimer = null;
-	import { getNotificationsContext } from 'svelte-notifications';
 	import CommentInput from '$lib/input/CommentInput.svelte';
-	const { addNotification } = getNotificationsContext();
 	const dispatch = createEventDispatcher();
 
 	const onPrint = async function () {
@@ -92,14 +92,6 @@
 		adhocTaskDoerConfirmed = false;
 		checkingAdhocResult = [];
 		showAdhocForm = !showAdhocForm;
-	}
-	function setFadeMessage(message: string, type = 'warning', pos = 'bottom-right', time = 2000) {
-		(addNotification as oneArgFunc)({
-			text: message,
-			position: pos,
-			type: type,
-			removeAfter: time
-		});
 	}
 	const checkAdhocTaskDoer = async function (evt, atonce = false) {
 		if (adhocTaskDoer.trim().length === 0) return;
@@ -416,7 +408,7 @@
 					if (work.kvarsArr[i].formula) {
 						//console.log(work.kvarsArr[i].formula);
 						try {
-							Parser.evalFormula(user, work.kvarsArr, work.kvarsArr[i].formula).then((result) => {
+							Parser.evalFormula(<any[]>work.kvarsArr, work.kvarsArr[i].formula).then((result) => {
 								work.kvarsArr[i].value = result;
 							});
 						} catch (e) {
@@ -429,9 +421,10 @@
 			}
 		}, 500);
 	};
-	export const focusOnComment = () => {
-		theCommentInput && theCommentInput.focus();
+	const pickUser = (uid) => {
+		console.log(uid);
 	};
+
 	onMount(async () => {
 		TimeTool = (await import('$lib/TimeTool')).default;
 		TimeTool.setLocale($locale);
@@ -450,111 +443,266 @@
 {JSON.stringify(work, null, 2)}
 </code></pre>
 {/if}
-{#if work && work.todoid}
-	<Container id={'workitem_' + work.todoid} class={'mt-3 ' + ($printing ? 'nodisplay' : '')}>
-		<form>
-			<Container class="mt-3 kfk-highlight-2 text-wrap text-break">
-				<WorkFile
-					{work}
-					title={$_('todo.pbo')}
-					forWhat={'workflow'}
-					forWhich={work.wfid}
-					forKey="pbo"
-				/>
-			</Container>
-			{#if work.instruct}
-				<div class="fs-5">
-					{$_('todo.instruction')}<br />
-					<span class="mt-3">
-						{@html Parser.base64ToCode(work.instruct, '')}
-					</span>
+<Container>
+	<div id={'workitem_' + work.todoid} class={'m-0 p-3 ' + ($printing ? 'nodisplay' : '')}>
+		{#if work.status !== 'ST_DONE'}
+			<form id="workpage_workfiles">
+				<div class="mt-3 kfk-highlight-2 text-wrap text-break">
+					<WorkFile
+						{work}
+						title={$_('todo.pbo')}
+						forWhat={'workflow'}
+						forWhich={work.wfid}
+						forKey="pbo"
+					/>
 				</div>
-			{/if}
-			<!-- 这里显示excel上传的内容 START -->
-			{@html work.cellInfo}
-			<!-- 这里显示excel上传的内容 END -->
-			<!--- div class="w-100">
+				{#if work.instruct}
+					<div class="fs-5">
+						{$_('todo.instruction')}<br />
+						<span class="mt-3">
+							{@html Parser.base64ToCode(work.instruct, '')}
+						</span>
+					</div>
+				{/if}
+				<!-- 这里显示excel上传的内容 START -->
+				{@html work.cellInfo}
+				<!-- 这里显示excel上传的内容 END -->
+				<!--- div class="w-100">
 				<iframe id="workInstruction" src="/work/instruct" title="YouTube video" width="100%" />
 			</div -->
-			<Container class="mt-3 kfk-highlight-2">
-				{#if checkDoable() && work.status === 'ST_RUN'}
-					<!-- 参数输入区  START -->
-					{#if work.kvarsArr.length > 0}
-						<span class="fw-bold fs-5">{$_('todo.nodeInput')}</span>
-						<Row cols={{ lg: 4, md: 2, xs: 1 }} class="m-2" id="todo_variable_area">
-							{#each work.kvarsArr as kvar, kvarIndex}
-								{#if showKVars[kvarIndex]}
-									<InputKVar
-										{work}
-										{kvar}
-										{kvarIndex}
-										on:kvar_value_input_changed={async (e) => {
-											await caculateFormula(e.detail);
-										}}
-									/>
+				<div class="m-0 p-3 kfk-highlight-2">
+					{#if checkDoable() && work.status === 'ST_RUN'}
+						<!-- 参数输入区  START -->
+						{#if work.kvarsArr.length > 0}
+							<span class="fw-bold fs-5">{$_('todo.nodeInput')}</span>
+							<Row cols={{ lg: 4, md: 2, xs: 1 }} class="m-2" id="todo_variable_area">
+								{#each work.kvarsArr as kvar, kvarIndex}
+									{#if showKVars[kvarIndex]}
+										<InputKVar
+											{work}
+											{kvar}
+											{kvarIndex}
+											on:kvar_value_input_changed={async (e) => {
+												await caculateFormula(e.detail);
+											}}
+										/>
+									{/if}
+								{/each}
+							</Row>
+						{/if}
+						<!-- 参数输入区  END -->
+						<input type="hidden" name="todoid" value={work.todoid} />
+						{#if work.nodeid === 'ADHOC' || (work.withcmt && work.status === 'ST_RUN')}
+							<textarea
+								placeholder="Quick Comments: "
+								bind:value={comment}
+								use:text_area_resize
+								class="form-control"
+							/>
+						{/if}
+						<!-- 按钮区 START -->
+						{#if work.status === 'ST_RUN'}
+							<Row class="mt-2" id="todo_buttons_area">
+								{#if work.routingOptions.length === 0}
+									<Col>
+										<Button
+											class="w-100"
+											color="primary"
+											on:click={async (e) => {
+												e.preventDefault();
+												await _doneWork();
+											}}
+										>
+											{$_('button.done')}
+										</Button>
+									</Col>
 								{/if}
-							{/each}
-						</Row>
-					{/if}
-					<!-- 参数输入区  END -->
-					<input type="hidden" name="todoid" value={work.todoid} />
-					{#if work.nodeid === 'ADHOC' || (work.withcmt && work.status === 'ST_RUN')}
-						<textarea
-							placeholder="Quick Comments: "
-							bind:value={comment}
-							use:text_area_resize
-							class="form-control"
-						/>
-					{/if}
-					<!-- 按钮区 START -->
-					{#if work.status === 'ST_RUN'}
-						<Row class="mt-2" id="todo_buttons_area">
-							{#if work.routingOptions.length === 0}
+								{#each work.routingOptions as aChoice}
+									<Col>
+										<Button
+											class="w-100"
+											color="primary"
+											on:click={async (e) => {
+												e.preventDefault();
+												await _doneWork(aChoice);
+											}}
+										>
+											{aChoice}
+										</Button>
+									</Col>
+								{/each}
+							</Row>
+						{/if}
+						<!-- 按钮区 END -->
+
+						<Row class="mt-4">
+							{#if work.withsb && work.returnable}
 								<Col>
 									<Button
 										class="w-100"
-										color="primary"
-										on:click={async (e) => {
+										on:click={(e) => {
 											e.preventDefault();
-											await _doneWork();
+											_sendbackWork();
 										}}
 									>
-										{$_('button.done')}
+										{$_('button.sendback')}
+									</Button>
+								</Col>
+							{:else if work.withrvk && work.revocable}
+								<Col>
+									<Button
+										class="w-100"
+										on:click={(e) => {
+											e.preventDefault();
+											_revokeWork();
+										}}
+									>
+										{$_('button.revoke')}
 									</Button>
 								</Col>
 							{/if}
-							{#each work.routingOptions as aChoice}
+							{#if work.withadhoc && work.status === 'ST_RUN'}
 								<Col>
 									<Button
 										class="w-100"
+										color="success"
+										on:click={(e) => {
+											e.preventDefault();
+											_toggleAdhoc();
+										}}
+									>
+										{showAdhocForm ? $_('button.cancel') : $_('button.adhoc')}
+									</Button>
+								</Col>
+							{/if}
+						</Row>
+						{#if showAdhocForm}
+							<Row cols="1" class="mx-5 my-2 kfk-highlight-2 ">
+								<div class="fs-5">{$_('adhoc.header')}</div>
+								<Col class="my-1">
+									<div class="form-floating">
+										<Input
+											name="adhoc_task_title"
+											id="input-adhoc-title"
+											class="form-control"
+											bind:value={adhocTaskTitle}
+										/>
+										<label for="input-adhoc-title">{$_('adhoc.title')}</label>
+									</div>
+								</Col>
+								<Col>
+									<div class="form-floating">
+										<Input
+											name="adhoc_task_doer"
+											id="input-adhoc-doer"
+											class="form-control"
+											bind:value={adhocTaskDoer}
+											on:change={(e) => {
+												e.preventDefault();
+												adhocTaskDoer = qtb(adhocTaskDoer);
+											}}
+										/>
+										<label for="input-adhoc-doer">{$_('adhoc.pds')}</label>
+									</div>
+								</Col>
+								{#if nbArray(recentUsers)}
+									<Col>
+										<span>{$_('adhoc.recent')}:</span>
+										{#each recentUsers as aUser}
+											<Button
+												class="mx-1 badge bg-info text-dark"
+												on:click={async (e) => {
+													e.preventDefault();
+													adhocTaskDoer = aUser;
+													await checkAdhocTaskDoer(e, true);
+												}}
+											>
+												{aUser}
+											</Button>
+										{/each}
+									</Col>
+								{/if}
+								<Col class="my-1">
+									<div class="form-floating">
+										<Input
+											name="adhoc_task_comment"
+											id="input-adhoc-comment"
+											class="form-control"
+											bind:value={adhocTaskComment}
+											placeholder="Any extra comments"
+										/>
+										<label for="input-adhoc-comment">{$_('adhoc.comment')}</label>
+									</div>
+								</Col>
+								<Button
+									color="primary"
+									on:click={async (e) => {
+										e.preventDefault();
+										await checkAdhocTaskDoer(e, true);
+									}}
+								>
+									{$_('button.checkdoer')}
+								</Button>
+								{#if adhocTaskDoerConfirmed}
+									<Col class="d-flex justify-content-end my-1">
+										<Button
+											color="primary"
+											disabled={creatingAdhoc}
+											on:click={async (e) => {
+												e.preventDefault();
+												await createAdhoc();
+											}}
+										>
+											{$_('button.sendadhoc')}
+										</Button>
+										<Button
+											color="secondary"
+											class="mx-1"
+											on:click={async (e) => {
+												e.preventDefault();
+												showAdhocForm = false;
+											}}
+										>
+											Cancel
+											{$_('button.cancel')}
+										</Button>
+									</Col>
+								{:else if nbArray(checkingAdhocResult)}
+									<p>
+										{$_('adhoc.founduser', { values: { num: checkingAdhocResult.length } })}
+									</p>
+									<p>
+										{#each checkingAdhocResult as aUser}
+											{aUser.cn}({aUser.uid})
+										{/each}
+									</p>
+									<Button
+										class="mt-1"
 										color="primary"
 										on:click={async (e) => {
 											e.preventDefault();
-											await _doneWork(aChoice);
+											await createAdhoc();
 										}}
 									>
-										{aChoice}
+										{$_('button.sendadhocConfirm')}
 									</Button>
-								</Col>
-							{/each}
-						</Row>
-					{/if}
-					<!-- 按钮区 END -->
-
-					<Row class="mt-4">
-						{#if work.withsb && work.returnable}
-							<Col>
-								<Button
-									class="w-100"
-									on:click={(e) => {
-										e.preventDefault();
-										_sendbackWork();
-									}}
-								>
-									{$_('button.sendback')}
-								</Button>
-							</Col>
-						{:else if work.withrvk && work.revocable}
+									<Button
+										class="mt-1"
+										color="secondary"
+										on:click={async (e) => {
+											e.preventDefault();
+											showAdhocForm = false;
+										}}
+									>
+										{$_('button.sendadhocReconsider')}
+									</Button>
+								{/if}
+							</Row>
+						{/if}
+						<!-- Transfer --->
+						<TransferWork {work} {iframeMode} />
+					{:else if work.revocable}
+						<Row>
 							<Col>
 								<Button
 									class="w-100"
@@ -566,166 +714,13 @@
 									{$_('button.revoke')}
 								</Button>
 							</Col>
-						{/if}
-						{#if work.withadhoc && work.status === 'ST_RUN'}
-							<Col>
-								<Button
-									class="w-100"
-									color="success"
-									on:click={(e) => {
-										e.preventDefault();
-										_toggleAdhoc();
-									}}
-								>
-									{showAdhocForm ? $_('button.cancel') : $_('button.adhoc')}
-								</Button>
-							</Col>
-						{/if}
-					</Row>
-					{#if showAdhocForm}
-						<Row cols="1" class="mx-5 my-2 kfk-highlight-2 ">
-							<div class="fs-5">{$_('adhoc.header')}</div>
-							<Col class="my-1">
-								<div class="form-floating">
-									<Input
-										name="adhoc_task_title"
-										id="input-adhoc-title"
-										class="form-control"
-										bind:value={adhocTaskTitle}
-									/>
-									<label for="input-adhoc-title">{$_('adhoc.title')}</label>
-								</div>
-							</Col>
-							<Col>
-								<div class="form-floating">
-									<Input
-										name="adhoc_task_doer"
-										id="input-adhoc-doer"
-										class="form-control"
-										bind:value={adhocTaskDoer}
-										on:change={(e) => {
-											e.preventDefault();
-											adhocTaskDoer = qtb(adhocTaskDoer);
-										}}
-									/>
-									<label for="input-adhoc-doer">{$_('adhoc.pds')}</label>
-								</div>
-							</Col>
-							{#if nbArray(recentUsers)}
-								<Col>
-									<span>{$_('adhoc.recent')}:</span>
-									{#each recentUsers as aUser}
-										<Button
-											class="mx-1 badge bg-info text-dark"
-											on:click={async (e) => {
-												e.preventDefault();
-												adhocTaskDoer = aUser;
-												await checkAdhocTaskDoer(e, true);
-											}}
-										>
-											{aUser}
-										</Button>
-									{/each}
-								</Col>
-							{/if}
-							<Col class="my-1">
-								<div class="form-floating">
-									<Input
-										name="adhoc_task_comment"
-										id="input-adhoc-comment"
-										class="form-control"
-										bind:value={adhocTaskComment}
-										placeholder="Any extra comments"
-									/>
-									<label for="input-adhoc-comment">{$_('adhoc.comment')}</label>
-								</div>
-							</Col>
-							<Button
-								color="primary"
-								on:click={async (e) => {
-									e.preventDefault();
-									await checkAdhocTaskDoer(e, true);
-								}}
-							>
-								{$_('button.checkdoer')}
-							</Button>
-							{#if adhocTaskDoerConfirmed}
-								<Col class="d-flex justify-content-end my-1">
-									<Button
-										color="primary"
-										disabled={creatingAdhoc}
-										on:click={async (e) => {
-											e.preventDefault();
-											await createAdhoc();
-										}}
-									>
-										{$_('button.sendadhoc')}
-									</Button>
-									<Button
-										color="secondary"
-										class="mx-1"
-										on:click={async (e) => {
-											e.preventDefault();
-											showAdhocForm = false;
-										}}
-									>
-										Cancel
-										{$_('button.cancel')}
-									</Button>
-								</Col>
-							{:else if nbArray(checkingAdhocResult)}
-								<p>
-									{$_('adhoc.founduser', { values: { num: checkingAdhocResult.length } })}
-								</p>
-								<p>
-									{#each checkingAdhocResult as aUser}
-										{aUser.cn}({aUser.uid})
-									{/each}
-								</p>
-								<Button
-									class="mt-1"
-									color="primary"
-									on:click={async (e) => {
-										e.preventDefault();
-										await createAdhoc();
-									}}
-								>
-									{$_('button.sendadhocConfirm')}
-								</Button>
-								<Button
-									class="mt-1"
-									color="secondary"
-									on:click={async (e) => {
-										e.preventDefault();
-										showAdhocForm = false;
-									}}
-								>
-									{$_('button.sendadhocReconsider')}
-								</Button>
-							{/if}
 						</Row>
 					{/if}
-					<!-- Transfer --->
-					<TransferWork {work} {iframeMode} />
-				{:else if work.revocable}
-					<Row>
-						<Col>
-							<Button
-								class="w-100"
-								on:click={(e) => {
-									e.preventDefault();
-									_revokeWork();
-								}}
-							>
-								{$_('button.revoke')}
-							</Button>
-						</Col>
-					</Row>
-				{/if}
-			</Container>
-		</form>
+				</div>
+			</form>
+		{/if}
 		{#if work.wf.kvarsArr.length > 0}
-			<Container class="mt-3 kfk-highlight-2">
+			<div class="mx-0 my-3 p-3 kfk-highlight-2">
 				<div class="fw-bold fs-5">{$_('todo.workflowcontext')}</div>
 				<Row cols={{ lg: 4, md: 2, xs: 1 }}>
 					{#each work.wf.kvarsArr as kvar}
@@ -734,44 +729,40 @@
 						{/if}
 					{/each}
 				</Row>
-			</Container>
+				{#if work.comment}
+					<CommentEntry bind:comment={work.comment} />
+				{/if}
+			</div>
 		{/if}
-		{#if work.comment}
-			<CommentEntry bind:comment={work.comment} />
+		{#if work.rehearsal}
+			<div class="kfk-highlight-2 p-3 mt-1">
+				<div class="fs-3">Rehearsal Information:</div>
+				<p>
+					Doable: {checkDoable()} status: {work.status} revocable: {work.revocable}
+					Wfid: {work.wfid}
+					Workid: {work.workid}
+					Todoid: {work.todoid}
+				</p>
+				<p>{work.doer === user.email ? '' : `Rehearsal for ${work.doer}`}</p>
+				<div>
+					<ul>
+						Role: {work.role}
+						{#each JSON.parse(Parser.base64ToCode(work.doer_string, '[]')) as aDoer}
+							<li>
+								{aDoer.cn}({aDoer.uid})
+							</li>
+						{/each}
+					</ul>
+				</div>
+			</div>
+		{:else}
+			<div>
+				{work.doer === user.email ? '' : `Delegated by ${work.doer}`}
+			</div>
 		{/if}
-		<Row class="px-1">
-			<Col>
-				<CommentInput
-					bind:value={newComment}
-					cmtid={'todo'}
-					bind:this={theCommentInput}
-					placeholder={'Discussion...'}
-					on:comment={async (e) => {
-						let res = await api.post(
-							'comment/addforbiz',
-							{
-								objtype: 'TODO',
-								objid: work.todoid,
-								content: e.detail
-							},
-							user.sessionToken
-						);
-						if (res.error) {
-							console.log(res.message);
-						} else {
-							work.comments.unshift(res.thisComment);
-							for (let i = 0; i < work.comments.length; i++) {
-								work.comments[i].transition = i === 0;
-							}
-							work.comments = work.comments;
-							newComment = '';
-						}
-					}}
-				/>
-			</Col>
-		</Row>
-		{#if work.comments && work.comments.length > 0}
-			<Row class="px-3 pt-3">
+		<div style="height:20px" id="discussion_area" />
+		<div class="kfk-highlight-2 mt-5">
+			<Row class="p-3">
 				<Button
 					on:click={() => {
 						showTodoComment = !showTodoComment;
@@ -785,88 +776,53 @@
 				</Button>
 			</Row>
 			{#if showTodoComment}
-				<Row class="px-3 pt-1" id="todo_comments">
-					<Col>
-						<Comments bind:comments={work.comments} bind:TimeTool />
-					</Col>
+				<Row class="m-0 p-0">
+					<CommentInput
+						bind:value={newComment}
+						cmtid={'todo'}
+						bind:this={theCommentInput}
+						placeholder={'Discussion...'}
+						on:comment={async (e) => {
+							let res = await api.post(
+								'comment/addforbiz',
+								{
+									objtype: 'TODO',
+									objid: work.todoid,
+									content: e.detail
+								},
+								user.sessionToken
+							);
+							if (res.error) {
+								console.log(res.message);
+							} else {
+								work.comments.unshift(res.thisComment);
+								for (let i = 0; i < work.comments.length; i++) {
+									work.comments[i].transition = i === 0;
+								}
+								work.comments = work.comments;
+								newComment = '';
+							}
+						}}
+					/>
 				</Row>
-			{/if}
-		{/if}
-		{#if work.rehearsal}
-			<div class="fs-3">Rehearsal Information:</div>
-			<p>
-				Doable: {checkDoable()} status: {work.status} revocable: {work.revocable}
-				Wfid: {work.wfid}
-				Workid: {work.workid}
-				Todoid: {work.todoid}
-			</p>
-			<p>{work.doer === user.email ? '' : `Rehearsal for ${work.doer}`}</p>
-			<div>
-				<ul>
-					Role: {work.role}
-					{#each JSON.parse(Parser.base64ToCode(work.doer_string, '[]')) as aDoer}
-						<li>
-							{aDoer.cn}({aDoer.uid})
-						</li>
-					{/each}
-				</ul>
-			</div>
-		{:else}
-			<div>
-				{work.doer === user.email ? '' : `Delegated by ${work.doer}`}
-			</div>
-		{/if}
-	</Container>
-	<Container>
-		<div class="fs-3 text-center position-relative">
-			<div class="fs-5">{$_('todo.worklogof')}</div>
-			<div
-				class="clickable text-primary fs-3 text-center"
-				on:click={(e) => {
-					e.preventDefault();
-					goto(`/workflow/@${work.wfid}`);
-				}}
-			>
-				{work.wf.wftitle}
-			</div>
-			<div class="position-absolute bottom-0 end-0 kfk-tag">
-				{#if $filterStorage.showprocesstrack}
-					<a
-						href={'#'}
-						on:click={(e) => {
-							e.preventDefault();
-							$filterStorage.showprocesstrack = false;
-						}}
-					>
-						{$_('todo.track.shouqi')}
-					</a>
+				{#if work.comments && work.comments.length > 0}
+					<Row class="mt-2 p-2" id="todo_comments">
+						<Comments bind:comments={work.comments} bind:TimeTool />
+					</Row>
 				{:else}
-					<a
-						href={'#'}
-						on:click={(e) => {
-							e.preventDefault();
-							$filterStorage.showprocesstrack = true;
-						}}
-					>
-						{$_('todo.track.dakai')}
-					</a>
+					{$_('todo.bethefirstcomment')}
 				{/if}
-			</div>
-			<hr />
+			{/if}
 		</div>
-	</Container>
-	{#if $filterStorage.showprocesstrack}
-		<ProcessTrack
-			{user}
-			bind:wf={work.wf}
-			bind:wfid={work.wfid}
-			bind:workid={work.workid}
-			{onPrint}
-			{_refreshWork}
-			{iframeMode}
-			{workJustDone}
-		/>
-	{/if}
-{:else}
-	Not found
-{/if}
+	</div>
+	<ProcessTrack
+		{user}
+		bind:wf={work.wf}
+		bind:wfid={work.wfid}
+		bind:workid={work.workid}
+		{onPrint}
+		{_refreshWork}
+		{iframeMode}
+		{workJustDone}
+	/>
+</Container>

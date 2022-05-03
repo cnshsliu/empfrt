@@ -1,11 +1,12 @@
 <script context="module" lang="ts">
-	export async function load({ page, fetch, session }) {
-		const wfid = page.params.wfid;
+	export async function load({ url, params, fetch, session }) {
+		const wfid = params.wfid;
 
 		try {
 			return {
 				props: {
-					wfid: page.params.wfid
+					wfid: params.wfid,
+					user: session.user
 				}
 			};
 		} catch (e) {
@@ -15,16 +16,16 @@
 </script>
 
 <script lang="ts">
-	import { page, session } from '$app/stores';
+	import { session } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import * as api from '$lib/api';
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
 
-	let user = $session.user;
+	export let wfid;
+	export let user;
 
 	let status = '';
-	let wfid = $page.params.wfid;
 	let todoid = 'tobefind';
 	let checkTimers = 0;
 	let checkInterval = null;
@@ -37,7 +38,7 @@
 		if (todoid.length > 0) {
 			status = '';
 			clearInterval(checkInterval);
-			goto(`/work/@${todoid}`, { replaceState: true });
+			goto(`/work/${todoid}`, { replaceState: true });
 		} else {
 			checkTimers++;
 			status = 'checking';

@@ -1,11 +1,15 @@
 <svelte:options accessors={true} />
 
+<script context="module" type="ts">
+</script>
+
 <script lang="ts">
 	import { _ } from '$lib/i18n';
 	import Parser from '$lib/parser';
 	import Confirm from '$lib/confirm.svelte';
 	import suuid from 'short-uuid';
 	import { Status } from '$lib/status';
+	import { filterStorage } from '$lib/empstores';
 	import * as api from '$lib/api';
 	import { session } from '$app/stores';
 	import { createEventDispatcher, setContext, getContext } from 'svelte';
@@ -18,9 +22,6 @@
 	import Connect from '$lib/designer/prop/Connect.svelte';
 	import PropertyHelp from '$lib/designer/prop/PropertyHelp.svelte';
 	import KFK from '$lib/designer/KFK';
-	import { getNotificationsContext } from 'svelte-notifications';
-	const { addNotification } = getNotificationsContext();
-	import type { oneArgFunc } from '$lib/types';
 	import { onMount, onDestroy } from 'svelte';
 	import { Input, InputGroup, InputGroupText, FormGroup } from 'sveltestrap';
 	import {
@@ -385,11 +386,12 @@
 		/* The next several lines of codes make draggalbe/resizeable availabe for jQuery */
 		/* jquery-ui-1.13.0.custom is customized on website https://jqueryui.com/download/ */
 		const module = await import('$lib/../../thirdparty/jquery-ui-1.13.0.custom/jquery-ui.min.js');
-		jqueryui = module.default;
+		//jqueryui = module.default;
 		/* jquery-ui import finished */
 		KFK.designerCallback = designerCallback;
 		KFK.init($session.user, currentBrowserWindowID, isMobile);
 		KFK.scenario = workflow ? 'workflow' : 'template';
+		KFK.curve = $filterStorage.curve;
 		if (KFK.scenario === 'template') {
 			if (tpl_mode !== 'edit') {
 				designerSetTool('POINTER');
@@ -421,12 +423,22 @@
 		await KFK.showNodeIdDIV(flag);
 	}
 
+	export async function setLineCurve(flag) {
+		await KFK.setLineCurve(flag);
+	}
+
 	export async function changeViewMode(tpl_mode: string) {
+		KFK.curve = $filterStorage.curve;
 		await KFK.loadTemplateDoc(template, tpl_mode);
 	}
 	export async function loadTemplate(tpl: Template, tpl_mode: string) {
 		template = tpl;
+		KFK.curve = $filterStorage.curve;
 		await KFK.loadTemplateDoc(template, tpl_mode);
+	}
+	export async function setTemplateId(tplid) {
+		KFK.template.tplid = tplid;
+		KFK.tplid = tplid;
 	}
 
 	export function documentEventOff() {
@@ -438,19 +450,6 @@
 	const showDesignerHelp = function () {
 		return;
 	};
-	export function setFadeMessage(
-		message: string,
-		type = 'warning',
-		pos = 'bottom-right',
-		time = 2000
-	) {
-		(addNotification as oneArgFunc)({
-			text: message,
-			position: pos,
-			type: type,
-			removeAfter: time
-		});
-	}
 
 	const showHelp = function (hid) {
 		if (hid) {

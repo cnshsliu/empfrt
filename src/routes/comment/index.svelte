@@ -5,8 +5,7 @@
 	import { onMount, tick } from 'svelte';
 	import * as api from '$lib/api';
 	import Avatar from '$lib/avatar.svelte';
-	import Parser from '$lib/parser';
-	import CommentEntry from '$lib/CommentEntry.svelte';
+	import { setFadeMessage } from '$lib/Notifier';
 	import { goto } from '$app/navigation';
 	import {
 		Container,
@@ -19,22 +18,14 @@
 		Button
 	} from 'sveltestrap';
 	import type { User, oneArgFunc } from '$lib/types';
-	import { getNotificationsContext } from 'svelte-notifications';
 	import TimeTool from '$lib/TimeTool';
-	const { addNotification } = getNotificationsContext();
 	export let user: User;
 
 	let comments: any[] = [];
 	onMount(async () => {
 		let ret = (await api.post('comment/list', {}, user.sessionToken)) as unknown as any[] | any;
 		if (ret.error) {
-			//eslint-disable-next-line
-			(addNotification as oneArgFunc)({
-				text: ret.message,
-				position: 'bottom-center',
-				type: 'warning',
-				removeAfter: 4000
-			});
+			setFadeMessage(ret.message);
 		} else {
 			comments = ret;
 		}
@@ -51,11 +42,11 @@
 
 	const gotoWork = async function (comment) {
 		await tick();
-		await goto(`/work/@${comment.todoid}`);
+		await goto(`/work/${comment.todoid}`);
 	};
 	const gotoProcess = async function (comment) {
 		await tick();
-		await goto(`/workflow/@${comment.wfid}`);
+		await goto(`/workflow/${comment.wfid}`);
 	};
 	let commentIsBase64 = false;
 </script>

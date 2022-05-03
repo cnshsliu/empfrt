@@ -24,7 +24,6 @@
 	};
 	onMount(async () => {
 		bots = (await api.post('wecombot/todo/get', {}, user.sessionToken)) as unknown as any;
-		console.log(bots);
 		if ((bots as unknown as KFKError)['err']) {
 			setFadeMessage((bots as unknown as KFKError)['message'], 'warning');
 			bots = [];
@@ -32,43 +31,36 @@
 	});
 </script>
 
-<form>
-	<Container class="mt-3">
-		{#each bots as bot}
-			<Row cols="1" class="mt-1">
-				<Col>
-					<InputGroup class="mb-1">
-						<InputGroupText>{$_('setting.wecombot.tplid')}</InputGroupText>
-						<input class="form-control" type="text" placeholder="Template" bind:value={bot.tplid} />
-						<InputGroupText>{$_('setting.wecombot.key')}</InputGroupText>
-						<input
-							class="form-control"
-							type="text"
-							placeholder="WecomBot Key"
-							bind:value={bot.key}
-						/>
-						<Button
-							on:click={async (e) => {
-								e.preventDefault();
-								await setWeComTodoBot(bot);
-							}}
-						>
-							{$_('setting.set')}
-						</Button>
-					</InputGroup>
-				</Col>
-			</Row>
-		{/each}
-		<Row>
-			<Button
-				on:click={async (e) => {
-					e.preventDefault();
-					bots.push({ tplid: '', key: '' });
-					bots = bots;
-				}}
-			>
-				Add One {bots.length}
-			</Button>
+<Container class="mt-3">
+	{#each bots as bot}
+		<Row cols="1" class="mt-1">
+			<Col>
+				<InputGroup class="mb-1">
+					<InputGroupText>{$_('setting.wecombot.tplid')}</InputGroupText>
+					<input class="form-control" type="text" placeholder="Template" bind:value={bot.tplid} />
+					<InputGroupText>{$_('setting.wecombot.key')}</InputGroupText>
+					<input class="form-control" type="text" placeholder="WecomBot Key" bind:value={bot.key} />
+					<Button
+						on:click={async (e) => {
+							e.preventDefault();
+							await setWeComTodoBot(bot);
+						}}
+					>
+						{$_('setting.set')}
+					</Button>
+				</InputGroup>
+			</Col>
 		</Row>
-	</Container>
-</form>
+	{/each}
+	<Row>
+		<Button
+			on:click={async (e) => {
+				e.preventDefault();
+				bots.push({ tplid: '', key: '' });
+				bots = bots;
+			}}
+		>
+			Add One {bots.length}
+		</Button>
+	</Row>
+</Container>

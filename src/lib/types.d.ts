@@ -3,16 +3,6 @@
  * inside `global.d.ts` and removing `export` keyword
  */
 
-export interface EmpResponse {
-	error?: Record;
-	errMsg?: sgring;
-	user?: Record;
-}
-export interface EmpResponse {
-	error?: Record;
-	errMsg?: sgring;
-	user?: Record;
-}
 export interface SmtpDef {
 	host: string;
 	port: number;
@@ -98,6 +88,7 @@ export interface Workflow {
 	cselector?: string[];
 	kvars?: any;
 	history?: any;
+	commentCount: number;
 }
 
 export interface Work {
@@ -201,6 +192,24 @@ export interface KFKclass {
 	setConnectProperties: any;
 }
 
+export interface StateContext {
+	getState: () => {
+		page: number;
+		pageIndex: number;
+		pageSize: number;
+		rows: any;
+		filteredRows: any;
+	};
+	setPage: (
+		_page: number,
+		_pageIndex: number
+	) => {
+		page: number;
+		pageIndex: number;
+	};
+	setRows: (_rows: any) => any;
+}
+
 export interface radioOption {
 	value: string;
 	label: string;
@@ -270,37 +279,38 @@ export interface WorkStatus {
 	status: string;
 }
 export interface FilterPicks {
-	wfStatus: string;
-	workStatus: string;
-	tplTag: string;
-	tplid: string;
-	doer: string;
-	starter: string;
-	author: string;
-	locale: string;
-	confirmlocale: boolean;
-	calendar_begin: string;
-	calendar_end: string;
-	workTitlePattern: string;
-	wfTitlePattern: string;
-	tplTitlePattern: string;
-	gotoUID: string;
-	workSorting: { dir: string; key: string };
-	wfSorting: { dir: string; key: string };
-	tplSorting: { dir: string; key: string };
-	tabs: string;
-	tabs2nd: string;
-	settingTab: string;
-	settingTab2nd: string;
+	wfStatus?: string;
+	workStatus?: string;
+	tplTag?: string;
+	tplid?: string;
+	doer?: string;
+	starter?: string;
+	author?: string;
+	locale?: string;
+	confirmlocale?: boolean;
+	calendar_begin?: string;
+	calendar_end?: string;
+	workTitlePattern?: string;
+	wfTitlePattern?: string;
+	tplTitlePattern?: string;
+	gotoUID?: string;
+	workSorting?: { dir: string; key: string };
+	wfSorting?: { dir: string; key: string };
+	tplSorting?: { dir: string; key: string };
+	tabs?: string;
+	tabs2nd?: string;
+	settingTab?: string;
+	settingTab2nd?: string;
 	try_with_teamid?: string;
 	try_with_email?: string;
 	try_with_wfid?: string;
 	try_with_kvar?: string;
-	tspan: string;
-	col_per_row: any;
-	pageSize: number;
-	showprocesstrack: boolean;
-	debug: string;
+	tspan?: string;
+	col_per_row?: any;
+	pageSize?: number;
+	showprocesstrack?: boolean;
+	curve?: boolean;
+	debug?: string;
 }
 export interface EmpResponse {
 	error?: Record;

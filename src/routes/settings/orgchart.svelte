@@ -1,5 +1,4 @@
 <script context="module" lang="ts">
-	export const ssr = false;
 </script>
 
 <script lang="ts">
@@ -75,13 +74,17 @@
 			tmp[0].expanded = !tmp[0].expanded;
 		} else {
 			let ret = await expandOrgChartFromServer(ou, level + 1);
-			orgchartlist[index].number_of_children = ret.length;
-			orgchartlist[index].icon = 'bi-caret-down';
-			orgchartlist[index].display = 'block';
-			orgchartlist[index].expanded = true;
-			orgchartlist.splice(index + 1, 0, ...ret);
+			if (ret.error) {
+				console.error(ret.message);
+			} else {
+				orgchartlist[index].number_of_children = ret.length;
+				orgchartlist[index].icon = 'bi-caret-down';
+				orgchartlist[index].display = 'block';
+				orgchartlist[index].expanded = true;
+				orgchartlist.splice(index + 1, 0, ...ret);
+			}
+			orgchartlist = orgchartlist;
 		}
-		orgchartlist = orgchartlist;
 	}
 	let resolver_label = '';
 	onMount(async () => {
@@ -98,74 +101,78 @@
 	export let authorizedAdmin = false;
 </script>
 
-<Container class="text-nowrap">
-	{#if orgchartroot && orgchartroot.ou === 'root'}
-		{orgchartroot.cn}
-		<Button on:click={refreshOrgChart} color="primary">{$_('setting.orgchart.btn.refresh')}</Button>
-		<ul>
-			{#each orgchartlist as oce, index (oce)}
-				<li style={`display:${oce.display}`}>
-					{#if oce.uid === 'OU---'}
-						<span
-							style={`padding-left:${20 * oce.level}px;`}
-							on:click={() => {
-								expandOu(oce.ou, oce.level, index);
-							}}
-						>
-							<i class={oce.icon} />
-							{oce.cn}
-							{oce.number_of_children ? `[${oce.number_of_children}]` : ''}
-							{showOuId ? oce.ou : ''}
-						</span>
-					{:else}
-						<span style={`padding-left:${20 * oce.level}px;`}>
-							<i class={oce.icon} color="primary" />
-							{oce.cn} ({oce.uid})
-						</span>
-						{#if oce.position && Array.isArray(oce.position)}
-							{#each oce.position as aPos}
-								<BadgeWithDel
-									bind:text={aPos}
-									withDeleteButton={authorizedAdmin}
-									on:delete={async (e) => {
+<form>
+	<Container class="text-nowrap">
+		{#if orgchartroot && orgchartroot.ou === 'root'}
+			{orgchartroot.cn}
+			<Button on:click={refreshOrgChart} color="primary"
+				>{$_('setting.orgchart.btn.refresh')}</Button
+			>
+			<ul>
+				{#each orgchartlist as oce, index (oce)}
+					<li style={`display:${oce.display}`}>
+						{#if oce.uid === 'OU---'}
+							<span
+								style={`padding-left:${20 * oce.level}px;`}
+								on:click={() => {
+									expandOu(oce.ou, oce.level, index);
+								}}
+							>
+								<i class={oce.icon} />
+								{oce.cn}
+								{oce.number_of_children ? `[${oce.number_of_children}]` : ''}
+								{showOuId ? oce.ou : ''}
+							</span>
+						{:else}
+							<span style={`padding-left:${20 * oce.level}px;`}>
+								<i class={oce.icon} color="primary" />
+								{oce.cn} ({oce.uid})
+							</span>
+							{#if oce.position && Array.isArray(oce.position)}
+								{#each oce.position as aPos}
+									<BadgeWithDel
+										bind:text={aPos}
+										withDeleteButton={authorizedAdmin}
+										on:delete={async (e) => {
+											let res = await api.post(
+												'orgchart/delpos',
+												{ ocid: oce._id, pos: aPos },
+												user.sessionToken
+											);
+											if (res.error) {
+												setFadeMessage(res.message, 'warning');
+											} else {
+												oce.position = res.position;
+											}
+										}}
+									/>
+								{/each}
+							{/if}
+							{#if authorizedAdmin}
+								<InputExandable
+									bind:value={posValue}
+									on:input={async (e) => {
 										let res = await api.post(
-											'orgchart/delpos',
-											{ ocid: oce._id, pos: aPos },
+											'orgchart/addpos',
+											{ ocid: oce._id, pos: e.detail },
 											user.sessionToken
 										);
 										if (res.error) {
 											setFadeMessage(res.message, 'warning');
 										} else {
-											oce.position = res.position;
+											oce.position = res.position.filter((x) => x !== 'staff');
+											setFadeMessage('Success', 'success');
 										}
 									}}
 								/>
-							{/each}
+							{/if}
 						{/if}
-						{#if authorizedAdmin}
-							<InputExandable
-								bind:value={posValue}
-								on:input={async (e) => {
-									let res = await api.post(
-										'orgchart/addpos',
-										{ ocid: oce._id, pos: e.detail },
-										user.sessionToken
-									);
-									if (res.error) {
-										setFadeMessage(res.message, 'warning');
-									} else {
-										oce.position = res.position.filter((x) => x !== 'staff');
-										setFadeMessage('Success', 'success');
-									}
-								}}
-							/>
-						{/if}
-					{/if}
-				</li>
-			{/each}
-		</ul>
-	{/if}
-</Container>
+					</li>
+				{/each}
+			</ul>
+		{/if}
+	</Container>
+</form>
 <PDSResolver class="mt-3" bind:label={resolver_label} embed={true} />
 <div>{$_('setting.orgchart.comment')}</div>
 

@@ -118,6 +118,7 @@
 			"startAnother": "启动另一个",
 			"viewTemplate": "查看相应模版",
 			"viewInstanceTemplate": "查看实例模版",
+			"viewRelatedDiscussion": "参与相关讨论",
 			"deleteThisWorkflow": "删除这个流程",
 			"setpboat": "何时可添加PBO",
 			"setTitle": "设置流程名称",
@@ -246,7 +247,7 @@
 		"worklogof": "流程执行记录",
 		"monitor": "监控",
 		"print": "打印",
-		"showlog": "显示日志",
+		"showlog": "日志",
 		"startat": "启动于",
 		"startby": "启动者",
 		"nodevars": "数据",
@@ -257,7 +258,8 @@
 		"track": {
 			"dakai": "展开",
 			"shouqi": "折叠"
-		}
+		},
+		"bethefirstcomment": "欢迎前排讨论"
 	},
 	"tpl": {
 		"prop": "属性",
@@ -374,7 +376,8 @@
 				}
 			}
 		},
-		"showid": "显示节点ID"
+		"showid": "节点ID",
+		"curve": "弧线"
 	},
 	"filepond": {
 		"labelIdle": {

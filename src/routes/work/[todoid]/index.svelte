@@ -2,17 +2,18 @@
 	import { post } from '$lib/utils';
 	import * as api from '$lib/api';
 	import { Button } from 'sveltestrap';
-	export const ssr = false;
 	let TimeTool = null;
-	export async function load({ page, fetch, session }) {
+	export async function load({ params, url, fetch, session }) {
 		TimeTool = (await import('$lib/TimeTool')).default;
-		let todoid = page.params.todoid;
-		let anchor = page.query.get('anchor');
+		let searchParams = url.searchPaarms;
+		let todoid = params.todoid;
+		if (todoid && todoid.charAt(0) === '@') todoid = todoid.substring(1);
+		let anchor = url.searchParams.get('anchor');
 		let iframeMode = false;
-		if (page.query.has('iframe')) {
+		if (url.searchParams.has('iframe')) {
 			iframeMode = true;
 		}
-		const res = await fetch(`/work/@${todoid}.json`);
+		const res = await fetch(`/work/${todoid}.json`);
 
 		const theWork = await res.json();
 		theWork.wf.history.map((x) => {
@@ -23,7 +24,7 @@
 		theWork.routingOptions.sort();
 		let delegators = [];
 		try {
-			let delegations = await post('/delegation/today');
+			let delegations = await api.post('/delegation/to/me/today', {}, session.user.sessionToken);
 			delegators = (delegations as unknown as any[]).map((x) => x.delegator);
 			if (delegators.includes(session.user.email) === false) {
 				delegators.push(session.user.email);
@@ -38,7 +39,7 @@
 		} else {
 			let cmtRes = await api.post(
 				'comment/workflow/load',
-				{ todoid: theWork.todoid, wfid: theWork.wfid },
+				{ wfid: theWork.wfid },
 				session.user.sessionToken
 			);
 			if (cmtRes.error) {
@@ -74,6 +75,7 @@
 	import type { User, Work } from '$lib/types';
 	import { title } from '$lib/title';
 	import { onMount, onDestroy } from 'svelte';
+	import { printing, notifyMessage } from '$lib/Stores';
 	import WorkPage from './workpage.svelte';
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
 	import { StatusClass, StatusLabel } from '$lib/status';
@@ -121,7 +123,7 @@
 </script>
 
 {#if work && work.doer}
-	<Container class="mt-2">
+	<Container class={'mt-2 ' + ($printing ? 'nodisplay' : '')}>
 		<div class="d-flex">
 			<div class="flex-shrink-0" id="todo_title_area">
 				<h3>
@@ -190,8 +192,8 @@
 			{/if}
 		</div>
 	</Container>
-	<Container class="mt-3 kfk-highlight-2">
-		<Row cols={{ lg: 4, md: 2, xs: 1 }}>
+	<div class="m-3 p-3 kfk-highlight-2">
+		<Row cols={{ lg: 4, md: 2, xs: 1 }} class={$printing ? 'nodisplay' : ''}>
 			<!--Col>
 						<span class="fw-bold fs-5">Starter:</span>
 						<div class="fw-light">{work.wf.starter}</div>
@@ -227,18 +229,18 @@
 				{/if}
 			</Col>
 		</Row>
-		<WorkPage
-			{work}
-			{user}
-			{iframeMode}
-			{delegators}
-			bind:this={theWorkPage}
-			on:statusChanged={(e) => {
-				work.status = e.detail.status;
-				work.doneat = e.detail.doneat;
-			}}
-		/>
-	</Container>
+	</div>
+	<WorkPage
+		{work}
+		{user}
+		{iframeMode}
+		{delegators}
+		bind:this={theWorkPage}
+		on:statusChanged={(e) => {
+			work.status = e.detail.status;
+			work.doneat = e.detail.doneat;
+		}}
+	/>
 {:else}
 	<ErrorNotify
 		title="Error Found"

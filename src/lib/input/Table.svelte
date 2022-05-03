@@ -183,7 +183,7 @@
 											clearTimeout(onInputTimer);
 										}
 										onInputTimer = setTimeout(async () => {
-											row = await ColDefCompiler.caculateRow(user, colDefs, row, rowIndex);
+											row = await ColDefCompiler.caculateRow(colDefs, row, rowIndex);
 											resetKVarValue();
 											onInputTimer = null;
 										}, 200);

@@ -2,10 +2,7 @@
 	import { _ } from '$lib/i18n';
 	import * as api from '$lib/api';
 	import { qtb } from '$lib/utils';
-	import { getNotificationsContext } from 'svelte-notifications';
 	import PDSResolver from '$lib/input/PDSResolver.svelte';
-	const { addNotification } = getNotificationsContext();
-	import type { oneArgFunc } from '$lib/types';
 	import {
 		InputGroup,
 		InputGroupText,
@@ -97,19 +94,6 @@
 	export function useThisQuery(query) {
 		pickedQueryString = query;
 		setRoleTo('Q:' + pickedQueryString);
-	}
-	export function setFadeMessage(
-		message: string,
-		type = 'warning',
-		pos = 'bottom-right',
-		time = 2000
-	) {
-		(addNotification as oneArgFunc)({
-			text: message,
-			position: pos,
-			type: type,
-			removeAfter: time
-		});
 	}
 
 	let resolver_label = $_('prop.action.p10t.pds');

@@ -19,8 +19,7 @@
 	import { goto } from '$app/navigation';
 	import { post } from '$lib/utils';
 	import { Fade, Card } from 'sveltestrap';
-	import { getNotificationsContext } from 'svelte-notifications';
-	const { addNotification } = getNotificationsContext();
+	import { setFadeMessage } from '$lib/Notifier';
 
 	let username: string = '';
 	let email: string = '';
@@ -30,14 +29,6 @@
 	let fade_timer;
 	let errMsg = '';
 
-	function setFadeMessage(message: string, type = 'warning', pos = 'bottom-right', time = 2000) {
-		(addNotification as oneArgFunc)({
-			text: message,
-			position: pos,
-			type: type,
-			removeAfter: time
-		});
-	}
 	async function submit(event) {
 		if (password !== password2) {
 			setFadeMessage('Passwords are not equal');

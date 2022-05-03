@@ -3,9 +3,8 @@
 	import { _ } from '$lib/i18n';
 	import * as api from '$lib/api';
 	import { session } from '$app/stores';
-	import { getNotificationsContext } from 'svelte-notifications';
+	import { setFadeMessage } from '$lib/Notifier';
 	import OrgChartCsvFormat from './orgchartcsvformat.svelte';
-	const { addNotification } = getNotificationsContext();
 	import type { EmpResponse, OrgMembers, oneArgFunc } from '$lib/types';
 	import { Input, InputGroupText, InputGroup, Container, Button, Row, Col } from 'sveltestrap';
 	let files: any;
@@ -23,19 +22,6 @@
 	let new_user_email = '';
 	let delete_user_email = '';
 	let delete_ou_id = '';
-	export function setFadeMessage(
-		message: string,
-		type = 'warning',
-		pos = 'bottom-right',
-		time = 2000
-	) {
-		(addNotification as oneArgFunc)({
-			text: message,
-			position: pos,
-			type: type,
-			removeAfter: time
-		});
-	}
 	async function uploadOrgChart(e: Event) {
 		e.preventDefault();
 		const formData = new FormData();

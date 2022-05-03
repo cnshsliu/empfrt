@@ -1,9 +1,9 @@
 <script context="module" lang="ts">
-	export const ssr = false;
-	export async function load({ page, fetch, session }) {
-		const tplid = page.params.tplid;
-		const tpl_mode = page.params.mode;
-		const jsonUrl = `/template/@${tplid}&${tpl_mode}.json`;
+	export async function load({ url, params, fetch, session }) {
+		let tpl_mode = params.mode;
+		let tplid = params.tplid;
+		if (tplid && tplid.charAt(0) === '@') tplid = tplid.substring(1);
+		const jsonUrl = `/template/${tplid}&${tpl_mode}.json`;
 		try {
 			const res = await fetch(jsonUrl);
 			const resJson = await res.json();
@@ -36,8 +36,7 @@
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
 	import AniIcon from '$lib/AniIcon.svelte';
 	import { filterStorage } from '$lib/empstores';
-	import { getNotificationsContext } from 'svelte-notifications';
-	const { addNotification } = getNotificationsContext();
+	import { setFadeMessage } from '$lib/Notifier';
 	import type { oneArgFunc } from '$lib/types';
 	import { ClientPermControl } from '$lib/clientperm';
 	import Parser from '$lib/parser';
@@ -60,6 +59,8 @@
 	let recentTemplates = [];
 	let recentTeams = [];
 	let showNodeId = false;
+	let newTplId = '';
+	let oldTplId = '';
 
 	const saveOneRecentTemplate = function (tplid) {
 		if (tplid === null || tplid === undefined || tplid === '') return;
@@ -124,7 +125,7 @@
 	async function change_mode(what: string) {
 		tpl_mode = what;
 		readonly = tpl_mode === 'read';
-		goto(`/template/@${template.tplid}&${tpl_mode}`, {
+		goto(`/template/${template.tplid}&${tpl_mode}`, {
 			replaceState: true,
 			noscroll: true,
 			keepfocus: true
@@ -132,7 +133,7 @@
 		await theDesigner.changeViewMode(tpl_mode);
 	}
 	async function startIt() {
-		goto(`/template/@${template.tplid}&${tpl_mode}`, {
+		goto(`/template/${template.tplid}&${tpl_mode}`, {
 			replaceState: true,
 			noscroll: true,
 			keepfocus: true
@@ -182,23 +183,62 @@
 	async function viewInstanceTemplate(wfid: string) {
 		let payload = { wfid: wfid };
 		let ret = await api.post('workflow/dump/instemplate', payload, user.sessionToken);
-		goto(`/template/@${wfid}_instemplate&read`);
+		goto(`/template/${wfid}_instemplate&read`);
 		$title = wfid + '_instemplate';
 		return;
 	}
 
-	function setFadeMessage(message: string, type = 'warning', pos = 'bottom-right', time = 2000) {
-		(addNotification as oneArgFunc)({
-			text: message,
-			position: pos,
-			type: type,
-			removeAfter: time
-		});
-	}
-
-	async function setShowNodeId(e) {
-		console.log(showNodeId);
-	}
+	const renameTemplate = async (e) => {
+		e.preventDefault();
+		let ret = await api.post(
+			'template/rename',
+			{ fromid: oldTplId, tplid: newTplId },
+			user.sessionToken
+		);
+		if (ret.error) {
+			if (ret.error === 'ALREADY_EXIST') {
+				setFadeMessage('同名模板已存在, 请重新录入', 'warning');
+			} else {
+				setFadeMessage(ret.message, 'warning');
+			}
+		} else {
+			form_status['rename'] = false;
+			hide_all_form();
+			//await theDesigner.setTemplateId(ret);
+			goto(`/template/${ret.tplid}&${tpl_mode}`, {
+				replaceState: true,
+				keepfocus: true,
+				noscroll: true
+			});
+			await theDesigner.loadTemplate(ret, tpl_mode);
+		}
+	};
+	const copyTemplate = async (e) => {
+		e.preventDefault();
+		let ret = await api.post(
+			'template/copyto',
+			{ fromid: oldTplId, tplid: newTplId },
+			user.sessionToken
+		);
+		if (ret.error) {
+			if (ret.error === 'ALREADY_EXIST') {
+				setFadeMessage('同名模板已存在, 请重新录入', 'warning');
+			} else {
+				setFadeMessage(ret.message, 'warning');
+			}
+		} else {
+			template = ret;
+			form_status['copyto'] = false;
+			$title = template.tplid;
+			goto(`/template/${template.tplid}&${tpl_mode}`, {
+				replaceState: true,
+				noscroll: true,
+				keepfocus: true
+			});
+			//await theDesigner.loadTemplate(template.tplid, tpl_mode);
+		}
+		hide_all_form();
+	};
 </script>
 
 <svelte:head>
@@ -273,6 +313,8 @@
 						<NavLink
 							class="kfk-link"
 							on:click={() => {
+								oldTplId = template.tplid;
+								newTplId = template.tplid;
 								show_form('copyto');
 							}}
 						>
@@ -290,6 +332,8 @@
 							<NavLink
 								class="kfk-link"
 								on:click={() => {
+									oldTplId = template.tplid;
+									newTplId = template.tplid;
 									show_form('rename');
 								}}
 							>
@@ -369,6 +413,15 @@
 						}}
 					/>
 					{$_('designer.showid')}
+					<input
+						type="checkbox"
+						class="form-check-input"
+						bind:checked={$filterStorage.curve}
+						on:change={async () => {
+							await theDesigner.setLineCurve($filterStorage.curve);
+						}}
+					/>
+					{$_('designer.curve')}
 				</div>
 			</Col>
 		</Row>
@@ -391,7 +444,7 @@
 									setFadeMessage(errmsg, 'warning');
 								} else {
 									template = created;
-									goto(`/template/@${template.tplid}&${tpl_mode}`, {
+									goto(`/template/${template.tplid}&${tpl_mode}`, {
 										replaceState: false,
 										keepfocus: true
 									});
@@ -478,35 +531,7 @@
 						</table>
 					</form>
 				{:else if form_status.rename}
-					<form
-						action={urls.rename}
-						method="post"
-						use:enhance={{
-							token: user.sessionToken,
-							result: async (res, form) => {
-								const newTemplate = await res.json();
-								if (newTemplate.error) {
-									console.error(newTemplate.error);
-									let errmsg = newTemplate.errMsg;
-									if (errmsg.indexOf('MongoError: E11000 duplicate key error') >= 0) {
-										errmsg = '同名模板已存在, 请重新录入';
-									}
-									setFadeMessage(errmsg, 'warning');
-								} else {
-									template = newTemplate;
-									goto(`/template/@${template.tplid}&${tpl_mode}`, {
-										replaceState: true,
-										keepfocus: true,
-										noscroll: true
-									});
-									await theDesigner.loadTemplate(template, tpl_mode);
-									form_status['rename'] = false;
-									form.reset();
-								}
-								hide_all_form();
-							}
-						}}
-					>
+					<form>
 						<table class="form-table">
 							<tr>
 								<td>
@@ -517,13 +542,12 @@
 										name="tplid"
 										placeholder="Rename: new template name"
 										class="kfk_input_template_name"
-										value={template.tplid}
+										bind:value={newTplId}
 										autocomplete="off"
 									/>
-									<input type="hidden" name="fromid" value={template.tplid} />
 								</td>
 								<td>
-									<Button type="submit" color="primary">
+									<Button type="submit" color="primary" on:click={renameTemplate}>
 										{$_('button.rename')}
 									</Button>
 								</td>
@@ -542,37 +566,7 @@
 						</table>
 					</form>
 				{:else if form_status.copyto}
-					<form
-						class="new"
-						action={urls.copyto}
-						method="post"
-						use:enhance={{
-							token: user.sessionToken,
-							result: async (res, form) => {
-								const created = await res.json();
-								if (created.error) {
-									console.error(created.error);
-									let errmsg = created.errMsg;
-									if (errmsg.indexOf('MongoError: E11000 duplicate key error') >= 0) {
-										errmsg = '同名模板已存在, 请重新录入';
-									}
-									setFadeMessage(errmsg, 'warning');
-								} else {
-									template = created;
-									goto(`/template/@${template.tplid}&${tpl_mode}`, {
-										replaceState: true,
-										noscroll: true,
-										keepfocus: true
-									});
-									await theDesigner.loadTemplate(template, tpl_mode);
-									form_status['copyto'] = false;
-									$title = template.tplid;
-									form.reset();
-								}
-								hide_all_form();
-							}
-						}}
-					>
+					<form>
 						<table class="form-table">
 							<tr>
 								<td>
@@ -583,13 +577,12 @@
 										name="tplid"
 										placeholder="New template name"
 										class="kfk_input_template_name"
-										value={template.tplid}
+										bind:value={newTplId}
 										autocomplete="off"
 									/>
-									<input type="hidden" name="fromid" value={template.tplid} />
 								</td>
 								<td>
-									<Button type="submit" color="primary">
+									<Button type="submit" color="primary" on:click={copyTemplate}>
 										{$_('button.copy')}
 									</Button>
 								</td>

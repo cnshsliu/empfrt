@@ -1,7 +1,6 @@
 <script context="module" lang="ts">
-	export const ssr = false;
-	export async function load({ page, fetch, session }) {
-		const fileId = page.params.fileId;
+	export async function load({ url, params, fetch, session }) {
+		const fileId = params.fileId;
 		return {
 			props: {
 				fileId: fileId

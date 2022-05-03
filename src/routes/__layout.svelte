@@ -1,14 +1,13 @@
 <script context="module" lang="ts">
-	export const ssr = false;
 	import { setupI18n, isLocaleLoaded, locale, dir, _ } from '$lib/i18n';
-	export async function load({ page, session }) {
+	export async function load({ url, params, session }) {
 		const { user } = session;
-		if (/^\/settings\/(.*)/.test(page.path) && !user) {
+		if (/^\/settings\/(.*)/.test(url.pathname) && !user) {
 			return { redirect: '/', status: 302 };
 		}
 		return {
 			props: {
-				page
+				url
 			}
 		};
 	}
@@ -18,33 +17,21 @@
 	import { Container } from 'sveltestrap';
 	import Confirm from '$lib/confirm.svelte';
 	import { printing, notifyMessage } from '$lib/Stores';
-	import type { oneArgFunc } from '$lib/types';
 	import { filterStorage } from '$lib/empstores';
 	import { navigating, session } from '$app/stores';
 	import { onMount } from 'svelte';
+	import { slide, fade } from 'svelte/transition';
+	import Transition from '$lib/Transition.svelte';
 	import { DEPLOY_MODE } from '$lib/Env';
-	//import { getNotificationsContext } from 'svelte-notifications';
 	import NavMenu from '$lib/NavMenu.svelte';
 	import EmpFooter from '$lib/EmpFooter.svelte';
-	import ErrHint from '$lib/ErrHint.svelte';
 	import PreloadingIndicator from '$lib/PreloadingIndicator.svelte';
-	import Notifications from 'svelte-notifications';
-	export let page;
+	export let url;
 
 	let bootstrap: any;
 	let theConfirm;
 	let browserLocale = '';
 
-	//const { addNotification } = getNotificationsContext();
-
-	/* function setFadeMessage(message: string, type = 'warning', pos = 'bottom-right', time = 2000) { */
-	/*   (addNotification as oneArgFunc)({ */
-	/*     text: message, */
-	/*     position: pos, */
-	/*     type: type, */
-	/*     removeAfter: time */
-	/*   }); */
-	/* } */
 	onMount(async () => {
 		let tmp = $filterStorage.locale;
 		if (tmp) {
@@ -109,10 +96,22 @@
 		});
 	}
 
-	/* $: $notifyMessage !== '' &&
+	let showNotify = false;
+	let notifyTimeout = null;
+
+	$: $notifyMessage.message !== '' &&
 		(() => {
-			setFadeMessage($notifyMessage);
-		})(); */
+			showNotify = true;
+			if (notifyTimeout) {
+				clearTimeout(notifyTimeout);
+				notifyTimeout = null;
+			}
+			notifyTimeout = setTimeout(async () => {
+				$notifyMessage.message = '';
+				showNotify = false;
+				notifyTimeout = null;
+			}, 3000);
+		})();
 </script>
 
 <svelte:head>
@@ -136,27 +135,27 @@
 {#if $navigating}
 	<PreloadingIndicator />
 {/if}
+{#if showNotify}
+	<div class={'text-center fixed-bottom fs-3 bg-' + $notifyMessage.type}>
+		{$notifyMessage.message}
+	</div>
+{/if}
 <!-- for global notification purpose, wrap other component into this Notifications component -->
-<Notifications>
-	{#if $isLocaleLoaded}
-		<!-- on printing, hide the NavMenu -->
-		{#if $printing === false}
-			<NavMenu />
-		{/if}
-		<main><slot /></main>
-		<!-- on page of single business item, hide EmpRoot -->
-		{#if page.path.startsWith('/template/@') || page.path.startsWith('/workflow/@') || page.path.startsWith('/work/@')}
-			&nbsp;
-		{:else}
-			<EmpFooter />
-		{/if}
-	{:else}
-		<Container class="w-100 text-center " style="height:100vh;">
-			<div class="runninglogo w-100">&nbsp;</div>
-		</Container>
+{#if $isLocaleLoaded}
+	<!-- on printing, hide the NavMenu -->
+	{#if $printing === false}
+		<NavMenu />
 	{/if}
-</Notifications>
-{#if $session.errors}
-	<ErrHint errors={$session.errors} />
+	<main><slot /></main>
+	<!-- on page of single business item, hide EmpRoot -->
+	{#if url.pathname.startsWith('/template/') || url.pathname.startsWith('/workflow/') || url.pathname.startsWith('/work/')}
+		&nbsp;
+	{:else}
+		<EmpFooter />
+	{/if}
+{:else}
+	<Container class="w-100 text-center " style="height:100vh;">
+		<div class="runninglogo w-100">&nbsp;</div>
+	</Container>
 {/if}
 <Confirm bind:this={theConfirm} />

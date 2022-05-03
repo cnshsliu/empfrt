@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-	export async function load({ page, session }) {
+	export async function load({ url, params, session }) {
 		const { user } = session;
 		return {
 			props: {
@@ -54,7 +54,7 @@
 		// this will trigger a redirect, because it
 		// causes the `load` function to run again
 		try {
-			$session = {};
+			$session = { user: null };
 		} catch (e) {}
 	}
 
@@ -130,19 +130,19 @@
 			<Dropdown class="navbar-expand-sm">
 				<DropdownToggle nav>
 					<Avatar
-						uid={$session.user.userid}
+						email={$session.user.email}
 						uname={$session.user.username}
 						style={'avatar40'}
 						bind:this={theAvatar}
 					/>
 				</DropdownToggle>
-				<DropdownMenu end>
+				<DropdownMenu dark>
 					<Container style="width:300px; text-align:center;">
 						<Row cols="1">
 							<Col style="text-align:center;">
 								{#if $session.user}
 									<Avatar
-										uid={$session.user.userid}
+										email={$session.user.email}
 										uname={$session.user.username}
 										style={'avatar80-round10'}
 										bind:this={theAvatar2}
@@ -203,7 +203,7 @@
 		<div class="collapse navbar-collapse show" id="navbarSupportedContent">
 			<Nav class="ms-auto">
 				<NavItem>
-					<NavLink href="/" class="py-2 ps-0 pe-3" active={$page.path === '/'}>
+					<NavLink href="/" class="py-2 ps-0 pe-3" active={$page.url.pathname === '/'}>
 						{$_('navmenu.home')}
 					</NavLink>
 				</NavItem>
@@ -214,28 +214,36 @@
 				</NavItem>
 				{#if $session.user}
 					<NavItem>
-						<NavLink class="py-2 ps-0 pe-3" href="/template" active={$page.path === '/template'}>
+						<NavLink
+							class="py-2 ps-0 pe-3"
+							href="/template"
+							active={$page.url.pathname === '/template'}
+						>
 							{$_('navmenu.planning')}
 						</NavLink>
 					</NavItem>
 					<NavItem>
-						<NavLink class="py-2 ps-0 pe-3" href="/workflow" active={$page.path === '/workflow'}>
+						<NavLink
+							class="py-2 ps-0 pe-3"
+							href="/workflow"
+							active={$page.url.pathname === '/workflow'}
+						>
 							{$_('navmenu.workflow')}
 						</NavLink>
 					</NavItem>
 					<NavItem>
-						<NavLink class="py-2 ps-0 pe-3" href="/work" active={$page.path === '/work'}>
+						<NavLink class="py-2 ps-0 pe-3" href="/work" active={$page.url.pathname === '/work'}>
 							{$_('navmenu.worklist')}
 						</NavLink>
 					</NavItem>
 				{:else}
 					<NavItem>
-						<NavLink href="/login" class="nav-link" active={$page.path === '/login'}>
+						<NavLink href="/login" class="nav-link" active={$page.url.pathname === '/login'}>
 							{$_('account.signin')}
 						</NavLink>
 					</NavItem>
 					<NavItem>
-						<NavLink href="/register" class="nav-link" active={$page.path === '/register'}>
+						<NavLink href="/register" class="nav-link" active={$page.url.pathname === '/register'}>
 							{$_('account.signup')}
 						</NavLink>
 					</NavItem>

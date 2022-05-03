@@ -4,13 +4,13 @@ interface KVars {
 	name: string;
 	def: unknown;
 }
-const createWorker = (funcContent) => {
+const createWorker = (funcContent: string): any => {
 	var blob = new Blob([funcContent]);
 	var url = window.URL.createObjectURL(blob);
 	var worker = new Worker(url);
 	return worker;
 };
-const workerFunctionContent = function (expr) {
+const workerFunctionContent = function (expr: any): string {
 	return `(function(e){
 		let res = ${expr};
 		self.postMessage(res);
@@ -58,28 +58,28 @@ const Parser = {
 		return kvarsArr;
 	},
 	arrayToKvars: function (kvarsArray: KVars[]): KVars {
-		const ret: KVars = {}; //eslint-disable-line
+		const ret: KVars = <KVars>{};
 		for (let i = 0; i < kvarsArray.length; i++) {
 			ret[kvarsArray[i].name] = kvarsArray[i];
 			delete ret[kvarsArray[i].name]['name'];
 		}
 		return ret;
 	},
-	splitStringToArray: function (str, deli = null) {
+	splitStringToArray: function (str: string, deli: any = null) {
 		if (typeof str !== 'string') str = '';
 		else str = str.trim();
 		if (str === '') return [];
 		let tmp = str.split(deli ? deli : /[\s;,]/);
-		tmp = tmp.map((x) => x.trim()).filter((x) => x.length > 0);
+		tmp = tmp.map((x: string) => x.trim()).filter((x: string) => x.length > 0);
 		return tmp;
 	},
-	chunkString: function (str, len) {
+	chunkString: function (str: string, len: number) {
 		const size = Math.ceil(str.length / len);
 		const r = Array(size);
 		let offset = 0;
 
 		for (let i = 0; i < size; i++) {
-			r[i] = str.substr(offset, len);
+			r[i] = str.substring(offset, offset + len);
 			offset += len;
 		}
 
@@ -97,7 +97,7 @@ const Parser = {
 			return ifErrorValue;
 		}
 	},
-	addUserTag: function (str) {
+	addUserTag: function (str: string) {
 		let m = str.match(/(@\S+)/g);
 		if (!m) return str;
 		for (let i = 0; i < m.length; i++) {
@@ -107,7 +107,7 @@ const Parser = {
 	},
 
 	//eslint-disable-next-line
-	collectRoles: function (nodes): string[] {
+	collectRoles: function (nodes: any): string[] {
 		const ret: string[] = [];
 		nodes.each((_index: number, aNode: unknown) => {
 			//eslint-disable-line
@@ -143,9 +143,8 @@ const Parser = {
 		return tmp.trim().replace(/^[^a-zA-Z_$]|[^\w$]/g, '_');
 	},
 
-	evalFormula: function (user, kvarArr, formula): Promise<any> {
-		let that = this;
-		const replaceKvar = function (formula) {
+	evalFormula: function (kvarArr: any[], formula: string): Promise<any> {
+		const replaceKvar = function (formula: string) {
 			for (let i = 0; i < kvarArr.length; i++) {
 				var re = new RegExp(`\\b${kvarArr[i].name}\\b`, 'g');
 				if (kvarArr[i].type === 'number' || kvarArr[i].type === 'range')
@@ -161,16 +160,23 @@ const Parser = {
 		return new Promise(function (resolve, reject) {
 			let pollingWorker = createWorker(workerFunctionContent(expr));
 
-			pollingWorker.onmessage = function (e) {
+			pollingWorker.onmessage = function (e: any) {
 				let result = e.data;
 				if (typeof result === 'number' && isNaN(result)) result = 0;
 				resolve(result);
 			};
+			pollingWorker.onerror = function (e: any) {
+				reject(e.data);
+			};
 		});
 	},
 
-	evalFormula_use_server_backend: async function (user, kvarArr, formula): Promise<any> {
-		const replaceKvar = function (formula) {
+	evalFormula_use_server_backend: async function (
+		user: any,
+		kvarArr: any[],
+		formula: string
+	): Promise<any> {
+		const replaceKvar = function (formula: string) {
 			for (let i = 0; i < kvarArr.length; i++) {
 				var re = new RegExp(`\\b${kvarArr[i].name}\\b`, 'g');
 				if (kvarArr[i].type === 'number' || kvarArr[i].type === 'range')
@@ -189,7 +195,7 @@ const Parser = {
 
 	//转换value为与refValue类型相同，并返回转换后的值
 	//仅支持基本类型，string， boolean， number
-	sameTypeValue: function (value, refValue) {
+	sameTypeValue: function (value: any, refValue: any) {
 		let tmp = value;
 		if (typeof tmp !== 'string') {
 			tmp = '' + value;

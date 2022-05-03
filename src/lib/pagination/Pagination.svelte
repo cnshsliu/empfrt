@@ -1,4 +1,4 @@
-<script context="module">
+<script context="module" type="ts">
 	let globalLabels;
 
 	export function setLabels(labels) {
@@ -8,17 +8,18 @@
 
 <script lang="ts">
 	import { _ } from '$lib/i18n';
+	import type { StateContext } from '$lib/types';
 	import { createEventDispatcher, getContext } from 'svelte';
 	import { onMount } from 'svelte';
 	const dispatch = createEventDispatcher();
-	const stateContext = getContext('state');
+	const stateContext: StateContext = getContext('state');
 
 	export let buttons = [-2, -1, 0, 1, 2];
 	export let count;
 	export let page = 0;
 	export let pageSize;
 	export let serverSide = false;
-	export let isMobile;
+	export let isMobile = false;
 
 	export let labels = {
 		first: 'First',
@@ -36,7 +37,8 @@
 			originalEvent: event,
 			page,
 			pageIndex: serverSide ? 0 : page * state.pageSize,
-			pageSize: state.pageSize
+			pageSize: state.pageSize,
+			preventDefault: event.preventDefault
 		};
 		dispatch('pageChange', detail);
 

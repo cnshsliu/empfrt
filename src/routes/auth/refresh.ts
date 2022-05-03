@@ -1,7 +1,7 @@
 import * as api from '$lib/api';
 import Parser from '$lib/parser';
 import { respond } from './_respond';
-export async function post(request) {
+export async function post({ params, request }) {
 	if (!request.locals.user) {
 		return {
 			status: 401

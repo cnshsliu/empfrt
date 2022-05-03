@@ -105,7 +105,7 @@
 		const formData = new FormData();
 		formData.append('avatar', e.target.files[0]);
 		try {
-			await fetch(`${API_SERVER}/account/avatar`, {
+			await fetch(`${API_SERVER}/account/upload/avatar`, {
 				method: 'POST',
 				headers: {
 					Authorization: user.sessionToken
@@ -136,168 +136,164 @@
 	}
 </script>
 
-<form>
-	<Container class="mt-3">
-		<Row cols="1">
-			<Col class="w-100 text-center fs-3">
-				{user.email}
-				<br />
-				{user.group}
-			</Col>
-			<Col class="d-flex justify-content-center mt-2">
-				<div>
-					<Avatar
-						uid={user.userid}
-						uname={user.username}
-						style={'avatar40'}
-						bind:this={theAvatar}
-					/>
-				</div>
-			</Col>
-			<Col class="d-flex justify-content-center mt-2">
-				<!-- Input class="form-control" name="file" type="file" bind:files={avatarFiles} / -->
-				<img
-					class="upload"
-					src="/images/camera_upload.png"
-					alt=""
-					on:click={() => {
-						avatarInput.click();
-					}}
-				/>
-			</Col>
-			<Col class="d-flex justify-content-center">
-				<div
-					class="chan"
-					on:click={() => {
-						avatarInput.click();
+<Container class="mt-3">
+	<Row cols="1">
+		<Col class="w-100 text-center fs-3">
+			{user.email}
+			<br />
+			{user.group}
+		</Col>
+		<Col class="d-flex justify-content-center mt-2">
+			<div>
+				<Avatar email={user.email} uname={user.username} style={'avatar40'} bind:this={theAvatar} />
+			</div>
+		</Col>
+		<Col class="d-flex justify-content-center mt-2">
+			<!-- Input class="form-control" name="file" type="file" bind:files={avatarFiles} / -->
+			<img
+				class="upload"
+				src="/images/camera_upload.png"
+				alt=""
+				on:click={() => {
+					avatarInput.click();
+				}}
+			/>
+		</Col>
+		<Col class="d-flex justify-content-center">
+			<div
+				class="chan"
+				on:click={() => {
+					avatarInput.click();
+				}}
+			>
+				{$_('setting.personal.chooseavatar')}
+			</div>
+			<input
+				style="display:none;"
+				name="file"
+				type="file"
+				accept=".jpg, .jpeg, .png"
+				on:change={async (e) => await uploadAvatar(e)}
+				bind:this={avatarInput}
+			/>
+		</Col>
+	</Row>
+	<Row cols="1" class="mt-3">
+		<Col>
+			<InputGroup class="mb-1">
+				<InputGroupText>{$_('setting.personal.signature')}</InputGroupText>
+				<img alt="signature" src={`${user.signature}`} class="kfk-signature" />
+				<Input bind:value={user.signature} />
+				<Button
+					on:click={async (e) => {
+						e.preventDefault();
+						await setPersonal({ signature: user.signature });
 					}}
 				>
-					{$_('setting.personal.chooseavatar')}
-				</div>
+					{$_('setting.set')}
+				</Button>
+			</InputGroup>
+		</Col>
+		<Col>
+			<InputGroup class="mb-1">
+				<InputGroupText>{$_('setting.personal.cn')}</InputGroupText>
 				<input
-					style="display:none;"
-					name="file"
-					type="file"
-					accept=".jpg, .jpeg, .png"
-					on:change={async (e) => await uploadAvatar(e)}
-					bind:this={avatarInput}
+					class="form-control"
+					type="text"
+					autocomplete="username"
+					placeholder="Username"
+					bind:value={user.username}
 				/>
-			</Col>
-		</Row>
-		<Row cols="1" class="mt-3">
-			<Col>
-				<InputGroup class="mb-1">
-					<InputGroupText>{$_('setting.personal.signature')}</InputGroupText>
-					<img alt="signature" src={`${user.signature}`} class="kfk-signature" />
-					<Input bind:value={user.signature} />
-					<Button
-						on:click={async (e) => {
-							e.preventDefault();
-							await setPersonal({ signature: user.signature });
-						}}
-					>
-						{$_('setting.set')}
-					</Button>
-				</InputGroup>
-			</Col>
-			<Col>
-				<InputGroup class="mb-1">
-					<InputGroupText>{$_('setting.personal.cn')}</InputGroupText>
-					<input
-						class="form-control"
-						type="text"
-						placeholder="Username"
-						bind:value={user.username}
-					/>
-					<Button
-						on:click={async (e) => {
-							e.preventDefault();
-							await setPersonal({ username: user.username });
-						}}
-					>
-						{$_('setting.set')}
-					</Button>
-				</InputGroup>
-			</Col>
-			<Col>
-				<InputGroup class="mb-1">
-					<InputGroupText>{$_('setting.personal.currentpassword')}</InputGroupText>
-					<input
-						class="form-control"
-						type="password"
-						placeholder="Old Password"
-						bind:value={my_old_password}
-					/>
-					<InputGroupText>{$_('setting.personal.newpassword')}</InputGroupText>
-					<input
-						class={newPasswordCssClasses}
-						type="password"
-						placeholder="New Password"
-						bind:value={user.password}
-						on:input={(e) => {
-							e.preventDefault();
-							onInputNewPassword();
-						}}
-						aria-describedby={'validationNewPasswordFeedback'}
-					/>
-					<Button
-						disabled={enableChangePasswordButton === false}
-						on:click={async (e) => {
-							e.preventDefault();
-							await setPersonal({ password: user.password });
-						}}
-					>
-						{$_('setting.set')}
-					</Button>
-				</InputGroup>
-			</Col>
-			{#if newPasswordCssClasses === 'form-control is-invalid'}
-				<Col class="d-flex justify-content-end">
+				<Button
+					on:click={async (e) => {
+						e.preventDefault();
+						await setPersonal({ username: user.username });
+					}}
+				>
+					{$_('setting.set')}
+				</Button>
+			</InputGroup>
+		</Col>
+		<Col>
+			<InputGroup class="mb-1">
+				<InputGroupText>{$_('setting.personal.currentpassword')}</InputGroupText>
+				<input
+					class="form-control"
+					type="password"
+					placeholder="Old Password"
+					autocomplete="current-password"
+					bind:value={my_old_password}
+				/>
+				<InputGroupText>{$_('setting.personal.newpassword')}</InputGroupText>
+				<input
+					class={newPasswordCssClasses}
+					type="password"
+					autocomplete="new-password"
+					placeholder="New Password"
+					bind:value={user.password}
+					on:input={(e) => {
+						e.preventDefault();
+						onInputNewPassword();
+					}}
+					aria-describedby={'validationNewPasswordFeedback'}
+				/>
+				<Button
+					disabled={enableChangePasswordButton === false}
+					on:click={async (e) => {
+						e.preventDefault();
+						await setPersonal({ password: user.password });
+					}}
+				>
+					{$_('setting.set')}
+				</Button>
+			</InputGroup>
+		</Col>
+		{#if newPasswordCssClasses === 'form-control is-invalid'}
+			<Col class="d-flex justify-content-end">
+				<div class="me-5">
 					<div class="me-5">
-						<div class="me-5">
-							{newPasswordCheckingMsgs}
-						</div>
+						{newPasswordCheckingMsgs}
 					</div>
-				</Col>
-			{/if}
-			<Col>
-				<InputGroup class="mb-1">
-					<InputGroupText>{$_('setting.personal.sendmail')}</InputGroupText> &nbsp;&nbsp;
-					<span class="form-control">
-						<Input type="checkbox" bind:checked={user.ew.email} />
-					</span>
-					<Button
-						on:click={async (e) => {
-							e.preventDefault();
-							await setPersonal({ ew: user.ew });
-						}}
-					>
-						{$_('setting.set')}
-					</Button>
-				</InputGroup>
+				</div>
 			</Col>
-			<Col>
-				<InputGroup class="mb-1">
-					<InputGroupText>{$_('setting.personal.joincode')}</InputGroupText>
-					<Input
-						type="text"
-						bind:value={joinorgwithcode}
-						placeholder="join code"
-						autocomplete="off"
-					/>
-					<Button
-						on:click={async (e) => {
-							e.preventDefault();
-							await joinOrgWithCode();
-						}}
-					>
-						{$_('setting.set')}
-					</Button>
-				</InputGroup>
-			</Col>
-		</Row>
-	</Container>
-</form>
+		{/if}
+		<Col>
+			<InputGroup class="mb-1">
+				<InputGroupText>{$_('setting.personal.sendmail')}</InputGroupText> &nbsp;&nbsp;
+				<span class="form-control">
+					<Input type="checkbox" bind:checked={user.ew.email} />
+				</span>
+				<Button
+					on:click={async (e) => {
+						e.preventDefault();
+						await setPersonal({ ew: user.ew });
+					}}
+				>
+					{$_('setting.set')}
+				</Button>
+			</InputGroup>
+		</Col>
+		<Col>
+			<InputGroup class="mb-1">
+				<InputGroupText>{$_('setting.personal.joincode')}</InputGroupText>
+				<Input
+					type="text"
+					bind:value={joinorgwithcode}
+					placeholder="join code"
+					autocomplete="off"
+				/>
+				<Button
+					on:click={async (e) => {
+						e.preventDefault();
+						await joinOrgWithCode();
+					}}
+				>
+					{$_('setting.set')}
+				</Button>
+			</InputGroup>
+		</Col>
+	</Row>
+</Container>
 
 <style>
 	.upload {

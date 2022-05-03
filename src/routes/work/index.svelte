@@ -1,14 +1,14 @@
 <script context="module" lang="ts">
 	import * as Utils from '$lib/utils';
 	import { tick } from 'svelte';
-	export async function load({ page, session }) {
+	export async function load({ url, params, session }) {
 		let iframeMode = false;
-		if (page.query.has('iframe')) {
+		if (url.searchParams.has('iframe')) {
 			iframeMode = true;
 		}
 		let delegators = [];
 		try {
-			let delegations = (await Utils.post('/delegation/today')) as any;
+			let delegations = await api.post('/delegation/to/me/today', {}, session.user.sessionToken);
 			delegators = delegations.map((x: any) => x.delegator);
 			if (delegators.includes(session.user.email) === false) {
 				delegators.push(session.user.email);

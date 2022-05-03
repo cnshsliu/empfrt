@@ -1,7 +1,7 @@
 <script context="module" lang="ts">
-	export const ssr = false;
-	export async function load({ page, fetch, session }) {
-		const teamid = page.params.teamid;
+	export async function load({ url, params, fetch, session }) {
+		let teamid = params.teamid;
+		if (teamid && teamid.charAt(0) === '@') teamid = teamid.substring(1);
 		const jsonUrl = `/team/@${teamid}.json`;
 		const res = await fetch(jsonUrl);
 
@@ -138,7 +138,7 @@
 		const formData = new FormData();
 		formData.append('teamid', team.teamid);
 		formData.append('file', files[0]);
-		const upload = fetch(`${API_SERRVER}/team/import`, {
+		const upload = fetch(`${API_SERVER}/team/import`, {
 			method: 'POST',
 			headers: {
 				Authorization: user.sessionToken

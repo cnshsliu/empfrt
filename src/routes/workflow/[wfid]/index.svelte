@@ -1,7 +1,13 @@
 <script context="module" lang="ts">
-	export const ssr = false;
-	export async function load({ page, fetch, session }) {
-		const wfid = page.params.wfid;
+	let TimeTool = null;
+	export async function load({ url, params, fetch, session }) {
+		let showComment = false;
+		if (url.searchParams.has('showComment') && url.searchParams.get('showComment') == 'true') {
+			console.log('showCOmmnent....');
+			showComment = true;
+		}
+		let wfid = params.wfid;
+		if (wfid && wfid.charAt(0) === '@') wfid = wfid.substring(1);
 		const workflow = await api.post(
 			'workflow/read',
 			{ wfid: wfid, withdoc: false },
@@ -15,8 +21,9 @@
 			return {
 				props: {
 					workflow: workflow,
-					wfid: page.params.wfid,
-					user: session.user
+					wfid: params.wfid,
+					user: session.user,
+					showComment: showComment
 				}
 			};
 		} catch (e) {
@@ -26,7 +33,7 @@
 					workflow: {
 						wftitle: 'Not Found'
 					},
-					wfid: page.params.wfid,
+					wfid: params.wfid,
 					user: session.user
 				}
 			};
@@ -38,6 +45,7 @@
 	import type { User, Template, Workflow, EmpResponse } from '$lib/types';
 	import { _ } from '$lib/i18n';
 	import WorkFile from '$lib/workfile.svelte';
+	import Comments from '$lib/Comments.svelte';
 	import { session } from '$app/stores';
 	import ProcessTrack from '$lib/ProcessTrack.svelte';
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
@@ -52,18 +60,11 @@
 	export let workflow: Workflow;
 	export let wfid: string;
 	export let iframeMode = false;
+	export let showComment = false;
 
 	$title = workflow.wftitle;
-	let Designer: any;
 	let theDesigner: any;
-	onMount(async () => {
-		console.log('import Designer...');
-		const module = await import('$lib/designer/Designer.svelte');
-		Designer = module.default;
-
-		$filterStorage.tplid = workflow.tplid;
-		//$filterStorage.workTitlePattern = 'wf:' + wfid;
-	});
+	let comments = [];
 
 	export let user: User;
 	const opWorkflow = (wfid: string, op: string): void => {
@@ -98,6 +99,30 @@
 			user.sessionToken
 		)) as unknown as string;
 	};
+	onMount(async () => {
+		if (TimeTool === null) {
+			console.log('Import TimeTool');
+			TimeTool = (await import('$lib/TimeTool')).default;
+		}
+
+		$filterStorage.tplid = workflow.tplid;
+		//$filterStorage.workTitlePattern = 'wf:' + wfid;
+		if ($session.comment_wfid === wfid) {
+			comments = $session.comments;
+		} else {
+			let cmtRes = await api.post('comment/workflow/load', { wfid: wfid }, user.sessionToken);
+			if (cmtRes.error) {
+				console.log(cmtRes.message);
+				delete $session.comment_wfid;
+				delete $session.comments;
+			} else {
+				comments = cmtRes as any;
+				console.log(comments);
+				//session.comment_wfid = theWork.wfid;
+				//session.comments = theWork.comments;
+			}
+		}
+	});
 </script>
 
 <svelte:head>
@@ -107,6 +132,12 @@
 	<Container class="mt-3 kfk-highlight-2 text-wrap text-break">
 		<WorkFile title={$_('todo.pbo')} forWhat={'workflow'} {workflow} forKey="pbo" />
 	</Container>
+	{#if showComment}
+		<div class="mt-2 ms-5 p-2" id="todo_comments">
+			<span class="fs-3">{workflow.wftitle}</span>
+			<Comments bind:comments bind:TimeTool />
+		</div>
+	{/if}
 	<ProcessTrack {user} bind:wf={workflow} {wfid} {iframeMode} {onPrint} />
 {:else}
 	<ErrorNotify
@@ -119,6 +150,3 @@
 		}}
 	/>
 {/if}
-
-<style>
-</style>

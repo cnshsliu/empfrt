@@ -5,6 +5,7 @@
 	import * as api from '$lib/api';
 	import { slide, fade } from 'svelte/transition';
 	import Transition from '$lib/Transition.svelte';
+	import AniIcon from '$lib/AniIcon.svelte';
 	import { navigating, session } from '$app/stores';
 	import { filterStorage } from '$lib/empstores';
 	import ColPerRowSelection from '$lib/ColPerRowSelection.svelte';
@@ -13,10 +14,11 @@
 	import { tspans } from '$lib/variables';
 	import { onMount, onDestroy } from 'svelte';
 	import Parser from '$lib/parser';
-	import { StatusLabel } from '$lib/status';
 	import type { Workflow, Work } from '$lib/types';
-	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
-	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, NavLink } from 'sveltestrap';
+	import Table from '$lib/pagination/Table.svelte';
+	import Pagination from '$lib/pagination/Pagination.svelte';
+	import Search from '$lib/pagination/Search.svelte';
+	import Sort from '$lib/pagination/Sort.svelte';
 	import { goto } from '$app/navigation';
 	import {
 		Container,
@@ -28,7 +30,7 @@
 		Input,
 		Icon
 	} from 'sveltestrap';
-	import { getData } from '$lib/pagination/Server.js';
+	import { getData } from '$lib/pagination/Server';
 	import { createEventDispatcher, getContext, setContext } from 'svelte';
 
 	export let token;
@@ -171,13 +173,13 @@
 		$filterStorage.workSorting = sorting;
 		await load(page, 'onSort');
 	}
-	function gotoWorkitem(work: Work) {
-		goto(iframeMode ? `/work/@${work.todoid}?iframe` : `/work/@${work.todoid}`, {
+	function gotoWorkitem(work: Work, anchor = '') {
+		goto(iframeMode ? `/work/${work.todoid}?iframe${anchor}` : `/work/${work.todoid}${anchor}`, {
 			replaceState: false
 		});
 	}
 	function gotoWorkflow(wfid: string) {
-		goto(iframeMode ? `/workflow/@${wfid}?iframe` : `/workflow/@${wfid}`, { replaceState: false });
+		goto(iframeMode ? `/workflow/${wfid}?iframe` : `/workflow/${wfid}`, { replaceState: false });
 	}
 	$: if ($filterStorage) {
 		filter_tspan = $filterStorage.tspan;
@@ -309,72 +311,76 @@
 		<Row cols={$filterStorage.col_per_row}>
 			{#each rows as row, index (row)}
 				<Col class="mb-2 card p-2">
-					<div class="">
-						<div class="">
-							<div class="d-flex">
-								<div class="w-100">
-									<h5 class="">
-										<a
-											class="preview-link   kfk-work-id tnt-work-id"
-											href={'#'}
-											on:click|preventDefault={(e) => {
-												e.preventDefault();
-												gotoWorkitem(row);
-											}}
-										>
-											{row.title}
-											<sup>
-												{#if row.nodeid === 'ADHOC'}
-													/ adhoc
-												{/if}
-												{#if row.rehearsal}
-													/ <i class="bi-patch-check-fill" />
-													{Parser.userDisplay(row.doer, user.email)}
-												{/if}
-											</sup>
-										</a>
-									</h5>
-								</div>
-								<div class="flex-shrink-1 text-nowrap ">
-									{$_('remotetable.lasting')}:
-									{row.lastdays}
-								</div>
-							</div>
-							<Row cols={{ md: 2, xs: 1 }}>
-								<Col>
-									{$_('remotetable.status')}:
-									{$_('status.' + row.status)}
-								</Col>
-								<Col>
-									<div>
-										{$_('remotetable.updatedAt')}:
-										{#if row.doneat}
-											{$date(new Date(row.doneat))}
-											{$time(new Date(row.doneat))}
-										{:else}
-											{$date(new Date(row.createdAt))}
-											{$time(new Date(row.createdAt))}
+					<div class="d-flex">
+						<div class="w-100">
+							<h5 class="">
+								<a
+									class="preview-link   kfk-work-id tnt-work-id"
+									href={'#'}
+									on:click|preventDefault={(e) => {
+										e.preventDefault();
+										gotoWorkitem(row);
+									}}
+								>
+									{row.title}
+									<sup>
+										{#if row.nodeid === 'ADHOC'}
+											/ adhoc
 										{/if}
-									</div>
-								</Col>
-							</Row>
-							<Row class="fs-6">
-								<Col>
-									{$_('remotetable.belongTo')}:
-									<a
-										class="kfk-link fs-6"
-										href={'#'}
-										on:click={(e) => {
-											e.preventDefault();
-											gotoWorkflow(row.wfid);
-										}}
-									>
-										{row.wftitle}
-									</a>
-								</Col>
-							</Row>
+										{#if row.rehearsal}
+											/ <i class="bi-patch-check-fill" />
+											{Parser.userDisplay(row.doer, user.email)}
+										{/if}
+									</sup>
+								</a>
+							</h5>
+						</div>
+						<div class="flex-shrink-1 text-nowrap ">
+							{$_('remotetable.lasting')}:
+							{row.lastdays}
 						</div>
 					</div>
+					<Row cols={{ md: 2, xs: 1 }}>
+						<Col>
+							{$_('remotetable.status')}:
+							{$_('status.' + row.status)}
+						</Col>
+						<Col>
+							<div>
+								{$_('remotetable.updatedAt')}:
+								{#if row.doneat}
+									{$date(new Date(row.doneat))}
+									{$time(new Date(row.doneat))}
+								{:else}
+									{$date(new Date(row.createdAt))}
+									{$time(new Date(row.createdAt))}
+								{/if}
+							</div>
+						</Col>
+					</Row>
+					<Row class="fs-6">
+						<Col class="kfk-tag">
+							{$_('remotetable.belongTo')}:
+							<a
+								class="kfk-link fs-6"
+								href={'#'}
+								on:click={(e) => {
+									e.preventDefault();
+									gotoWorkflow(row.wfid);
+								}}
+							>
+								{row.wftitle}
+							</a>
+							<a
+								href={'#'}
+								class="ms-3 fs-6 kfk-workflow-id tnt-workflow-id kfk-link"
+								on:click={() => gotoWorkitem(row, '#discussion_area')}
+							>
+								<AniIcon icon="chat-dots-fill" ani="aniShake" />
+								{row.commentCount > 0 ? row.commentCount : ''}
+							</a>
+						</Col>
+					</Row>
 				</Col>
 			{/each}
 		</Row>

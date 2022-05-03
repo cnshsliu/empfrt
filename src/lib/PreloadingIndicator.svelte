@@ -30,7 +30,7 @@
 		left: 0;
 		width: 100%;
 		height: 4px;
-		z-index: 999;
+		z-index: 99999;
 	}
 
 	.progress {

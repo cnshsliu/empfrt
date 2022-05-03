@@ -4,10 +4,11 @@ import * as api from '$lib/api';
 import { respond } from './_respond';
 //import ErrorProcessor from '$lib/errorProcessor';
 //import { session } from '$app/stores';
-export async function post(request) {
+export async function post({ request }) {
+	const body = await request.json();
 	let ret = await api.post('account/login', {
-		email: request.body.email,
-		password: request.body.password
+		email: body.email,
+		password: body.password
 	});
 	if (ret.error) {
 		console.error('auth/login', ret);

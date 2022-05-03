@@ -7,10 +7,13 @@
 	import { scale } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import { onMount } from 'svelte';
-	import Table, { Pagination, Row, Search, Sort } from '$lib/pagination/Table.svelte';
+	import Table from '$lib/pagination/Table.svelte';
+	import Pagination from '$lib/pagination/Pagination.svelte';
+	import Search from '$lib/pagination/Search.svelte';
+	import Sort from '$lib/pagination/Sort.svelte';
 	import { goto } from '$app/navigation';
 	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Icon } from 'sveltestrap';
-	import { getData } from '$lib/pagination/Server.js';
+	import { getData } from '$lib/pagination/Server';
 	import { ClientPermControl } from '$lib/clientperm';
 
 	export let token;

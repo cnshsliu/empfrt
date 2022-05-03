@@ -118,6 +118,7 @@
 			"startAnother": "Start Another",
 			"viewTemplate": "View Template",
 			"viewInstanceTemplate": "View Instance Template",
+			"viewRelatedDiscussion": "Dicussion",
 			"deleteThisWorkflow": "Delete This Workflow",
 			"setpboat": "Set PBO checkpoint",
 			"setTitle": "Set Title",
@@ -258,7 +259,8 @@
 		"track": {
 			"dakai": "Expand",
 			"shouqi": "Collapse"
-		}
+		},
+		"bethefirstcomment": "Be the first to discuss"
 	},
 	"tpl": {
 		"prop": "Prop",
@@ -377,7 +379,8 @@
 				}
 			}
 		},
-		"showid": "Show node ID"
+		"showid": "nodeID",
+		"curve": "Curve"
 	},
 	"filepond": {
 		"labelIdle": {

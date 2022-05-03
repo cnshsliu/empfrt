@@ -4,6 +4,7 @@
 	import { API_SERVER } from '$lib/Env';
 	import FilePond, { registerPlugin, supported } from 'svelte-filepond';
 	import { createEventDispatcher } from 'svelte';
+	import './FileUploaderStyle.css';
 	const dispatch = createEventDispatcher();
 	let user = $session.user;
 	export let uploadedFiles = [];
@@ -124,11 +125,3 @@
 		fetch: '/fetch?data='
 	}}
 />
-
-<style global>
-	@import 'filepond/dist/filepond.css';
-	@import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
-	.filepond--credits {
-		display: none;
-	}
-</style>

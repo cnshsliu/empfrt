@@ -1,6 +1,7 @@
 <script type="ts">
 	import * as api from '$lib/api';
 	import { session } from '$app/stores';
+	import { setFadeMessage } from '$lib/Notifier';
 	import type { EmpResponse, OrgMembers, oneArgFunc } from '$lib/types';
 	import {
 		Container,
@@ -12,18 +13,7 @@
 		Input,
 		Badge
 	} from 'sveltestrap';
-	import { getNotificationsContext } from 'svelte-notifications';
-	const { addNotification } = getNotificationsContext();
 	let lists = [];
-	setFadeMessage;
-	function setFadeMessage(message: string, type = 'warning', pos = 'bottom-right', time = 2000) {
-		(addNotification as oneArgFunc)({
-			text: message,
-			position: pos,
-			type: type,
-			removeAfter: time
-		});
-	}
 	const refreshList = async function () {
 		lists = (await api.post('list/list', {}, $session.user.sessionToken)) as unknown as any[];
 	};

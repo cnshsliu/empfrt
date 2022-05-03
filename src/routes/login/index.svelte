@@ -3,7 +3,7 @@
 		if (session.user) {
 			return {
 				status: 302,
-				redirect: '/template'
+				redirect: '/work'
 			};
 		}
 
@@ -17,12 +17,11 @@
 	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { post } from '$lib/utils';
+	import { setFadeMessage } from '$lib/Notifier';
 	import type { oneArgFunc, EmpResponse } from '$lib/types';
 	import * as api from '$lib/api';
 	import { Input, Card, NavLink } from 'sveltestrap';
-	import { getNotificationsContext } from 'svelte-notifications';
 	import { filterStorage } from '$lib/empstores';
-	const { addNotification } = getNotificationsContext();
 	import Countdown from '$lib/Countdown.svelte';
 
 	let email = '';
@@ -38,14 +37,6 @@
 	let passwordErrorCount = 0;
 	let resetPasswordResult = '';
 
-	function setFadeMessage(message: string, type = 'warning', pos = 'bottom-right', time = 2000) {
-		(addNotification as oneArgFunc)({
-			text: message,
-			position: pos,
-			type: type,
-			removeAfter: time
-		});
-	}
 	async function submit(event) {
 		isUserValid = '';
 		isPwdValid = '';

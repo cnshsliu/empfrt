@@ -22,7 +22,7 @@
 		TabPane,
 		TabContent
 	} from 'sveltestrap';
-	import type { KVarDefInput, Workflow } from '$lib/types';
+	import type { KVarDefInput, Workflow, Template } from '$lib/types';
 	import { createEventDispatcher, setContext, getContext } from 'svelte';
 	import { onMount } from 'svelte';
 	import RolePicker from '$lib/designer/prop/RolePicker.svelte';
@@ -607,7 +607,7 @@
 						{#if todo.status === 'ST_DONE'}
 							<!-- if already ST_DONE -->
 							<a
-								href={`/work/@${todo.todoid}`}
+								href={`/work/${todo.todoid}`}
 								target="_worktab"
 								class="btn btn-sm clickable text-primary"
 							>
@@ -617,7 +617,7 @@
 						{:else}
 							<!-- if not ST_DONE -->
 							<a
-								href={`/work/@${todo.todoid}`}
+								href={`/work/${todo.todoid}`}
 								target="_worktab"
 								class="btn btn-sm clickable text-primary"
 							>

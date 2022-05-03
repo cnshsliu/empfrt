@@ -3,6 +3,7 @@
 <script type="ts">
 	import { _, date, time } from '$lib/i18n';
 	import * as api from '$lib/api';
+	import AniIcon from '$lib/AniIcon.svelte';
 	import { slide, fade } from 'svelte/transition';
 	import Transition from '$lib/Transition.svelte';
 	import { filterStorage } from '$lib/empstores';
@@ -14,7 +15,10 @@
 	import { onMount } from 'svelte';
 	import type { Workflow } from '$lib/types';
 	import { StatusLabel } from '$lib/status';
-	import Table, { Pagination, Search, Sort } from '$lib/pagination/Table.svelte';
+	import Table from '$lib/pagination/Table.svelte';
+	import Pagination from '$lib/pagination/Pagination.svelte';
+	import Search from '$lib/pagination/Search.svelte';
+	import Sort from '$lib/pagination/Sort.svelte';
 	import { goto } from '$app/navigation';
 	import {
 		Container,
@@ -27,11 +31,10 @@
 		Button
 	} from 'sveltestrap';
 	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, NavLink } from 'sveltestrap';
-	import { getData } from '$lib/pagination/Server.js';
+	import { getData } from '$lib/pagination/Server';
 	import { ClientPermControl } from '$lib/clientperm';
 	import { createEventDispatcher, getContext, setContext } from 'svelte';
 
-	export let token;
 	export let endpoint;
 	export let user;
 	let rows: Workflow[] = [] as Workflow[];
@@ -110,7 +113,7 @@
 		}
 		const data = await getData(
 			endpoint,
-			token,
+			user.sessionToken,
 			_page,
 			$filterStorage.pageSize,
 			input_search,
@@ -156,6 +159,10 @@
 		await load(page);
 	}
 
+	const showWorkflowDiscussion = (wfid) => {
+		goto(`/workflow/${wfid}?showComment=true`);
+	};
+
 	async function onSort(event) {
 		sorting = { dir: event.detail.dir, key: event.detail.key };
 		$filterStorage.wfSorting = sorting;
@@ -184,7 +191,7 @@
 			goto('/work');
 			return;
 		} else if (op === 'viewTemplate') {
-			goto(`/template/@${workflow.tplid}&read`);
+			goto(`/template/${workflow.tplid}&read`);
 			return;
 		}
 
@@ -199,13 +206,13 @@
 
 		if (op === 'viewInstanceTemplate') {
 			let payload = { wfid: workflow.wfid };
-			let ret = await api.post('workflow/dump/instemplate', payload, token);
-			goto(`template/@${workflow.wfid}_instemplate&read`);
+			let ret = await api.post('workflow/dump/instemplate', payload, user.sessionToken);
+			goto(`template/${workflow.wfid}_instemplate&read`);
 			return;
 		}
 
 		let payload = { wfid: workflow.wfid, op: op };
-		let ret: Workflow = (await api.post('workflow/op', payload, token)) as Workflow;
+		let ret: Workflow = (await api.post('workflow/op', payload, user.sessionToken)) as Workflow;
 		if (op === 'pause' || op === 'resume' || op === 'stop') {
 			for (let i = 0; i < rows.length; i++) {
 				if (rows[i].wfid === workflow.wfid) {
@@ -365,7 +372,7 @@
 									<h5 class="">
 										<a
 											class="preview-link kfk-workflow-id tnt-workflow-id"
-											href="/workflow/@{row.wfid}"
+											href="/workflow/{row.wfid}"
 										>
 											{row.wftitle}
 											{#if row.rehearsal}
@@ -561,6 +568,16 @@
 							>
 								{$_('remotetable.wfa.viewTemplate')}
 							</a>
+							{#if row.commentCount > 0}
+								<a
+									href={'#'}
+									class="ms-3 fs-6 kfk-workflow-id tnt-workflow-id kfk-link"
+									on:click={() => showWorkflowDiscussion(row.wfid)}
+								>
+									<AniIcon icon="chat-dots-fill" ani="aniShake" />
+									{row.commentCount > 0 ? row.commentCount : ''}
+								</a>
+							{/if}
 							{#if setTitleFor === row.wfid}
 								<div>Set Title to:</div>
 								<InputGroup>

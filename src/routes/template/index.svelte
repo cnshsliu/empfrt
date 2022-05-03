@@ -1,6 +1,6 @@
 <script context="module" lang="ts">
 	let TimeTool = null;
-	export async function load({ page, fetch, session }) {
+	export async function load({ url, params, fetch, session }) {
 		TimeTool = (await import('$lib/TimeTool')).default;
 		try {
 			return {
@@ -21,9 +21,6 @@
 <script lang="ts">
 	import { _ } from '$lib/i18n';
 	import { API_SERVER } from '$lib/Env';
-	import { getNotificationsContext } from 'svelte-notifications';
-	const { addNotification } = getNotificationsContext();
-	import type { oneArgFunc } from '$lib/types';
 	import Parser from '$lib/parser';
 	import { onMount } from 'svelte';
 	import RemoteTable from './RemoteTable.svelte';
@@ -36,10 +33,10 @@
 	import type { WhichTab } from '$lib/types';
 	import { whichTabStorage } from '$lib/empstores';
 	import { filterStorage } from '$lib/empstores';
+	import { setFadeMessage } from '$lib/Notifier';
 	import { ClientPermControl } from '$lib/clientperm';
 	import { TabContent, Badge, Fade, Card, TabPane, FormGroup, Label, Input } from 'sveltestrap';
 	import type { User } from '$lib/types';
-	import { session } from '$app/stores';
 	import { Container, Row, Col, Icon, Button, Nav, NavLink } from 'sveltestrap';
 	import { enhance } from '$lib/form';
 	export let menu_has_form = false;
@@ -49,19 +46,6 @@
 	import { title } from '$lib/title';
 	$title = 'HyperFlow';
 	let theRemoteTable;
-	export function setFadeMessage(
-		message: string,
-		type = 'warning',
-		pos = 'bottom-right',
-		time = 2000
-	) {
-		(addNotification as oneArgFunc)({
-			text: message,
-			position: pos,
-			type: type,
-			removeAfter: time
-		});
-	}
 	function hide_all_form() {
 		Object.keys(form_status).forEach((key) => {
 			form_status[key] = false;

@@ -51,6 +51,7 @@ export const filterStorage = storage<FilterPicks>('filter', {
 	col_per_row: { xs: 1 },
 	pageSize: 10,
 	showprocesstrack: true,
+	curve: true,
 	debug: ''
 });
 export const startedWorkflow = storage<any>('startedWorkflow', null);

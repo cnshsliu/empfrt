@@ -1,6 +1,6 @@
 <script context="module" lang="ts">
 	import { post } from '$lib/utils';
-	export async function load({ page, fetch, session }) {
+	export async function load({ url, params, fetch, session }) {
 		return {
 			props: {
 				user: session.user

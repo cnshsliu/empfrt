@@ -1,4 +1,4 @@
-<script context="module">
+<script context="module" type="ts">
 	import Pagination, { setLabels as _setPaginationLabels } from './Pagination.svelte';
 	import Row from './Row.svelte';
 	import Search, { setLabels as _setSearchLabels } from './Search.svelte';
@@ -6,6 +6,7 @@
 	export { Pagination, Row, Search, Sort };
 
 	let globalLabels;
+	import type { StateContext } from '$lib/types';
 
 	export function setTableLabels(labels) {
 		globalLabels = labels;
@@ -16,7 +17,7 @@
 	export const setSortLabels = _setSortLabels;
 </script>
 
-<script>
+<script type="ts">
 	import { createEventDispatcher, setContext } from 'svelte';
 	const dispatch = createEventDispatcher();
 
@@ -54,7 +55,7 @@
 			pageIndex = _pageIndex;
 		},
 		setRows: (_rows) => (filteredRows = _rows)
-	});
+	} as StateContext);
 
 	function onPageChange(event) {
 		dispatch('pageChange', event.detail);
@@ -80,7 +81,7 @@
 			{#if loading}
 				<tbody>
 					<tr>
-						<td class="center" colspan="100%">
+						<td class="center" width="100%">
 							<span>
 								{@html labels.loading}
 							</span>
@@ -90,7 +91,7 @@
 			{:else if visibleRows.length === 0}
 				<tbody>
 					<tr>
-						<td class="center" colspan="100%">
+						<td class="center" width="100%">
 							<span>
 								{@html labels.empty}
 							</span>

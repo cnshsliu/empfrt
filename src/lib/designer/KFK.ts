@@ -1,10 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
+import { API_SERVER } from '$lib/Env';
 import suuid from 'short-uuid';
 import Parser from '$lib/parser';
+import html2canvas from 'html2canvas';
 import cocoConfig from './cococonfig';
 import APP from './appConfig';
 import { Buffer } from 'buffer';
+import { filterStorage } from '$lib/empstores';
 import NodeController from './NodeController';
 import DesignerHelpMessage from './_designerHelpMessage';
 //import RegHelper from './RegHelper';
@@ -32,6 +35,7 @@ let jQuery = null;
 let $ = null;
 let history = [];
 let history_pointer = 0;
+let tmptmptmp = null;
 import('@svgdotjs/svg.js').then((pack) => {
 	SVG = pack.SVG;
 });
@@ -130,6 +134,7 @@ class KFKclass {
 	wfid: string = '';
 	theWf: any = null;
 	tpl_mode: string = 'read';
+	curve: boolean = true;
 	version: string = '1.0';
 	inNoteEditor: boolean = false;
 	config: typeof cocoConfig = cocoConfig;
@@ -182,6 +187,7 @@ class KFKclass {
 	opstacklen: number = 20; //undo，redo记录次数
 	opz: number = -1; // opstack 当前记录指针
 	lockTool: boolean = false;
+	lastEvt: any;
 	C3: any = null;
 	JC3: any = null;
 	onC3: boolean = false;
@@ -388,7 +394,7 @@ class KFKclass {
 
 	static unpx(v: any) {
 		if (typeof v === 'string' && v.endsWith('px')) {
-			return parseInt(v.substr(0, v.length - 2));
+			return parseInt(v.substring(0, v.length - 2));
 		} else {
 			return v;
 		}
@@ -553,12 +559,11 @@ class KFKclass {
 	getNodeIdsFromConnectId(cid: string) {
 		let nid = cid;
 		let tid = cid;
-		nid = nid.substr(nid.indexOf('_') + 1);
-		nid = nid.substr(0, nid.indexOf('_'));
-		tid = tid.substr(tid.lastIndexOf('_') + 1);
+		nid = nid.substring(nid.indexOf('_') + 1);
+		nid = nid.substring(0, nid.indexOf('_'));
+		tid = tid.substring(tid.lastIndexOf('_') + 1);
 		return [nid, tid];
 	}
-
 	/**
 	 * Remove connection link
 	 */
@@ -693,7 +698,7 @@ class KFKclass {
 			'ui-resizable ui-draggable ui-draggable-handle ui-draggable-dragging ui-droppable selected ui-resizable-autohide shadow1 shadow2 lock'
 		);
 	}
-	idsOfNodesToThis(jcNode) {
+	idsOfNodesToThis(jcNode: any) {
 		let that = this;
 		let ret = [];
 		let connectsToThis = that.JC3.find(`.connect[tid="${jcNode.attr('id')}"]`);
@@ -706,7 +711,7 @@ class KFKclass {
 		return ret;
 	}
 
-	toStart(jcNode, backPaths) {
+	toStart(jcNode: any, backPaths: any[]) {
 		let that = this;
 		let id = jcNode.attr('id');
 		if (jcNode.hasClass('START')) {
@@ -724,7 +729,7 @@ class KFKclass {
 		}
 	}
 
-	setAndORCounterPart(jcAnd) {
+	setAndORCounterPart(jcAnd: any) {
 		let that = this;
 		let andId = jcAnd.attr('id');
 		let ids = that.idsOfNodesToThis(jcAnd);
@@ -742,7 +747,7 @@ class KFKclass {
 		if (paths.length > 1) {
 			let result = paths[0];
 			for (let i = 1; i < ids.length; i++) {
-				result = result.filter((x) => paths[i].includes(x));
+				result = result.filter((x: any) => paths[i].includes(x));
 			}
 			if (result.length > 1) {
 				//除自身外（下标为0），第一个为counterPart（下标为1）
@@ -800,6 +805,25 @@ class KFKclass {
 			tplDocHtml += linkHtml;
 		});
 		tplDocHtml += '</div>';
+		/*
+		html2canvas(that.C3).then(function (canvas) {
+			const elements = document.getElementsByClassName('tempLink');
+			while (elements.length > 0) {
+				elements[0].parentNode.removeChild(elements[0]);
+			}
+			const link = document.createElement('a');
+			// toDataURL defaults to png, so we need to request a jpeg, then convert for file download.
+			//link.href = canvas.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
+			link.href = canvas.toDataURL();
+			link.setAttribute('download', `somefilename.png`); //or any other extension
+			link.setAttribute('class', 'tempLink');
+			document.body.appendChild(link);
+			link.click();
+			link.remove();
+
+			 // canvas.toBlob(function (blob) { saveAs(blob, "testimage.jpg"); });
+		});
+		*/
 
 		return tplDocHtml;
 	}
@@ -826,7 +850,7 @@ class KFKclass {
 				'template/put',
 				{
 					doc: that.template.doc,
-					tplid: that.tplid,
+					tplid: that.template.tplid,
 					bwid: that.bwid,
 					lastUpdatedAt: that.template.updatedAt
 				},
@@ -1136,7 +1160,7 @@ ret='DEFAULT'; `
 		return;
 	}
 
-	showConnectionProperties(theConnect) {
+	showConnectionProperties(theConnect: any) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		this.designerCallback('showConnectProp', {
 			nodeType: 'CONNECT',
@@ -1319,40 +1343,53 @@ ret='DEFAULT'; `
   }
   */
 
+		//A是起始点， B是结束点
+		//points是节点的四个周边链接点位置，从0-3分别对应左上右下四个点
+		//AIndex, BIndex是指起始点从左上右下四个点中哪个点来链接
 		if (APos.points[0].x > BPos.points[2].x) {
-			AIndex = 0;
-			BIndex = 2;
+			//If A is on the right of B
+			if (that.curve) {
+				AIndex = 0; //Draw line from "left of A" to "right of B"
+				BIndex = 2;
+			} else {
+				if (APos.points[1].y > BPos.points[3].y) {
+					// the 2nd Quarter
+					AIndex = 1;
+					BIndex = 2;
+				} else if (APos.points[3].y < BPos.points[1].y) {
+					// the 3nd Quarter
+					AIndex = 3;
+					BIndex = 2;
+				} else {
+					AIndex = 0;
+					BIndex = 2;
+				}
+			}
 		} else if (APos.points[2].x < BPos.points[0].x) {
-			AIndex = 2;
-			BIndex = 0;
-		} else if (APos.points[1].y > BPos.points[3].y) {
-			/*
-    if (APos.points[2].x < BPos.points[1].x) {
-      AIndex = 2;
-      BIndex = 3;
-    } else if (APos.points[0].x > BPos.points[1].x) {
-      AIndex = 0;
-      BIndex = 3;
-    } else {
-      AIndex = 1;
-      BIndex = 3;
-    }
-    */
+			//If A is on the left of B
+			if (that.curve) {
+				//If curve, draw curve from A:Right to B:Left
+				AIndex = 2;
+				BIndex = 0;
+			} else {
+				//If straight line and...
+				if (APos.points[1].y > BPos.points[3].y) {
+					//in 1st Quarter
+					AIndex = 1;
+					BIndex = 0;
+				} else if (APos.points[3].y < BPos.points[1].y) {
+					//in 4th Quarter
+					AIndex = 3;
+					BIndex = 0;
+				} else {
+					AIndex = 2;
+					BIndex = 0;
+				}
+			}
+		} else if (APos.points[2].y > BPos.points[2].y) {
 			AIndex = 1;
 			BIndex = 3;
-		} else if (APos.points[3].y < BPos.points[1].y) {
-			/*
-    if (APos.points[2].x < BPos.points[1].x) {
-      AIndex = 2;
-      BIndex = 1;
-    } else if (APos.points[0].x > BPos.points[1].x) {
-      AIndex = 0;
-      BIndex = 1;
-    } else {
-      AIndex = 3;
-      BIndex = 1;
-    }
-    */
+		} else if (APos.points[2].y < BPos.points[2].y) {
 			AIndex = 3;
 			BIndex = 1;
 		} else {
@@ -1837,7 +1874,7 @@ ret='DEFAULT'; `
 		} else return null;
 	}
 
-	async changeId(oldId, newId) {
+	async changeId(oldId: any, newId: string) {
 		let that = this;
 		console.log(oldId, newId);
 		let jqDIV = that.JC3.find(`#${oldId}`);
@@ -2390,7 +2427,7 @@ ret='DEFAULT'; `
 			evt.stopImmediatePropagation();
 			evt.stopPropagation();
 		});
-		that.JC1.on('contextmenu', function (evt: Event) {
+		that.JC1.on('contextmenu', function (evt: any) {
 			evt.preventDefault();
 			that.kuangXuanMouseIsDown = false;
 		});
@@ -2639,7 +2676,7 @@ ret='DEFAULT'; `
 		});
 		that.setSelectedNodesBoundingRect();
 	}
-	async selectConnect(svgConnect, evt: MouseEvent) {
+	async selectConnect(svgConnect: any, evt: MouseEvent) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		svgConnect.addClass('selected');
@@ -3060,7 +3097,9 @@ ret='DEFAULT'; `
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		if (!(jqNode instanceof jQuery)) {
-			console.error('redrawLinkLines for a non-jquery object, sometime caused by no await');
+			console.error(
+				`redrawLinkLines reason:[${reason}] for a non-jquery object, sometime caused by no await`
+			);
 			return;
 		}
 		const myId = jqNode.attr('id');
@@ -3134,7 +3173,7 @@ ret='DEFAULT'; `
 	 * Process keypool
 	 *
 	 */
-	async procKeypool(evt) {
+	async procKeypool(evt: any) {
 		let that = this;
 		if (that.keypoolCleanTimeout) {
 			clearTimeout(that.keypoolCleanTimeout);
@@ -3219,9 +3258,7 @@ ret='DEFAULT'; `
 		}
 	}
 
-	async setConnectionStatusColor(routeStatus) {
-		const that = this;
-
+	async setConnectionStatusColor(routeStatus: any[]) {
 		let connectNumber = 0;
 		for (let i = 0; i < routeStatus.length; i++) {
 			let aRoute = routeStatus[i];
@@ -3324,7 +3361,7 @@ ret='DEFAULT'; `
 	}
 	/**
 	 * 是否是一个kfknode
-	 * @param a node div
+	 * @param jqdiv, the  node div
 	 */
 	isKfkNode(jqdiv: myJQuery) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
@@ -3354,7 +3391,7 @@ ret='DEFAULT'; `
 		return !that.isA(jqdiv, className);
 	}
 
-	holdEvent(evt: Event) {
+	holdEvent(evt: any) {
 		evt.stopImmediatePropagation();
 		evt.stopPropagation();
 		evt.preventDefault();
@@ -3660,19 +3697,19 @@ ret='DEFAULT'; `
 			to: null,
 			links: links
 		});
-		that.deleteLinks(jqDIV, links).then((ret) => {});
+		that.deleteLinks(jqDIV, links).then(() => {});
 		jqDIV.remove();
 		if (immediateOnChange) that.onChange('Delete');
 	}
 
-	async deleteSingleConnect(connectId) {
+	async deleteSingleConnect(connectId: string) {
 		let that = this;
 		//delete connect
 		//最后看鼠标滑过的connect（节点间连接线）
 		//Find ids of the two nodes connected by this connect.
-		const tmpNodeIdPair = that.getNodeIdsFromConnectId(that.hoveredConnectId);
-		const nid = tmpNodeIdPair[0];
-		const tid = tmpNodeIdPair[1];
+		//const tmpNodeIdPair = that.getNodeIdsFromConnectId(that.hoveredConnectId);
+		//const nid = tmpNodeIdPair[0];
+		//const tid = tmpNodeIdPair[1];
 		//let jqFrom = $(`#${nid}`);
 		//let jqTo = $(`#${tid}`);
 		//if (that.anyLocked(jqFrom)) return;
@@ -3682,8 +3719,9 @@ ret='DEFAULT'; `
 		//that.removeLinkTo(jqFrom, tid);
 		//let connect_id = `connect_${nid}_${tid}`;
 		//Remove ths connect drawing
-		const tmp = that.tpl.find(`.link[from="${nid}"][to="${tid}"]`);
+		//const tmp = that.tpl.find(`.link[from="${nid}"][to="${tid}"]`);
 		await that.removeConnectById(that.hoveredConnectId);
+		tmptmptmp = connectId;
 		//await that.redrawLinkLines(jqFrom);
 		//删除一个connect, 则jqFrom被修改
 	}
@@ -3693,10 +3731,7 @@ ret='DEFAULT'; `
 	 * @param evt oncut事件
 	 * @param cutMode， 是否是cut方式，cut方式下，删除前先复制
 	 */
-	async deleteObjects(
-		evt: Event | JQuery.KeyDownEvent<Document, null, Document, Document>,
-		cutMode = false
-	) {
+	async deleteObjects(evt: any, cutMode = false) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		//如果有多个节点被选择，则优先进行多项删除
@@ -3772,7 +3807,8 @@ ret='DEFAULT'; `
 				}
 			}
 			evt.preventDefault();
-			that.holdEvent(evt as Event);
+			that.holdEvent(evt);
+			tmptmptmp = objectDeleted;
 		} catch (error) {
 			console.error(error);
 		} finally {
@@ -4052,7 +4088,8 @@ ret='DEFAULT'; `
 
 		a = Math.round(a * 100) / 100;
 		const alpha1 = Math.round(a * 255);
-		const hexAlpha = (alpha1 + 0x10000).toString(16).substr(-2).toUpperCase();
+		const tmpStr = (alpha1 + 0x10000).toString(16);
+		const hexAlpha = tmpStr.slice(-2).toUpperCase();
 		hex = `${hex}${hexAlpha}`;
 
 		return '#' + hex;
@@ -4102,8 +4139,9 @@ ret='DEFAULT'; `
 		$('#linetransformer').draggable({
 			// move line resize line transform line
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			start: (evt, _ui) => {
+			start: (evt: any, _ui: any) => {
 				//that.closeActionLog();
+				tmptmptmp = _ui;
 				that.lineTransfomerDragging = true;
 				// that.fromJQ = that.tobeTransformJqLine.clone();
 				// that.setTool('line');
@@ -4112,7 +4150,8 @@ ret='DEFAULT'; `
 			},
 
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			drag: (evt, _ui) => {
+			drag: (evt: any, _ui: any) => {
+				tmptmptmp = _ui;
 				if (that.tempSvgLine) that.tempSvgLine.hide();
 				if (that.lineToResize === null) return;
 				const parr = that.lineToResize.array();
@@ -4124,7 +4163,8 @@ ret='DEFAULT'; `
 				}
 			},
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			stop: async (evt, _ui) => {
+			stop: async (evt: any, _ui: any) => {
+				tmptmptmp = _ui;
 				//transform line  change line
 				that.lineTransfomerDragging = false;
 				if (that.lineToResize === null) return;
@@ -4212,7 +4252,7 @@ ret='DEFAULT'; `
 		that.ball.addClass('noshow');
 	}
 
-	async init(user: User, bwid, isMobile: boolean = false) {
+	async init(user: User, bwid: string, isMobile: boolean = false) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		that.user = user;
@@ -4283,7 +4323,7 @@ ret='DEFAULT'; `
 			const nodes = that.tpl.find('.node');
 			nodes.addClass('kfknode');
 			await that.JC3.append(nodes);
-			const guiNodes = that.JC3.find('.node');
+			const guiNodes = that.JC3.find('.kfknode');
 			await that.addMobileHandler(guiNodes);
 			await that.addNodeIdDIV(guiNodes);
 			for (let i = 0; i < guiNodes.length; i++) {
@@ -4324,14 +4364,14 @@ ret='DEFAULT'; `
 		} catch (err) {
 			console.error(err);
 		} finally {
-			that.addDocumentEventHandler();
+			//that.addDocumentEventHandler();
 			that.inited = true;
 			that.showHelp('To see node properties, press P then click on a node', 10000);
 			KFK.C3GotFocus();
 		}
 	}
 
-	async resetWorkflowStatusClasses(statusObj) {
+	async resetWorkflowStatusClasses(statusObj: any) {
 		let that = this;
 		for (let i = 0; i < statusObj.nodeStatus.length; i++) {
 			const jqNode = that.JC3.find('#' + statusObj.nodeStatus[i].nodeid);
@@ -4349,22 +4389,22 @@ ret='DEFAULT'; `
 		await that.setConnectionStatusColor(statusObj.routeStatus);
 	}
 
-	replaceSTClassTo(jqObj, newClassName) {
+	replaceSTClassTo(jqObj: myJQuery, newClassName: string) {
 		try {
 			let old_classes = jqObj.attr('class').split(/\s+/);
-			old_classes.map((x) => (x.startsWith('ST_') ? jqObj.removeClass(x) : ''));
+			old_classes.map((x: string) => (x.startsWith('ST_') ? jqObj.removeClass(x) : ''));
 			jqObj.addClass(newClassName);
 		} catch (err) {}
 	}
 
-	getSTClass(jqObj) {
+	getSTClass(jqObj: myJQuery) {
 		let old_classes = jqObj.attr('class').split(/\s+/);
-		let tmp = old_classes.filter((x) => x.startsWith('ST_'));
+		let tmp = old_classes.filter((x: string) => x.startsWith('ST_'));
 		if (tmp.length > 0) return tmp[0];
 		else return '';
 	}
 
-	async addMobileHandler(guiNodes) {
+	async addMobileHandler(guiNodes: any[]) {
 		let that = this;
 		//if (!that.isMobile) return;
 		for (let i = 0; i < guiNodes.length; i++) {
@@ -4384,7 +4424,7 @@ ret='DEFAULT'; `
 		}
 	}
 
-	async addNodeIdDIV(guiNodes) {
+	async addNodeIdDIV(guiNodes: any[]) {
 		let that = this;
 		//if (!that.isMobile) return;
 		for (let i = 0; i < guiNodes.length; i++) {
@@ -4400,7 +4440,7 @@ ret='DEFAULT'; `
 		}
 	}
 
-	async showNodeIdDIV(flag) {
+	async showNodeIdDIV(flag: boolean) {
 		let that = this;
 		that.showNodeId = flag;
 		if (flag) {
@@ -4410,12 +4450,24 @@ ret='DEFAULT'; `
 		}
 	}
 
-	async onCtrlDown() {
+	async setLineCurve(curve: boolean) {
 		let that = this;
+		that.curve = curve;
+		//TODO: redrawLinkLines
+		await that.redrawAllLines();
 	}
-	async onCtrlUp() {
+	async redrawAllLines() {
 		let that = this;
+		console.log('Redraw on curve', that.curve);
+		const guiNodes = that.JC3.find('.kfknode');
+		for (let i = 0; i < guiNodes.length; i++) {
+			const jqNode = $(guiNodes[i]);
+			await that.redrawLinkLines(jqNode, 'just redraw');
+		}
 	}
+
+	async onCtrlDown() {}
+	async onCtrlUp() {}
 
 	/**
 	 * @type {}
@@ -4482,7 +4534,8 @@ ret='DEFAULT'; `
 				//Change link line style by it's status
 			}
 			*/
-			let connectionNumber = await that.setConnectionStatusColor(routeStatus);
+			tmptmptmp = routeStatus;
+			//let connectionNumber = await that.setConnectionStatusColor(routeStatus);
 
 			that.myFadeOut($('.loading'));
 			that.myFadeIn(that.JC3, 1000);
@@ -4552,17 +4605,17 @@ ret='DEFAULT'; `
 	}
 
 	initLeftRightPanelEventHandler() {
-		$('#leftPanel').on('click', function (evt) {
+		$('#leftPanel').on('click', function (evt: any) {
 			evt.stopPropagation();
 		});
 		//topPropgation will stop click on C1 and C3, or else, C3 will jump after move mouse from designer-topMenu to C1
-		$('#designer-topMenu').on('click', function (evt) {
+		$('#designer-topMenu').on('click', function (evt: any) {
 			evt.stopPropagation();
 		});
-		$('#leftPanel').on('mousedown', function (evt) {
+		$('#leftPanel').on('mousedown', function (evt: any) {
 			evt.stopPropagation();
 		});
-		$('#designer-topMenu').on('mousedown', function (evt) {
+		$('#designer-topMenu').on('mousedown', function (evt: any) {
 			evt.stopPropagation();
 		});
 	}
@@ -4676,9 +4729,10 @@ ret='DEFAULT'; `
 		if (that.documentEventHandlerSet && force === false) {
 			return;
 		}
+		$(document).off();
 		//document keydown
 		//eslint-disable-next-line
-		$(document).keydown(async function (evt) {
+		$(document).keydown(async function (evt: any) {
 			if (evt === that.lastEvt) return;
 			that.lastEvt = evt;
 			if (that.isShowingModal === true) return;
@@ -4788,7 +4842,7 @@ ret='DEFAULT'; `
 			}
 		});
 		//eslint-disable-next-line
-		$(document).keyup(async function (evt) {
+		$(document).keyup(async function (evt: any) {
 			switch (evt.key) {
 				case 'Shift':
 					that.KEYDOWN.shift = false;
@@ -4815,7 +4869,7 @@ ret='DEFAULT'; `
 		//但mousemove需要在document的mousemove事件处理中进行处理。
 		//因为，如果不这样做，滑动鼠标出现选择框后，如果鼠标回到选择框内，则JC3抓不到mousemove事件
 		//导致的现象就是选择框只可以放大，不可以缩小
-		$(document).on('mousemove', function (evt) {
+		$(document).on('mousemove', function (evt: any) {
 			that.globalMouseX = evt.clientX;
 			that.globalMouseY = evt.clientY;
 			that.designerCallback('updateCheckOnMousemove', that.template);
@@ -4850,7 +4904,7 @@ ret='DEFAULT'; `
 				return;
 			}
 		});
-		$(document).on('mousedown', function (evt) {
+		$(document).on('mousedown', function (evt: any) {
 			if (that.tool === 'POINTER') {
 				if (that.ctrlMouseToPan === true) {
 					if (evt.shiftKey) {
@@ -4881,7 +4935,7 @@ ret='DEFAULT'; `
 				}
 			}
 		});
-		$(document).on('mouseup', async function (evt) {
+		$(document).on('mouseup', async function (evt: any) {
 			that.panStartAt = undefined;
 			if (that.tool === 'POINTER') {
 				that.kuangXuanMouseIsDown = false;
@@ -4945,7 +4999,8 @@ ret='DEFAULT'; `
 					}
 				}
 				//eslint-disable-next-line @typescript-eslint/no-unused-vars
-				const movedCount = unlockedDivCount + unlockedShapeCount;
+				let movedCount = unlockedDivCount + unlockedShapeCount;
+				movedCount = movedCount; //Just for keep movedCount for later consideration
 				let movedSer = 0;
 				that.startTrx();
 				try {
@@ -5084,21 +5139,6 @@ ret='DEFAULT'; `
 		//that.scrollToFirstPage();
 	}
 
-	dataURLtoFile(dataurl: string, filename: string) {
-		const arr: string[] = dataurl.split(',');
-		const mime: any = arr[0].match(/:(.*?);/)[1];
-		//eslint-disable-next-line
-		const bstr: string = atob(arr[1]);
-		let n: number = bstr.length;
-		const u8arr: Uint8Array = new Uint8Array(n);
-		while (n--) {
-			u8arr[n] = bstr.charCodeAt(n);
-		}
-		return new File([u8arr], filename, {
-			type: mime
-		});
-	}
-
 	checkUrl(str_url: string) {
 		const regex =
 			/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=+$,\w]+@)?[A-Za-z0-9.-]+(:[0-9]+)?|(?:www.|[-;:&=+$,\w]+@)[A-Za-z0-9.-]+)((?:\/[+~%/.\w-_]*)?\??(?:[-+=&;%@.\w_]*)#?(?:[\w]*))?)/;
@@ -5119,7 +5159,7 @@ ret='DEFAULT'; `
 		return ret;
 	}
 
-	async onCut(evt: Event | JQuery.KeyDownEvent<Document, null, Document, Document>) {
+	async onCut(evt: any) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = KFK;
 		if (that.showingProp) return;
@@ -5197,9 +5237,11 @@ ret='DEFAULT'; `
 		return true;
 	}
 
-	async copyNodes(evt) {
+	//async copyNodes(evt: Event) {
+	async copyNodes() {
 		console.log(KFK.selectedDIVs.length);
 		return;
+		/*
 		if (KFK.selectedDIVs.length > 1) {
 			//优先多选
 			KFK.debug('multiple nodes were selected');
@@ -5245,9 +5287,10 @@ ret='DEFAULT'; `
 		} else {
 			return false;
 		}
+		*/
 	}
 
-	async onCopy(evt: Event) {
+	async onCopy(evt: any) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		let that = KFK;
 
@@ -5266,7 +5309,7 @@ ret='DEFAULT'; `
 		that.holdEvent(evt);
 	}
 
-	getKfkClass(jq) {
+	getKfkClass(jq: myJQuery) {
 		let kfkClass = '';
 		if (jq.hasClass('ACTION')) kfkClass = 'ACTION';
 		else if (jq.hasClass('INFORM')) kfkClass = 'INFORM';
@@ -5282,7 +5325,7 @@ ret='DEFAULT'; `
 		return kfkClass;
 	}
 
-	setKfkClass(jq, kc) {
+	setKfkClass(jq: myJQuery, kc: string) {
 		let oldKc = KFK.getKfkClass(jq);
 		jq.removeClass(oldKc);
 		jq.addClass(kc);
@@ -5304,8 +5347,48 @@ ret='DEFAULT'; `
 		];
 	}
 
-	async onPaste(evt: Event) {
+	async onPaste(evt: any) {
 		const that = KFK;
+		if (that.scenario !== 'template') return;
+		let content = {
+			html: '',
+			text: '',
+			image: null
+		};
+
+		let blobForm = null;
+		//content.html = evt.clipboardData.getData('text/html');
+		//content.text = evt.clipboardData.getData('Text');
+
+		var items = (evt.clipboardData || evt.originalEvent.clipboardData).items;
+		if (items[1] && (content.html !== '' || content.text !== '')) {
+			console.log('content:', content);
+		} else if (items[0]) {
+			if (items[0].kind === 'string' && (content.html !== '' || content.text !== '')) {
+				console.log('content:', content);
+			} else if (items[0].kind === 'file') {
+				var blob = items[0].getAsFile();
+				console.log(blob);
+				(blobForm = new FormData()),
+					blobForm.append('tplid', that.tplid),
+					blobForm.append('blob', blob, 'pastedImage');
+				fetch(`${API_SERVER}/template/set/cover`, {
+					method: 'POST',
+					headers: {
+						Authorization: that.user.sessionToken
+					},
+					body: blobForm
+				})
+					.then((response) => response.json())
+					.then((result) => {
+						console.log('Cover was uploaded');
+					})
+					.catch((error) => {
+						console.error('Error:', error);
+					});
+			}
+		}
+
 		if (KFK.docIsReadOnly()) {
 			console.log('paste ignored since docIsReadOnly');
 			return;
@@ -5385,11 +5468,11 @@ ret='DEFAULT'; `
 			}
 		}
 		//为防止混乱，框选只对node div有效果
-		KFK.JC3.find('.kfknode').each((index, div) => {
+		KFK.JC3.find('.kfknode').each((index: number, div: any) => {
 			let jqDiv = $(div);
 			let divRect = KFK.divRect(jqDiv);
 			if (
-				rect.left < divRect.right &&
+				rect.left < divRect.right + index - index &&
 				rect.right > divRect.left &&
 				rect.top < divRect.bottom &&
 				rect.bottom > divRect.top
@@ -5398,11 +5481,11 @@ ret='DEFAULT'; `
 			}
 		});
 
-		KFK.JC3.find('.kfkshape').each((index, shape) => {
+		KFK.JC3.find('.kfkshape').each((index: number, shape: any) => {
 			let svgShape = SVG(shape);
 			let shapeRect = KFK.getShapeRect(svgShape);
 			if (
-				rect.left < shapeRect.right &&
+				rect.left < shapeRect.right + index - index && //remove index not used warning
 				rect.right > shapeRect.left &&
 				rect.top < shapeRect.bottom &&
 				rect.bottom > shapeRect.top
@@ -5465,7 +5548,7 @@ ret='DEFAULT'; `
 		that.hoveredConnect = theConnect;
 		that.onC3 = true;
 	}
-	mouseOutConnect(theConnect: any, cnWidth, cnColor) {
+	mouseOutConnect(theConnect: any, cnWidth: any, cnColor: any) {
 		let that = this;
 		const styleid = theConnect.attr('styleid');
 		that.ball.addClass('noshow');
@@ -5477,7 +5560,7 @@ ret='DEFAULT'; `
 		that.hoveredConnectId = null;
 		that.hoveredConnect = null;
 	}
-	async mouseClickConnect(evt: MouseEvent, theConnect) {
+	async mouseClickConnect(evt: MouseEvent, theConnect: myJQuery) {
 		let that = this;
 		if (evt.shiftKey) {
 			if (theConnect.attr('fid') !== 'start') that.showConnectionProperties(theConnect);
@@ -5618,19 +5701,21 @@ ret='DEFAULT'; `
 				that.mouseOutConnect(theConnect, cnWidth, cnColor);
 			});
 			//click line
-			theConnect.on('click', (e) => {
+			theConnect.on('click', (e: any) => {
 				e.preventDefault();
 				e.stopPropagation();
 				that.mouseClickConnect(e, theConnect);
 			});
 			//click text
-			connectText.on('mouseover', async (e) => {
+			connectText.on('mouseover', async (e: any) => {
+				e.preventDefault();
 				that.mouseOverConnect(theConnect);
 			});
-			connectText.on('mouseout', async (e) => {
+			connectText.on('mouseout', async (e: any) => {
+				e.preventDefault();
 				that.mouseOutConnect(theConnect, cnWidth, cnColor);
 			});
-			connectText.on('click', async (e) => {
+			connectText.on('click', async (e: any) => {
 				//click text
 				e.preventDefault();
 				e.stopPropagation();
@@ -5641,14 +5726,14 @@ ret='DEFAULT'; `
 		}
 	}
 
-	async reloadNodeProp(nodeid) {
+	async reloadNodeProp(nodeid: string) {
 		let that = this;
 		console.log('KFK reloadNodeProp', nodeid);
 		let jqNodeDIV = that.JC3.find(`#${nodeid}`);
 		await that.showNodeProperties(jqNodeDIV);
 	}
 
-	async onClickNode(evt: MouseEvent, jqNodeDIV) {
+	async onClickNode(evt: MouseEvent, jqNodeDIV: myJQuery) {
 		let that = this;
 		if (that.tool === 'POINTER') {
 			if (evt.shiftKey) {
@@ -5695,7 +5780,7 @@ ret='DEFAULT'; `
 	 *
 	 * @param {string} fid - 起始节点的ID
 	 * @param {string} tid - 终点节点的ID
-	 * @param {number} fbp - 起始节点上的连接点的编号,从0-3
+	 * @param {number} fbp - 起始节点上的连接点的编号,从0-3, 分别代表左上右下
 	 * @param {number} tbp - 终点节点上的连接点的编号,从0-3
 	 * @param {number} fx - 连接点1的x坐标
 	 * @param {number} fy - 连接点1的y坐标
@@ -5739,22 +5824,22 @@ ret='DEFAULT'; `
 			tsy = ty - tri_height;
 		//算出箭头三角形的三个顶点的坐标
 		switch (tbp) {
-			case 0:
+			case 0: //从左侧指向
 				tsx = tx - tri_height;
 				tsy = ty;
 				triangle = [tsx, tsy + tri_half, tx, ty, tsx, tsy - tri_half];
 				break;
-			case 1:
+			case 1: //从顶部指向
 				tsx = tx;
 				tsy = ty - tri_height;
 				triangle = [tsx - tri_half, tsy, tx, ty, tsx + tri_half, tsy];
 				break;
-			case 2:
+			case 2: //从右侧指向
 				tsx = tx + tri_height;
 				tsy = ty;
 				triangle = [tsx, tsy - tri_half, tx, ty, tsx, tsy + tri_half];
 				break;
-			case 3:
+			case 3: //从下方指向
 				tsx = tx;
 				tsy = ty + tri_height;
 				triangle = [tsx - tri_half, tsy, tx, ty, tsx + tri_half, tsy];
@@ -5786,7 +5871,10 @@ ret='DEFAULT'; `
 						pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
 						break;
 					case 2:
-						lstr = `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`;
+						lstr = that.curve
+							? `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`
+							: `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`;
+						//: `M${fx} ${fy} V${ty} H${tx}`;
 						tstr = `M${tx} ${ty} C${fx} ${ty} ${tx} ${fy} ${fx} ${fy}`;
 						dis = Math.abs(tx - fx);
 						if (ty >= fy) {
@@ -5812,12 +5900,18 @@ ret='DEFAULT'; `
 			case 1:
 				switch (tbp) {
 					case 0:
+						lstr = that.curve
+							? `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`
+							: `M${fx} ${fy} V${ty} H${tx}`;
 						pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
 						break;
 					case 1:
 						pstr = `M${fx} ${fy} C${fx} ${ty - rad} ${tx} ${ty - rad} ${tx} ${ty}`;
 						break;
 					case 2:
+						lstr = that.curve
+							? `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`
+							: `M${fx} ${fy} V${ty} H${tx}`;
 						pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
 						break;
 					case 3:
@@ -5843,9 +5937,12 @@ ret='DEFAULT'; `
 				break;
 			case 2:
 				switch (tbp) {
-					case 0:
+					case 0: //从右侧 指向  左侧
 						dis = Math.abs(tx - fx);
-						lstr = `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`;
+						lstr = that.curve
+							? `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`
+							: `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`;
+						//: `M${fx} ${fy} H${tx} V${ty}`;
 						tstr = `M${tx} ${ty} C${tx} ${fy} ${fx} ${ty} ${fx} ${fy}`;
 						if (ty >= fy) {
 							x = [3, 2, 0, 1].map((x) => fx + dis * ctrls[x]);
@@ -5862,8 +5959,10 @@ ret='DEFAULT'; `
 							`${x[3]},${fy + ww} ` +
 							`${fx},${fy + ww} z`;
 						break;
-					case 1:
-						lstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
+					case 1: //从右侧 指向 顶部
+						lstr = that.curve
+							? `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`
+							: `M${fx} ${fy} H${tx} V${ty}`;
 						tstr = `M${tx} ${ty} C${tx} ${ty} ${tx} ${fy} ${fx} ${fy}`;
 						dis = Math.abs(tx - fx);
 						if (ty >= fy) {
@@ -5883,7 +5982,9 @@ ret='DEFAULT'; `
 						break;
 					case 2:
 						dis = Math.abs(tx - fx);
-						lstr = `M${fx} ${fy} C${fx + rad} ${fy} ${tx + rad} ${ty} ${tx} ${ty}`;
+						lstr = that.curve
+							? `M${fx} ${fy} C${fx + rad} ${fy} ${tx + rad} ${ty} ${tx} ${ty}`
+							: `M${fx} ${fy} H${tx} V${ty}`;
 						tstr = `M${tx} ${ty} C${tx + rad} ${ty} ${fx + rad} ${fy} ${fx} ${fy}`;
 						if (ty >= fy) {
 							x = [3, 2, 0, 1].map((x) => fx + dis * ctrls[x]);
@@ -5901,6 +6002,9 @@ ret='DEFAULT'; `
 							`${fx},${fy + ww} z`;
 						break;
 					case 3:
+						lstr = that.curve
+							? `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`
+							: `M${fx} ${fy} H${tx} V${ty}`;
 						pstr = `M${fx} ${fy} C${tx} ${fy} ${tx} ${ty} ${tx} ${ty}`;
 						break;
 				}
@@ -5908,6 +6012,9 @@ ret='DEFAULT'; `
 			case 3:
 				switch (tbp) {
 					case 0:
+						lstr = that.curve
+							? `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`
+							: `M${fx} ${fy} V${ty} H${tx}`;
 						pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
 						break;
 					case 1:
@@ -5930,6 +6037,9 @@ ret='DEFAULT'; `
 							`${fx + ww},${fy} z`;
 						break;
 					case 2:
+						lstr = that.curve
+							? `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`
+							: `M${fx} ${fy} V${ty} H${tx}`;
 						pstr = `M${fx} ${fy} C${fx} ${ty} ${tx} ${ty} ${tx} ${ty}`;
 						break;
 					case 3:
@@ -5953,7 +6063,7 @@ ret='DEFAULT'; `
 		);
 	}
 
-	showHelp(msg, timeout = 4000) {
+	showHelp(msg: string, timeout: number = 4000) {
 		this.helpArea.text(msg);
 		this.myFadeIn(this.helpArea);
 		if (this.closeHelpTimer) {
@@ -6201,5 +6311,6 @@ const KFK = new KFKclass();
 /* document.onpaste = KFK.onPaste;
 document.oncopy = KFK.onCopy;
 document.oncut = KFK.onCut; */
+tmptmptmp = tmptmptmp;
 
 export default KFK;
