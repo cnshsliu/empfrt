@@ -24,6 +24,13 @@
 	export let setFadeMessage: any;
 	export let reloadTags: any;
 	export let SetFor: any;
+	const toggleDiscuss = async (row) => {
+		return await api.post(
+			'comment/toggle',
+			{ objtype: 'template', objid: row.tplid },
+			user.sessionToken
+		);
+	};
 </script>
 
 {#if row.visi}
@@ -407,6 +414,25 @@
 					{/each}
 				</Row>
 			{/if}
+
+			<Row>
+				<div class="form-check form-switch">
+					<input
+						class="form-check-input"
+						type="checkbox"
+						role="switch"
+						id="flexSwitchCheckChecked"
+						checked={row.allowdiscuss}
+						on:change={async (e) => {
+							row.allowdiscuss = await toggleDiscuss(row);
+							row = row;
+						}}
+					/>
+					<label class="form-check-label" for="flexSwitchCheckChecked">
+						{row.allowdiscuss ? '允许讨论' : '已关闭讨论'} （切换以切换状态）
+					</label>
+				</div>
+			</Row>
 		</div>
 	</div>
 {/if}

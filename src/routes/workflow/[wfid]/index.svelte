@@ -1,5 +1,4 @@
 <script context="module" lang="ts">
-	let TimeTool = null;
 	export async function load({ url, params, fetch, session }) {
 		let showComment = false;
 		if (url.searchParams.has('showComment') && url.searchParams.get('showComment') == 'true') {
@@ -43,7 +42,7 @@
 
 <script lang="ts">
 	import type { User, Template, Workflow, EmpResponse } from '$lib/types';
-	import { _ } from '$lib/i18n';
+	import { _, locale } from '$lib/i18n';
 	import WorkFile from '$lib/workfile.svelte';
 	import Comments from '$lib/Comments.svelte';
 	import { session } from '$app/stores';
@@ -64,6 +63,7 @@
 
 	$title = workflow.wftitle;
 	let theDesigner: any;
+	let pointToOrigin = '';
 	let comments = [];
 
 	export let user: User;
@@ -100,11 +100,6 @@
 		)) as unknown as string;
 	};
 	onMount(async () => {
-		if (TimeTool === null) {
-			console.log('Import TimeTool');
-			TimeTool = (await import('$lib/TimeTool')).default;
-		}
-
 		$filterStorage.tplid = workflow.tplid;
 		//$filterStorage.workTitlePattern = 'wf:' + wfid;
 		if ($session.comment_wfid === wfid) {
@@ -132,10 +127,10 @@
 	<Container class="mt-3 kfk-highlight-2 text-wrap text-break">
 		<WorkFile title={$_('todo.pbo')} forWhat={'workflow'} {workflow} forKey="pbo" />
 	</Container>
-	{#if showComment}
+	{#if showComment && workflow.allowdiscuss}
 		<div class="mt-2 ms-5 p-2" id="todo_comments">
 			<span class="fs-3">{workflow.wftitle}</span>
-			<Comments bind:comments bind:TimeTool />
+			<Comments bind:comments bind:pointToOrigin />
 		</div>
 	{/if}
 	<ProcessTrack {user} bind:wf={workflow} {wfid} {iframeMode} {onPrint} />

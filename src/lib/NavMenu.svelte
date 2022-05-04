@@ -1,4 +1,5 @@
 <script context="module" lang="ts">
+	import TimeTool from '$lib/TimeTool';
 	export async function load({ url, params, session }) {
 		const { user } = session;
 		return {
@@ -10,7 +11,7 @@
 </script>
 
 <script lang="ts">
-	import { _ } from '$lib/i18n';
+	import { _, locale } from '$lib/i18n';
 	import { tick } from 'svelte';
 	import { page, session } from '$app/stores';
 	import { filterStorage } from '$lib/empstores';
@@ -73,6 +74,7 @@
 	}
 
 	onMount(async () => {
+		TimeTool.setLocale($locale);
 		//AAA-2: uncomment next 2 lines
 		/* window.onscroll = function () {
 			myFunction();
@@ -176,10 +178,10 @@
 					<DropdownItem
 						class="text-center"
 						on:click={(e) => {
-							goto('/comment');
+							goto('/docs');
 						}}
 					>
-						{$_('navmenu.messages')}
+						{$_('navmenu.doc')}
 					</DropdownItem>
 					<DropdownItem divider />
 					<DropdownItem class="text-center" on:click={logout}>
@@ -207,12 +209,16 @@
 						{$_('navmenu.home')}
 					</NavLink>
 				</NavItem>
-				<NavItem>
-					<NavLink href="/docs" class="py-2 ps-0 pe-3">
-						{$_('navmenu.doc')}
-					</NavLink>
-				</NavItem>
 				{#if $session.user}
+					<NavItem>
+						<NavLink
+							href="/discuss"
+							class="py-2 ps-0 pe-3"
+							active={$page.url.pathname === '/discuss'}
+						>
+							{$_('navmenu.discuss')}
+						</NavLink>
+					</NavItem>
 					<NavItem>
 						<NavLink
 							class="py-2 ps-0 pe-3"

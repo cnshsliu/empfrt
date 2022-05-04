@@ -48,7 +48,7 @@
 	let filter_tspan = '1w';
 	let show_calendar_select = false;
 	let setPboAtFor = '';
-	let setTitleFor = '';
+	let settingFor = '';
 	let calendar_begin = '';
 	let calendar_end = '';
 	let sorting = { dir: 'desc', key: 'updatedAt' };
@@ -199,8 +199,8 @@
 			setPboAtFor = workflow.wfid;
 			return;
 		}
-		if (op === 'setTitle') {
-			setTitleFor = workflow.wfid;
+		if (op === 'setting') {
+			settingFor = workflow.wfid;
 			return;
 		}
 
@@ -258,6 +258,13 @@
 		reload();
 		isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 	});
+	const toggleDiscuss = async (row) => {
+		return await api.post(
+			'comment/toggle',
+			{ objtype: 'workflow', objid: row.wfid },
+			user.sessionToken
+		);
+	};
 </script>
 
 <Container>
@@ -437,9 +444,9 @@
 									</NavLink>
 								</DropdownItem -->
 												<DropdownItem>
-													<NavLink on:click={() => opWorkflow(row, 'setTitle')}>
+													<NavLink on:click={() => opWorkflow(row, 'setting')}>
 														<Icon name="caret-right-square" />
-														{$_('remotetable.wfa.setTitle')}
+														{$_('remotetable.wfa.setting')}
 													</NavLink>
 												</DropdownItem>
 											{:else}
@@ -555,7 +562,7 @@
 								</Col>
 							</Row>
 							<a
-								class="fs-6 kfk-workflow-id tnt-workflow-id"
+								class="fs-6 kfk-workflow-id tnt-workflow-id kfk-link px-2"
 								href={'#'}
 								on:click|preventDefault={() => opWorkflow(row, 'works_running')}
 							>
@@ -563,23 +570,23 @@
 							</a>
 							<a
 								href={'#'}
-								class="ms-3 fs-6 kfk-workflow-id tnt-workflow-id"
+								class="ms-3 fs-6 kfk-workflow-id tnt-workflow-id kfk-link px-2"
 								on:click={() => opWorkflow(row, 'viewTemplate')}
 							>
 								{$_('remotetable.wfa.viewTemplate')}
 							</a>
-							{#if row.commentCount > 0}
+							{#if row.commentCount > 0 && row.allowdiscuss}
 								<a
 									href={'#'}
-									class="ms-3 fs-6 kfk-workflow-id tnt-workflow-id kfk-link"
+									class="ms-3 fs-6 kfk-workflow-id tnt-workflow-id kfk-link px-2"
 									on:click={() => showWorkflowDiscussion(row.wfid)}
 								>
 									<AniIcon icon="chat-dots-fill" ani="aniShake" />
 									{row.commentCount > 0 ? row.commentCount : ''}
 								</a>
 							{/if}
-							{#if setTitleFor === row.wfid}
-								<div>Set Title to:</div>
+							{#if settingFor === row.wfid}
+								<div class="mt-3">Set Title to:</div>
 								<InputGroup>
 									<Input bind:value={row.wftitle} />
 									<Button
@@ -592,7 +599,7 @@
 												{ wfid: row.wfid, wftitle: row.wftitle },
 												user.sessionToken
 											);
-											setTitleFor = '';
+											settingFor = '';
 										}}
 									>
 										Set
@@ -602,12 +609,28 @@
 										color="secondary"
 										on:click={async (e) => {
 											e.preventDefault();
-											setTitleFor = '';
+											settingFor = '';
 										}}
 									>
 										Cancel
 									</Button>
 								</InputGroup>
+								<div class="form-check form-switch">
+									<input
+										class="form-check-input"
+										type="checkbox"
+										role="switch"
+										id="flexSwitchCheckChecked"
+										checked={row.allowdiscuss}
+										on:change={async (e) => {
+											row.allowdiscuss = await toggleDiscuss(row);
+											row = row;
+										}}
+									/>
+									<label class="form-check-label" for="flexSwitchCheckChecked">
+										{row.allowdiscuss ? '允许讨论' : '已关闭讨论'} （切换以切换状态）
+									</label>
+								</div>
 							{/if}
 						</div>
 					</div>

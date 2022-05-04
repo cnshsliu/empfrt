@@ -15,7 +15,6 @@
 	import { onMount, onDestroy } from 'svelte';
 	import Parser from '$lib/parser';
 	import type { Workflow, Work } from '$lib/types';
-	import Table from '$lib/pagination/Table.svelte';
 	import Pagination from '$lib/pagination/Pagination.svelte';
 	import Search from '$lib/pagination/Search.svelte';
 	import Sort from '$lib/pagination/Sort.svelte';
@@ -150,7 +149,7 @@
 				autoRefreshInterval = setInterval(async () => {
 					await load(0, 'autoRefreshInterval');
 					autoRefreshTimes++;
-					if (rowsCount > 0 || autoRefreshTimes >= 6) {
+					if (rowsCount > 0 || autoRefreshTimes >= 3) {
 						clearInterval(autoRefreshInterval);
 						autoRefreshTimes = 0;
 					}
@@ -371,14 +370,16 @@
 							>
 								{row.wftitle}
 							</a>
-							<a
-								href={'#'}
-								class="ms-3 fs-6 kfk-workflow-id tnt-workflow-id kfk-link"
-								on:click={() => gotoWorkitem(row, '#discussion_area')}
-							>
-								<AniIcon icon="chat-dots-fill" ani="aniShake" />
-								{row.commentCount > 0 ? row.commentCount : ''}
-							</a>
+							{#if row.allowdiscuss}
+								<a
+									href={'#'}
+									class="ms-3 fs-6 kfk-workflow-id tnt-workflow-id kfk-link"
+									on:click={() => gotoWorkitem(row, '#discussion_area')}
+								>
+									<AniIcon icon="chat-dots-fill" ani="aniShake" />
+									{row.commentCount > 0 ? row.commentCount : ''}
+								</a>
+							{/if}
 						</Col>
 					</Row>
 				</Col>

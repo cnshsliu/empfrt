@@ -2,6 +2,7 @@
 	"navmenu": {
 		"home": "Home",
 		"doc": "Doc",
+		"discuss": "Discuss",
 		"template": "Template",
 		"planning": "Planning",
 		"workflow": "Monitoring",
@@ -9,6 +10,15 @@
 		"settings": "Settings",
 		"teaming": "Teaming",
 		"messages": "Messages"
+	},
+	"discuss": {
+		"category": {
+			"ALL_VISIED": "All Visable",
+			"I_STARTED": "My Workflow",
+			"I_AM_IN": "My Works",
+			"I_AM_QED": "Related to Me"
+		},
+		"reload": "Reload"
 	},
 	"home": {
 		"topic": "Svelte Localization Tutorial",
@@ -122,6 +132,7 @@
 			"deleteThisWorkflow": "Delete This Workflow",
 			"setpboat": "Set PBO checkpoint",
 			"setTitle": "Set Title",
+			"setting": "Settings",
 			"restartthendeleteThisWorkflow": "Restart And Delete This"
 		},
 		"tplaction": {
@@ -630,6 +641,7 @@
 	"comment": {
 		"hide": "Hide Discussion",
 		"show": "Show Discussion",
-		"fortodo": "comment: "
+		"fortodo": "Comment to: ",
+		"forcomment": "Reply to："
 	}
 }

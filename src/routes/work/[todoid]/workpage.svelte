@@ -1,3 +1,8 @@
+<script context="module" lang="ts">
+	import TimeTool from '$lib/TimeTool';
+	export async function load({ url, params, fetch, session }) {}
+</script>
+
 <script lang="ts">
 	import { _, locale } from '$lib/i18n';
 	import { qtb, nbArray } from '$lib/utils';
@@ -45,10 +50,10 @@
 	let checkingAdhocResult = [];
 	let anyUserNotExists = {};
 	let newComment = '';
-	let TimeTool = null;
 	let showTodoComment = true;
 	let workJustDone = null;
 	let caculateFormulaTimer = null;
+	let pointToOrigin = '';
 	import CommentInput from '$lib/input/CommentInput.svelte';
 	const dispatch = createEventDispatcher();
 
@@ -426,8 +431,6 @@
 	};
 
 	onMount(async () => {
-		TimeTool = (await import('$lib/TimeTool')).default;
-		TimeTool.setLocale($locale);
 		//Get timeout setting of delete timeout from server
 		//根据参数的When设置计算是否显示
 		setShowKVars();
@@ -464,9 +467,13 @@
 						</span>
 					</div>
 				{/if}
-				<!-- 这里显示excel上传的内容 START -->
-				{@html work.cellInfo}
-				<!-- 这里显示excel上传的内容 END -->
+				<!-- 这里显示excel上传的内容 csv_ START -->
+				{#if work.cellInfo}
+					<div style="overflow-x:auto;">
+						{@html work.cellInfo}
+					</div>
+				{/if}
+				<!-- 这里显示excel上传的内容 csv_ END -->
 				<!--- div class="w-100">
 				<iframe id="workInstruction" src="/work/instruct" title="YouTube video" width="100%" />
 			</div -->
@@ -760,60 +767,62 @@
 				{work.doer === user.email ? '' : `Delegated by ${work.doer}`}
 			</div>
 		{/if}
-		<div style="height:20px" id="discussion_area" />
-		<div class="kfk-highlight-2 mt-5">
-			<Row class="p-3">
-				<Button
-					on:click={() => {
-						showTodoComment = !showTodoComment;
-					}}
-				>
-					{#if showTodoComment}
-						<i class="bi bi-chevron-up" /> {$_('comment.hide')}
-					{:else}
-						<i class="bi bi-chevron-down" /> {$_('comment.show')}
-					{/if}
-				</Button>
-			</Row>
-			{#if showTodoComment}
-				<Row class="m-0 p-0">
-					<CommentInput
-						bind:value={newComment}
-						cmtid={'todo'}
-						bind:this={theCommentInput}
-						placeholder={'Discussion...'}
-						on:comment={async (e) => {
-							let res = await api.post(
-								'comment/addforbiz',
-								{
-									objtype: 'TODO',
-									objid: work.todoid,
-									content: e.detail
-								},
-								user.sessionToken
-							);
-							if (res.error) {
-								console.log(res.message);
-							} else {
-								work.comments.unshift(res.thisComment);
-								for (let i = 0; i < work.comments.length; i++) {
-									work.comments[i].transition = i === 0;
-								}
-								work.comments = work.comments;
-								newComment = '';
-							}
+		{#if work.allowdiscuss && work.wf.allowdiscuss}
+			<div style="height:20px" id="discussion_area" />
+			<div class="kfk-highlight-2 mt-5">
+				<Row class="p-3">
+					<Button
+						on:click={() => {
+							showTodoComment = !showTodoComment;
 						}}
-					/>
+					>
+						{#if showTodoComment}
+							<i class="bi bi-chevron-up" /> {$_('comment.hide')}
+						{:else}
+							<i class="bi bi-chevron-down" /> {$_('comment.show')}
+						{/if}
+					</Button>
 				</Row>
-				{#if work.comments && work.comments.length > 0}
-					<Row class="mt-2 p-2" id="todo_comments">
-						<Comments bind:comments={work.comments} bind:TimeTool />
+				{#if showTodoComment}
+					<Row class="m-0 p-0">
+						<CommentInput
+							bind:value={newComment}
+							cmtid={'todo'}
+							bind:this={theCommentInput}
+							placeholder={'Discussion...'}
+							on:comment={async (e) => {
+								let res = await api.post(
+									'comment/addforbiz',
+									{
+										objtype: 'TODO',
+										objid: work.todoid,
+										content: e.detail
+									},
+									user.sessionToken
+								);
+								if (res.error) {
+									console.log(res.message);
+								} else {
+									work.comments.unshift(res.thisComment);
+									for (let i = 0; i < work.comments.length; i++) {
+										work.comments[i].transition = i === 0;
+									}
+									work.comments = work.comments;
+									newComment = '';
+								}
+							}}
+						/>
 					</Row>
-				{:else}
-					{$_('todo.bethefirstcomment')}
+					{#if work.comments && work.comments.length > 0}
+						<Row class="mt-2 p-2" id="todo_comments">
+							<Comments bind:comments={work.comments} bind:pointToOrigin />
+						</Row>
+					{:else}
+						{$_('todo.bethefirstcomment')}
+					{/if}
 				{/if}
-			{/if}
-		</div>
+			</div>
+		{/if}<!-- if work(todo).allowdiscuss-->
 	</div>
 	<ProcessTrack
 		{user}

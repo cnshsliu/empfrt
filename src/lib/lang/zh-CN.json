@@ -2,6 +2,7 @@
 	"navmenu": {
 		"home": "首页",
 		"doc": "文档",
+		"discuss": "讨论",
 		"template": "规划",
 		"planning": "超脑规划",
 		"workflow": "运行监控",
@@ -9,6 +10,15 @@
 		"settings": "设置",
 		"teaming": "组队",
 		"messages": "消息"
+	},
+	"discuss": {
+		"category": {
+			"ALL_VISIED": "全部可见",
+			"I_STARTED": "我启动工作的",
+			"I_AM_IN": "我参与工作的",
+			"I_AM_QED": "与我相关的"
+		},
+		"reload": "刷新"
 	},
 	"home": {
 		"topic": "Svelte Localization Tutorial",
@@ -122,6 +132,7 @@
 			"deleteThisWorkflow": "删除这个流程",
 			"setpboat": "何时可添加PBO",
 			"setTitle": "设置流程名称",
+			"setting": "设置",
 			"restartthendeleteThisWorkflow": "重启并删除当前流程"
 		},
 		"tplaction": {
@@ -414,6 +425,13 @@
 				"button1": "是的，切换",
 				"button2": "继续使用现有语言{currentlang}"
 			}
+		},
+		"delete": {
+			"template": {
+				"title": "删除模版",
+				"body": "删除模版不可撤回，请确认要删除",
+				"yes": "确定删除"
+			}
 		}
 	},
 	"inputtable": {
@@ -628,6 +646,7 @@
 	"comment": {
 		"hide": "收起讨论区",
 		"show": "展开讨论区",
-		"fortodo": "评论："
+		"fortodo": "评论：",
+		"forcomment": "回复："
 	}
 }

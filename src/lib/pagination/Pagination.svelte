@@ -10,7 +10,6 @@
 	import { _ } from '$lib/i18n';
 	import type { StateContext } from '$lib/types';
 	import { createEventDispatcher, getContext } from 'svelte';
-	import { onMount } from 'svelte';
 	const dispatch = createEventDispatcher();
 	const stateContext: StateContext = getContext('state');
 

@@ -1,4 +1,5 @@
 <script context="module" lang="ts">
+	import TimeTool from '$lib/TimeTool';
 	export async function load({ url, params, fetch, session }) {}
 </script>
 
@@ -13,8 +14,8 @@
 	import AniIcon from '$lib/AniIcon.svelte';
 	import { Row, Col } from 'sveltestrap';
 	import CommentInput from '$lib/input/CommentInput.svelte';
-	export let TimeTool = null;
 	export let comments;
+	export let pointToOrigin;
 	let replyToCmtId;
 	let thumbnum_changed = 0;
 	let user = $session.user;
@@ -40,70 +41,90 @@
 	<Transition effect={slide} enable={cmt.transition}>
 		<Row id={'tcmt_' + cmt._id} class="mt-2 bt-2">
 			<Col class="d-flex col-auto">
-				<Avatar email={cmt.who} uname={cmt.whoCN} style={'avatar40-round5'} />
+				<Avatar email={cmt.who} uname={cmt.whoCN} style={'avatar50-round25'} />
 			</Col>
-			<Col>
-				<Row>
-					<Col class="col-auto">
-						<span class="fw-bold me-2">
-							{cmt.whoCN} @{cmt.who.substring(0, cmt.who.indexOf('@'))}
-						</span>
-						ReplyTO:WHOM {cmt.objid}
-						{#if cmt.children && cmt.children && cmt.children.length}
-							<span class="ms-3">
+
+			{#key pointToOrigin}
+				<Col
+					class="{pointToOrigin === cmt._id
+						? 'border-start border-success border-5 kfk-origin-comment'
+						: 'cmt-header'}}"
+				>
+					<Row>
+						<Col class="col-auto">
+							<span class="fw-bold me-2">
+								{cmt.whoCN} @{cmt.who.substring(0, cmt.who.indexOf('@'))}
+							</span>
+							{#if cmt.children && cmt.children && cmt.children.length}
+								<span class="ms-3">
+									<a
+										class="kfk-link px-2"
+										href={'#'}
+										on:click|preventDefault={(e) => {
+											cmt.showChildren = !cmt.showChildren;
+										}}
+									>
+										{#if cmt.showChildren}
+											<AniIcon icon="caret-up" ani="aniShake" />
+										{:else}
+											<AniIcon icon="caret-right-fill" ani="aniShake" />
+										{/if}
+									</a>
+								</span>
+							{/if}
+						</Col>
+					</Row>
+					<Row>
+						<Col class="fs-6 kfk-tag fw-bolder">
+							{TimeTool ? TimeTool.fromNow(cmt.createdAt) : ''}
+							{#if cmt.todoTitle}
+								<!-- 如果是对TODO的comment， 则显示TODO title -->
+								{$_('comment.fortodo')}
+								<a href={`/work/${cmt.context.todoid}`} role="button">
+									{cmt.todoTitle} ({cmt.todoDoerCN})
+								</a>
+							{/if}
+							{#if cmt.objtype === 'COMMENT'}
+								<span class="kfk-tag">
+									{$_('comment.forcomment')}
+									<a
+										class="kfk-link px-2"
+										href={'#'}
+										on:click={(e) => {
+											e.preventDefault();
+											pointToOrigin = cmt.objid;
+										}}
+									>
+										{cmt.towhomCN}
+									</a>
+								</span>
+							{/if}
+							{#if (!cmt.children || (cmt.children && cmt.children.length === 0)) && cmt.who === user.email}
 								<a
-									class="kfk-link"
 									href={'#'}
-									on:click|preventDefault={(e) => {
-										cmt.showChildren = !cmt.showChildren;
+									class="kfk-link px-2"
+									on:click={async (e) => {
+										e.preventDefault();
+										let res = await api.post(
+											'comment/delete',
+											{ commentid: cmt._id },
+											$session.user.sessionToken
+										);
+										if (res.error) {
+											console.log(res.message);
+										} else {
+											comments.splice(cmtIndex, 1);
+											comments = comments;
+										}
 									}}
 								>
-									{#if cmt.showChildren}
-										<AniIcon icon="caret-up" ani="aniShake" />
-									{:else}
-										<AniIcon icon="caret-right-fill" ani="aniShake" />
-									{/if}
+									<AniIcon icon="trash" ani="aniShake" />
 								</a>
-							</span>
-						{/if}
-					</Col>
-					{#if (!cmt.children || (cmt.children && cmt.children.length === 0)) && cmt.who === user.email}
-						<Col class="col-auto">
-							<a
-								href={'#'}
-								class="kfk-link"
-								on:click={async (e) => {
-									e.preventDefault();
-									let res = await api.post(
-										'comment/delete',
-										{ commentid: cmt._id },
-										$session.user.sessionToken
-									);
-									if (res.error) {
-										console.log(res.message);
-									} else {
-										comments.splice(cmtIndex, 1);
-										comments = comments;
-									}
-								}}
-							>
-								<AniIcon icon="trash" ani="aniShake" />
-							</a>
+							{/if}
 						</Col>
-					{/if}
-				</Row>
-				<Row>
-					<Col class="fs-6 kfk-tag fw-bolder">
-						{TimeTool ? TimeTool.fromNow(cmt.createdAt) : ''}
-						{#if cmt.todoTitle}
-							{$_('comment.fortodo')}
-							<a href={`/work/${cmt.context.todoid}`} role="button">
-								{cmt.todoTitle} ({cmt.todoDoerCN})
-							</a>
-						{/if}
-					</Col>
-				</Row>
-			</Col>
+					</Row>
+				</Col>
+			{/key}
 		</Row>
 		<Row cols="1" class="ms-3 border-start border-primary">
 			<Col>
@@ -115,7 +136,7 @@
 		<div class="ms-3 border-start border-primary comment-input row row-cols-1">
 			<div class="col px-5 pb-2">
 				<span class="kfk-tag">
-					<a href={'#'} class="kfk-link" on:click={(e) => thumb(e, cmt, 'up')}>
+					<a href={'#'} class="kfk-link px-2" on:click={(e) => thumb(e, cmt, 'up')}>
 						{#key thumbnum_changed}
 							{#if cmt.upnum > 0}
 								<AniIcon icon="hand-thumbs-up-fill" ani="aniShake" />
@@ -127,12 +148,7 @@
 					</a>
 				</span>
 				<span class="kfk-tag">
-					<a
-						href={'#'}
-						role="button"
-						class="kfk-link kfk-tag"
-						on:click={(e) => thumb(e, cmt, 'down')}
-					>
+					<a href={'#'} role="button" class="kfk-link px-2" on:click={(e) => thumb(e, cmt, 'down')}>
 						{#if cmt.downnum > 0}
 							<AniIcon icon="hand-thumbs-down-fill" ani="aniShake" />
 						{:else}
@@ -146,7 +162,7 @@
 				<span class="kfk-tag ms-3">
 					<a
 						href={'#'}
-						class="kfk-link"
+						class="kfk-link px-2"
 						on:click|preventDefault={(e) => {
 							if (replyToCmtId === cmt._id) {
 								replyToCmtId = '';
@@ -205,7 +221,7 @@
 		{#if cmt.showChildren && cmt.children.length > 0}
 			<div class="ms-3 border-start border-primary comment-child row row-cols-1">
 				<div class="col">
-					<svelte:self bind:comments={cmt.children} bind:TimeTool />
+					<svelte:self bind:comments={cmt.children} bind:pointToOrigin />
 				</div>
 			</div>
 		{/if}

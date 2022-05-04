@@ -176,7 +176,7 @@
 	let desc_input = '';
 	let visi_rds_input = '';
 
-	async function deleteRow(tplid) {
+	async function __deleteRow(tplid) {
 		let res = await api.post('template/delete/byname', { tplid: tplid }, user.sessionToken);
 		if (res.error) {
 			setFadeMessage(res.message, 'warning');
@@ -194,6 +194,17 @@
 				rowsCount = rowsCount - 1;
 			}
 		}
+	}
+	async function deleteRow(tplid) {
+		theConfirm.title = $_('confirm.delete.template.title');
+		theConfirm.body = $_('confirm.delete.template.body');
+		theConfirm.buttons = [$_('confirm.delete.template.yes')];
+		theConfirm.callbacks = [
+			async () => {
+				await __deleteRow(tplid);
+			}
+		];
+		theConfirm.toggle();
 	}
 	async function exportData(tplid) {
 		//let res = await post('/template/data', { tplid: tplid }, user.sessionToken);
@@ -325,11 +336,21 @@
 			{#each rows as row, index (row)}
 				<Col class="mb-2 card p-2">
 					<Row>
-						{#if row.hasCover}
-							<Col class="col-auto">
+						<Col class="col-auto">
+							{#if row.hasCover}
 								<Cover tplid={row.tplid} style={'cover-90'} />
-							</Col>
-						{/if}
+							{:else}
+								<div class="kfk-cover-virtual text-center">
+									{(() => {
+										//如有中文，取出中文
+										var reg = /[\u4e00-\u9fa5]/g;
+										let m = row.tplid.match(reg);
+										if (m) return m.join('');
+										else return row.tplid;
+									})()}
+								</div>
+							{/if}
+						</Col>
 						<Col>
 							<div class="d-flex">
 								<!-- 模版名称 即 下拉菜单行  -->
@@ -368,10 +389,10 @@
 												<DropdownItem>
 													<a
 														href={'#'}
+														class="ms-3 fs-5 kfk-workflow-id tnt-workflow-id kfk-link px-2"
 														on:click|preventDefault={() => {
 															goto(`template/start?tplid=${row.tplid}`, { replaceState: false });
 														}}
-														class="nav-link "
 													>
 														<Icon name="play-circle-fill" />
 														{$_('remotetable.tplaction.startIt')}
@@ -426,15 +447,6 @@
 												<DropdownItem>
 													<a
 														href={'#'}
-														on:click|preventDefault={() => deleteRow(row.tplid)}
-														class="nav-link "
-														><Icon name="trash" />
-														{$_('remotetable.tplaction.deleteThisTempalte')}
-													</a>
-												</DropdownItem>
-												<DropdownItem>
-													<a
-														href={'#'}
 														on:click|preventDefault={() => exportData(row.tplid)}
 														class="nav-link "
 													>
@@ -473,6 +485,15 @@
 														{$_('remotetable.tplaction.scheduler')}
 													</a>
 												</DropdownItem>
+												<DropdownItem>
+													<a
+														href={'#'}
+														on:click|preventDefault={() => deleteRow(row.tplid)}
+														class="nav-link "
+														><Icon name="trash" />
+														{$_('remotetable.tplaction.deleteThisTempalte')}
+													</a>
+												</DropdownItem>
 											{/if}
 										</DropdownMenu>
 									</Dropdown>
@@ -493,10 +514,10 @@
 									{#if user.perms && ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
 										<a
 											href={'#'}
+											class="ms-3 fs-5 kfk-workflow-id tnt-workflow-id kfk-link px-2"
 											on:click|preventDefault={() => {
 												goto(`template/start?tplid=${row.tplid}`, { replaceState: false });
 											}}
-											class="nav-link "
 										>
 											<Icon name="play-circle-fill" />
 											{$_('remotetable.startIt')}

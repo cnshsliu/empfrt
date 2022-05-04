@@ -2436,6 +2436,16 @@ div.pbo {
 	overflow: hidden;
 	text-align: cetner;
 }
+.kfk-cover-virtual {
+	width: 90px;
+	height: 60px;
+	background-color: rgba(0, 0, 255, 0.05);
+	color: rgba(0, 0, 0, 0.05);
+	font-size: 36px;
+	font-weight: bolder;
+	overflow: hidden;
+	text-align: cetner;
+}
 .kfk-signature {
 	width: 100px;
 	height: 50px;
@@ -2476,6 +2486,11 @@ div.pbo {
 	height: 80px;
 	border-radius: 10px;
 }
+.avatar50-round25 {
+	width: 50px;
+	height: 50px;
+	border-radius: 25px;
+}
 div#todo_comments img {
 	max-width: 400px;
 }
@@ -2486,4 +2501,8 @@ div#todo_comments img {
 	width: 90px;
 	height: 60px;
 	border-radius: 5px;
+}
+
+.kfk-origin-comment {
+	background-color: '#33CC3333';
 }

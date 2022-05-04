@@ -8,7 +8,6 @@
 	import * as api from '$lib/api';
 	import DisplayTable from '$lib/display/Table.svelte';
 	//import CommentEntry from '$lib/CommentEntry.svelte';
-	import Comments from '$lib/Comments.svelte';
 	import CsvDisplay from '$lib/display/CsvDisplay.svelte';
 	import { StatusClass } from '$lib/status';
 	import parser from '$lib/parser';

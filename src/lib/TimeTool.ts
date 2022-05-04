@@ -5,6 +5,7 @@ import relativeTime from 'dayjs/plugin/relativeTime.js';
 dayjs.extend(relativeTime);
 
 const TimeTool = {
+	name: 'IAMTImeTool',
 	setLocale: function (theLocale = 'zh-cn') {
 		dayjs.locale(theLocale); // 使用本地化语言
 	},

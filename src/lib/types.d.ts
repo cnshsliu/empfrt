@@ -60,6 +60,7 @@ export interface Template {
 	createdAt: string;
 	updatedAt: string;
 	ins: boolean;
+	allowdiscuss: boolean;
 }
 
 export interface Workflow {
@@ -89,6 +90,7 @@ export interface Workflow {
 	kvars?: any;
 	history?: any;
 	commentCount: number;
+	allowdiscuss: boolean;
 }
 
 export interface Work {
@@ -127,6 +129,7 @@ export interface Work {
 	withrvk?: boolean;
 	withadhoc?: boolean;
 	withcmt?: boolean;
+	allowdiscuss: boolean;
 }
 
 export interface TmapEntry {
