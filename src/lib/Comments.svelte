@@ -193,7 +193,8 @@
 								'comment/add',
 								{
 									cmtid: cmt._id,
-									content: e.detail
+									content: e.detail,
+									threadid: cmt.threadid
 								},
 								$session.user.sessionToken
 							);
