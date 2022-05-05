@@ -643,5 +643,8 @@
 		"show": "Show Discussion",
 		"fortodo": "Comment to: ",
 		"forcomment": "Reply to："
+	},
+	"session": {
+		"kickout": "abnormal refreshs detected-session terminated"
 	}
 }

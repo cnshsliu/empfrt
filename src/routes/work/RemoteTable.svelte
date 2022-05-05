@@ -4,6 +4,7 @@
 	import { _, date, time } from '$lib/i18n';
 	import * as api from '$lib/api';
 	import { slide, fade } from 'svelte/transition';
+	import { setFadeMessage } from '$lib/Notifier';
 	import Transition from '$lib/Transition.svelte';
 	import AniIcon from '$lib/AniIcon.svelte';
 	import { navigating, session } from '$app/stores';
@@ -128,6 +129,7 @@
 			rowsCount = data.rowsCount;
 		} else if (data && (<any>data).error) {
 			if ((<any>data).error === 'KICKOUT') {
+				setFadeMessage($_('session.kickout'));
 				if (autoRefreshInterval) {
 					console.log('Kick auto-refresh interaval', new Date());
 					clearInterval(autoRefreshInterval);

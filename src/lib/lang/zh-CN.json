@@ -648,5 +648,8 @@
 		"show": "展开讨论区",
 		"fortodo": "评论：",
 		"forcomment": "回复："
+	},
+	"session": {
+		"kickout": "过多非正常操作刷新-你的登录被退出"
 	}
 }
