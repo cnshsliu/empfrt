@@ -449,39 +449,6 @@
 														{$_('remotetable.wfa.setting')}
 													</NavLink>
 												</DropdownItem>
-											{:else}
-												{#if row.status === 'ST_RUN'}
-													<DropdownItem>
-														<NavLink disabled>
-															<Icon name="pause-btn" />
-															{$_('remotetable.wfa.pause')}
-														</NavLink>
-													</DropdownItem>
-												{/if}
-												{#if row.status === 'ST_PAUSE'}
-													<DropdownItem>
-														<NavLink disabled>
-															<Icon name="arrow-counterclockwise" />
-															{$_('remotetable.wfa.resume')}
-														</NavLink>
-													</DropdownItem>
-												{/if}
-												{#if row.status === 'ST_PAUSE' || row.status === 'ST_RUN'}
-													<DropdownItem>
-														<NavLink disabled>
-															<Icon name="slash-square" />
-															{$_('remotetable.wfa.stop')}
-														</NavLink>
-													</DropdownItem>
-												{/if}
-												{#if ['ST_RUN', 'ST_PAUSE', 'ST_STOP'].indexOf(row.status) > -1}
-													<DropdownItem>
-														<NavLink disabled>
-															<Icon name="caret-right-square" />
-															{$_('remotetable.wfa.restart')}
-														</NavLink>
-													</DropdownItem>
-												{/if}
 											{/if}
 											<DropdownItem>
 												{#if ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}

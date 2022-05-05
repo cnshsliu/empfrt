@@ -415,24 +415,26 @@
 				</Row>
 			{/if}
 
-			<Row>
-				<div class="form-check form-switch">
-					<input
-						class="form-check-input"
-						type="checkbox"
-						role="switch"
-						id="flexSwitchCheckChecked"
-						checked={row.allowdiscuss}
-						on:change={async (e) => {
-							row.allowdiscuss = await toggleDiscuss(row);
-							row = row;
-						}}
-					/>
-					<label class="form-check-label" for="flexSwitchCheckChecked">
-						{row.allowdiscuss ? '允许讨论' : '已关闭讨论'} （切换以切换状态）
-					</label>
-				</div>
-			</Row>
+			{#if row.author === user.email || user.group === 'ADMIN'}
+				<Row>
+					<div class="form-check form-switch">
+						<input
+							class="form-check-input"
+							type="checkbox"
+							role="switch"
+							id="flexSwitchCheckChecked"
+							checked={row.allowdiscuss}
+							on:change={async (e) => {
+								row.allowdiscuss = await toggleDiscuss(row);
+								row = row;
+							}}
+						/>
+						<label class="form-check-label" for="flexSwitchCheckChecked">
+							{row.allowdiscuss ? '允许讨论' : '已关闭讨论'} （切换以切换状态）
+						</label>
+					</div>
+				</Row>
+			{/if}
 		</div>
 	</div>
 {/if}
