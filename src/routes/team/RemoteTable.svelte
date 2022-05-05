@@ -35,6 +35,7 @@
 	});
 
 	async function load(_page) {
+		console.log('Loading');
 		loading = true;
 		const data = await getData(endpoint, token, _page, pageSize, text, sorting);
 		rows = data.rows;

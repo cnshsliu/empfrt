@@ -5,6 +5,7 @@
 		TimeTool = (await import('$lib/TimeTool')).default;
 		const tplid = url.searchParams.get('tplid');
 		const tpl_mode = 'read';
+		console.log('HHHHHHHAAAA');
 		const res_team: SearchResult = (await api.post(
 			'team/search',
 			{ limit: 1000 },

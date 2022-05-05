@@ -57,7 +57,7 @@
 
 	let user = $session.user;
 	let categoryPicked = 'I_AM_QED';
-	let payload = { category: ['I_AM_QED'], page: 0, pageSize: pageSize };
+	let payload = { category: ['I_AM_QED'], page: 0, pageSize: pageSize, q: '' };
 	let categories = [
 		{ key: 'ALL_VISIED', display: $_('discuss.category.ALL_VISIED'), checked: false },
 		{ key: 'I_STARTED', display: $_('discuss.category.I_STARTED'), checked: false },
@@ -69,6 +69,7 @@
 	let comments = [];
 	let loading = false;
 	let errMsg = '';
+	let q = '';
 
 	const onCategoryChange = (e) => {
 		e && e.preventDefault();
@@ -79,6 +80,8 @@
 	const reload = async (e = null) => {
 		e && e.preventDefault();
 		loading = true;
+		q = q.trim();
+		payload.q = q;
 		let ret = await api.post('comment/search', payload, user.sessionToken);
 		loading = false;
 		if (ret.error) {
@@ -99,34 +102,53 @@
 		TimeTool.setLocale($locale);
 		reload(null);
 	});
+	const onSearch = (e) => {
+		e.preventDefault();
+		console.log(q);
+		reload(null);
+	};
 </script>
 
 <Container class="mt-1 kfk-result-list">
-	<form>
-		<Row>
-			{#each categories as cate}
-				<Col class="pt-2">
-					<div class="form-check">
-						<input
-							class="form-check-input"
-							type="radio"
-							name="flexRadioDefault"
-							value={cate.key}
-							id={'cate_' + cate.key}
-							checked={payload.category[0] === cate.key}
-							on:change={onCategoryChange}
-						/>
-						<label class="form-check-label" for={'cate_' + cate.key}>
-							{cate.display}
-						</label>
-					</div>
-				</Col>
-			{/each}
-			<Col>
-				<Button on:click={reload}>{$_('discuss.reload')}</Button>
+	<Row>
+		{#each categories as cate}
+			<Col class="pt-2">
+				<div class="form-check">
+					<input
+						class="form-check-input"
+						type="radio"
+						name="flexRadioDefault"
+						value={cate.key}
+						id={'cate_' + cate.key}
+						checked={payload.category[0] === cate.key}
+						on:change={onCategoryChange}
+					/>
+					<label class="form-check-label" for={'cate_' + cate.key}>
+						{cate.display}
+					</label>
+				</div>
 			</Col>
-		</Row>
-	</form>
+		{/each}
+		<Col>
+			<Button on:click={reload}>{$_('discuss.reload')}</Button>
+		</Col>
+	</Row>
+	<Row class="w-100">
+		<Col class="w-100">
+			<InputGroup>
+				<div class="form-input">
+					<Input
+						class="form-input"
+						name="searchq"
+						bind:value={q}
+						id="searchq"
+						placeholder="searchq"
+					/>
+				</div>
+				<Button on:click={onSearch}><i class="bi bi-search" /></Button>
+			</InputGroup>
+		</Col>
+	</Row>
 
 	{#if errMsg}
 		{errMsg}
