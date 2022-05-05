@@ -7,11 +7,12 @@ export async function getData(
 	pageSize,
 	searchFilter,
 	sorting,
-	payload_extra
+	payload_extra,
+	reason
 ) {
 	let skip = page * pageSize;
 	let limit = pageSize;
-	let payload = { pattern: searchFilter, skip: skip, limit: limit };
+	let payload = { pattern: searchFilter, skip: skip, limit: limit, sort_order: 1, reason: reason };
 	if (sorting && sorting.dir === 'desc') {
 		payload.sort_order = -1;
 	} else {

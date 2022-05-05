@@ -645,6 +645,7 @@
 		"forcomment": "Reply to："
 	},
 	"session": {
-		"kickout": "abnormal refreshs detected-session terminated"
+		"kickout": "abnormal refreshs detected-session terminated",
+		"forcetohome": "abnormal refreshs detected-force to home"
 	}
 }

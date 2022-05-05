@@ -122,20 +122,21 @@
 			$filterStorage.pageSize,
 			input_search,
 			sorting,
-			payload_extra
+			payload_extra,
+			reason
 		);
 		if (data && data.rows) {
 			rows = data.rows;
 			rowsCount = data.rowsCount;
 		} else if (data && (<any>data).error) {
 			if ((<any>data).error === 'KICKOUT') {
-				setFadeMessage($_('session.kickout'));
+				setFadeMessage($_('session.forcetohome'));
 				if (autoRefreshInterval) {
 					console.log('Kick auto-refresh interaval', new Date());
 					clearInterval(autoRefreshInterval);
 					autoRefreshInterval = null;
 				}
-				logout();
+				goto('/');
 			} else {
 			}
 		} else {
