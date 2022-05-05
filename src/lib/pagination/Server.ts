@@ -22,7 +22,10 @@ export async function getData(
 	}
 	payload = { ...payload, ...payload_extra };
 	const ret = await api.post(endpoint, payload, token);
+	if (ret.error) {
+		return ret;
+	}
 
 	//服务端需要返回对象{objs:[], total: number}
-	return { rows: ret.objs, rowsCount: ret.total };
+	else return { rows: ret.objs, rowsCount: ret.total };
 }

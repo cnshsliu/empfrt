@@ -19,6 +19,7 @@
 	import Search from '$lib/pagination/Search.svelte';
 	import Sort from '$lib/pagination/Sort.svelte';
 	import { goto } from '$app/navigation';
+	import { post } from '$lib/utils';
 	import {
 		Container,
 		Row,
@@ -53,6 +54,25 @@
 	let user = $session.user;
 	let autoRefreshInterval = null;
 	let autoRefreshTimes = 0;
+	async function logout() {
+		await post(`/auth/logout`);
+
+		try {
+			localStorage.clear();
+		} catch (e) {}
+
+		// this will trigger a redirect, because it
+		// causes the `load` function to run again
+		try {
+			$session = { user: null };
+		} catch (e) {}
+	}
+
+	if (autoRefreshInterval) {
+		console.log('Clear auto-refresh interaval', new Date());
+		clearInterval(autoRefreshInterval);
+		autoRefreshInterval = null;
+	}
 
 	$filterStorage.calendar_begin = '';
 	$filterStorage.calendar_end = '';
@@ -106,6 +126,16 @@
 		if (data && data.rows) {
 			rows = data.rows;
 			rowsCount = data.rowsCount;
+		} else if (data && (<any>data).error) {
+			if ((<any>data).error === 'KICKOUT') {
+				if (autoRefreshInterval) {
+					console.log('Kick auto-refresh interaval', new Date());
+					clearInterval(autoRefreshInterval);
+					autoRefreshInterval = null;
+				}
+				logout();
+			} else {
+			}
 		} else {
 			console.warn(JSON.stringify(data));
 		}

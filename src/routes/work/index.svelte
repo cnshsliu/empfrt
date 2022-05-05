@@ -26,6 +26,8 @@
 
 <script lang="ts">
 	import { _ } from '$lib/i18n';
+	import { post } from '$lib/utils';
+	import { goto } from '$app/navigation';
 	import RemoteTable from './RemoteTable.svelte';
 	import ExtraFilter from '$lib/form/ExtraFilter.svelte';
 	import * as api from '$lib/api';
@@ -156,6 +158,21 @@
 		$filterStorage.workTitlePattern = '';
 		$filterStorage.tplid = '';
 	});
+
+	async function logout() {
+		await post(`/auth/logout`);
+
+		try {
+			localStorage.clear();
+		} catch (e) {}
+
+		// this will trigger a redirect, because it
+		// causes the `load` function to run again
+		try {
+			$session = { user: null };
+		} catch (e) {}
+		goto('/work');
+	}
 </script>
 
 <Container class="p-2">
@@ -187,9 +204,9 @@
 </Container>
 {#if $session.user.tenant._id === undefined}
 	<Container class="text-center bg-warning fs-3 fw-bolder">
-		An recent update require users to <a href="/logout">logout and login again</a> to enable a new
-		breaking feature, please <a href="/logout">do it now</a>.<br />
-		最近的一个更新需要部分已登陆用户 <a href="/logout">重新登录，请现在就做 </a>.
+		An recent update require users to <a href={'#'} on:click={logout}>logout and login again</a> to
+		enable a new breaking feature, please <a href={'#'} on:click={logout}>do it now</a>.<br />
+		最近的一个更新需要部分已登陆用户 <a href={'#'} on:click={logout}>重新登录，请现在就做 </a>.
 		<br />重新登录只需做一次，即可符合新功能需求
 	</Container>
 {/if}
