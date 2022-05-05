@@ -67,6 +67,8 @@
 
 	let total = 0;
 	let comments = [];
+	let loading = false;
+	let errMsg = '';
 
 	const onCategoryChange = (e) => {
 		e && e.preventDefault();
@@ -76,9 +78,16 @@
 
 	const reload = async (e = null) => {
 		e && e.preventDefault();
+		loading = true;
 		let ret = await api.post('comment/search', payload, user.sessionToken);
-		total = ret.total;
-		comments = ret.cmts;
+		loading = false;
+		if (ret.error) {
+			errMsg = ret.message;
+		} else {
+			errMsg = '';
+			total = ret.total;
+			comments = ret.cmts;
+		}
 	};
 	const onPageChange = (event) => {
 		//dispatch('pageChange', event.detail);
@@ -119,108 +128,117 @@
 		</Row>
 	</form>
 
-	<div class="slot-bottom">
-		<Pagination {page} {pageSize} count={total} on:pageChange={onPageChange} />
-	</div>
-	{#each comments as cmt, cmtIndex}
-		<Row id={'tcmt_' + cmt._id} class="mt-2 bt-2">
-			<Col class="d-flex col-auto">
-				<Avatar email={cmt.who} uname={cmt.whoCN} style={'avatar50-round25'} />
-			</Col>
-			<Col>
-				<Row>
-					<Col class="col-auto">
-						<span class="fw-bold me-2">
-							{cmt.whoCN} @{cmt.who.substring(0, cmt.who.indexOf('@'))}
-						</span>
-					</Col>
-				</Row>
-				<Row>
-					<Col class="fs-6 kfk-tag fw-bolder">
-						{TimeTool ? TimeTool.fromNow(cmt.createdAt) : ''}
-						{#if cmt.todoTitle}
-							{$_('comment.fortodo')}
-							<a href={`/work/${cmt.context.todoid}`} role="button">
-								{cmt.todoTitle} ({cmt.todoDoerCN})
-							</a>
-						{/if}
-					</Col>
-				</Row>
-			</Col>
-		</Row>
-		<Row cols="1" class="ms-3 border-start border-primary">
-			<Col>
-				<div class="ms-5">
-					{@html cmt.mdcontent2}
-				</div>
-			</Col>
-		</Row>
-		<div class="ms-3 border-start border-primary comment-input row row-cols-1">
-			<div class="col px-5 pb-2 text-primary">
-				<span class="kfk-tag">
-					{#if cmt.upnum > 0}
-						<AniIcon icon="hand-thumbs-up-fill" ani="aniShake" />
-					{:else}
-						<AniIcon icon="hand-thumbs-up" ani="aniShake" />
-					{/if}
-					{cmt.upnum}
-				</span>
-				<span class="kfk-tag">
-					{#if cmt.downnum > 0}
-						<AniIcon icon="hand-thumbs-down-fill" ani="aniShake" />
-					{:else}
-						<AniIcon icon="hand-thumbs-down" ani="aniShake" />
-					{/if}
-					{cmt.downnum}
-				</span>
-				<span class="kfk-tag ms-3">
-					<a
-						href={'#'}
-						class="kfk-link px-2 fw-bolder"
-						on:click|preventDefault={(e) => {
-							goto(`/workflow/${cmt.context.wfid}?showComment=true`);
-						}}
-					>
-						进入流程讨论详情
-					</a>
-				</span>
-			</div>
-			<div class="col px-5 pb-2">
-				{cmt.latestReply.length > 0 ? '最新消息' : '尚未有回复'}
-				{#each cmt.latestReply as reply, replyIndex}
-					<Row id={'tcmtreply_' + reply._id} class="mt-2 bt-2">
-						<Col class="d-flex col-auto">
-							<Avatar email={reply.who} uname={reply.whoCN} style={'avatar50-round25'} />
-						</Col>
-						<Col>
-							<Row>
-								<Col class="col-auto">
-									<span class="fw-bold me-2">
-										{reply.whoCN} @{reply.who.substring(0, reply.who.indexOf('@'))}
-									</span>
-								</Col>
-							</Row>
-							<Row>
-								<Col class="fs-6 kfk-tag fw-bolder">
-									{TimeTool ? TimeTool.fromNow(reply.createdAt) : ''}
-								</Col>
-							</Row>
-						</Col>
-					</Row>
-					<Row cols="1" class="ms-3 border-start border-primary">
-						<Col>
-							<div class="ms-5">
-								{@html reply.mdcontent2}
-							</div>
-						</Col>
-					</Row>
-				{/each}
-			</div>
+	{#if errMsg}
+		{errMsg}
+	{/if}
+	{#if loading}
+		<Container class="w-100 text-center " style="height:100px;">
+			<div class="runninglogo w-100">&nbsp;</div>
+		</Container>
+	{:else}
+		<div class="slot-top">
+			<Pagination {page} {pageSize} count={total} on:pageChange={onPageChange} />
 		</div>
-	{/each}
-	<div class="slot-bottom">
-		<Pagination {page} {pageSize} count={total} on:pageChange={onPageChange} />
-	</div>
+		{#each comments as cmt, cmtIndex}
+			<Row id={'tcmt_' + cmt._id} class="mt-2 bt-2">
+				<Col class="d-flex col-auto">
+					<Avatar email={cmt.who} uname={cmt.whoCN} style={'avatar50-round25'} />
+				</Col>
+				<Col>
+					<Row>
+						<Col class="col-auto">
+							<span class="fw-bold me-2">
+								{cmt.whoCN} @{cmt.who.substring(0, cmt.who.indexOf('@'))}
+							</span>
+						</Col>
+					</Row>
+					<Row>
+						<Col class="fs-6 kfk-tag fw-bolder">
+							{TimeTool ? TimeTool.fromNow(cmt.createdAt) : ''}
+							{#if cmt.todoTitle}
+								{$_('comment.fortodo')}
+								<a href={`/work/${cmt.context.todoid}`} role="button">
+									{cmt.todoTitle} ({cmt.todoDoerCN})
+								</a>
+							{/if}
+						</Col>
+					</Row>
+				</Col>
+			</Row>
+			<Row cols="1" class="ms-3 border-start border-primary">
+				<Col>
+					<div class="ms-5">
+						{@html cmt.mdcontent2}
+					</div>
+				</Col>
+			</Row>
+			<div class="ms-3 border-start border-primary comment-input row row-cols-1">
+				<div class="col px-5 pb-2 text-primary">
+					<span class="kfk-tag">
+						{#if cmt.upnum > 0}
+							<AniIcon icon="hand-thumbs-up-fill" ani="aniShake" />
+						{:else}
+							<AniIcon icon="hand-thumbs-up" ani="aniShake" />
+						{/if}
+						{cmt.upnum}
+					</span>
+					<span class="kfk-tag">
+						{#if cmt.downnum > 0}
+							<AniIcon icon="hand-thumbs-down-fill" ani="aniShake" />
+						{:else}
+							<AniIcon icon="hand-thumbs-down" ani="aniShake" />
+						{/if}
+						{cmt.downnum}
+					</span>
+					<span class="kfk-tag ms-3">
+						<a
+							href={'#'}
+							class="kfk-link px-2 fw-bolder"
+							on:click|preventDefault={(e) => {
+								goto(`/workflow/${cmt.context.wfid}?showComment=true`);
+							}}
+						>
+							进入流程讨论详情
+						</a>
+					</span>
+				</div>
+				<div class="col px-5 pb-2">
+					{cmt.latestReply.length > 0 ? '最新消息' : '尚未有回复'}
+					{#each cmt.latestReply as reply, replyIndex}
+						<Row id={'tcmtreply_' + reply._id} class="mt-2 bt-2">
+							<Col class="d-flex col-auto">
+								<Avatar email={reply.who} uname={reply.whoCN} style={'avatar50-round25'} />
+							</Col>
+							<Col>
+								<Row>
+									<Col class="col-auto">
+										<span class="fw-bold me-2">
+											{reply.whoCN} @{reply.who.substring(0, reply.who.indexOf('@'))}
+										</span>
+									</Col>
+								</Row>
+								<Row>
+									<Col class="fs-6 kfk-tag fw-bolder">
+										{TimeTool ? TimeTool.fromNow(reply.createdAt) : ''}
+									</Col>
+								</Row>
+							</Col>
+						</Row>
+						<Row cols="1" class="ms-3 border-start border-primary">
+							<Col>
+								<div class="ms-5">
+									{@html reply.mdcontent2}
+								</div>
+							</Col>
+						</Row>
+					{/each}
+				</div>
+			</div>
+		{/each}
+		<div class="slot-bottom">
+			<Pagination {page} {pageSize} count={total} on:pageChange={onPageChange} />
+		</div>
+	{/if}
 </Container>
 
 <style>
