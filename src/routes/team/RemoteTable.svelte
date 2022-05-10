@@ -120,12 +120,12 @@
 				class:tnt-even={index % 2 === 0}
 			>
 				<td data-label="Name">
-					<a class="preview-link kfk-team-id tnt-team-id" href="/team/@{row.teamid}">
+					<a class="preview-link kfk-team-id tnt-team-id" href="/team/{row.teamid}">
 						{row.teamid}
 					</a>
 				</td>
 				<td data-label="Author">{row.author}</td>
-				<td data-label="Updated at">{TimeTool.format(row.updatedAt, 'LLLL')}</td>
+				<td data-label="Updated at">{TimeTool.format(row.updatedAt, 'YYYY/MM/DD')}</td>
 				<td>
 					{#if user.perms && ClientPermControl(user.perms, user.email, 'team', row, 'delete')}
 						<Dropdown>

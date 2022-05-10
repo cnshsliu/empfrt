@@ -236,6 +236,7 @@
 		"warnNoTitle": "Title not specified",
 		"startAnyway": "Start Anyway"
 	},
+
 	"todo": {
 		"status": "Task Status",
 		"Starter": "Starter UID",
@@ -273,6 +274,7 @@
 		},
 		"bethefirstcomment": "Be the first to discuss"
 	},
+
 	"tpl": {
 		"prop": "Prop",
 		"new": "New",
@@ -292,6 +294,7 @@
 			"start": "Start"
 		}
 	},
+
 	"prop": {
 		"label": "Activity Description",
 		"bot": "Webhook",
@@ -318,8 +321,6 @@
 				"try": "Try a PDS",
 				"tryteam": "with Team",
 				"tryuser": "with User",
-				"trykvar": "with KVar",
-				"trywfid": "with Wfid",
 				"tryresult": "Result",
 				"csv": "From CSV",
 				"allowpbo": "Allow to edit PBO",
@@ -378,6 +379,7 @@
 			"varvalue": "Var Value"
 		}
 	},
+
 	"designer": {
 		"AthenB": "A->B, Waiting for B",
 		"BthenA": "B->A, Waiting for A",
@@ -393,17 +395,21 @@
 		"showid": "nodeID",
 		"curve": "Curve"
 	},
+
 	"filepond": {
 		"labelIdle": {
 			"pbo": "Drop file or Browse",
 			"kvar": "Drop file or Browse"
 		}
 	},
+
 	"confirm": {
 		"title": {
-			"areyousure": "Are you sure?"
+			"areyousure": "Are you sure?",
+			"needReload": "Version updated"
 		},
 		"body": {
+			"needReload": "Application should be refreshed",
 			"deletefile": "File will be delete permanately, plase confirm",
 			"restartthendestroy": "Destroy this rehearsal and start a new one",
 			"cancelworkflowatfirststep": "You have opportunity to cancel this process at its first step. Canceling a running process often makes other people who are involved in the process confused even annonyed, please confirm you are ok with it",
@@ -428,8 +434,16 @@
 				"button1": "Yes",
 				"button2": "Stick on current {currentlang}"
 			}
+		},
+		"delete": {
+			"template": {
+				"title": "Delete Template",
+				"body": "Deletion is not revokable",
+				"yes": "Confirm to delete"
+			}
 		}
 	},
+
 	"inputtable": {
 		"copyto": {
 			"above": "Copy to Above",
@@ -443,6 +457,7 @@
 			"bottom": "Move to bottom"
 		}
 	},
+
 	"vote": {
 		"last": "The last one",
 		"most": "The most",
@@ -455,6 +470,7 @@
 		"ifAnyThenAllThenMost": "If any, then all the same , then the most",
 		"ifAnyThenFailto": "If any, or fail to"
 	},
+
 	"tools": {
 		"POINTER": "Select",
 		"ACTION": "Activity",
@@ -468,6 +484,7 @@
 		"CONNECT": "Connect",
 		"THROUGH": "Through"
 	},
+
 	"setting": {
 		"set": "Set",
 		"adminpwd": "Admin Password",
@@ -485,6 +502,10 @@
 			"maintainance": "Maintainance"
 		},
 		"personal": {
+			"nav": "Personal",
+			"title": "Your Personal Configuration",
+			"body": "Avatar, Signature, Password etc.",
+			"action": "Configure",
 			"avatar": "Your Avatar",
 			"chooseavatar": "Choose Avatar Image",
 			"choosesignature": "Choose Signature Image",
@@ -502,6 +523,10 @@
 			"password2notsame": "Passwords not the same"
 		},
 		"delegation": {
+			"nav": "Delegation",
+			"title": "Delegate to/from others",
+			"body": "Delegate work to/from others within a period",
+			"action": "Configure",
 			"delegation": "Delegation",
 			"delegateto": "Delegate My Task to",
 			"BeginDate": "Begin Date",
@@ -510,22 +535,49 @@
 			"Delegate": "Delegate",
 			"and": "and",
 			"tome": "Delegations to me",
-			"Between": "Between"
+			"fromme": "My Delegate",
+			"Between": "Between",
+			"Delegator": "Delegator",
+			"Delegatee": "Delegatee",
+			"removeSelected": "中止委托"
+		},
+		"maintainance": {
+			"nav": "Maintainance",
+			"title": "Business Data Admin",
+			"body": "Delete process etc.",
+			"action": "Admin",
+			"select_status": "Filter by status"
+		},
+		"list": {
+			"nav": "List",
+			"title": "Manage Data List",
+			"body": "Define Named Data List",
+			"action": "Manage"
+		},
+		"team": {
+			"nav": "Team",
+			"title": "Manage Flexible Team",
+			"body": "Team is used to map user to role",
+			"action": "Manage"
 		},
 		"tenant": {
+			"nav": "Org Account",
+			"title": "Set your Org Account",
+			"body": "Config Org Account, manage org members",
+			"action": "Admin",
 			"adiministrator": "Administrator",
 			"myrole": "My Role",
-			"myorg": "Tenant",
 			"adminpwd": "Admin Password",
 			"adminpwd_ph": "Admin password is required",
 			"name": "Set Org name to",
+			"name_ph": "New name of this org",
 			"theme": "Use Theme URL",
 			"theme_ph": "Customized theme CSS URL",
 			"timezone": "Set timezone to",
 			"orgtags": "Org level tags",
 			"ocadmins": "Orgchart Administrators",
 			"ocadmins_ph": "Who can modify orgchart (in PDS format)",
-			"myorg": "The name",
+			"myorg": "My org name",
 			"myorgname": "The name",
 			"myorgtimezone": "Timezone",
 			"joincode": "Join Code",
@@ -539,6 +591,10 @@
 			"noapplication": "There is no application at thistime"
 		},
 		"orgchart": {
+			"nav": "OrgChart",
+			"title": "Manage your Org-Chart",
+			"body": "Add/Delete Department/employee etc.",
+			"action": "Manage",
 			"query": "Role Query",
 			"withextra": "with Extra Information",
 			"comment": "Relational query always start from the current user",
@@ -562,6 +618,10 @@
 			"resolver_label": "Org Role Query"
 		},
 		"members": {
+			"nav": "Members",
+			"title": "Administrate Members within Org Account",
+			"body": "Add/Delete, Set Group etc.",
+			"action": "Administation",
 			"members": "Members",
 			"email": "Email",
 			"name": "Name",
@@ -577,6 +637,10 @@
 			"team": "Team Definitions"
 		},
 		"smtp": {
+			"nav": "SMTP",
+			"title": "Set SMTP Server",
+			"body": "Will be use to send emails",
+			"action": "Configure",
 			"onlyadmin": "Email setting is managed by org admin",
 			"server": "SMTP Server",
 			"port": "SMTP ServerPort",
@@ -589,19 +653,36 @@
 			"from_ph": "The sender's display name"
 		},
 		"wecombot": {
+			"nav": "Wecom Bot",
+			"title": "Configure WeCom Bot API",
+			"body": "To send messages to WeCom",
+			"action": "Configure",
 			"tplid": "Template ID",
 			"key": "Bot Key"
+		},
+		"myfiles": {
+			"nav": "My Files",
+			"title": "Manage your upload files",
+			"body": "View, check usage, or delete unused",
+			"action": "Manage",
+			"view": "View",
+			"download": "Download",
+			"delete": "Delete",
+			"filter": "Only this Wf"
 		}
 	},
+
 	"pds": {
 		"withextra": "With Extra",
 		"noextra": "Without Extra"
 	},
+
 	"authgroup": {
 		"ADMIN": "Administrator",
 		"OBSERVER": "Observer",
 		"DOER": "Doer"
 	},
+
 	"footer": {
 		"neural": "Neural system for your organiation",
 		"PLATFORM": "PLATFORM",
@@ -621,6 +702,7 @@
 		"paas": "Paas Service",
 		"privateinstall": "Private Install"
 	},
+
 	"changeid": {
 		"current": "Current ID: ",
 		"changeto": "Change ID to",
@@ -630,22 +712,30 @@
 		"meaningful": "You may need to give it a meaningful unique ID",
 		"idformat": "This is not a valid node id"
 	},
+
 	"csv": {
 		"uidnotfound": "Error: User IDs not found:"
 	},
+
 	"login": {
 		"reset_password": "Forget password? reset it here",
 		"needfullemail": "Full email address is required",
 		"resetpasswordresult": "Reset password instruction has been sent to your email, check your email now please"
 	},
+
 	"comment": {
 		"hide": "Hide Discussion",
 		"show": "Show Discussion",
 		"fortodo": "Comment to: ",
 		"forcomment": "Reply to："
 	},
+
 	"session": {
 		"kickout": "abnormal refreshs detected-session terminated",
 		"forcetohome": "abnormal refreshs detected-force to home"
+	},
+
+	"error": {
+		"NO_BRUTE": "Please don't operate too frequently"
 	}
 }

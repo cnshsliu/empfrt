@@ -128,7 +128,7 @@
 		<WorkFile title={$_('todo.pbo')} forWhat={'workflow'} {workflow} forKey="pbo" />
 	</Container>
 	{#if showComment && workflow.allowdiscuss}
-		<div class="mt-2 ms-5 p-2" id="todo_comments">
+		<div class="bg-light m-0 p-2 ps-4" id="todo_comments">
 			<span class="fs-3">{workflow.wftitle}</span>
 			<Comments bind:comments bind:pointToOrigin />
 		</div>

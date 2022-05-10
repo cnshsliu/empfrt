@@ -1,12 +1,14 @@
 <script type="ts">
 	import { Button, Container, Row, Col, InputGroup, InputGroupText, Input } from 'sveltestrap';
 	import { _ } from '$lib/i18n';
+	import { session } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import type { User, EmpResponse } from '$lib/types';
 	import { onMount } from 'svelte';
+	import { setFadeMessage } from '$lib/Notifier';
 	import type { KFKError } from '$lib/types';
 	import * as api from '$lib/api';
-	export let user: User;
-	export let setFadeMessage: any;
+	let user: User = $session.user;
 
 	let bots = [];
 	const setWeComTodoBot = async (bot) => {
@@ -15,6 +17,7 @@
 			return;
 		} else {
 			if (bot.key.length !== 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'.length) {
+				setFadeMessage('Key format is incorrect', 'warning');
 				bot.key = '';
 				bots = bots;
 			} else {
@@ -32,6 +35,23 @@
 </script>
 
 <Container class="mt-3">
+	<Row>
+		<nav aria-label="breadcrumb">
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item">
+					<a
+						href={'#'}
+						on:click={() => {
+							goto('/settings');
+						}}
+					>
+						{$_('navmenu.settings')}
+					</a>
+				</li>
+				<li class="breadcrumb-item active" aria-current="page">{$_('setting.wecombot.nav')}</li>
+			</ol>
+		</nav>
+	</Row>
 	{#each bots as bot}
 		<Row cols="1" class="mt-1">
 			<Col>

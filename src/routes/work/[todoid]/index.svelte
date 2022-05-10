@@ -76,6 +76,7 @@
 	import { title } from '$lib/title';
 	import { onMount, onDestroy } from 'svelte';
 	import { printing, notifyMessage } from '$lib/Stores';
+	import { version } from '$lib/empstores';
 	import WorkPage from './workpage.svelte';
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
 	import { StatusClass, StatusLabel } from '$lib/status';
@@ -113,6 +114,33 @@
 					}
 				}
 			}, 1000);
+		}
+		let needReload = false;
+		if ($version) {
+			if ($version !== work.version) {
+				console.log('You need to reload1');
+				needReload = true;
+			}
+		} else {
+			console.log('You need to reload2');
+			needReload = true;
+		}
+		if (needReload) {
+			setTimeout(async () => {
+				if (theConfirm) {
+					theConfirm.title = $_('confirm.title.needReload');
+					theConfirm.body = $_('confirm.body.needReload');
+					theConfirm.buttons = [$_('confirm.button.confirm')];
+					theConfirm.callbacks = [
+						async (e) => {
+							$version = work.version;
+							window.location.reload();
+							e.preventDefault();
+						}
+					];
+					theConfirm.toggle();
+				}
+			}, 5000);
 		}
 	});
 	onDestroy(async () => {

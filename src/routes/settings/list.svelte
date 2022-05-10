@@ -1,5 +1,7 @@
 <script type="ts">
 	import * as api from '$lib/api';
+	import { _ } from '$lib/i18n';
+	import { goto } from '$app/navigation';
 	import { session } from '$app/stores';
 	import { setFadeMessage } from '$lib/Notifier';
 	import type { EmpResponse, OrgMembers, oneArgFunc } from '$lib/types';
@@ -33,6 +35,23 @@
 </script>
 
 <Container class="mt-3">
+	<Row>
+		<nav aria-label="breadcrumb">
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item">
+					<a
+						href={'#'}
+						on:click={() => {
+							goto('/settings');
+						}}
+					>
+						{$_('navmenu.settings')}
+					</a>
+				</li>
+				<li class="breadcrumb-item active" aria-current="page">{$_('setting.list.nav')}</li>
+			</ol>
+		</nav>
+	</Row>
 	<Row><span class="text-center fs-3">New List</span></Row>
 	<Row>
 		<InputGroup>

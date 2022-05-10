@@ -2,7 +2,7 @@
 	export async function load({ url, params, fetch, session }) {
 		let teamid = params.teamid;
 		if (teamid && teamid.charAt(0) === '@') teamid = teamid.substring(1);
-		const jsonUrl = `/team/@${teamid}.json`;
+		const jsonUrl = `/team/${teamid}.json`;
 		const res = await fetch(jsonUrl);
 
 		return {
@@ -15,6 +15,7 @@
 </script>
 
 <script lang="ts">
+	import { _ } from '$lib/i18n';
 	import { API_SERVER } from '$lib/Env';
 	import type { User, Team } from '$lib/types';
 	import { TabContent, TabPane } from 'sveltestrap';
@@ -179,12 +180,33 @@
 	<title>{team.teamid} • Team</title>
 </svelte:head>
 <Container>
-	<div class="d-flex">
-		<div class="flex-shrink-0">
-			<h1>Team</h1>
-		</div>
-		<div class="mx-5 align-self-center flex-grow-1">{team.teamid}</div>
-	</div>
+	<Row>
+		<nav aria-label="breadcrumb">
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item">
+					<a
+						href={'#'}
+						on:click={() => {
+							goto('/settings');
+						}}
+					>
+						{$_('navmenu.settings')}
+					</a>
+				</li>
+				<li class="breadcrumb-item active" aria-current="page">
+					<a
+						href={'#'}
+						on:click={() => {
+							goto('/team');
+						}}
+					>
+						{$_('setting.team.nav')}
+					</a>
+				</li>
+				<li class="breadcrumb-item active" aria-current="page">{team.teamid}</li>
+			</ol>
+		</nav>
+	</Row>
 </Container>
 <Container>
 	<TabContent
@@ -240,7 +262,7 @@
 									}
 								} else {
 									refreshTeam(newTeam);
-									goto(`/team/@${team.teamid}`, {
+									goto(`/team/${team.teamid}`, {
 										replaceState: true,
 										keepfocus: true,
 										noscroll: true
@@ -289,7 +311,7 @@
 								}
 							} else {
 								refreshTeam(newTeam);
-								goto(`/team/@${team.teamid}`, {
+								goto(`/team/${team.teamid}`, {
 									replaceState: true,
 									noscroll: true,
 									keepfocus: true

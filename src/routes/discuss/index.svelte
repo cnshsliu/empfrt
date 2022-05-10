@@ -142,7 +142,7 @@
 						name="searchq"
 						bind:value={q}
 						id="searchq"
-						placeholder="searchq"
+						placeholder="Search here"
 					/>
 				</div>
 				<Button on:click={onSearch}><i class="bi bi-search" /></Button>

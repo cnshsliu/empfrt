@@ -2,19 +2,16 @@
 	import { API_SERVER } from '$lib/Env';
 	import { Button, Container, Row, Col, InputGroup, InputGroupText, Input } from 'sveltestrap';
 	import Avatar from '$lib/display/Avatar.svelte';
+	import { goto } from '$app/navigation';
 	import { session } from '$app/stores';
+	import { setFadeMessage } from '$lib/Notifier';
 	import { _ } from '$lib/i18n';
 	import type { User, EmpResponse } from '$lib/types';
 	import { post } from '$lib/utils';
 	import * as api from '$lib/api';
-	export let user: User;
-	export let setFadeMessage: any;
+	let user: User = $session.user;
 	let uploadedFiles = [];
 	let joinorgwithcode = '';
-	const joinOrgWithCode = async function () {
-		let res = await api.post('tnt/join', { joincode: joinorgwithcode }, user.sessionToken);
-		if (res.error) setFadeMessage(res.message, 'warning');
-	};
 
 	let my_old_password = '';
 	let in_progress = false;
@@ -36,7 +33,7 @@
 			value: value,
 			old_password: my_old_password
 		};
-		const response = (await post('auth/save', payload)) as unknown as EmpResponse;
+		const response = await api.post('account/profile/update', payload, user.sessionToken);
 		if (response.error) {
 			if (
 				response.error === 'Bad Request' &&
@@ -134,165 +131,194 @@
 			setFadeMessage(err.message, 'warning');
 		}
 	}
+
+	const joinOrgWithCode = async function () {
+		let res = await api.post('tnt/join', { joincode: joinorgwithcode }, user.sessionToken);
+		if (res.error) setFadeMessage(res.message, 'warning');
+	};
 </script>
 
 <Container class="mt-3">
-	<Row cols="1">
-		<Col class="w-100 text-center fs-3">
-			{user.email}
-			<br />
-			{user.group}
-		</Col>
-		<Col class="d-flex justify-content-center mt-2">
-			<div>
-				<Avatar email={user.email} uname={user.username} style={'avatar40'} bind:this={theAvatar} />
-			</div>
-		</Col>
-		<Col class="d-flex justify-content-center mt-2">
-			<!-- Input class="form-control" name="file" type="file" bind:files={avatarFiles} / -->
-			<img
-				class="upload"
-				src="/images/camera_upload.png"
-				alt=""
-				on:click={() => {
-					avatarInput.click();
-				}}
-			/>
-		</Col>
-		<Col class="d-flex justify-content-center">
-			<div
-				class="chan"
-				on:click={() => {
-					avatarInput.click();
-				}}
-			>
-				{$_('setting.personal.chooseavatar')}
-			</div>
-			<input
-				style="display:none;"
-				name="file"
-				type="file"
-				accept=".jpg, .jpeg, .png"
-				on:change={async (e) => await uploadAvatar(e)}
-				bind:this={avatarInput}
-			/>
-		</Col>
+	<Row>
+		<nav aria-label="breadcrumb">
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item">
+					<a
+						href={'#'}
+						on:click={() => {
+							goto('/settings');
+						}}
+					>
+						{$_('navmenu.settings')}
+					</a>
+				</li>
+				<li class="breadcrumb-item active" aria-current="page">{$_('setting.personal.nav')}</li>
+			</ol>
+		</nav>
 	</Row>
-	<Row cols="1" class="mt-3">
-		<Col>
-			<InputGroup class="mb-1">
-				<InputGroupText>{$_('setting.personal.signature')}</InputGroupText>
-				<img alt="signature" src={`${user.signature}`} class="kfk-signature" />
-				<Input bind:value={user.signature} />
-				<Button
-					on:click={async (e) => {
-						e.preventDefault();
-						await setPersonal({ signature: user.signature });
-					}}
-				>
-					{$_('setting.set')}
-				</Button>
-			</InputGroup>
-		</Col>
-		<Col>
-			<InputGroup class="mb-1">
-				<InputGroupText>{$_('setting.personal.cn')}</InputGroupText>
-				<input
-					class="form-control"
-					type="text"
-					autocomplete="username"
-					placeholder="Username"
-					bind:value={user.username}
-				/>
-				<Button
-					on:click={async (e) => {
-						e.preventDefault();
-						await setPersonal({ username: user.username });
-					}}
-				>
-					{$_('setting.set')}
-				</Button>
-			</InputGroup>
-		</Col>
-		<Col>
-			<InputGroup class="mb-1">
-				<InputGroupText>{$_('setting.personal.currentpassword')}</InputGroupText>
-				<input
-					class="form-control"
-					type="password"
-					placeholder="Old Password"
-					autocomplete="current-password"
-					bind:value={my_old_password}
-				/>
-				<InputGroupText>{$_('setting.personal.newpassword')}</InputGroupText>
-				<input
-					class={newPasswordCssClasses}
-					type="password"
-					autocomplete="new-password"
-					placeholder="New Password"
-					bind:value={user.password}
-					on:input={(e) => {
-						e.preventDefault();
-						onInputNewPassword();
-					}}
-					aria-describedby={'validationNewPasswordFeedback'}
-				/>
-				<Button
-					disabled={enableChangePasswordButton === false}
-					on:click={async (e) => {
-						e.preventDefault();
-						await setPersonal({ password: user.password });
-					}}
-				>
-					{$_('setting.set')}
-				</Button>
-			</InputGroup>
-		</Col>
-		{#if newPasswordCssClasses === 'form-control is-invalid'}
-			<Col class="d-flex justify-content-end">
-				<div class="me-5">
-					<div class="me-5">
-						{newPasswordCheckingMsgs}
-					</div>
+	<form>
+		<Row cols="1">
+			<Col class="w-100 text-center fs-3">
+				{user.email}
+				<br />
+				{user.group}
+			</Col>
+			<Col class="d-flex justify-content-center mt-2">
+				<div>
+					<Avatar
+						email={user.email}
+						uname={user.username}
+						style={'avatar40'}
+						bind:this={theAvatar}
+					/>
 				</div>
 			</Col>
-		{/if}
-		<Col>
-			<InputGroup class="mb-1">
-				<InputGroupText>{$_('setting.personal.sendmail')}</InputGroupText> &nbsp;&nbsp;
-				<span class="form-control">
-					<Input type="checkbox" bind:checked={user.ew.email} />
-				</span>
-				<Button
-					on:click={async (e) => {
-						e.preventDefault();
-						await setPersonal({ ew: user.ew });
+			<Col class="d-flex justify-content-center mt-2">
+				<!-- Input class="form-control" name="file" type="file" bind:files={avatarFiles} / -->
+				<img
+					class="upload"
+					src="/images/camera_upload.png"
+					alt=""
+					on:click={() => {
+						avatarInput.click();
 					}}
-				>
-					{$_('setting.set')}
-				</Button>
-			</InputGroup>
-		</Col>
-		<Col>
-			<InputGroup class="mb-1">
-				<InputGroupText>{$_('setting.personal.joincode')}</InputGroupText>
-				<Input
-					type="text"
-					bind:value={joinorgwithcode}
-					placeholder="join code"
-					autocomplete="off"
 				/>
-				<Button
-					on:click={async (e) => {
-						e.preventDefault();
-						await joinOrgWithCode();
+			</Col>
+			<Col class="d-flex justify-content-center">
+				<div
+					class="chan"
+					on:click={() => {
+						avatarInput.click();
 					}}
 				>
-					{$_('setting.set')}
-				</Button>
-			</InputGroup>
-		</Col>
-	</Row>
+					{$_('setting.personal.chooseavatar')}
+				</div>
+				<input
+					style="display:none;"
+					name="file"
+					type="file"
+					accept=".jpg, .jpeg, .png"
+					on:change={async (e) => await uploadAvatar(e)}
+					bind:this={avatarInput}
+				/>
+			</Col>
+		</Row>
+		<Row cols="1" class="mt-3">
+			<Col>
+				<InputGroup class="mb-1">
+					<InputGroupText>{$_('setting.personal.signature')}</InputGroupText>
+					<img alt="signature" src={`${user.signature}`} class="kfk-signature" />
+					<Input bind:value={user.signature} />
+					<Button
+						on:click={async (e) => {
+							e.preventDefault();
+							await setPersonal({ signature: user.signature });
+						}}
+					>
+						{$_('setting.set')}
+					</Button>
+				</InputGroup>
+			</Col>
+			<Col>
+				<InputGroup class="mb-1">
+					<InputGroupText>{$_('setting.personal.cn')}</InputGroupText>
+					<input
+						class="form-control"
+						type="text"
+						autocomplete="username"
+						placeholder="Username"
+						bind:value={user.username}
+					/>
+					<Button
+						on:click={async (e) => {
+							e.preventDefault();
+							await setPersonal({ username: user.username });
+						}}
+					>
+						{$_('setting.set')}
+					</Button>
+				</InputGroup>
+			</Col>
+			<Col>
+				<InputGroup class="mb-1">
+					<InputGroupText>{$_('setting.personal.currentpassword')}</InputGroupText>
+					<input
+						class="form-control"
+						type="password"
+						placeholder="Old Password"
+						autocomplete="current-password"
+						bind:value={my_old_password}
+					/>
+					<InputGroupText>{$_('setting.personal.newpassword')}</InputGroupText>
+					<input
+						class={newPasswordCssClasses}
+						type="password"
+						autocomplete="new-password"
+						placeholder="New Password"
+						bind:value={user.password}
+						on:input={(e) => {
+							e.preventDefault();
+							onInputNewPassword();
+						}}
+						aria-describedby={'validationNewPasswordFeedback'}
+					/>
+					<Button
+						disabled={enableChangePasswordButton === false}
+						on:click={async (e) => {
+							e.preventDefault();
+							await setPersonal({ password: user.password });
+						}}
+					>
+						{$_('setting.set')}
+					</Button>
+				</InputGroup>
+			</Col>
+			{#if newPasswordCssClasses === 'form-control is-invalid'}
+				<Col class="d-flex justify-content-end">
+					<div class="me-5">
+						<div class="me-5">
+							{newPasswordCheckingMsgs}
+						</div>
+					</div>
+				</Col>
+			{/if}
+			<Col>
+				<InputGroup class="mb-1">
+					<InputGroupText>{$_('setting.personal.sendmail')}</InputGroupText> &nbsp;&nbsp;
+					<span class="form-control">
+						<Input type="checkbox" bind:checked={user.ew.email} />
+					</span>
+					<Button
+						on:click={async (e) => {
+							e.preventDefault();
+							await setPersonal({ ew: user.ew });
+						}}
+					>
+						{$_('setting.set')}
+					</Button>
+				</InputGroup>
+			</Col>
+			<Col>
+				<InputGroup class="mb-1">
+					<InputGroupText>{$_('setting.personal.joincode')}</InputGroupText>
+					<Input
+						type="text"
+						bind:value={joinorgwithcode}
+						placeholder="join code"
+						autocomplete="off"
+					/>
+					<Button
+						on:click={async (e) => {
+							e.preventDefault();
+							await joinOrgWithCode();
+						}}
+					>
+						{$_('setting.set')}
+					</Button>
+				</InputGroup>
+			</Col>
+		</Row>
+	</form>
 </Container>
 
 <style>

@@ -39,192 +39,213 @@
 
 {#each comments as cmt, cmtIndex}
 	<Transition effect={slide} enable={cmt.transition}>
-		<Row id={'tcmt_' + cmt._id} class="mt-2 bt-2">
-			<Col class="d-flex col-auto">
-				<Avatar email={cmt.who} uname={cmt.whoCN} style={'avatar50-round25'} />
-			</Col>
-
-			{#key pointToOrigin}
-				<Col
-					class="{pointToOrigin === cmt._id
-						? 'border-start border-success border-5 kfk-origin-comment'
-						: 'cmt-header'}}"
-				>
-					<Row>
-						<Col class="col-auto">
-							<span class="fw-bold me-2">
-								{cmt.whoCN} @{cmt.who.substring(0, cmt.who.indexOf('@'))}
-							</span>
-							{#if cmt.children && cmt.children && cmt.children.length}
-								<span class="ms-3">
-									<a
-										class="kfk-link px-2"
-										href={'#'}
-										on:click|preventDefault={(e) => {
-											cmt.showChildren = !cmt.showChildren;
-										}}
-									>
-										{#if cmt.showChildren}
-											<AniIcon icon="caret-up" ani="aniShake" />
-										{:else}
-											<AniIcon icon="caret-right-fill" ani="aniShake" />
-										{/if}
-									</a>
-								</span>
-							{/if}
-						</Col>
-					</Row>
-					<Row>
-						<Col class="fs-6 kfk-tag fw-bolder">
-							{TimeTool ? TimeTool.fromNow(cmt.createdAt) : ''}
-							{#if cmt.todoTitle}
-								<!-- 如果是对TODO的comment， 则显示TODO title -->
-								{$_('comment.fortodo')}
-								<a href={`/work/${cmt.context.todoid}`} role="button">
-									{cmt.todoTitle} ({cmt.todoDoerCN})
-								</a>
-							{/if}
-							{#if cmt.objtype === 'COMMENT'}
-								<span class="kfk-tag">
-									{$_('comment.forcomment')}
-									<a
-										class="kfk-link px-2"
-										href={'#'}
-										on:click={(e) => {
-											e.preventDefault();
-											pointToOrigin = cmt.objid;
-										}}
-									>
-										{cmt.towhomCN}
-									</a>
-								</span>
-							{/if}
-							{#if (!cmt.children || (cmt.children && cmt.children.length === 0)) && cmt.who === user.email}
-								<a
-									href={'#'}
-									class="kfk-link px-2"
-									on:click={async (e) => {
-										e.preventDefault();
-										let res = await api.post(
-											'comment/delete',
-											{ commentid: cmt._id },
-											$session.user.sessionToken
-										);
-										if (res.error) {
-											console.log(res.message);
-										} else {
-											comments.splice(cmtIndex, 1);
-											comments = comments;
-										}
-									}}
-								>
-									<AniIcon icon="trash" ani="aniShake" />
-								</a>
-							{/if}
-						</Col>
-					</Row>
-				</Col>
-			{/key}
-		</Row>
-		<Row cols="1" class="ms-3 border-start border-primary">
-			<Col>
-				<div class="ms-5">
-					{@html cmt.mdcontent2}
-				</div>
-			</Col>
-		</Row>
-		<div class="ms-3 border-start border-primary comment-input row row-cols-1">
-			<div class="col px-5 pb-2">
-				<span class="kfk-tag">
-					<a href={'#'} class="kfk-link px-2" on:click={(e) => thumb(e, cmt, 'up')}>
-						{#key thumbnum_changed}
-							{#if cmt.upnum > 0}
-								<AniIcon icon="hand-thumbs-up-fill" ani="aniShake" />
-							{:else}
-								<AniIcon icon="hand-thumbs-up" ani="aniShake" />
-							{/if}
-							{cmt.upnum}
-						{/key}
-					</a>
-				</span>
-				<span class="kfk-tag">
-					<a href={'#'} role="button" class="kfk-link px-2" on:click={(e) => thumb(e, cmt, 'down')}>
-						{#if cmt.downnum > 0}
-							<AniIcon icon="hand-thumbs-down-fill" ani="aniShake" />
-						{:else}
-							<AniIcon icon="hand-thumbs-down" ani="aniShake" />
-						{/if}
-						{#key thumbnum_changed}
-							{cmt.downnum}
-						{/key}
-					</a>
-				</span>
-				<span class="kfk-tag ms-3">
-					<a
-						href={'#'}
-						class="kfk-link px-2"
-						on:click|preventDefault={(e) => {
-							if (replyToCmtId === cmt._id) {
-								replyToCmtId = '';
-							} else {
-								replyToCmtId = cmt._id;
-							}
-						}}
-					>
-						{#if replyToCmtId === cmt._id}
-							Reply <AniIcon icon="backspace-fill" ani="aniShake" />
-						{:else}
-							Reply <AniIcon icon="reply-fill" ani="aniShake" />
-						{/if}
-					</a>
-				</span>
-			</div>
-			{#if replyToCmtId === cmt._id}
-				<div class="col px-5 pb-2">
-					<CommentInput
-						bind:value={cmt.reply}
-						cmtid={cmt._id}
-						placeholder={'Your reply...'}
-						on:close={async (e) => (replyToCmtId = '')}
-						on:comment={async (e) => {
-							e.preventDefault();
-							replyToCmtId = '';
-							let res = await api.post(
-								'comment/add',
-								{
-									cmtid: cmt._id,
-									content: e.detail,
-									threadid: cmt.threadid
-								},
-								$session.user.sessionToken
-							);
-							if (res.error) {
-								console.log(res.message);
-							} else {
-								//cmt.children = res.comments;
-								if (cmt.children === undefined) {
-									cmt.children = [];
-								}
-								cmt.transition = false;
-								cmt.children.unshift(res.thisComment);
-								for (let i = 0; i < cmt.children.length; i++) {
-									cmt.children[i].transition = i === 0;
-								}
-								cmt.children = cmt.children;
-								cmt.showChildren = true;
-								cmt.reply = '';
-							}
-						}}
+		<div id={'tcmt_' + cmt._id} class="d-flex bd-highlight">
+			<div class="p-0  position-relative " style="width:60px">
+				<div class="position-absolute top-0 start-0 pt-2">
+					<Avatar
+						email={cmt.who}
+						uname={cmt.whoCN}
+						style={pointToOrigin === cmt._id ? 'avatar50-round25-highlight' : 'avatar50-round25'}
 					/>
 				</div>
-			{/if}
-		</div>
-		{#if cmt.showChildren && cmt.children.length > 0}
-			<div class="ms-3 border-start border-primary comment-child row row-cols-1">
-				<div class="col">
-					<svelte:self bind:comments={cmt.children} bind:pointToOrigin />
+				<img
+					src="/images/leftpointer.png"
+					style="position:absolute; left:52px; top:20px; height:16px;"
+					alt="leftpointer"
+				/>
+				<div class="h-100 pt-3">
+					<div class="h-100 ms-4 border-start border-1 border-primary">&nbsp;</div>
 				</div>
 			</div>
-		{/if}
+			<div class="p-2 mb-2 flex-grow-1 border border-1 rounded-3">
+				<Row>
+					{#key pointToOrigin}
+						<Col class="cmt-header">
+							<Row>
+								<Col class="col-auto">
+									<span class="fw-bold me-2">
+										{cmt.whoCN} @{cmt.who.substring(0, cmt.who.indexOf('@'))}
+									</span>
+									{#if cmt.children && cmt.children && cmt.children.length}
+										<span class="ms-3">
+											<a
+												class="kfk-link px-2"
+												href={'#'}
+												on:click|preventDefault={(e) => {
+													cmt.showChildren = !cmt.showChildren;
+												}}
+											>
+												{#if cmt.showChildren}
+													<AniIcon icon="caret-up" ani="aniShake" />
+												{:else}
+													<AniIcon icon="caret-right-fill" ani="aniShake" />
+												{/if}
+											</a>
+										</span>
+									{/if}
+								</Col>
+							</Row>
+							<Row>
+								<Col class="fs-6 kfk-tag fw-bolder">
+									{TimeTool ? TimeTool.fromNow(cmt.createdAt) : ''}
+									{#if cmt.todoTitle}
+										<!-- 如果是对TODO的comment， 则显示TODO title -->
+										{$_('comment.fortodo')}
+										<a href={`/work/${cmt.context.todoid}`} role="button">
+											{cmt.todoTitle} ({cmt.todoDoerCN})
+										</a>
+									{/if}
+									{#if cmt.objtype === 'COMMENT'}
+										<span class="kfk-tag">
+											{$_('comment.forcomment')}
+											<a
+												class="kfk-link px-2"
+												href={'#'}
+												on:click={(e) => {
+													e.preventDefault();
+													pointToOrigin = cmt.objid;
+												}}
+											>
+												{cmt.towhomCN}
+											</a>
+										</span>
+									{/if}
+									{#if (!cmt.children || (cmt.children && cmt.children.length === 0)) && cmt.who === user.email}
+										<a
+											href={'#'}
+											class="kfk-link px-2"
+											on:click={async (e) => {
+												e.preventDefault();
+												let res = await api.post(
+													'comment/delete',
+													{ commentid: cmt._id },
+													$session.user.sessionToken
+												);
+												if (res.error) {
+													console.log(res.message);
+												} else {
+													comments.splice(cmtIndex, 1);
+													comments = comments;
+												}
+											}}
+										>
+											<AniIcon icon="trash" ani="aniShake" />
+										</a>
+									{/if}
+								</Col>
+							</Row>
+						</Col>
+					{/key}
+				</Row>
+				<!-- comment header -->
+				<Row cols="1">
+					<Col>
+						<div>
+							{@html cmt.mdcontent2}
+						</div>
+					</Col>
+				</Row>
+				<Row class="comment-actions m-0 p-0" cols="1">
+					<div class="col pb-2">
+						<span class="kfk-tag">
+							<a href={'#'} class="kfk-link px-2" on:click={(e) => thumb(e, cmt, 'up')}>
+								{#key thumbnum_changed}
+									{#if cmt.upnum > 0}
+										<AniIcon icon="hand-thumbs-up-fill" ani="aniShake" />
+									{:else}
+										<AniIcon icon="hand-thumbs-up" ani="aniShake" />
+									{/if}
+									{cmt.upnum}
+								{/key}
+							</a>
+						</span>
+						<span class="kfk-tag">
+							<a
+								href={'#'}
+								role="button"
+								class="kfk-link px-2"
+								on:click={(e) => thumb(e, cmt, 'down')}
+							>
+								{#if cmt.downnum > 0}
+									<AniIcon icon="hand-thumbs-down-fill" ani="aniShake" />
+								{:else}
+									<AniIcon icon="hand-thumbs-down" ani="aniShake" />
+								{/if}
+								{#key thumbnum_changed}
+									{cmt.downnum}
+								{/key}
+							</a>
+						</span>
+						<span class="kfk-tag ms-3">
+							<a
+								href={'#'}
+								class="kfk-link px-2"
+								on:click|preventDefault={(e) => {
+									if (replyToCmtId === cmt._id) {
+										replyToCmtId = '';
+									} else {
+										replyToCmtId = cmt._id;
+									}
+								}}
+							>
+								{#if replyToCmtId === cmt._id}
+									Reply <AniIcon icon="backspace-fill" ani="aniShake" />
+								{:else}
+									Reply <AniIcon icon="reply-fill" ani="aniShake" />
+								{/if}
+							</a>
+						</span>
+					</div>
+					{#if replyToCmtId === cmt._id}
+						<div class="col m-0 p-0 pb-2 w-100">
+							<CommentInput
+								bind:value={cmt.reply}
+								cmtid={cmt._id}
+								placeholder={'Your reply...'}
+								on:close={async (e) => (replyToCmtId = '')}
+								on:comment={async (e) => {
+									e.preventDefault();
+									replyToCmtId = '';
+									let res = await api.post(
+										'comment/add',
+										{
+											cmtid: cmt._id,
+											content: e.detail,
+											threadid: cmt.threadid
+										},
+										$session.user.sessionToken
+									);
+									if (res.error) {
+										console.log(res.message);
+									} else {
+										//cmt.children = res.comments;
+										if (cmt.children === undefined) {
+											cmt.children = [];
+										}
+										cmt.transition = false;
+										cmt.children.unshift(res.thisComment);
+										for (let i = 0; i < cmt.children.length; i++) {
+											cmt.children[i].transition = i === 0;
+										}
+										cmt.children = cmt.children;
+										cmt.showChildren = true;
+										cmt.reply = '';
+									}
+								}}
+							/>
+						</div>
+					{/if}
+				</Row>
+				<!-- Thumb, Reply, ReplyInput -->
+				{#if cmt.showChildren && cmt.children.length > 0}
+					<div class="comment-child row row-cols-1">
+						<div class="col">
+							<svelte:self bind:comments={cmt.children} bind:pointToOrigin />
+						</div>
+					</div>
+				{/if}
+			</div>
+			<!-- the big box-->
+		</div>
 	</Transition>
 {/each}

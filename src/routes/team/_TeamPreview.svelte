@@ -10,7 +10,7 @@
 <Row class={mouseover_objid === team.teamid ? 'kfk-highlight-2' : ''}>
 	<Col xs="8">
 		<div>
-			<a href="/team/@{team.teamid}" class="preview-link kfk-team-id">
+			<a href="/team/{team.teamid}" class="preview-link kfk-team-id">
 				{team.teamid}
 			</a>
 			<div class="kfk-team-info">
@@ -21,7 +21,7 @@
 	</Col>
 	<Col xs="2">
 		{#if mouseover_objid === team.teamid}
-			<a class="btn btn-sm" href="/team/@{team.teamid}">
+			<a class="btn btn-sm" href="/team/{team.teamid}">
 				<Icon name="diagram-3" />
 				Open
 			</a>

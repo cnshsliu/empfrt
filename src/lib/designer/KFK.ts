@@ -344,6 +344,7 @@ class KFKclass {
 	designerCallback = null;
 	connectEndFirst = false;
 	movingEnd: boolean = false;
+	jc3Cursor = null;
 
 	constructor() {
 		let that = this;
@@ -458,6 +459,14 @@ class KFKclass {
 
 		that.oldTool = that.tool;
 		that.tool = tool;
+		if (that.jc3Cursor) {
+			that.JC3.removeClass(that.jc3Cursor);
+		}
+		if (tool !== 'POINTER') {
+			that.jc3Cursor = `mtc-cursor-${that.tool}`;
+			that.JC3.addClass(that.jc3Cursor);
+			console.log('Toggle cursor to ', that.jc3Cursor);
+		}
 		for (const key in that.APP.toolActiveState) {
 			that.APP.toolActiveState[key] = false;
 		}
@@ -1948,6 +1957,7 @@ ret='DEFAULT'; `
 					containment: 'parent',
 					// eslint-disable-next-line @typescript-eslint/no-unused-vars
 					start: (evt: MouseEvent, _ui: any) => {
+						jqNodeDIV.addClass('mtc-cursor-move');
 						that.stopNodeBalls();
 						click.x = evt.clientX;
 						click.y = evt.clientY;
@@ -1975,6 +1985,7 @@ ret='DEFAULT'; `
 						};
 					},
 					stop: async (evt: MouseEvent) => {
+						jqNodeDIV.removeClass('mtc-cursor-move');
 						that.dragging = false;
 						await that.stopNodeBalls();
 
@@ -2079,12 +2090,13 @@ ret='DEFAULT'; `
 		try {
 			jqNodeDIV.hover(
 				() => {
-					$(document.body).css('cursor', 'pointer');
+					if (that.dragging) jqNodeDIV.addClass('mtc-cursor-move');
+					else jqNodeDIV.addClass('mtc-cursor-pointer');
 					that.hoverJqDiv(jqNodeDIV);
 					that.onC3 = true;
 				},
 				() => {
-					$(document.body).css('cursor', 'default');
+					jqNodeDIV.removeClass('mtc-cursor-pointer');
 					// jqNodeDIV.resizable('disable');
 					that.hoverJqDiv(null);
 					that.onC3 = true;
@@ -5872,7 +5884,8 @@ ret='DEFAULT'; `
 						break;
 					case 2:
 						lstr = that.curve
-							? `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`
+							? //? `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`
+							  `M${fx} ${fy} C${(tx + fx) * 0.5} ${fy} ${(fx + tx) * 0.5} ${ty} ${tx} ${ty}`
 							: `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`;
 						//: `M${fx} ${fy} V${ty} H${tx}`;
 						tstr = `M${tx} ${ty} C${fx} ${ty} ${tx} ${fy} ${fx} ${fy}`;
@@ -5940,7 +5953,8 @@ ret='DEFAULT'; `
 					case 0: //从右侧 指向  左侧
 						dis = Math.abs(tx - fx);
 						lstr = that.curve
-							? `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`
+							? //? `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`
+							  `M${fx} ${fy} C${(tx + fx) * 0.5} ${fy} ${(tx + fx) * 0.5} ${ty} ${tx} ${ty}`
 							: `M${fx} ${fy} C${tx} ${fy} ${fx} ${ty} ${tx} ${ty}`;
 						//: `M${fx} ${fy} H${tx} V${ty}`;
 						tstr = `M${tx} ${ty} C${tx} ${fy} ${fx} ${ty} ${fx} ${fy}`;

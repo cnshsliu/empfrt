@@ -130,6 +130,7 @@ export interface Work {
 	withadhoc?: boolean;
 	withcmt?: boolean;
 	allowdiscuss: boolean;
+	version: string;
 }
 
 export interface TmapEntry {

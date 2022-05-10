@@ -238,8 +238,8 @@
 		{/if}
 	</Container>
 </form>
-<Button on:click={getUserNotStaff}>Get users who are not in Orgchart</Button>
 <Container>
+	<Button on:click={getUserNotStaff}>Get users who are not in Orgchart</Button>
 	<Row cols="1">
 		{#each usersNotStaff as uns, index}
 			<Col>

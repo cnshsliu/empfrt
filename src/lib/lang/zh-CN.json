@@ -211,6 +211,7 @@
 		"ST_RETURNED": "已退回",
 		"ST_IGNORE": "已忽略"
 	},
+
 	"start": {
 		"canbefile": "你也可以上传一个文件作为PBO",
 		"startWorkflow": "启动这个流程",
@@ -235,6 +236,7 @@
 		"warnNoTitle": "缺失提供专用标题",
 		"startAnyway": "确认，请直接启动"
 	},
+
 	"todo": {
 		"status": "任务状态",
 		"Starter": "发起人ID",
@@ -272,6 +274,7 @@
 		},
 		"bethefirstcomment": "欢迎前排讨论"
 	},
+
 	"tpl": {
 		"prop": "属性",
 		"new": "新建",
@@ -291,6 +294,7 @@
 			"start": "启动"
 		}
 	},
+
 	"prop": {
 		"label": "任务描述",
 		"bot": "机器人",
@@ -375,6 +379,7 @@
 			"varvalue": "参数值"
 		}
 	},
+
 	"designer": {
 		"AthenB": "A->B, 请点选B节点",
 		"BthenA": "B->A, 请点选A节点",
@@ -390,17 +395,21 @@
 		"showid": "节点ID",
 		"curve": "弧线"
 	},
+
 	"filepond": {
 		"labelIdle": {
 			"pbo": "拖放到此或浏览",
 			"kvar": "拖放到此或浏览"
 		}
 	},
+
 	"confirm": {
 		"title": {
-			"areyousure": "你确定吗？"
+			"areyousure": "你确定吗？",
+			"needReload": "版本更新"
 		},
 		"body": {
+			"needReload": "页面需要重新加载",
 			"deletefile": "文件将被永久删除，请确认",
 			"restartthendestroy": "放弃当前预演并重新启动一个",
 			"cancelworkflowatfirststep": "当前是你自己所启动流程的第一步，你有机会取消这个流程。根据每个流程的不同定义，即便是第一个活动，也可能已经卷入了其他人参与，取消一个已经启动的流程会给其他参与者带来困惑甚至懊恼，请确定你要取消当前流程。",
@@ -434,6 +443,7 @@
 			}
 		}
 	},
+
 	"inputtable": {
 		"copyto": {
 			"above": "向上复制",
@@ -447,6 +457,7 @@
 			"bottom": "移到最下"
 		}
 	},
+
 	"vote": {
 		"last": "依最后一人的选择",
 		"most": "依最多人的选择",
@@ -459,6 +470,7 @@
 		"ifAnyThenAllThenMost": "只要有选，否则依统一选择, 或最多",
 		"ifAnyThenFailto": "只要有选，否则"
 	},
+
 	"tools": {
 		"POINTER": "点选",
 		"ACTION": "活动",
@@ -472,6 +484,7 @@
 		"CONNECT": "连接",
 		"THROUGH": "过渡"
 	},
+
 	"setting": {
 		"set": "设置",
 		"adminpwd": "管理员密码",
@@ -489,6 +502,10 @@
 			"maintainance": "维护"
 		},
 		"personal": {
+			"nav": "个人设置",
+			"title": "设置个人相关的配置",
+			"body": "头像、签名、密码等",
+			"action": "个人设置",
 			"avatar": "头像",
 			"chooseavatar": "选择头像上传",
 			"choosesignature": "选择签名档上传",
@@ -506,20 +523,50 @@
 			"password2notsame": "密码不一致"
 		},
 		"delegation": {
+			"nav": "委托设置",
+			"title": "设置委托及管理被委托",
+			"body": "在起止时间内把工作项委托给他人",
+			"action": "委托设置",
 			"delegation": "委托",
 			"delegateto": "把我的工作委托给别人",
 			"BeginDate": "开始时间",
 			"EndDate": "结束时间",
 			"towhom": "委托给谁",
 			"Delegate": "委托",
+			"and": "以及",
 			"tome": "别人委托给我的",
+			"fromme": "我委托出去的",
+			"Between": "之间",
+			"Delegator": "委托人",
 			"Delegatee": "被委托人",
-			"removeSelected": "中止接受委托"
+			"removeSelected": "中止委托"
+		},
+		"maintainance": {
+			"nav": "系统维护",
+			"title": "维护系统业务数据",
+			"body": "对流程数据进行管理",
+			"action": "系统维护",
+			"select_status": "按状态筛选"
+		},
+		"list": {
+			"nav": "数据列表",
+			"title": "管理数据列表",
+			"body": "定义命名的数据列表",
+			"action": "数据列表"
+		},
+		"team": {
+			"nav": "敏捷团队",
+			"title": "机动组定义管理",
+			"body": "机动组用于定义用户到角色的映射关系",
+			"action": "敏捷团队"
 		},
 		"tenant": {
+			"nav": "组织账号",
+			"title": "管理你的组织账号",
+			"body": "设置组织配置信息及管理组织成员",
+			"action": "组织账号",
 			"administrator": "组织管理员",
 			"myrole": "我的角色",
-			"myorg": "组织",
 			"adminpwd": "管理员密码",
 			"adminpwd_ph": "本页的操作均需要使用管理员密码已确认",
 			"name": "设置组织名称",
@@ -544,6 +591,10 @@
 			"noapplication": "当前没有加入申请"
 		},
 		"orgchart": {
+			"nav": "组织结构",
+			"title": "管理你的组织结构树",
+			"body": "对组织结构树进行配置",
+			"action": "组织结构",
 			"query": "角色查询",
 			"withextra": "使用额外测试数据",
 			"comment": "关系类查询总是基于当前用户",
@@ -567,6 +618,10 @@
 			"resolver_label": "组织内角色查询"
 		},
 		"members": {
+			"nav": "组织成员",
+			"title": "管理组织账号下的成员",
+			"body": "增加删除成员，设置成员组",
+			"action": "组织成员",
 			"members": "团队成员管理",
 			"email": "邮箱",
 			"name": "姓名",
@@ -582,6 +637,10 @@
 			"team": "机动组定义"
 		},
 		"smtp": {
+			"nav": "SMTP",
+			"title": "邮件服务器设置",
+			"body": "设置用于发送邮件的服务器信息",
+			"action": "邮件设置",
 			"onlyadmin": "只有管理员有权限设置SMTP",
 			"server": "SMTP服务器地址",
 			"port": "SMTP服务器端口",
@@ -594,19 +653,36 @@
 			"from_ph": "发送着的显示名称"
 		},
 		"wecombot": {
+			"nav": "企业微信机器人",
+			"title": "配置企业微信机器人",
+			"body": "可用于将流程信息发送到企业微信",
+			"action": "企业微信",
 			"tplid": "模版名称",
 			"key": "机器人Key"
+		},
+		"myfiles": {
+			"nav": "我的文件",
+			"title": "管理我所上传的文件",
+			"body": "查看、检查使用情况、及删除未被使用文件",
+			"action": "我的文件",
+			"view": "查看",
+			"download": "下载",
+			"delete": "删除",
+			"filter": "只看该流程"
 		}
 	},
+
 	"pds": {
 		"withextra": "使用附加信息",
 		"noextra": "不使用附加信息"
 	},
+
 	"authgroup": {
 		"ADMIN": "管理员",
 		"OBSERVER": "观察者",
 		"DOER": "执行者"
 	},
+
 	"footer": {
 		"neural": "组织的数字化中枢神经系统",
 		"PLATFORM": "MTC平台",
@@ -626,6 +702,7 @@
 		"paas": "Paas服务",
 		"privateinstall": "独立部署"
 	},
+
 	"changeid": {
 		"current": "当前节点ID: ",
 		"changeto": "修改节点ID为",
@@ -635,22 +712,30 @@
 		"meaningful": "缺省ID是自动生成的，你可能需要给它一个更加有意义的ID",
 		"idformat": "这个节点ID是不合法字符串"
 	},
+
 	"csv": {
 		"uidnotfound": "错误: 以下用户ID不存在"
 	},
+
 	"login": {
 		"reset_password": "忘记密码吗？如需重置密码点这里",
 		"needfullemail": "重置密码须使用完整邮箱地址",
 		"resetpasswordresult": "重置密码的指引已发送到你的邮箱，请查收"
 	},
+
 	"comment": {
 		"hide": "收起讨论区",
 		"show": "展开讨论区",
 		"fortodo": "评论：",
 		"forcomment": "回复："
 	},
+
 	"session": {
 		"kickout": "过多非正常操作刷新-你的登录被退出",
 		"forcetohome": "过多非正常操作刷新-退回首页"
+	},
+
+	"error": {
+		"NO_BRUTE": "请勿频繁操作"
 	}
 }

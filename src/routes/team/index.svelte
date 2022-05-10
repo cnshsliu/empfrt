@@ -15,9 +15,11 @@
 </script>
 
 <script lang="ts">
+	import { _ } from '$lib/i18n';
 	import { API_SERVER } from '$lib/Env';
 	import RemoteTable from './RemoteTable.svelte';
 	import { get } from 'svelte/store';
+	import { goto } from '$app/navigation';
 	import type { WhichTab } from '$lib/types';
 	import { whichTabStorage } from '$lib/empstores';
 	import { ClientPermControl } from '$lib/clientperm';
@@ -25,12 +27,12 @@
 	import * as api from '$lib/api';
 	import { Container, Row, Col, Icon, Button, Fade, Card } from 'sveltestrap';
 
-	import type { User, Team, Config } from '$lib/types';
+	import type { User, Team } from '$lib/types';
 	import { enhance } from '$lib/form';
 	import { TabContent, TabPane } from 'sveltestrap';
 	export let teams: Team[];
 	export let user: User;
-	export let config: Config;
+	export let config: any;
 	export let lastSearchCondition: string = '';
 	export let form_status = { create: false, search: false, sort: false, import: false };
 	import { title } from '$lib/title';
@@ -120,12 +122,31 @@
 </script>
 
 <Container>
-	<div class="d-flex">
-		<div class="flex-shrink-0 fs-3">Teams</div>
-		<div class="mx-5 align-self-center flex-grow-1">
-			Map role definition in template to real people
+	<Row class="mt-3">
+		<nav aria-label="breadcrumb">
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item">
+					<a
+						href={'#'}
+						on:click={() => {
+							goto('/settings');
+						}}
+					>
+						{$_('navmenu.settings')}
+					</a>
+				</li>
+				<li class="breadcrumb-item active" aria-current="page">{$_('setting.team.nav')}</li>
+			</ol>
+		</nav>
+	</Row>
+	<Row>
+		<div class="d-flex">
+			<div class="flex-shrink-0 fs-3">Teams</div>
+			<div class="mx-5 align-self-center flex-grow-1">
+				Map role definition in template to real people
+			</div>
 		</div>
-	</div>
+	</Row>
 </Container>
 <Container>
 	<TabContent

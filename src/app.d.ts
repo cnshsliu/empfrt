@@ -12,6 +12,9 @@ declare namespace App {
 		comments?: any[];
 		comment_wfid?: string;
 		wfid?: string;
+		version?: string;
+		q?: string;
+		whichwf?: string;
 	}
 
 	interface Stuff {}

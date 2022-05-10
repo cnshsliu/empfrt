@@ -4,18 +4,22 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { _ } from '$lib/i18n';
+	import { session } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import * as api from '$lib/api';
-	import { Container, Button } from 'sveltestrap';
+	import { Row, Container, Button } from 'sveltestrap';
 	import BadgeWithDel from '$lib/input/BadgeWithDel.svelte';
 	import OrgChartMaintainer from './orgchartMaintainer.svelte';
 	import InputExandable from '$lib/input/InputExandable.svelte';
 	import PDSResolver from '$lib/input/PDSResolver.svelte';
+	import { setFadeMessage } from '$lib/Notifier';
+
 	let orgchartlist = [];
 	let orgchartroot = null;
 	let posValue = '';
-	export let user;
-	export let showOuId;
-	export let setFadeMessage;
+	let user = $session.user;
+	let showOuId = true;
+
 	function findOu(ocl, ouId) {
 		let ret = null;
 		for (let i = 0; i < ocl.length; i++) {
@@ -98,11 +102,53 @@
 		orgchartlist = tmp.splice(1);
 	};
 
-	export let authorizedAdmin = false;
+	let authorizedAdmin = false;
+	api.post('orgchart/authorized/admin', {}, user.sessionToken).then((res) => {
+		authorizedAdmin = res as unknown as boolean;
+	});
 </script>
 
 <form>
-	<Container class="text-nowrap">
+	<Container class="mt-3 mb-3 text-nowrap">
+		<Row>
+			<nav aria-label="breadcrumb">
+				<ol class="breadcrumb">
+					<li class="breadcrumb-item">
+						<a
+							href={'#'}
+							on:click={() => {
+								goto('/settings');
+							}}
+						>
+							{$_('navmenu.settings')}
+						</a>
+					</li>
+					<li class="breadcrumb-item active" aria-current="page">
+						<a
+							href={'#'}
+							on:click={() => {
+								goto('/settings/tenant');
+							}}
+						>
+							{$_('setting.tenant.nav')}
+						</a>
+					</li>
+					<li class="breadcrumb-item active" aria-current="page">
+						{$_('setting.orgchart.nav')}
+					</li>
+					<li class="breadcrumb-item active" aria-current="page">
+						<a
+							href={'#'}
+							on:click={() => {
+								goto('/settings/members');
+							}}
+						>
+							{$_('setting.members.nav')}
+						</a>
+					</li>
+				</ol>
+			</nav>
+		</Row>
 		{#if orgchartroot && orgchartroot.ou === 'root'}
 			{orgchartroot.cn}
 			<Button on:click={refreshOrgChart} color="primary"
@@ -173,8 +219,10 @@
 		{/if}
 	</Container>
 </form>
-<PDSResolver class="mt-3" bind:label={resolver_label} embed={true} />
-<div>{$_('setting.orgchart.comment')}</div>
+<Container>
+	<PDSResolver class="mt-3" bind:label={resolver_label} embed={true} />
+	<div>{$_('setting.orgchart.comment')}</div>
+</Container>
 
 {#if authorizedAdmin}
 	<div>

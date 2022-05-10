@@ -1,7 +1,14 @@
 <script lang="ts">
 	import { Container, Row, Col, Button, InputGroup, InputGroupText, Input } from 'sveltestrap';
 	import { _ } from '$lib/i18n';
+	import * as api from '$lib/api';
+	import { session } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import type { User, Org, SmtpDef } from '$lib/types';
+	import { onMount } from 'svelte';
+	import { setFadeMessage } from '$lib/Notifier';
+
+	let user = $session.user;
 	let password_for_admin = '';
 	let smtp: SmtpDef = {
 		host: 'smtp.myorg.com',
@@ -12,14 +19,7 @@
 		from: ''
 	};
 	export let myorg: Org;
-	export let user: User;
-	export let setFadeMessage: any;
 
-	if (myorg.smtp) {
-		smtp = myorg.smtp;
-		delete smtp._id;
-	}
-	import * as api from '$lib/api';
 	const saveSmtpSetting = async () => {
 		let ret = (await api.post(
 			'tnt/set/smtp',
@@ -30,14 +30,43 @@
 			user.sessionToken
 		)) as unknown as SmtpDef;
 		if (ret.error) {
-			setFadeMessage(ret.message, 'warning');
+			if (ret.error && ret.error === 'NO_BRUTE') {
+				setFadeMessage($_('error.NO_BRUTE'), 'warning');
+			} else {
+				setFadeMessage(ret.message, 'warning');
+			}
 		} else {
 			setFadeMessage("Orgnazation's SMTP setting has been saved", 'success');
 		}
 	};
+
+	onMount(async () => {
+		smtp = await api.post('tnt/get/smtp', {}, user.sessionToken);
+		if (smtp.error && smtp.error === 'NO_BRUTE') {
+			setFadeMessage($_('error.NO_BRUTE'), 'warning');
+		}
+		console.log(smtp);
+	});
 </script>
 
 <Container class="mt-3">
+	<Row>
+		<nav aria-label="breadcrumb">
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item">
+					<a
+						href={'#'}
+						on:click={() => {
+							goto('/settings');
+						}}
+					>
+						{$_('navmenu.settings')}
+					</a>
+				</li>
+				<li class="breadcrumb-item active" aria-current="page">{$_('setting.smtp.nav')}</li>
+			</ol>
+		</nav>
+	</Row>
 	{#if user.group !== 'ADMIN'}
 		<div class="w-100 text-center fs-3">Email setting is managed by org admin</div>
 	{:else}

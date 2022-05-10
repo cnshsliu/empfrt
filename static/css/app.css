@@ -2491,6 +2491,14 @@ div.pbo {
 	height: 50px;
 	border-radius: 25px;
 }
+.avatar50-round25-highlight {
+	width: 50px;
+	height: 50px;
+	border-radius: 25px;
+	border-style: solid;
+	border-width: 4px;
+	border-color: #2776ff;
+}
 div#todo_comments img {
 	max-width: 400px;
 }
@@ -2505,4 +2513,43 @@ div#todo_comments img {
 
 .kfk-origin-comment {
 	background-color: '#33CC3333';
+}
+.mtc-cursor-default {
+	cursor: default;
+}
+.mtc-cursor-pointer {
+	cursor: pointer;
+}
+.mtc-cursor-move {
+	cursor: url(/cur/move.cur) 20 20, move;
+}
+.mtc-cursor-ACTION {
+	cursor: url(/cur/ACTION.cur) 20 20, move;
+}
+.mtc-cursor-INFORM {
+	cursor: url(/cur/INFORM.cur) 20 20, move;
+}
+.mtc-cursor-SCRIPT {
+	cursor: url(/cur/SCRIPT.cur) 20 20, move;
+}
+.mtc-cursor-TIMER {
+	cursor: url(/cur/TIMER.cur) 20 20, move;
+}
+.mtc-cursor-SUB {
+	cursor: url(/cur/SUB.cur) 20 20, move;
+}
+.mtc-cursor-AND {
+	cursor: url(/cur/AND.cur) 20 20, move;
+}
+.mtc-cursor-OR {
+	cursor: url(/cur/OR.cur) 20 20, move;
+}
+.mtc-cursor-GROUND {
+	cursor: url(/cur/GROUND.cur) 20 20, move;
+}
+.mtc-cursor-CONNECT {
+	cursor: url(/cur/CONNECT.cur) 20 20, move;
+}
+.mtc-cursor-THROUGH {
+	cursor: url(/cur/THROUGH.cur) 20 20, move;
 }

@@ -71,7 +71,7 @@
 		})();
 </script>
 
-<div class="m-3 p-3 kfk-highlight-2 text-center position-relative">
+<div class="m-3 py-3 kfk-highlight-2 text-center position-relative">
 	<Row>
 		<Col>
 			<div class="fs-5">{$_('todo.worklogof')}</div>

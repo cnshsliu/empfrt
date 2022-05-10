@@ -4,7 +4,7 @@ import * as api from '$lib/api';
 import { respond } from './_respond';
 //import ErrorProcessor from '$lib/errorProcessor';
 //import { session } from '$app/stores';
-export async function post({ request }) {
+export async function post({ request, locals }) {
 	const body = await request.json();
 	let ret = await api.post('account/login', {
 		email: body.email,
@@ -14,7 +14,7 @@ export async function post({ request }) {
 		console.error('auth/login', ret);
 	}
 	if (ret.perm) {
-		request.locals.perm = ret.perm;
+		locals.perm = ret.perm;
 	}
 	return respond(ret);
 }
