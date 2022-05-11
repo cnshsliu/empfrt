@@ -199,4 +199,6 @@
 		{/each}
 	</Row>
 </Container>
-<Button on:click={fixPondfile}>FixPondFile</Button>
+{#if user.group === 'ADMIN'}
+	<Button on:click={fixPondfile}>FixPondFile</Button>
+{/if}

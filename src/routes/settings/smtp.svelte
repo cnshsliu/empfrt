@@ -18,7 +18,6 @@
 		password: '',
 		from: ''
 	};
-	export let myorg: Org;
 
 	const saveSmtpSetting = async () => {
 		let ret = (await api.post(

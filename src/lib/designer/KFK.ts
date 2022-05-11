@@ -462,11 +462,8 @@ class KFKclass {
 		if (that.jc3Cursor) {
 			that.JC3.removeClass(that.jc3Cursor);
 		}
-		if (tool !== 'POINTER') {
-			that.jc3Cursor = `mtc-cursor-${that.tool}`;
-			that.JC3.addClass(that.jc3Cursor);
-			console.log('Toggle cursor to ', that.jc3Cursor);
-		}
+		that.jc3Cursor = `mtc-cursor-${that.tool}`;
+		that.JC3.addClass(that.jc3Cursor);
 		for (const key in that.APP.toolActiveState) {
 			that.APP.toolActiveState[key] = false;
 		}
@@ -2090,14 +2087,10 @@ ret='DEFAULT'; `
 		try {
 			jqNodeDIV.hover(
 				() => {
-					if (that.dragging) jqNodeDIV.addClass('mtc-cursor-move');
-					else jqNodeDIV.addClass('mtc-cursor-pointer');
 					that.hoverJqDiv(jqNodeDIV);
 					that.onC3 = true;
 				},
 				() => {
-					jqNodeDIV.removeClass('mtc-cursor-pointer');
-					// jqNodeDIV.resizable('disable');
 					that.hoverJqDiv(null);
 					that.onC3 = true;
 				}
@@ -2442,12 +2435,22 @@ ret='DEFAULT'; `
 		that.JC1.on('contextmenu', function (evt: any) {
 			evt.preventDefault();
 			that.kuangXuanMouseIsDown = false;
+			if (that.jc3Cursor && that.jc3Cursor === 'mtc-cursor-kuang') {
+				that.JC3.removeClass(that.jc3Cursor);
+			}
+			that.jc3Cursor = `mtc-cursor-POINTER`;
+			that.JC3.addClass(that.jc3Cursor);
 		});
 		that.JC1.on('click', async function () {
 			if (KFKclass.IsSet(that.selectedTodo)) {
 				that.selectedTodo.removeClass('current');
 			}
 			that.kuangXuanMouseIsDown = false;
+			if (that.jc3Cursor && that.jc3Cursor === 'mtc-cursor-kuang') {
+				that.JC3.removeClass(that.jc3Cursor);
+			}
+			that.jc3Cursor = `mtc-cursor-POINTER`;
+			that.JC3.addClass(that.jc3Cursor);
 			KFKclass.hide($('.clickOuterToHide'));
 		});
 		//click c3
@@ -2455,7 +2458,17 @@ ret='DEFAULT'; `
 			evt.preventDefault();
 			evt.stopPropagation();
 			that.kuangXuanMouseIsDown = false;
+			if (that.jc3Cursor && that.jc3Cursor === 'mtc-cursor-kuang') {
+				that.JC3.removeClass(that.jc3Cursor);
+			}
+			that.jc3Cursor = `mtc-cursor-POINTER`;
+			that.JC3.addClass(that.jc3Cursor);
 			if (that.ctrlMouseToPan === true) {
+				if (that.jc3Cursor) {
+					that.JC3.removeClass(that.jc3Cursor);
+				}
+				that.jc3Cursor = `mtc-cursor-pan`;
+				that.JC3.addClass(that.jc3Cursor);
 				that.panStartAt = {
 					x: evt.clientX,
 					y: evt.clientY
@@ -2493,6 +2506,11 @@ ret='DEFAULT'; `
 
 		//eslint-disable-next-line
 		that.JC3.mouseup(async (_evt: MouseEvent) => {
+			if (that.jc3Cursor) {
+				that.JC3.removeClass(that.jc3Cursor);
+			}
+			that.jc3Cursor = `mtc-cursor-POINTER`;
+			that.JC3.addClass(that.jc3Cursor);
 			that.panStartAt = undefined;
 			that.ignoreClick = false;
 		});
@@ -2598,6 +2616,11 @@ ret='DEFAULT'; `
 		});
 
 		that.addMinimap();
+		if (that.jc3Cursor) {
+			that.JC3.removeClass(that.jc3Cursor);
+		}
+		that.jc3Cursor = `mtc-cursor-POINTER`;
+		that.JC3.addClass(that.jc3Cursor);
 	}
 
 	isDuringKuangXuan() {
@@ -4920,11 +4943,21 @@ ret='DEFAULT'; `
 			if (that.tool === 'POINTER') {
 				if (that.ctrlMouseToPan === true) {
 					if (evt.shiftKey) {
+						if (that.jc3Cursor) {
+							that.JC3.removeClass(that.jc3Cursor);
+						}
+						that.jc3Cursor = `mtc-cursor-pan`;
+						that.JC3.addClass(that.jc3Cursor);
 						that.panStartAt = {
 							x: evt.clientX,
 							y: evt.clientY
 						};
 					} else {
+						if (that.jc3Cursor && that.jc3Cursor !== 'mtc-cursor-kuang') {
+							that.JC3.removeClass(that.jc3Cursor);
+						}
+						that.jc3Cursor = `mtc-cursor-kuang`;
+						that.JC3.addClass(that.jc3Cursor);
 						that.kuangXuanMouseIsDown = true;
 						that.kuangXuanStartPoint = {
 							x: that.scrXToJc3X(evt.clientX),
@@ -4934,11 +4967,21 @@ ret='DEFAULT'; `
 				} else {
 					if (evt.shiftKey) {
 						that.kuangXuanMouseIsDown = true;
+						if (that.jc3Cursor && that.jc3Cursor !== 'mtc-cursor-kuang') {
+							that.JC3.removeClass(that.jc3Cursor);
+						}
+						that.jc3Cursor = `mtc-cursor-kuang`;
+						that.JC3.addClass(that.jc3Cursor);
 						that.kuangXuanStartPoint = {
 							x: that.scrXToJc3X(evt.clientX),
 							y: that.scrYToJc3Y(evt.clientY)
 						};
 					} else {
+						if (that.jc3Cursor) {
+							that.JC3.removeClass(that.jc3Cursor);
+						}
+						that.jc3Cursor = `mtc-cursor-pan`;
+						that.JC3.addClass(that.jc3Cursor);
 						that.panStartAt = {
 							x: evt.clientX,
 							y: evt.clientY
@@ -4949,8 +4992,18 @@ ret='DEFAULT'; `
 		});
 		$(document).on('mouseup', async function (evt: any) {
 			that.panStartAt = undefined;
+			if (that.jc3Cursor) {
+				that.JC3.removeClass(that.jc3Cursor);
+			}
+			that.jc3Cursor = `mtc-cursor-POINTER`;
+			that.JC3.addClass(that.jc3Cursor);
 			if (that.tool === 'POINTER') {
 				that.kuangXuanMouseIsDown = false;
+				if (that.jc3Cursor && that.jc3Cursor === 'mtc-cursor-kuang') {
+					that.JC3.removeClass(that.jc3Cursor);
+				}
+				that.jc3Cursor = `mtc-cursor-POINTER`;
+				that.JC3.addClass(that.jc3Cursor);
 				that.kuangXuanEndPoint = {
 					x: that.scrXToJc3X(evt.clientX),
 					y: that.scrYToJc3Y(evt.clientY)

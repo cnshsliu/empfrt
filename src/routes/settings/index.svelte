@@ -174,9 +174,3 @@
 		</Col>
 	</Row>
 </Container>
-
-<style>
-	.text-right {
-		text-align: right;
-	}
-</style>
