@@ -6,6 +6,7 @@
 	import { session } from '$app/stores';
 	import { tick } from 'svelte';
 	import * as api from '$lib/api';
+	import TextSignature from '$lib/TextSignature.svelte';
 	import DisplayTable from '$lib/display/Table.svelte';
 	//import CommentEntry from '$lib/CommentEntry.svelte';
 	import CsvDisplay from '$lib/display/CsvDisplay.svelte';
@@ -44,7 +45,7 @@
 		serverRunningLogs = (await api.post(
 			'workflow/readlog',
 			{ wfid: wfid },
-			user.sessionToken
+			user.sessionToken,
 		)) as unknown as string;
 	};
 	const onShowLog = async (e) => {
@@ -80,8 +81,7 @@
 				on:click={(e) => {
 					e.preventDefault();
 					goto(`/workflow/${wfid}`);
-				}}
-			>
+				}}>
 				{wf.wftitle}
 			</div>
 		</Col>
@@ -94,8 +94,7 @@
 							on:click={(e) => {
 								e.preventDefault();
 								gotoWorkflowMonitor(wfid);
-							}}
-						>
+							}}>
 							<AniIcon icon="kanban" ani="aniShake" />
 							&nbsp;
 							{$_('todo.monitor')}
@@ -121,12 +120,10 @@
 							on:click={(e) => {
 								e.preventDefault();
 								$filterStorage.showprocesstrack = !$filterStorage.showprocesstrack;
-							}}
-						>
+							}}>
 							<AniIcon
 								icon={$filterStorage.showprocesstrack ? 'caret-up' : 'caret-right'}
-								ani="aniShake"
-							/>
+								ani="aniShake" />
 							&nbsp;
 							{$filterStorage.showprocesstrack ? $_('todo.track.shouqi') : $_('todo.track.dakai')}
 						</NavLink>
@@ -154,8 +151,7 @@
 			{#each wf.history as entry}
 				<Row
 					class={'mt-2 border rounded-3 pt-0 kfk-trackentry kfk-work-kvars tnt-work-kvars ' +
-						(entry.isCurrent ? 'border-3' : '')}
-				>
+						(entry.isCurrent ? 'border-3' : '')}>
 					<Col class="d-flex border-end col-3">
 						<div class="text-center px-0 pt-3 w-100">
 							{#if workid === entry.workid}
@@ -170,7 +166,7 @@
 							{:else}
 								{#if entry.nodeid === 'ADHOC'}
 									<Badge pill class="bg-white border border-primary">
-										<span class={StatusClass(entry.status)}> ADHOC </span>
+										<span class={StatusClass(entry.status)}>ADHOC</span>
 									</Badge>
 								{/if}
 								<Badge pill class="bg-white border border-primary">
@@ -180,7 +176,8 @@
 								</Badge>
 							{/if}
 							{#if entry.doneat}
-								<br />{mtcDate(entry.doneat)}
+								<br />
+								{mtcDate(entry.doneat)}
 							{/if}
 							{#if entry.workDecision}
 								<div class="pt-3 text-center fs-2 kfk-kvar-value-display">
@@ -205,12 +202,18 @@
 												await tick();
 												goto(`/work/${aDoer.todoid}`);
 											}}
-											class="clickable btn btn-sm"
-										>
+											class="clickable btn btn-sm">
 											{#if aDoer.status === 'ST_DONE'}
 												<div>{@html aDoer.decision ? aDoer.decision : '&nbsp;'}</div>
 												{#if aDoer.signature}
-													<img src={aDoer.signature} class="kfk-signature" alt={aDoer.cn} />
+													{#if aDoer.signature.startsWith('http')}
+														<img src={aDoer.signature} class="kfk-signature" alt={aDoer.cn} />
+													{:else}
+														<div
+															class="user-emoji d-flex align-items-center  justify-content-center">
+															<TextSignature signature={aDoer.signature} />
+														</div>
+													{/if}
 												{:else}
 													<div class="user-emoji d-flex align-items-center  justify-content-center">
 														<i class="fs-2 text-success bi bi-emoji-sunglasses" alt="Done" />
@@ -245,14 +248,12 @@
 								{#if entry.kvarsArr.filter((x) => x.name[0] != '$').length > 0}
 									<Row
 										cols={{ xs: 1, md: 2, lg: 4 }}
-										class="kfk-work-kvars tnt-work-kvars border-top"
-									>
+										class="kfk-work-kvars tnt-work-kvars border-top">
 										{#each entry.kvarsArr.filter((x) => x.name[0] != '$') as kvar}
 											<!-- table, textarea width = 100% -->
 											<Col
 												class={'p-2 border ' +
-													(['tbl', 'textarea'].includes(kvar.type) ? 'w-100' : '')}
-											>
+													(['tbl', 'textarea'].includes(kvar.type) ? 'w-100' : '')}>
 												{#if kvar.type === 'tbl'}
 													<div class="fw-bold">{kvar.label}</div>
 													<DisplayTable {kvar} />

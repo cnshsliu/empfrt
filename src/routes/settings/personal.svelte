@@ -3,6 +3,7 @@
 	import { Button, Container, Row, Col, InputGroup, InputGroupText, Input } from 'sveltestrap';
 	import Avatar from '$lib/display/Avatar.svelte';
 	import { goto } from '$app/navigation';
+	import TextSignature from '$lib/TextSignature.svelte';
 	import { debugOption } from '$lib/empstores';
 	import { session } from '$app/stores';
 	import { setFadeMessage } from '$lib/Notifier';
@@ -204,8 +205,16 @@
 			<Col>
 				<InputGroup class="mb-1">
 					<InputGroupText>{$_('setting.personal.signature')}</InputGroupText>
-					<img alt="signature" src={`${user.signature}`} class="kfk-signature" />
-					<Input bind:value={user.signature} />
+					{#if user.signature.startsWith('http')}
+						<img alt="signature" src={`${user.signature}`} class="kfk-signature" />
+					{:else}
+						<div class="kfk-textsignature">
+							<TextSignature signature={user.signature} />
+						</div>
+					{/if}
+					<Input
+						bind:value={user.signature}
+						placeholder="use public accessible image url or plain text" />
 					<Button
 						on:click={async (e) => {
 							e.preventDefault();
