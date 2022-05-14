@@ -2511,6 +2511,11 @@ div#todo_comments img {
 	border-radius: 5px;
 }
 
+#templatehelp kbd {
+	background-color: #6348aa; // Changes background color  #00a5a5
+	color: #333; // Changes text color
+}
+
 .kfk-origin-comment {
 	background-color: '#33CC3333';
 }
@@ -2518,44 +2523,44 @@ div#todo_comments img {
 	cursor: default;
 }
 .mtc-cursor-move {
-	cursor: url(/cur/move.cur) 20 20, move;
+	cursor: url(/cur/move.cur) 4 4, move;
 }
 .mtc-cursor-pan {
-	cursor: url(/cur/pan.cur) 16 16, move;
+	cursor: url(/cur/pan.cur) 4 4, move;
 }
 .mtc-cursor-kuang {
-	cursor: url(/cur/kuang.cur) 16 16, move;
+	cursor: url(/cur/kuang.cur) 4 4, move;
 }
 .mtc-cursor-ACTION {
-	cursor: url(/cur/ACTION.cur) 20 20, pointer;
+	cursor: url(/cur/ACTION.cur) 4 4, pointer;
 }
 .mtc-cursor-INFORM {
-	cursor: url(/cur/INFORM.cur) 20 20, pointer;
+	cursor: url(/cur/INFORM.cur) 4 4, pointer;
 }
 .mtc-cursor-SCRIPT {
-	cursor: url(/cur/SCRIPT.cur) 20 20, pointer;
+	cursor: url(/cur/SCRIPT.cur) 4 4, pointer;
 }
 .mtc-cursor-TIMER {
-	cursor: url(/cur/TIMER.cur) 20 20, pointer;
+	cursor: url(/cur/TIMER.cur) 4 4, pointer;
 }
 .mtc-cursor-SUB {
-	cursor: url(/cur/SUB.cur) 20 20, pointer;
+	cursor: url(/cur/SUB.cur) 4 4, pointer;
 }
 .mtc-cursor-AND {
-	cursor: url(/cur/AND.cur) 20 20, pointer;
+	cursor: url(/cur/AND.cur) 4 4, pointer;
 }
 .mtc-cursor-OR {
-	cursor: url(/cur/OR.cur) 20 20, pointer;
+	cursor: url(/cur/OR.cur) 4 4, pointer;
 }
 .mtc-cursor-GROUND {
-	cursor: url(/cur/GROUND.cur) 20 20, pointer;
+	cursor: url(/cur/GROUND.cur) 4 4, pointer;
 }
 .mtc-cursor-CONNECT {
-	cursor: url(/cur/CONNECT.cur) 20 20, pointer;
+	cursor: url(/cur/CONNECT.cur) 4 4, pointer;
 }
 .mtc-cursor-THROUGH {
-	cursor: url(/cur/THROUGH.cur) 20 20, pointer;
+	cursor: url(/cur/THROUGH.cur) 4 4, pointer;
 }
 .mtc-cursor-POINTER {
-	cursor: url(/cur/POINTER.cur) 2 2, pointer;
+	cursor: url(/cur/POINTER.cur) 0 0, pointer;
 }

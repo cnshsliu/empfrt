@@ -3,6 +3,7 @@
 	import { Button, Container, Row, Col, InputGroup, InputGroupText, Input } from 'sveltestrap';
 	import Avatar from '$lib/display/Avatar.svelte';
 	import { goto } from '$app/navigation';
+	import { debugOption } from '$lib/empstores';
 	import { session } from '$app/stores';
 	import { setFadeMessage } from '$lib/Notifier';
 	import { _ } from '$lib/i18n';
@@ -31,7 +32,7 @@
 		in_progress = true;
 		let payload = {
 			value: value,
-			old_password: my_old_password
+			old_password: my_old_password,
 		};
 		const response = await api.post('account/profile/update', payload, user.sessionToken);
 		if (response.error) {
@@ -66,11 +67,11 @@
 		let ret = await api.post(
 			'account/set/signature',
 			{ pondfiles: uploadedFiles },
-			$session.user.sessionToken
+			$session.user.sessionToken,
 		);
 	}
 	let webhook_setting = {
-		wecombot_key: ''
+		wecombot_key: '',
 	};
 
 	let avatarInput;
@@ -100,14 +101,14 @@
 	async function uploadAvatar(e: Event) {
 		e.preventDefault();
 		const formData = new FormData();
-		formData.append('avatar', e.target.files[0]);
+		formData.append('avatar', (<HTMLInputElement>e.target).files[0]);
 		try {
 			await fetch(`${API_SERVER}/account/upload/avatar`, {
 				method: 'POST',
 				headers: {
-					Authorization: user.sessionToken
+					Authorization: user.sessionToken,
 				},
-				body: formData
+				body: formData,
 			})
 				.then((response) => response.json())
 				.then(async (result) => {
@@ -142,13 +143,13 @@
 	<Row>
 		<nav aria-label="breadcrumb">
 			<ol class="breadcrumb">
-				<li class="breadcrumb-item">
+				<li class="breadcrumb-item kfk-tag">
 					<a
+						class="kfk-link"
 						href={'#'}
 						on:click={() => {
 							goto('/settings');
-						}}
-					>
+						}}>
 						{$_('navmenu.settings')}
 					</a>
 				</li>
@@ -169,8 +170,7 @@
 						email={user.email}
 						uname={user.username}
 						style={'avatar40'}
-						bind:this={theAvatar}
-					/>
+						bind:this={theAvatar} />
 				</div>
 			</Col>
 			<Col class="d-flex justify-content-center mt-2">
@@ -181,16 +181,14 @@
 					alt=""
 					on:click={() => {
 						avatarInput.click();
-					}}
-				/>
+					}} />
 			</Col>
 			<Col class="d-flex justify-content-center">
 				<div
 					class="chan"
 					on:click={() => {
 						avatarInput.click();
-					}}
-				>
+					}}>
 					{$_('setting.personal.chooseavatar')}
 				</div>
 				<input
@@ -199,8 +197,7 @@
 					type="file"
 					accept=".jpg, .jpeg, .png"
 					on:change={async (e) => await uploadAvatar(e)}
-					bind:this={avatarInput}
-				/>
+					bind:this={avatarInput} />
 			</Col>
 		</Row>
 		<Row cols="1" class="mt-3">
@@ -213,8 +210,7 @@
 						on:click={async (e) => {
 							e.preventDefault();
 							await setPersonal({ signature: user.signature });
-						}}
-					>
+						}}>
 						{$_('setting.set')}
 					</Button>
 				</InputGroup>
@@ -227,14 +223,12 @@
 						type="text"
 						autocomplete="username"
 						placeholder="Username"
-						bind:value={user.username}
-					/>
+						bind:value={user.username} />
 					<Button
 						on:click={async (e) => {
 							e.preventDefault();
 							await setPersonal({ username: user.username });
-						}}
-					>
+						}}>
 						{$_('setting.set')}
 					</Button>
 				</InputGroup>
@@ -247,8 +241,7 @@
 						type="password"
 						placeholder="Old Password"
 						autocomplete="current-password"
-						bind:value={my_old_password}
-					/>
+						bind:value={my_old_password} />
 					<InputGroupText>{$_('setting.personal.newpassword')}</InputGroupText>
 					<input
 						class={newPasswordCssClasses}
@@ -260,15 +253,13 @@
 							e.preventDefault();
 							onInputNewPassword();
 						}}
-						aria-describedby={'validationNewPasswordFeedback'}
-					/>
+						aria-describedby={'validationNewPasswordFeedback'} />
 					<Button
 						disabled={enableChangePasswordButton === false}
 						on:click={async (e) => {
 							e.preventDefault();
 							await setPersonal({ password: user.password });
-						}}
-					>
+						}}>
 						{$_('setting.set')}
 					</Button>
 				</InputGroup>
@@ -292,8 +283,7 @@
 						on:click={async (e) => {
 							e.preventDefault();
 							await setPersonal({ ew: user.ew });
-						}}
-					>
+						}}>
 						{$_('setting.set')}
 					</Button>
 				</InputGroup>
@@ -305,14 +295,12 @@
 						type="text"
 						bind:value={joinorgwithcode}
 						placeholder="join code"
-						autocomplete="off"
-					/>
+						autocomplete="off" />
 					<Button
 						on:click={async (e) => {
 							e.preventDefault();
 							await joinOrgWithCode();
-						}}
-					>
+						}}>
 						{$_('setting.set')}
 					</Button>
 				</InputGroup>
@@ -320,6 +308,11 @@
 		</Row>
 	</form>
 </Container>
+{#if $debugOption === 'yes'}
+	<pre><code>
+			{user.sessionToken}
+</code></pre>
+{/if}
 
 <style>
 	.upload {

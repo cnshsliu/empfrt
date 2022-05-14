@@ -11,7 +11,7 @@
 		Modal,
 		ModalFooter,
 		Button,
-		Icon
+		Icon,
 	} from 'sveltestrap';
 	import { session } from '$app/stores';
 	import { filterStorage } from '$lib/empstores';
@@ -99,7 +99,7 @@
 		return {
 			destroy() {
 				node.removeEventListener('keyup', handleKey);
-			}
+			},
 		};
 	};
 
@@ -137,8 +137,7 @@
 			} else {
 				noExtra();
 			}
-		}}
-	>
+		}}>
 		{showExtra ? $_('pds.noextra') : $_('pds.withextra')}
 	</Button>
 	<Button
@@ -146,10 +145,14 @@
 		on:click={async (e) => {
 			e.preventDefault();
 			resolve();
-		}}
-	>
+		}}>
 		{btnText}
 	</Button>
+	<div class="kfk-tag ms-2">
+		<a href="https://cnshsliu.github.io/mtcdocs/designer/pds.html" class="kfk-link">
+			<i class="bi bi-question-circle" />
+		</a>
+	</div>
 </InputGroup>
 {#if showExtra}
 	<div class="mt-3 fs-5">
@@ -165,8 +168,7 @@
 				e.preventDefault();
 				try_with_email = user.email;
 				$filterStorage.try_with_email = user.email;
-			}}
-		>
+			}}>
 			<Icon name="x-lg" />
 		</Button>
 	</InputGroup>
@@ -180,8 +182,7 @@
 				e.preventDefault();
 				try_with_kvar = '';
 				$filterStorage.try_with_kvar = '';
-			}}
-		>
+			}}>
 			<Icon name="x-lg" />
 		</Button>
 	</InputGroup>
@@ -195,8 +196,7 @@
 				e.preventDefault();
 				try_with_teamid = '';
 				$filterStorage.try_with_teamid = '';
-			}}
-		>
+			}}>
 			<Icon name="x-lg" />
 		</Button>
 	</InputGroup>
@@ -210,8 +210,7 @@
 				e.preventDefault();
 				try_with_wfid = '';
 				$filterStorage.try_with_wfid = '';
-			}}
-		>
+			}}>
 			<Icon name="x-lg" />
 		</Button>
 	</InputGroup>

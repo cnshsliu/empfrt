@@ -96,7 +96,7 @@ export interface Workflow {
 export interface Work {
 	_id: string;
 	tenant: string;
-	doer: string;
+	doerCN?: string;
 	doer_string?: string;
 	role?: string;
 	tplid: string;
@@ -206,7 +206,7 @@ export interface StateContext {
 	};
 	setPage: (
 		_page: number,
-		_pageIndex: number
+		_pageIndex: number,
 	) => {
 		page: number;
 		pageIndex: number;

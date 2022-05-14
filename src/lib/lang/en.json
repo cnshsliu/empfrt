@@ -377,6 +377,17 @@
 			"setValue": "Set Process Value",
 			"varname": "Var Name",
 			"varvalue": "Var Value"
+		},
+		"tpl": {
+			"title": "Template Properties",
+			"tplid": "Template Name",
+			"readonly": "Read only",
+			"callback": {
+				"endpoint": "Callback endpoint",
+				"both": "From Server and Client",
+				"onserver": "Server only",
+				"onclient": "Client only"
+			}
 		}
 	},
 
@@ -393,7 +404,20 @@
 			}
 		},
 		"showid": "nodeID",
-		"curve": "Curve"
+		"curve": "Curve",
+		"tool": {
+			"POINTER": "<kbd><i class='bi bi-mouse2'>click</i></kbd> select, <kbd>click and hold</kbd> move, <kbd>shift-click</kbd>properties, <kbd>shift-move</kbd>multi-select, <kbd>num</kbd>tool, <kbd>Ctrl-E</kbd>mode",
+			"ACTION": "<kbd><i class='bi bi-mouse2'>click</i></kbd>anywhere to place a task node, <kbd>Esc</kbd> to quite this mode",
+			"INFORM": "<kbd><i class='bi bi-mouse2'>click</i></kbd> place an INFORM node for sending email(s) notifications",
+			"SCRIPT": "<kbd><i class='bi bi-mouse2'>click</i></kbd> place an SCRIPT node for embedding Javascript program in workflow",
+			"TIMER": "<kbd><i class='bi bi-mouse2'>click</i></kbd> place a TIMER node for controlling time",
+			"SUB": "<kbd><i class='bi bi-mouse2'>click</i></kbd> place a SUB node for running sub-process or another standalone process",
+			"AND": "<kbd><i class='bi bi-mouse2'>click</i></kbd> place an AND node for continueing only when previous tasks are all done",
+			"OR": "<kbd><i class='bi bi-mouse2'>click</i></kbd> place an OR node for continuing after any previous task is done",
+			"GROUND": "<kbd><i class='bi bi-mouse2'>click</i></kbd> place an GROUND node for end here without following",
+			"CONNECT": "<kbd><i class='bi bi-mouse2'>click</i></kbd>Click two nodes to connect them, hold <kbd>SHIFT</kbd> for contineous linking, <kbd>Esc</kbd> or <kbd>double-click</kbd> on blank area to cancel",
+			"THROUGH": "<kbd><i class='bi bi-mouse2'>click</i></kbd> place an THROUGH node, for cotinueing a long route, no effect to process flow logic"
+		}
 	},
 
 	"filepond": {
@@ -546,7 +570,11 @@
 			"title": "Business Data Admin",
 			"body": "Delete process etc.",
 			"action": "Admin",
-			"select_status": "Filter by status"
+			"select_status": "Filter by status",
+			"deletebizobj": "Delete business object",
+			"bywfid": "By Workflow ID",
+			"bywftitle": "By Workflow Title",
+			"bytplid": "By Template ID"
 		},
 		"list": {
 			"nav": "List",
@@ -669,6 +697,25 @@
 			"download": "Download",
 			"delete": "Delete",
 			"filter": "Only this Wf"
+		},
+		"resign": {
+			"nav": "User replacement",
+			"replaceuser": "User replacement and Resign",
+			"selectall": "Select all",
+			"execute": "Resign",
+			"replace": "Replace Only",
+			"from": "Replace from",
+			"to": "Replace to",
+			"prepare": "Check related",
+			"result": {
+				"todo": "Owned Tasks",
+				"tpl": "Participated Templates"
+			},
+			"confirm": {
+				"title": "Caution",
+				"body": "Resign {from} account will be frozen, no operation will be allowed.",
+				"doit": "Confirm Resign"
+			}
 		}
 	},
 
@@ -726,8 +773,9 @@
 	"comment": {
 		"hide": "Hide Discussion",
 		"show": "Show Discussion",
-		"fortodo": "Comment to: ",
-		"forcomment": "Reply to："
+		"fortodo": "Comment to:",
+		"forcomment": "Reply to:",
+		"markdown_enabled": "Markdown is enabled"
 	},
 
 	"session": {

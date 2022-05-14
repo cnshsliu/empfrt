@@ -7,7 +7,7 @@
 		Col,
 		InputGroup,
 		InputGroupText,
-		Input
+		Input,
 	} from 'sveltestrap';
 	import TimeZone from '$lib/Timezone';
 	import { goto } from '$app/navigation';
@@ -20,7 +20,7 @@
 
 	let user: User = $session.user;
 	let myorg: any = {
-		owner: ''
+		owner: '',
 	};
 
 	let password_for_admin = '';
@@ -29,19 +29,19 @@
 
 	async function refreshMyOrg() {
 		myorg = await api.post('tnt/my/org', {}, user.sessionToken);
-		console.log(myorg);
 	}
 
 	let orgMembers: OrgMembers;
 	async function refreshMembers() {
 		orgMembers = (await api.post('tnt/members', {}, user.sessionToken)) as unknown as OrgMembers;
 		if (orgMembers && orgMembers.members && orgMembers.members.length > 0) {
+			//当前用户放到最顶部，并且不支持被选中
 			orgMembers.members = orgMembers.members.filter((x) => x.email !== user.email);
 			orgMembers.members.unshift({
 				email: user.email,
 				username: user.username,
 				group: user.group,
-				checked: false
+				checked: false,
 			});
 			for (let i = 0; i < orgMembers.members.length; i++) {
 				orgMembers.members[i].checked = false;
@@ -57,7 +57,7 @@
 		let res = await api.post(
 			'tnt/member/remove',
 			{ ems, password: password_for_admin },
-			user.sessionToken
+			user.sessionToken,
 		);
 		if (res.error) {
 			setFadeMessage(res.message, 'warning');
@@ -75,7 +75,7 @@
 		let res = await api.post(
 			'tnt/member/setgroup',
 			{ ems, password: password_for_admin, member_group: set_group_to },
-			user.sessionToken
+			user.sessionToken,
 		);
 		if (res.error) {
 			setFadeMessage(res.message, 'warning');
@@ -92,7 +92,7 @@
 		let res = await api.post(
 			'tnt/member/setpassword',
 			{ ems, password: password_for_admin, set_password_to: set_password_to },
-			user.sessionToken
+			user.sessionToken,
 		);
 		if (res.error) {
 			setFadeMessage(res.message, 'warning');
@@ -114,38 +114,48 @@
 		<Row>
 			<nav aria-label="breadcrumb">
 				<ol class="breadcrumb">
-					<li class="breadcrumb-item">
+					<li class="breadcrumb-item kfk-tag">
 						<a
+							class="kfk-link"
 							href={'#'}
 							on:click={() => {
 								goto('/settings');
-							}}
-						>
+							}}>
 							{$_('navmenu.settings')}
 						</a>
 					</li>
-					<li class="breadcrumb-item active" aria-current="page">
+					<li class="breadcrumb-item active kfk-tag" aria-current="page">
 						<a
+							class="kfk-link"
 							href={'#'}
 							on:click={() => {
 								goto('/settings/tenant');
-							}}
-						>
+							}}>
 							{$_('setting.tenant.nav')}
 						</a>
 					</li>
-					<li class="breadcrumb-item active" aria-current="page">
+					<li class="breadcrumb-item active kfk-tag" aria-current="page">
 						<a
+							class="kfk-link"
 							href={'#'}
 							on:click={() => {
 								goto('/settings/orgchart');
-							}}
-						>
+							}}>
 							{$_('setting.orgchart.nav')}
 						</a>
 					</li>
 					<li class="breadcrumb-item active" aria-current="page">
 						{$_('setting.members.nav')}
+					</li>
+					<li class="breadcrumb-item active kfk-tag" aria-current="page">
+						<a
+							class="kfk-link"
+							href={'#'}
+							on:click={() => {
+								goto('/settings/resign');
+							}}>
+							{$_('setting.resign.nav')}
+						</a>
 					</li>
 				</ol>
 			</nav>
@@ -164,11 +174,12 @@
 				<table class="w-100 mt-3">
 					<thead>
 						<tr>
-							<th> {$_('setting.members.email')} </th> <th> {$_('setting.members.name')} </th>
+							<th>{$_('setting.members.email')}</th>
+							<th>{$_('setting.members.name')}</th>
 							<th>
 								{$_('setting.members.group')}
 							</th>
-							<th> {orgMembers.adminorg ? $_('setting.members.select') : ''} </th>
+							<th>{orgMembers.adminorg ? $_('setting.members.select') : ''}</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -177,8 +188,7 @@
 								class:kfk-odd={index % 2 !== 0}
 								class:kfk-even={index % 2 === 0}
 								class:tnt-odd={index % 2 !== 0}
-								class:tnt-even={index % 2 === 0}
-							>
+								class:tnt-even={index % 2 === 0}>
 								<td data-label="Email">
 									{member.email}
 								</td>
@@ -190,7 +200,10 @@
 								</td>
 								<td>
 									{#if index > 0}
-										<Input type="checkbox" bind:checked={member.checked} />
+										<Input
+											type="checkbox"
+											bind:checked={member.checked}
+											id={`member_check_${index}`} />
 									{/if}
 								</td>
 							</tr>
@@ -204,8 +217,7 @@
 					<Input
 						type="password"
 						bind:value={password_for_admin}
-						placeholder={$_('setting.adminpwd_ph')}
-					/>
+						placeholder={$_('setting.adminpwd_ph')} />
 				</InputGroup>
 			</Col>
 			<Col class="d-flex justify-content-end mt-2">
@@ -215,8 +227,7 @@
 						on:click={(e) => {
 							e.preventDefault();
 							removeSelectedMembers();
-						}}
-					>
+						}}>
 						{$_('setting.members.remove')}
 					</Button>
 				</InputGroup>
@@ -233,8 +244,7 @@
 						on:click={(e) => {
 							e.preventDefault();
 							setSelectedGroup();
-						}}
-					>
+						}}>
 						{$_('setting.set')}
 					</Button>
 				</InputGroup>
@@ -247,8 +257,7 @@
 						on:click={(e) => {
 							e.preventDefault();
 							setSelectedPassword();
-						}}
-					>
+						}}>
 						{$_('setting.set')}
 					</Button>
 				</InputGroup>

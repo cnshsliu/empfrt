@@ -13,7 +13,7 @@
 		CardHeader,
 		CardSubtitle,
 		CardText,
-		CardTitle
+		CardTitle,
 	} from 'sveltestrap';
 	import TimeTool from '$lib/TimeTool';
 	import { goto } from '$app/navigation';
@@ -38,9 +38,9 @@
 			{
 				delegatee: new_delegation_delegatee,
 				begindate: new_delegation_begindate,
-				enddate: new_delegation_enddate
+				enddate: new_delegation_enddate,
 			},
-			$session.user.sessionToken
+			$session.user.sessionToken,
 		);
 		if (ret.error) {
 			setFadeMessage(ret.message, 'warning');
@@ -84,13 +84,13 @@
 		<Row>
 			<nav aria-label="breadcrumb">
 				<ol class="breadcrumb">
-					<li class="breadcrumb-item">
+					<li class="breadcrumb-item kfk-tag">
 						<a
+							class="kfk-link"
 							href={'#'}
 							on:click={() => {
 								goto('/settings');
-							}}
-						>
+							}}>
 							{$_('navmenu.settings')}
 						</a>
 					</li>
@@ -115,8 +115,7 @@
 						on:click={(e) => {
 							e.preventDefault();
 							newDelegation();
-						}}
-					>
+						}}>
 						{$_('setting.delegation.Delegate')}
 					</Button>
 				</InputGroup>
@@ -129,10 +128,10 @@
 				<table class="w-100">
 					<thead>
 						<tr>
-							<th> {$_('setting.delegation.BeginDate')} </th>
-							<th> {$_('setting.delegation.EndDate')} </th>
-							<th> {$_('setting.delegation.Delegatee')} </th>
-							<th> &nbsp; </th>
+							<th>{$_('setting.delegation.BeginDate')}</th>
+							<th>{$_('setting.delegation.EndDate')}</th>
+							<th>{$_('setting.delegation.Delegatee')}</th>
+							<th>&nbsp;</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -141,8 +140,7 @@
 								class:kfk-odd={index % 2 !== 0}
 								class:kfk-even={index % 2 === 0}
 								class:tnt-odd={index % 2 !== 0}
-								class:tnt-even={index % 2 === 0}
-							>
+								class:tnt-even={index % 2 === 0}>
 								<td data-label="Begin Date">
 									{TimeTool.format(row.begindate, 'YYYY/MM/DD')}
 								</td>
@@ -166,8 +164,7 @@
 						on:click={(e) => {
 							e.preventDefault();
 							removeSelectedDelegation();
-						}}
-					>
+						}}>
 						{$_('setting.delegation.removeSelected')}
 					</Button>
 				</div>
@@ -180,10 +177,10 @@
 				<table class="w-100">
 					<thead>
 						<tr>
-							<th> {$_('setting.delegation.BeginDate')} </th>
-							<th> {$_('setting.delegation.EndDate')} </th>
-							<th> {$_('setting.delegation.Delegator')} </th>
-							<th> &nbsp; </th>
+							<th>{$_('setting.delegation.BeginDate')}</th>
+							<th>{$_('setting.delegation.EndDate')}</th>
+							<th>{$_('setting.delegation.Delegator')}</th>
+							<th>&nbsp;</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -192,8 +189,7 @@
 								class:kfk-odd={index % 2 !== 0}
 								class:kfk-even={index % 2 === 0}
 								class:tnt-odd={index % 2 !== 0}
-								class:tnt-even={index % 2 === 0}
-							>
+								class:tnt-even={index % 2 === 0}>
 								<td data-label="Begin Date">
 									{TimeTool.format(row.begindate, 'DD/MM/YYYY')}
 								</td>

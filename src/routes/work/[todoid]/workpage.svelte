@@ -70,7 +70,7 @@
 			wfid: work.wfid,
 			todoid: work.todoid,
 			doer: work.doer,
-			comment: comment
+			comment: comment,
 		};
 		payload.kvars = {};
 		for (let i = 0; i < work.kvarsArr.length; i++) {
@@ -86,7 +86,7 @@
 		let payload: any = {
 			wfid: work.wfid,
 			todoid: work.todoid,
-			comment: comment
+			comment: comment,
 		};
 		api.post('work/revoke', payload, user.sessionToken);
 		setTimeout(() => {
@@ -112,15 +112,15 @@
 					'explain/pds',
 					{
 						wfid: work.wfid,
-						pds: adhocTaskDoer
+						pds: adhocTaskDoer,
 						//teamid:  will use workflow's teamid automatically
 						//email: will use workflow's starter automatically
 					},
-					user.sessionToken
+					user.sessionToken,
 				)) as unknown as any[];
 				checkingTimer = null;
 			},
-			atonce ? 1 : 1000
+			atonce ? 1 : 1000,
 		);
 	};
 
@@ -135,9 +135,9 @@
 				title: adhocTaskTitle,
 				doer: adhocTaskDoer,
 				rehearsal: work.rehearsal,
-				comment: adhocTaskComment
+				comment: adhocTaskComment,
 			},
-			user.sessionToken
+			user.sessionToken,
 		);
 		setTimeout(async () => {
 			creatingAdhoc = false;
@@ -208,7 +208,7 @@
 			doer: work.doer,
 			todoid: work.todoid,
 			wfid: work.wfid,
-			comment: comment
+			comment: comment,
 		};
 		if (user_choice) {
 			payload.route = user_choice;
@@ -249,18 +249,18 @@
 							wftitle: work.wf.wftitle,
 							todoid: work.todoid,
 							title: work.title,
-							doer: work.doer
+							doer: work.doer,
 						},
 						route: payload.route,
-						kvars: tmpvars
-					}
+						kvars: tmpvars,
+					},
 				};
 				let opts = {
 					method: 'POST',
 					headers: {
-						'Content-Type': 'application/json'
+						'Content-Type': 'application/json',
 					},
-					body: JSON.stringify(data)
+					body: JSON.stringify(data),
 				};
 				try {
 					fetch(`${work.wf.endpoint}`, opts as RequestInit)
@@ -286,7 +286,7 @@
 			work = (await api.post(
 				'work/info',
 				{ todoid: todoid },
-				user.sessionToken
+				user.sessionToken,
 			)) as unknown as Work;
 			//console.log(JSON.stringify(work, null, 2));
 			work.wf.kvarsArr = work.wf.kvarsArr;
@@ -456,12 +456,12 @@
 						title={$_('todo.pbo')}
 						forWhat={'workflow'}
 						forWhich={work.wfid}
-						forKey="pbo"
-					/>
+						forKey="pbo" />
 				</div>
 				{#if work.instruct}
 					<div class="fs-5">
-						{$_('todo.instruction')}<br />
+						{$_('todo.instruction')}
+						<br />
 						<span class="mt-3">
 							{@html Parser.base64ToCode(work.instruct, '')}
 						</span>
@@ -491,8 +491,7 @@
 											{kvarIndex}
 											on:kvar_value_input_changed={async (e) => {
 												await caculateFormula(e.detail);
-											}}
-										/>
+											}} />
 									{/if}
 								{/each}
 							</Row>
@@ -504,8 +503,7 @@
 								placeholder="Quick Comments: "
 								bind:value={comment}
 								use:text_area_resize
-								class="form-control"
-							/>
+								class="form-control" />
 						{/if}
 						<!-- 按钮区 START -->
 						{#if work.status === 'ST_RUN'}
@@ -518,8 +516,7 @@
 											on:click={async (e) => {
 												e.preventDefault();
 												await _doneWork();
-											}}
-										>
+											}}>
 											{$_('button.done')}
 										</Button>
 									</Col>
@@ -532,8 +529,7 @@
 											on:click={async (e) => {
 												e.preventDefault();
 												await _doneWork(aChoice);
-											}}
-										>
+											}}>
 											{aChoice}
 										</Button>
 									</Col>
@@ -550,8 +546,7 @@
 										on:click={(e) => {
 											e.preventDefault();
 											_sendbackWork();
-										}}
-									>
+										}}>
 										{$_('button.sendback')}
 									</Button>
 								</Col>
@@ -562,8 +557,7 @@
 										on:click={(e) => {
 											e.preventDefault();
 											_revokeWork();
-										}}
-									>
+										}}>
 										{$_('button.revoke')}
 									</Button>
 								</Col>
@@ -576,8 +570,7 @@
 										on:click={(e) => {
 											e.preventDefault();
 											_toggleAdhoc();
-										}}
-									>
+										}}>
 										{showAdhocForm ? $_('button.cancel') : $_('button.adhoc')}
 									</Button>
 								</Col>
@@ -592,8 +585,7 @@
 											name="adhoc_task_title"
 											id="input-adhoc-title"
 											class="form-control"
-											bind:value={adhocTaskTitle}
-										/>
+											bind:value={adhocTaskTitle} />
 										<label for="input-adhoc-title">{$_('adhoc.title')}</label>
 									</div>
 								</Col>
@@ -607,8 +599,7 @@
 											on:change={(e) => {
 												e.preventDefault();
 												adhocTaskDoer = qtb(adhocTaskDoer);
-											}}
-										/>
+											}} />
 										<label for="input-adhoc-doer">{$_('adhoc.pds')}</label>
 									</div>
 								</Col>
@@ -622,8 +613,7 @@
 													e.preventDefault();
 													adhocTaskDoer = aUser;
 													await checkAdhocTaskDoer(e, true);
-												}}
-											>
+												}}>
 												{aUser}
 											</Button>
 										{/each}
@@ -636,8 +626,7 @@
 											id="input-adhoc-comment"
 											class="form-control"
 											bind:value={adhocTaskComment}
-											placeholder="Any extra comments"
-										/>
+											placeholder="Any extra comments" />
 										<label for="input-adhoc-comment">{$_('adhoc.comment')}</label>
 									</div>
 								</Col>
@@ -646,8 +635,7 @@
 									on:click={async (e) => {
 										e.preventDefault();
 										await checkAdhocTaskDoer(e, true);
-									}}
-								>
+									}}>
 									{$_('button.checkdoer')}
 								</Button>
 								{#if adhocTaskDoerConfirmed}
@@ -658,8 +646,7 @@
 											on:click={async (e) => {
 												e.preventDefault();
 												await createAdhoc();
-											}}
-										>
+											}}>
 											{$_('button.sendadhoc')}
 										</Button>
 										<Button
@@ -668,8 +655,7 @@
 											on:click={async (e) => {
 												e.preventDefault();
 												showAdhocForm = false;
-											}}
-										>
+											}}>
 											Cancel
 											{$_('button.cancel')}
 										</Button>
@@ -689,8 +675,7 @@
 										on:click={async (e) => {
 											e.preventDefault();
 											await createAdhoc();
-										}}
-									>
+										}}>
 										{$_('button.sendadhocConfirm')}
 									</Button>
 									<Button
@@ -699,8 +684,7 @@
 										on:click={async (e) => {
 											e.preventDefault();
 											showAdhocForm = false;
-										}}
-									>
+										}}>
 										{$_('button.sendadhocReconsider')}
 									</Button>
 								{/if}
@@ -716,8 +700,7 @@
 									on:click={(e) => {
 										e.preventDefault();
 										_revokeWork();
-									}}
-								>
+									}}>
 									{$_('button.revoke')}
 								</Button>
 							</Col>
@@ -774,17 +757,18 @@
 					<Button
 						on:click={() => {
 							showTodoComment = !showTodoComment;
-						}}
-					>
+						}}>
 						{#if showTodoComment}
-							<i class="bi bi-chevron-up" /> {$_('comment.hide')}
+							<i class="bi bi-chevron-up" />
+							{$_('comment.hide')}
 						{:else}
-							<i class="bi bi-chevron-down" /> {$_('comment.show')}
+							<i class="bi bi-chevron-down" />
+							{$_('comment.show')}
 						{/if}
 					</Button>
 				</Row>
 				{#if showTodoComment}
-					<Row class="m-0 p-0">
+					<Row class="ms-0 me-1 my-1">
 						<CommentInput
 							bind:value={newComment}
 							cmtid={'todo'}
@@ -796,9 +780,9 @@
 									{
 										objtype: 'TODO',
 										objid: work.todoid,
-										content: e.detail
+										content: e.detail,
 									},
-									user.sessionToken
+									user.sessionToken,
 								);
 								if (res.error) {
 									console.log(res.message);
@@ -810,15 +794,12 @@
 									work.comments = work.comments;
 									newComment = '';
 								}
-							}}
-						/>
+							}} />
 					</Row>
 					{#if work.comments && work.comments.length > 0}
 						<Row class="mt-2 p-2" id="todo_comments">
 							<Comments bind:comments={work.comments} bind:pointToOrigin />
 						</Row>
-					{:else}
-						{$_('todo.bethefirstcomment')}
 					{/if}
 				{/if}
 			</div>
@@ -832,6 +813,5 @@
 		{onPrint}
 		{_refreshWork}
 		{iframeMode}
-		{workJustDone}
-	/>
+		{workJustDone} />
 </Container>

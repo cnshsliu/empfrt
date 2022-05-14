@@ -377,6 +377,17 @@
 			"setValue": "设置流程参数",
 			"varname": "参数名",
 			"varvalue": "参数值"
+		},
+		"tpl": {
+			"title": "模版属性",
+			"tplid": "模版名称",
+			"readonly": "只读",
+			"callback": {
+				"endpoint": "回调接口地址",
+				"both": "服务端和用户端",
+				"onserver": "服务端回调",
+				"onclient": "用户端回调"
+			}
 		}
 	},
 
@@ -393,7 +404,20 @@
 			}
 		},
 		"showid": "节点ID",
-		"curve": "弧线"
+		"curve": "弧线",
+		"tool": {
+			"POINTER": "<kbd><i class='bi bi-mouse2'>点击</i></kbd> 选中, <kbd><i class='bi bi-mouse2'>按住</i></kbd>拖动, <kbd>Shift-<i class='bi bi-mouse2'>点击</i></kbd>属性, <kbd>Shift-<i class='bi bi-mouse2'>移动</i></kbd>框选，<kbd>数字键</kbd>工具, <kbd>Ctrl-E</kbd>模式",
+			"ACTION": "<kbd><i class='bi bi-mouse2'>点击</i></kbd>空白位置放置一个「工作项」节点, <kbd>Esc</kbd>退出当前模式",
+			"INFORM": "<kbd><i class='bi bi-mouse2'>点击</i></kbd>放置一个通知节点，用于发送邮件通知",
+			"SCRIPT": "<kbd><i class='bi bi-mouse2'>点击</i></kbd>放置一个脚本节点，用于运行脚本代码",
+			"TIMER": "<kbd><i class='bi bi-mouse2'>点击</i></kbd>放置一个定时节点，用于控制运行时间",
+			"SUB": "<kbd><i class='bi bi-mouse2'>点击</i></kbd>放置一个子流程节点，用于启动一个子流程或另一个独立流程",
+			"AND": "<kbd><i class='bi bi-mouse2'>点击</i></kbd>放置一个「与」节点，前序节点全部完成才会往后运行",
+			"OR": "<kbd><i class='bi bi-mouse2'>点击</i></kbd>放置一个「或」节点，前序节点任意一个完成即可往后运行",
+			"GROUND": "<kbd><i class='bi bi-mouse2'>点击</i></kbd>放置一个「接地」节点，无后续节点",
+			"CONNECT": "建立路径链接，<kbd><i class='bi bi-mouse2'>点击</i></kbd>两个节点将其链接，按住<kbd>SHIFT</kbd>连续链接, <kbd>Esc</kbd>或 在空白处<kbd>双击鼠标</kbd>退出链接模式",
+			"THROUGH": "<kbd><i class='bi bi-mouse2'>点击</i></kbd>放置一个接续节点，用于接续长路径，对流程运行逻辑无影响"
+		}
 	},
 
 	"filepond": {
@@ -546,7 +570,11 @@
 			"title": "维护系统业务数据",
 			"body": "对流程数据进行管理",
 			"action": "系统维护",
-			"select_status": "按状态筛选"
+			"select_status": "按状态筛选",
+			"deletebizobj": "删除业务对象",
+			"bywfid": "按流程编号",
+			"bywftitle": "按流程标题",
+			"bytplid": "按模版标题"
 		},
 		"list": {
 			"nav": "数据列表",
@@ -669,6 +697,25 @@
 			"download": "下载",
 			"delete": "删除",
 			"filter": "只看该流程"
+		},
+		"resign": {
+			"nav": "用户替换",
+			"replaceuser": "用户替换及离职处理",
+			"selectall": "全选",
+			"execute": "离职处理",
+			"replace": "仅替换用户",
+			"from": "替换谁",
+			"to": "替换为",
+			"prepare": "检查相关业务数据",
+			"result": {
+				"todo": "相关工作项",
+				"tpl": "相关流程模版"
+			},
+			"confirm": {
+				"title": "危险操作",
+				"body": "{from}的账号将被做离职冻结，不再可用",
+				"doit": "确认离职冻结"
+			}
 		}
 	},
 
@@ -727,7 +774,8 @@
 		"hide": "收起讨论区",
 		"show": "展开讨论区",
 		"fortodo": "评论：",
-		"forcomment": "回复："
+		"forcomment": "回复：",
+		"markdown_enabled": "支持Markdown"
 	},
 
 	"session": {

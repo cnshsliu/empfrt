@@ -13,7 +13,7 @@
 		InputGroup,
 		InputGroupText,
 		Input,
-		Badge
+		Badge,
 	} from 'sveltestrap';
 	let lists = [];
 	const refreshList = async function () {
@@ -38,13 +38,13 @@
 	<Row>
 		<nav aria-label="breadcrumb">
 			<ol class="breadcrumb">
-				<li class="breadcrumb-item">
+				<li class="breadcrumb-item kfk-tag">
 					<a
+						class="kfk-link"
 						href={'#'}
 						on:click={() => {
 							goto('/settings');
-						}}
-					>
+						}}>
 						{$_('navmenu.settings')}
 					</a>
 				</li>
@@ -74,8 +74,7 @@
 						setFadeMessage('Success', 'success');
 						refreshList();
 					}
-				}}
-			>
+				}}>
 				Create
 			</Button>
 		</InputGroup>
@@ -96,8 +95,7 @@
 								newName = list.name;
 								newlist.name = '';
 								addKeyFor = '';
-							}}
-						>
+							}}>
 							Change Name
 						</Button>
 						<Button
@@ -110,8 +108,7 @@
 								newName = '';
 								newkey = '';
 								newitems = '';
-							}}
-						>
+							}}>
 							Add a key
 						</Button>
 						<Button
@@ -121,8 +118,7 @@
 								e.preventDefault();
 								await api.post('list/del/listorkey', { name: list.name }, user.sessionToken);
 								refreshList();
-							}}
-						>
+							}}>
 							Delete
 						</Button>
 					</Col>
@@ -140,22 +136,20 @@
 									let ret = await api.post(
 										'list/change/name',
 										{ name: list.name, newName: newName },
-										user.sessionToken
+										user.sessionToken,
 									);
 									if (ret.error) {
 										setFadeMessage(ret.message, 'warning');
 									} else {
 										setFadeMessage('Success', 'success');
 									}
-								}}
-							>
+								}}>
 								Change
 							</Button>
 							<Button
 								on:click={(e) => {
 									changeNameOf = '';
-								}}
-							>
+								}}>
 								Cancel
 							</Button>
 						</InputGroup>
@@ -179,7 +173,7 @@
 								let ret = await api.post(
 									'list/set',
 									{ name: list.name, key: newkey, items: newitems },
-									user.sessionToken
+									user.sessionToken,
 								);
 								if (ret.error) {
 									setFadeMessage(ret.message, 'warning');
@@ -188,15 +182,13 @@
 									newitems = '';
 									refreshList();
 								}
-							}}
-						>
+							}}>
 							Add
 						</Button>
 						<Button
 							on:click={(e) => {
 								addKeyFor = '';
-							}}
-						>
+							}}>
 							Cancel
 						</Button>
 					</InputGroup>
@@ -220,8 +212,8 @@
 									e.preventDefault();
 									updateList = list.name;
 									updateKey = entry.key;
-								}}
-								>Update
+								}}>
+								Update
 							</Button>
 							<Button
 								color="warning"
@@ -230,11 +222,10 @@
 									await api.post(
 										'list/del/listorkey',
 										{ name: list.name, key: entry.key },
-										user.sessionToken
+										user.sessionToken,
 									);
 									refreshList();
-								}}
-							>
+								}}>
 								Delete
 							</Button>
 						</div>
@@ -254,7 +245,7 @@
 											let ret = await api.post(
 												'list/set',
 												{ name: list.name, key: entry.key, items: entry.items },
-												user.sessionToken
+												user.sessionToken,
 											);
 											if (ret.error) {
 												setFadeMessage(ret.message, 'warning');
@@ -262,8 +253,7 @@
 												setFadeMessage('Success', 'success');
 												updateList = '';
 											}
-										}}
-									>
+										}}>
 										Update
 									</Button>
 								</InputGroup>

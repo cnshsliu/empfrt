@@ -25,8 +25,8 @@
 	function downloadFile(serverId, realName, mode = 'download') {
 		fetch(`${API_SERVER}/pondfile/mine/viewer/${serverId}`, {
 			headers: {
-				Authorization: $session.user.sessionToken
-			}
+				Authorization: $session.user.sessionToken,
+			},
 		})
 			.then((res) => {
 				return res.blob();
@@ -62,13 +62,13 @@
 	<Row>
 		<nav aria-label="breadcrumb">
 			<ol class="breadcrumb">
-				<li class="breadcrumb-item">
+				<li class="breadcrumb-item kfk-tag">
 					<a
+						class="kfk-link"
 						href={'#'}
 						on:click={() => {
 							goto('/settings');
-						}}
-					>
+						}}>
 						{$_('navmenu.settings')}
 					</a>
 				</li>
@@ -85,8 +85,7 @@
 						name="searchq"
 						bind:value={$session.q}
 						id="searchq"
-						placeholder="Search by file name"
-					/>
+						placeholder="Search by file name" />
 				</div>
 				<Button on:click={onSearch}><i class="bi bi-search" /></Button>
 			</InputGroup>
@@ -98,8 +97,7 @@
 					on:click|preventDefault={() => {
 						delete $session.whichwf;
 						onSearch(null);
-					}}
-				>
+					}}>
 					Clear
 				</a>
 			{/if}
@@ -127,8 +125,7 @@
 										on:click|preventDefault={() => {
 											$session.whichwf = file.wf.wfid;
 											onSearch(null);
-										}}
-									>
+										}}>
 										<AniIcon icon="filter-circle" ani="aniShake" />
 										{$_('setting.myfiles.filter')}
 									</a>
@@ -150,10 +147,9 @@
 												: file.pondfile
 												? file.pondfile.realName
 												: file.serverId,
-											'newtab'
+											'newtab',
 										);
-									}}
-								>
+									}}>
 									<AniIcon icon="box-arrow-up-right" ani="aniShake" />
 									{$_('setting.myfiles.view')}
 								</a>
@@ -170,10 +166,9 @@
 												: file.pondfile
 												? file.pondfile.realName
 												: file.serverId,
-											'download'
+											'download',
 										);
-									}}
-								>
+									}}>
 									<AniIcon icon="download" ani="aniShake" />
 									{$_('setting.myfiles.download')}
 								</a>
@@ -185,8 +180,7 @@
 										class="kfk-link"
 										on:click|preventDefault={() => {
 											deleteFile(file.serverId);
-										}}
-									>
+										}}>
 										<AniIcon icon="trash" ani="aniShake" />
 										{$_('setting.myfiles.delete')}
 									</a>

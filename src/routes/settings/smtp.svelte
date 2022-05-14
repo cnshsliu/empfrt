@@ -16,7 +16,7 @@
 		secure: true,
 		username: '',
 		password: '',
-		from: ''
+		from: '',
 	};
 
 	const saveSmtpSetting = async () => {
@@ -24,9 +24,9 @@
 			'tnt/set/smtp',
 			{
 				password: password_for_admin,
-				smtp: smtp
+				smtp: smtp,
 			},
-			user.sessionToken
+			user.sessionToken,
 		)) as unknown as SmtpDef;
 		if (ret.error) {
 			if (ret.error && ret.error === 'NO_BRUTE') {
@@ -52,13 +52,13 @@
 	<Row>
 		<nav aria-label="breadcrumb">
 			<ol class="breadcrumb">
-				<li class="breadcrumb-item">
+				<li class="breadcrumb-item kfk-tag">
 					<a
+						class="kfk-link"
 						href={'#'}
 						on:click={() => {
 							goto('/settings');
-						}}
-					>
+						}}>
 						{$_('navmenu.settings')}
 					</a>
 				</li>
@@ -76,8 +76,7 @@
 					<Input
 						type="password"
 						bind:value={password_for_admin}
-						placeholder={$_('setting.adminpwd_ph')}
-					/>
+						placeholder={$_('setting.adminpwd_ph')} />
 				</InputGroup>
 			</Col>
 			<Col class="d-flex justify-content-end mt-2">
@@ -105,8 +104,7 @@
 						id="smtp_username"
 						type="text"
 						bind:value={smtp.username}
-						placeholder={$_('setting.smtp.user_ph')}
-					/>
+						placeholder={$_('setting.smtp.user_ph')} />
 				</InputGroup>
 			</Col>
 			<Col class="d-flex justify-content-end mt-2">
@@ -116,8 +114,7 @@
 						id="smtp_password"
 						type="password"
 						bind:value={smtp.password}
-						placeholder={$_('setting.smtp.pwd_ph')}
-					/>
+						placeholder={$_('setting.smtp.pwd_ph')} />
 				</InputGroup>
 			</Col>
 			<Col class="d-flex justify-content-end mt-2">
@@ -127,8 +124,7 @@
 						id="smtp_from"
 						type="text"
 						bind:value={smtp.from}
-						placeholder={$_('setting.smtp.from_ph')}
-					/>
+						placeholder={$_('setting.smtp.from_ph')} />
 				</InputGroup>
 			</Col>
 			<Col class="d-flex justify-content-end mt-2">
@@ -136,8 +132,7 @@
 					on:click={async (e) => {
 						e.preventDefault();
 						await saveSmtpSetting();
-					}}
-				>
+					}}>
 					{$_('setting.set')}
 				</Button>
 			</Col>

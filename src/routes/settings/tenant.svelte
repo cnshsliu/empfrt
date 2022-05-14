@@ -13,7 +13,7 @@
 		CardHeader,
 		CardSubtitle,
 		CardText,
-		CardTitle
+		CardTitle,
 	} from 'sveltestrap';
 	import TimeZone from '$lib/Timezone';
 	import TimeTool from '$lib/TimeTool';
@@ -32,7 +32,7 @@
 		orgtheme: '',
 		orgtimezone: '',
 		orgleveltags: '',
-		owner: ''
+		owner: '',
 	};
 
 	let orgname = '';
@@ -70,7 +70,7 @@
 		useThisQuery: null,
 		useThisLeader: null,
 		lstr: '',
-		qstr: ''
+		qstr: '',
 	};
 
 	async function setMyTenantName() {
@@ -79,7 +79,7 @@
 		let ret = await api.post(
 			'tnt/set/name',
 			{ orgname: orgname, password: password_for_admin },
-			user.sessionToken
+			user.sessionToken,
 		);
 		if (ret.error) {
 			setFadeMessage(ret.message, 'warning');
@@ -101,7 +101,7 @@
 		let ret = await api.post(
 			'tnt/set/theme',
 			{ css: orgtheme, password: password_for_admin },
-			user.sessionToken
+			user.sessionToken,
 		);
 		if (ret.error) {
 			setFadeMessage(ret.message, 'warning');
@@ -128,7 +128,7 @@
 		let ret = await api.post(
 			'tnt/set/timezone',
 			{ timezone: orgtimezone, password: password_for_admin },
-			user.sessionToken
+			user.sessionToken,
 		);
 		if (ret.error) {
 			setFadeMessage(ret.message, 'warning');
@@ -155,7 +155,7 @@
 		let ret = await api.post(
 			'tnt/set/tags',
 			{ tags: orgleveltags, password: password_for_admin },
-			user.sessionToken
+			user.sessionToken,
 		);
 		if (ret.error) {
 			setFadeMessage(ret.message, 'warning');
@@ -172,7 +172,7 @@
 		let res = await api.post(
 			'tnt/joincode/new',
 			{ password: password_for_admin },
-			user.sessionToken
+			user.sessionToken,
 		);
 		if (res.error) {
 			setFadeMessage(res.message, 'warning');
@@ -186,7 +186,7 @@
 		let res = await api.post(
 			'tnt/set/joincode',
 			{ joincode: userDefinedJoinCode, password: password_for_admin },
-			user.sessionToken
+			user.sessionToken,
 		);
 		if (res.error) {
 			setFadeMessage(res.message, 'warning');
@@ -204,7 +204,7 @@
 		let res = await api.post(
 			'tnt/approve',
 			{ ems, password: password_for_admin },
-			user.sessionToken
+			user.sessionToken,
 		);
 		if (res.error) {
 			setFadeMessage(res.message, 'warning');
@@ -223,7 +223,7 @@
 		let res = await api.post(
 			'tnt/send/invitation',
 			{ ems: emails.join(':'), password: password_for_admin },
-			user.sessionToken
+			user.sessionToken,
 		);
 		if (res.error) {
 			setFadeMessage(res.message, 'warning');
@@ -244,35 +244,45 @@
 		<Row>
 			<nav aria-label="breadcrumb">
 				<ol class="breadcrumb">
-					<li class="breadcrumb-item">
+					<li class="breadcrumb-item kfk-tag">
 						<a
+							class="kfk-link"
 							href={'#'}
 							on:click={() => {
 								goto('/settings');
-							}}
-						>
+							}}>
 							{$_('navmenu.settings')}
 						</a>
 					</li>
 					<li class="breadcrumb-item active" aria-current="page">{$_('setting.tenant.nav')}</li>
-					<li class="breadcrumb-item active" aria-current="page">
+					<li class="breadcrumb-item active kfk-tag" aria-current="page">
 						<a
+							class="kfk-link"
 							href={'#'}
 							on:click={() => {
 								goto('/settings/orgchart');
-							}}
-						>
+							}}>
 							{$_('setting.orgchart.nav')}
 						</a>
 					</li>
-					<li class="breadcrumb-item active" aria-current="page">
+					<li class="breadcrumb-item active kfk-tag" aria-current="page">
 						<a
+							class="kfk-link"
 							href={'#'}
 							on:click={() => {
 								goto('/settings/members');
-							}}
-						>
+							}}>
 							{$_('setting.members.nav')}
+						</a>
+					</li>
+					<li class="breadcrumb-item active kfk-tag" aria-current="page">
+						<a
+							class="kfk-link"
+							href={'#'}
+							on:click={() => {
+								goto('/settings/resign');
+							}}>
+							{$_('setting.resign.nav')}
 						</a>
 					</li>
 				</ol>
@@ -296,8 +306,7 @@
 								type="password"
 								autocomplete="current-password"
 								bind:value={password_for_admin}
-								placeholder={$_('setting.tenant.adminpwd_ph')}
-							/>
+								placeholder={$_('setting.tenant.adminpwd_ph')} />
 						</InputGroup>
 						<InputGroup class="mb-1">
 							<InputGroupText>{$_('setting.tenant.name')}</InputGroupText>
@@ -306,8 +315,7 @@
 								on:click={(e) => {
 									e.preventDefault();
 									setMyTenantName();
-								}}
-							>
+								}}>
 								Set
 							</Button>
 						</InputGroup>
@@ -318,8 +326,7 @@
 								on:click={(e) => {
 									e.preventDefault();
 									setMyTenantTheme();
-								}}
-							>
+								}}>
 								Set
 							</Button>
 						</InputGroup>
@@ -334,8 +341,7 @@
 								on:click={(e) => {
 									e.preventDefault();
 									setMyTenantTimezone();
-								}}
-							>
+								}}>
 								Set
 							</Button>
 						</InputGroup>
@@ -346,8 +352,7 @@
 								on:click={(e) => {
 									e.preventDefault();
 									setMyTenantOrgLevelTags();
-								}}
-							>
+								}}>
 								Set
 							</Button>
 						</InputGroup>
@@ -356,8 +361,7 @@
 							<Input
 								type="text"
 								bind:value={orgchartadminpds}
-								placeholder={$_('setting.tenant.ocadmins_ph')}
-							/>
+								placeholder={$_('setting.tenant.ocadmins_ph')} />
 							<Button
 								on:click={async (e) => {
 									e.preventDefault();
@@ -366,7 +370,7 @@
 									let ret = await api.post(
 										'tnt/set/orgchartadminpds',
 										{ orgchartadminpds, password: password_for_admin },
-										user.sessionToken
+										user.sessionToken,
 									);
 									if (ret.error) {
 										setFadeMessage(ret.message, 'warning');
@@ -377,8 +381,7 @@
 									}
 
 									in_progress = false;
-								}}
-							>
+								}}>
 								Set
 							</Button>
 						</InputGroup>
@@ -415,8 +418,7 @@
 							on:click={(e) => {
 								e.preventDefault();
 								generateJoinCode();
-							}}
-						>
+							}}>
 							Generate
 						</Button>
 					</InputGroup>
@@ -427,8 +429,7 @@
 							on:click={(e) => {
 								e.preventDefault();
 								setUserDefinedJoinCode();
-							}}
-						>
+							}}>
 							Use it
 						</Button>
 					</InputGroup>
@@ -436,42 +437,45 @@
 			</Card>
 			<Card class="mt-3">
 				<CardHeader>
-					<CardTitle>{$_('setting.tenant.invite')}</CardTitle></CardHeader
-				>
+					<CardTitle>{$_('setting.tenant.invite')}</CardTitle>
+				</CardHeader>
 				<CardBody>
 					<InputGroup class="mb-1">
 						<Input
 							type="textarea"
 							bind:value={invitation}
-							placeholder={$_('setting.tenant.invite_ph')}
-						/>
+							placeholder={$_('setting.tenant.invite_ph')} />
 						<Button
 							on:click={(e) => {
 								e.preventDefault();
 								sendInvitation();
-							}}>Invite</Button
-						>
+							}}>
+							Invite
+						</Button>
 					</InputGroup>
 				</CardBody>
 			</Card>
 			<Card class="mt-3">
 				<CardHeader>
-					<CardTitle>{$_('setting.tenant.joinapplication')}</CardTitle></CardHeader
-				>
+					<CardTitle>{$_('setting.tenant.joinapplication')}</CardTitle>
+				</CardHeader>
 				<CardBody>
 					<Button
 						color="secondary"
 						on:click={(e) => {
 							e.preventDefault();
 							refreshMyOrg();
-						}}
-					>
+						}}>
 						Refresh
 					</Button>
 					{#if myorg.joinapps && Array.isArray(myorg.joinapps) && myorg.joinapps.length > 0}
 						<table class="w-100">
 							<thead>
-								<tr> <th>Email</th><th>Name</th><th>Approve</th></tr>
+								<tr>
+									<th>Email</th>
+									<th>Name</th>
+									<th>Approve</th>
+								</tr>
 							</thead>
 							<tbody>
 								{#each myorg.joinapps as appl}
@@ -493,14 +497,12 @@
 							<Input
 								type="password"
 								bind:value={password_for_admin}
-								placeholder="Confirm with org password"
-							/>
+								placeholder="Confirm with org password" />
 							<Button
 								on:click={(e) => {
 									e.preventDefault();
 									approveJoinOrgApplications();
-								}}
-							>
+								}}>
 								Approve
 							</Button>
 						</InputGroup>

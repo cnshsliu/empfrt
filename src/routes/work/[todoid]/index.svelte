@@ -40,7 +40,7 @@
 			let cmtRes = await api.post(
 				'comment/workflow/load',
 				{ wfid: theWork.wfid },
-				session.user.sessionToken
+				session.user.sessionToken,
 			);
 			if (cmtRes.error) {
 				console.log(cmtRes.message);
@@ -60,8 +60,8 @@
 				iframeMode: iframeMode,
 				user: session.user,
 				delegators: delegators,
-				anchor: anchor
-			}
+				anchor: anchor,
+			},
 		};
 	}
 </script>
@@ -136,7 +136,7 @@
 							$version = work.version;
 							window.location.reload();
 							e.preventDefault();
-						}
+						},
 					];
 					theConfirm.toggle();
 				}
@@ -159,7 +159,8 @@
 					<sup>
 						{work.nodeid === 'ADHOC' ? '/ adhoc' : ''}
 						{#if work.rehearsal}
-							/ <i class="bi-patch-check" /> Rehearsal
+							/ <i class="bi-patch-check" />
+							Rehearsal
 						{/if}
 					</sup>
 				</h3>
@@ -184,11 +185,10 @@
 										.then((res) => {
 											goto('/work');
 										});
-								}
+								},
 							];
 							theConfirm.toggle();
-						}}
-					>
+						}}>
 						{$_('todo.restartrehearsal')}
 					</Button>
 				</div>
@@ -209,11 +209,10 @@
 										.then((res) => {
 											goto('/work');
 										});
-								}
+								},
 							];
 							theConfirm.toggle();
-						}}
-					>
+						}}>
 						{$_('todo.cancelworkflowatfirststep')}
 					</Button>
 				</div>
@@ -236,7 +235,7 @@
 				<span class="fw-bold fs-5">
 					{$_('todo.owner')}
 				</span>
-				<div class="fw-light">{work.doer}</div>
+				<div class="fw-light">{work.doerCN}</div>
 			</Col>
 			<Col>
 				{#if work.doneat}
@@ -267,8 +266,7 @@
 		on:statusChanged={(e) => {
 			work.status = e.detail.status;
 			work.doneat = e.detail.doneat;
-		}}
-	/>
+		}} />
 {:else}
 	<ErrorNotify
 		title="Error Found"
@@ -277,7 +275,6 @@
 		btnTitle="Back"
 		callback={() => {
 			goto('/work');
-		}}
-	/>
+		}} />
 {/if}
 <Confirm bind:this={theConfirm} />

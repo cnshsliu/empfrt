@@ -27,8 +27,8 @@
 	function downloadFile(wfid, serverId, realName, mode = 'download') {
 		fetch(`${API_SERVER}/wf/attach/viewer/${wfid}/${serverId}`, {
 			headers: {
-				Authorization: $session.user.sessionToken
-			}
+				Authorization: $session.user.sessionToken,
+			},
 		})
 			.then((res) => {
 				return res.blob();
@@ -50,7 +50,7 @@
 		let ret = await api.post(
 			'workflow/addFile',
 			{ wfid: work.wfid, pondfiles: uploadedFiles, forKey: forKey },
-			$session.user.sessionToken
+			$session.user.sessionToken,
 		);
 		switch (filetype) {
 			case 'file':
@@ -69,7 +69,7 @@
 		let ret = await api.post(
 			'workflow/removeAttachment',
 			{ wfid: work.wfid, attachments: [{ serverId: serverId }] },
-			$session.user.sessionToken
+			$session.user.sessionToken,
 		);
 		if (ret.error) {
 			console.log(ret.message);
@@ -131,8 +131,7 @@
 						uploadedFiles = e.detail;
 						console.log(uploadedFiles);
 						await addPondFileToEntity();
-					}}
-				/>
+					}} />
 				{filetype === 'csv' ? '请上传.csv文件或xlsx文件，不支持旧格式后缀为xls的文件' : ''}
 			</Col>
 		{/if}
@@ -146,27 +145,29 @@
 						<a href={attach} target="_blank">{attach}</a>
 					</div>
 				{:else if attach.forKey === forKey}
-					<div class=" ms-3 simplehover ">
-						{#if attach.serverId && attach.realName}
-							<a
-								href={'#'}
-								on:click|preventDefault={() => {
-									downloadFile(theWfid, attach.serverId, attach.realName, 'newtab');
-								}}
-								>{attach.realName}
-								<Icon name="box-arrow-up-right" />
-							</a>
-						{:else}
-							<a href={attach} target="_blank"> {attach} </a>
-						{/if}
+					<div class=" ms-3">
+						<span class="kfk-tag">
+							{#if attach.serverId && attach.realName}
+								<a
+									class="kfk-link"
+									href={'#'}
+									on:click|preventDefault={() => {
+										downloadFile(theWfid, attach.serverId, attach.realName, 'newtab');
+									}}>
+									{attach.realName}
+									<i class="bi bi-box-arrow-up-right ms-1" />
+								</a>
+							{:else}
+								<a class="kfk-link" href={attach} target="_blank">{attach}</a>
+							{/if}
+						</span>
 						({attach.author ? attach.author.substring(0, attach.author.indexOf('@')) : ''})
 						<a
 							href={'#'}
 							on:click|preventDefault={() => {
 								downloadFile(theWfid, attach.serverId, attach.realName, 'download');
-							}}
-						>
-							<Icon name="download" />
+							}}>
+							<i class="bi bi-download" />
 						</a>
 						<!-- 在当前提交时可以删除，一旦提交不能再删除-->
 						<!-- 管理员可以删除-->
@@ -183,11 +184,10 @@
 									theConfirm.callbacks = [
 										async () => {
 											await removeAttachment(attach.serverId);
-										}
+										},
 									];
 									theConfirm.toggle();
-								}}
-							>
+								}}>
 								<i class="bi bi-trash ms-1" />
 							</a>
 						{/if}

@@ -38,13 +38,13 @@
 	<Row>
 		<nav aria-label="breadcrumb">
 			<ol class="breadcrumb">
-				<li class="breadcrumb-item">
+				<li class="breadcrumb-item kfk-tag">
 					<a
+						class="kfk-link"
 						href={'#'}
 						on:click={() => {
 							goto('/settings');
-						}}
-					>
+						}}>
 						{$_('navmenu.settings')}
 					</a>
 				</li>
@@ -64,8 +64,7 @@
 						on:click={async (e) => {
 							e.preventDefault();
 							await setWeComTodoBot(bot);
-						}}
-					>
+						}}>
 						{$_('setting.set')}
 					</Button>
 				</InputGroup>
@@ -78,8 +77,7 @@
 				e.preventDefault();
 				bots.push({ tplid: '', key: '' });
 				bots = bots;
-			}}
-		>
+			}}>
 			Add One {bots.length}
 		</Button>
 	</Row>

@@ -1,16 +1,17 @@
 import storage from '$lib/storage';
+import Const from '$lib/Const';
 import type { WorkStatus, WhichTab, FilterPicks } from '$lib/types';
 
 export const TagStorage = storage('tags', {});
 export const WorkStatusStorage = storage<WorkStatus>('work_status', { status: 'ST_DONE' });
 export const debugOption = storage<string>('debugOption', 'no');
-export const version = storage<string>('version', '0.0');
+export const version = storage<string>('version', Const.VERSION);
 export const SetFor = storage('idSelect', {
 	setTagFor: '',
 	setDescFor: '',
 	setAuthorFor: '',
 	setVisiFor: '',
-	settingFor: ''
+	settingFor: '',
 });
 
 export const whichTabStorage = storage<WhichTab>('whichtab', {
@@ -18,7 +19,7 @@ export const whichTabStorage = storage<WhichTab>('whichtab', {
 	team: 'search',
 	worklist: 'ST_RUN',
 	workflow: 'ST_RUN',
-	setting: 'personal'
+	setting: 'personal',
 });
 
 export const filterStorage = storage<FilterPicks>('filter', {
@@ -53,6 +54,6 @@ export const filterStorage = storage<FilterPicks>('filter', {
 	pageSize: 10,
 	showprocesstrack: true,
 	curve: true,
-	debug: ''
+	debug: '',
 });
 export const startedWorkflow = storage<any>('startedWorkflow', null);

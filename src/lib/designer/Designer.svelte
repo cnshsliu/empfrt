@@ -35,7 +35,7 @@
 		ModalHeader,
 		ListGroup,
 		ListGroupItem,
-		Icon
+		Icon,
 	} from 'sveltestrap';
 	import type { KVarDefInput, NodeInfo } from '$lib/types';
 
@@ -43,6 +43,7 @@
 	export let workflow: Workflow = null;
 	export let tpl_mode: string;
 	export let routeStatus: any[] = [];
+	const dispatch = createEventDispatcher();
 
 	let theConfirm;
 	let jQuery: any;
@@ -136,7 +137,7 @@
 			let templates = await api.post(
 				'template/search',
 				{ tplid: nodeInfo.nodeProps.SUB.sub, fields: { _id: 0, doc: 0 } },
-				$session.user.sessionToken
+				$session.user.sessionToken,
 			);
 			if (templates.length === 0) {
 				errMsg = `${nodeInfo.nodeProps.SUB.sub} does not exist`;
@@ -155,9 +156,9 @@
 					tplid: template.tplid,
 					pboat: template.pboat,
 					endpoint: template.endpoint,
-					endpointmode: template.endpointmode
+					endpointmode: template.endpointmode,
 				},
-				user.sessionToken
+				user.sessionToken,
 			);
 		}
 	};
@@ -185,7 +186,7 @@
 					if (nodeInfo.nodeProps.ACTION.kvars) {
 						kvarsArr = Parser.kvarsToArrayForActionPropertyModal(
 							nodeInfo.nodeProps.ACTION.kvars,
-							''
+							'',
 						) as unknown as KVarDefInput[];
 					}
 				} else if (nodeInfo.nodeType === 'INFORM') {
@@ -221,9 +222,13 @@
 				theConfirm.callbacks = [
 					async () => {
 						await remoteTemplateCheck();
-					}
+					},
 				];
 				theConfirm.toggle();
+				break;
+			case 'toggleMode':
+				if (tpl_mode === 'edit') dispatch('readInProp', 'change to read mode');
+				else dispatch('editInProp', 'change to edit mode');
 				break;
 		}
 	}
@@ -277,7 +282,7 @@
 		let ret = await api.post(
 			'template/read',
 			{ tplid: template.tplid, checkUpdatedAt: templateUpdatedAt, bwid: currentBrowserWindowID },
-			user.sessionToken
+			user.sessionToken,
 		);
 		if (ret.hasOwnProperty('tplid')) {
 			template = ret as unknown as Template;
@@ -343,7 +348,7 @@
 				let ret = await api.post(
 					'workflow/check/status',
 					{ wfid: workflow.wfid, updatedAt: workflowUpdatedAt },
-					user.sessionToken
+					user.sessionToken,
 				);
 				if (ret.hasOwnProperty('wfid')) {
 					//workflowUpdatedAt = ret.updatedAt;
@@ -415,7 +420,7 @@
 	export function showTplProp() {
 		designerCallback('showTplProp', {
 			nodeType: 'TPL',
-			nodeProps: { label: 'Template Properties' }
+			nodeProps: { label: $_('prop.tpl.title') },
 		});
 	}
 
@@ -486,71 +491,61 @@
 		<ListGroupItem
 			class="d-flex align-items-center toolbox POINTER {currentTool === 'POINTER' ? 'active' : ''}"
 			on:click={(event) => designerSetTool('POINTER', event)}
-			title={$_('tools.POINTER')}
-		>
+			title={$_('tools.POINTER')}>
 			<div class="shortcutkey">ESC</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox ACTION {currentTool === 'ACTION' ? 'active' : ''}"
 			on:click={(event) => designerSetTool('ACTION', event)}
-			title={$_('tools.ACTION')}
-		>
+			title={$_('tools.ACTION')}>
 			<div class="shortcutkey">1</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox INFORM {currentTool === 'INFORM' ? 'active' : ''}"
 			on:click={(event) => designerSetTool('INFORM', event)}
-			title={$_('tools.INFORM')}
-		>
+			title={$_('tools.INFORM')}>
 			<div class="shortcutkey">2</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox SCRIPT {currentTool === 'SCRIPT' ? 'active' : ''}"
 			on:click={(event) => designerSetTool('SCRIPT', event)}
-			title={$_('tools.SCRIPT')}
-		>
+			title={$_('tools.SCRIPT')}>
 			<div class="shortcutkey">3</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox TIMER {currentTool === 'TIMER' ? 'active' : ''}"
 			on:click={(event) => designerSetTool('TIMER', event)}
-			title={$_('tools.TIMER')}
-		>
+			title={$_('tools.TIMER')}>
 			<div class="shortcutkey">4</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox SUB {currentTool === 'SUB' ? 'active' : ''}"
 			on:click={(event) => designerSetTool('SUB', event)}
-			title={$_('tools.SUB')}
-		>
+			title={$_('tools.SUB')}>
 			<div class="shortcutkey">5</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox AND {currentTool === 'AND' ? 'active' : ''}"
 			on:click={(event) => designerSetTool('AND', event)}
-			title={$_('tools.AND')}
-		>
+			title={$_('tools.AND')}>
 			<div class="shortcutkey">6</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox OR {currentTool === 'OR' ? 'active' : ''}"
 			on:click={(event) => designerSetTool('OR', event)}
-			title={$_('tools.OR')}
-		>
+			title={$_('tools.OR')}>
 			<div class="shortcutkey">7</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox GROUND {currentTool === 'GROUND' ? 'active' : ''}"
 			on:click={(event) => designerSetTool('GROUND', event)}
-			title={$_('tools.GROUND')}
-		>
+			title={$_('tools.GROUND')}>
 			<div class="shortcutkey">8</div>
 		</ListGroupItem>
 		<ListGroupItem
 			class="d-flex align-items-center toolbox CONNECT {currentTool === 'CONNECT' ? 'active' : ''}"
 			on:click={(event) => designerSetTool('CONNECT', event)}
-			title={$_('tools.CONNECT')}
-		>
+			title={$_('tools.CONNECT')}>
 			<div class="shortcutkey">9</div>
 		</ListGroupItem>
 		<ListGroupItem
@@ -558,8 +553,7 @@
 				? 'active'
 				: ''}"
 			on:click={(event) => designerSetTool('THROUGH', event)}
-			title={$_('tools.THROUGH')}
-		>
+			title={$_('tools.THROUGH')}>
 			<div class="shortcutkey">0</div>
 		</ListGroupItem>
 	</ListGroup>
@@ -583,8 +577,14 @@
 			<Row>
 				<Col>
 					{#if nodeInfo.nodeType === 'TPL'}
-						<div><span class="fw-bold">TPLID:</span> {template.tplid}</div>
-						<div><span class="fw-bold">Readonly:</span> {readonly}</div>
+						<div>
+							<span class="fw-bold">{$_('prop.tpl.tplid')}:</span>
+							{template.tplid}
+						</div>
+						<div>
+							<span class="fw-bold">{$_('prop.tpl.readonly')}:</span>
+							{readonly}
+						</div>
 						<!--
 						<div><span class="fw-bold">Allow set PBO when</span></div>
 						{#if readonly}
@@ -610,12 +610,20 @@
 						{/if}
 						-->
 						{#if readonly}
-							<div><span class="fw-bold">Callback:</span> <br /> {template.endpoint}</div>
-							<div><span class="fw-bold">Callback Mode:</span> <br /> {template.endpointmode}</div>
+							<div>
+								<span class="fw-bold">{$_('prop.tpl.callback.endpoint')}:</span>
+								<br />
+								{template.endpoint}
+							</div>
+							<div>
+								<span class="fw-bold">{$_('prop.tpl.callback.mode')}:</span>
+								<br />
+								{template.endpointmode}
+							</div>
 						{:else}
 							<InputGroup>
-								<InputGroupText>Callback</InputGroupText>
-								<Input bind:value={template.endpoint} />
+								<InputGroupText>{$_('prop.tpl.callback.endpoint')}</InputGroupText>
+								<Input bind:value={template.endpoint} placeholder="https://" />
 							</InputGroup>
 							<FormGroup>
 								<Input
@@ -623,22 +631,19 @@
 									type="radio"
 									bind:group={template.endpointmode}
 									value="both"
-									label="用户端和服务端"
-								/>
+									label={$_('prop.tpl.callback.both')} />
 								<Input
 									id="em_user"
 									type="radio"
 									bind:group={template.endpointmode}
 									value="user"
-									label="仅用户端"
-								/>
+									label={$_('prop.tpl.callback.onserver')} />
 								<Input
 									id="em_server"
 									type="radio"
 									bind:group={template.endpointmode}
 									value="server"
-									label="仅服务端"
-								/>
+									label={$_('prop.tpl.callback.onclient')} />
 							</FormGroup>
 						{/if}
 					{:else if nodeInfo.nodeType === 'ACTION'}
@@ -653,8 +658,7 @@
 							bind:scenario={KFK.scenario}
 							{workid}
 							on:readInProp
-							on:editInProp
-						/>
+							on:editInProp />
 					{:else if nodeInfo.nodeType === 'INFORM'}
 						<Inform {nodeInfo} {roleOptions} {showHelp} {readonly} {jq} {KFK} />
 					{:else if nodeInfo.nodeType === 'SCRIPT'}

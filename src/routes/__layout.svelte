@@ -7,8 +7,8 @@
 		}
 		return {
 			props: {
-				url
-			}
+				url,
+			},
 		};
 	}
 </script>
@@ -16,7 +16,7 @@
 <script lang="ts">
 	import { Container } from 'sveltestrap';
 	import Confirm from '$lib/confirm.svelte';
-	import { printing, notifyMessage } from '$lib/Stores';
+	import { printing, notifyMessage, mtcConfirm, mtcConfirmReset } from '$lib/Stores';
 	import { filterStorage } from '$lib/empstores';
 	import { navigating, session } from '$app/stores';
 	import { onMount } from 'svelte';
@@ -39,23 +39,26 @@
 			if (window) {
 				browserLocale = window.navigator.language;
 				if (browserLocale !== tmp && !$filterStorage.confirmlocale) {
-					theConfirm.title = $_('confirm.locale.langchanged.title');
-					theConfirm.body = $_('confirm.locale.langchanged.body', {
-						values: { browserlang: browserLocale }
-					});
-					theConfirm.buttons = [
-						$_('confirm.locale.langchanged.button1'),
-						$_('confirm.locale.langchanged.button2', { values: { currentlang: tmp } })
-					];
-					theConfirm.callbacks = [
-						async () => {
-							$filterStorage.locale = browserLocale;
-						},
-						async () => {
-							$filterStorage.confirmlocale = true;
-						}
-					];
-					theConfirm.toggle();
+					$mtcConfirm = {
+						title: $_('confirm.locale.langchanged.title'),
+						body: $_('confirm.locale.langchanged.body', {
+							values: { browserlang: browserLocale },
+						}),
+						buttons: [
+							$_('confirm.locale.langchanged.button1'),
+							$_('confirm.locale.langchanged.button2', { values: { currentlang: tmp } }),
+						],
+						callbacks: [
+							async () => {
+								$filterStorage.locale = browserLocale;
+								mtcConfirmReset();
+							},
+							async () => {
+								$filterStorage.confirmlocale = true;
+								mtcConfirmReset();
+							},
+						],
+					};
 				}
 			}
 		} else {
@@ -66,7 +69,7 @@
 
 				theConfirm.title = $_('confirm.locale.usedefault.title');
 				theConfirm.body = $_('confirm.locale.usedefault.body', {
-					values: { browserlang: browserLocale }
+					values: { browserlang: browserLocale },
 				});
 				theConfirm.buttons = [$_('confirm.locale.usedefault.confirm')];
 				theConfirm.callbacks = [async () => {}];
@@ -112,6 +115,14 @@
 				notifyTimeout = null;
 			}, 3000);
 		})();
+	$: $mtcConfirm.title != '' &&
+		(() => {
+			theConfirm.title = $mtcConfirm.title;
+			theConfirm.body = $mtcConfirm.body;
+			theConfirm.buttons = $mtcConfirm.buttons;
+			theConfirm.callbacks = $mtcConfirm.callbacks;
+			theConfirm.toggle();
+		})();
 </script>
 
 <svelte:head>
@@ -122,13 +133,11 @@
 			href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
 			rel="stylesheet"
 			integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
-			crossorigin="anonymous"
-		/>
+			crossorigin="anonymous" />
 	{/if}
 	<link
 		rel="stylesheet"
-		href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.1/font/bootstrap-icons.css"
-	/>
+		href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.2/font/bootstrap-icons.css" />
 	<link rel="stylesheet" href="/css/app.css" />
 </svelte:head>
 

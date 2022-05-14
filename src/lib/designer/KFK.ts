@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 import { API_SERVER } from '$lib/Env';
+import { _ } from '$lib/i18n';
 import suuid from 'short-uuid';
 import Parser from '$lib/parser';
 import html2canvas from 'html2canvas';
@@ -9,10 +10,14 @@ import APP from './appConfig';
 import { Buffer } from 'buffer';
 import { filterStorage } from '$lib/empstores';
 import NodeController from './NodeController';
-import DesignerHelpMessage from './_designerHelpMessage';
 //import RegHelper from './RegHelper';
 import * as api from '$lib/api';
 import type { NodePropJSON } from '$lib/types';
+let $_;
+
+const unsubscribe = _.subscribe((value) => {
+	$_ = value;
+});
 declare global {
 	interface Array<T> {
 		remove(elem: T): Array<T>;
@@ -422,7 +427,7 @@ class KFKclass {
 		const that = this;
 		return {
 			x: that.scalePoint(that.scrXToJc3X(evt.clientX)),
-			y: that.scalePoint(that.scrYToJc3Y(evt.clientY))
+			y: that.scalePoint(that.scrYToJc3Y(evt.clientY)),
 		};
 	}
 	ScreenMousePos(pos: Point) {
@@ -430,7 +435,7 @@ class KFKclass {
 		const that = this;
 		return {
 			x: pos.x - that.scrollContainer.scrollLeft(),
-			y: pos.y - that.scrollContainer.scrollTop()
+			y: pos.y - that.scrollContainer.scrollTop(),
 		};
 	}
 	hideLineTransformer() {
@@ -520,7 +525,7 @@ class KFKclass {
 			that.APP.setData('show', 'customline', true);
 		}
 		that.designerCallback('setTool', tool);
-		if (DesignerHelpMessage[tool]) that.showHelp(DesignerHelpMessage[tool]);
+		that.showHelp($_(`designer.tool.${tool}`));
 		that.focusOnC3();
 	}
 
@@ -626,7 +631,7 @@ class KFKclass {
 		const sc = $('#S1');
 		return {
 			x: sc.scrollLeft(),
-			y: sc.scrollTop()
+			y: sc.scrollTop(),
 		};
 	}
 	codeToBase64(code: string) {
@@ -701,7 +706,7 @@ class KFKclass {
 		jqNodeDIV.find('.ui-resizable-handle').remove();
 		jqNodeDIV.find('.locklabel').remove();
 		jqNodeDIV.removeClass(
-			'ui-resizable ui-draggable ui-draggable-handle ui-draggable-dragging ui-droppable selected ui-resizable-autohide shadow1 shadow2 lock'
+			'ui-resizable ui-draggable ui-draggable-handle ui-draggable-dragging ui-droppable selected ui-resizable-autohide shadow1 shadow2 lock',
 		);
 	}
 	idsOfNodesToThis(jcNode: any) {
@@ -746,7 +751,6 @@ class KFKclass {
 		for (let i = 0; i < ids.length; i++) {
 			that.toStart(that.JC3.find('#' + ids[i]).first(), paths[i]);
 		}
-		console.log(JSON.stringify(paths, null, 2));
 		//TODO: check paths
 		let counterPart = 'start';
 		//应该有多于一条的路径
@@ -801,12 +805,12 @@ class KFKclass {
 		});
 		connects.each((aConnect: any) => {
 			let linkHtml = `<div class="link" from="${aConnect.attr('fid')}" to="${aConnect.attr(
-				'tid'
+				'tid',
 			)}">link</div>`;
 			let caseSeg = Parser.isEmpty(aConnect.attr('case')) ? '' : `case="${aConnect.attr('case')}"`;
 			let setSeg = Parser.isEmpty(aConnect.attr('set')) ? '' : `set="${aConnect.attr('set')}"`;
 			linkHtml = `<div class="link" from="${aConnect.attr('fid')}" to="${aConnect.attr(
-				'tid'
+				'tid',
 			)}" ${caseSeg} ${setSeg}>link</div>`;
 			tplDocHtml += linkHtml;
 		});
@@ -837,7 +841,6 @@ class KFKclass {
 	onChange(reason: string) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		console.log('onChange ', reason);
 		that.templateChangeTimer && clearTimeout(that.templateChangeTimer);
 		const tpldoc = that.drawingToTemplateDoc();
 		if (['UNDO', 'REDO'].includes(reason) === false) {
@@ -858,9 +861,9 @@ class KFKclass {
 					doc: that.template.doc,
 					tplid: that.template.tplid,
 					bwid: that.bwid,
-					lastUpdatedAt: that.template.updatedAt
+					lastUpdatedAt: that.template.updatedAt,
 				},
-				token
+				token,
 			);
 			if (
 				ret.error &&
@@ -908,7 +911,8 @@ class KFKclass {
 				withsb: false,
 				withrvk: false,
 				withadhoc: false,
-				withcmt: true
+				withcmt: true,
+				code: '',
 			},
 			SCRIPT: { id: '', label: '', code: '', runmode: 'ASYNC' },
 			INFORM: { id: '', label: '', role: '', subject: '', content: '' },
@@ -916,7 +920,7 @@ class KFKclass {
 			//alone: means not a sub process, but a standalone process
 			SUB: { id: '', label: '', sub: '', alone: false },
 			AND: { id: '', label: '' },
-			label: ''
+			label: '',
 		};
 		if (KFKclass.NotSet(jqDIV)) jqDIV = that.currentJqNode;
 		if (jqDIV.hasClass('START')) {
@@ -955,12 +959,20 @@ class KFKclass {
 				ret.ACTION.kvars = (await api.post(
 					'workflow/kvars',
 					{ wfid: that.wfid, workid: theWork.attr('id') },
-					that.user.sessionToken
+					that.user.sessionToken,
 				)) as any;
 				ret.ACTION.doer = theWork.attr('doer');
 				//let kvarsString = blankToDefault(theWork.find('.kvars').text(), 'e30=');
 				//kvarsString = that.base64ToCode(kvarsString);
 			}
+
+			let defaultScript = that.codeToBase64(
+				`// read Hyperflow Developer's Guide for details
+ret='DEFAULT'; `,
+			);
+			let str = blankToDefault(jqDIV.find('code').first().text(), defaultScript).trim();
+			str = that.base64ToCode(str);
+			ret.ACTION.code = str;
 		} else if (jqDIV.hasClass('SCRIPT')) {
 			ret.SCRIPT.id = jqDIV.attr('id');
 			ret.SCRIPT.runmode = jqDIV.attr('runmode') ? jqDIV.attr('runmode') : 'SYNC';
@@ -968,7 +980,7 @@ class KFKclass {
 			ret.label = ret.SCRIPT.label;
 			let defaultScript = that.codeToBase64(
 				`// read Hyperflow Developer's Guide for details
-ret='DEFAULT'; `
+ret='DEFAULT'; `,
 			);
 			let str = blankToDefault(jqDIV.find('code').first().text(), defaultScript).trim();
 			str = that.base64ToCode(str);
@@ -979,10 +991,10 @@ ret='DEFAULT'; `
 			ret.label = ret.INFORM.label;
 			ret.INFORM.role = blankToDefault(jqDIV.attr('role'), 'DEFAULT');
 			ret.INFORM.subject = that.base64ToCode(
-				blankToDefault(jqDIV.find('subject').first().text(), '').trim()
+				blankToDefault(jqDIV.find('subject').first().text(), '').trim(),
 			);
 			ret.INFORM.content = that.base64ToCode(
-				blankToDefault(jqDIV.find('content').first().text(), '').trim()
+				blankToDefault(jqDIV.find('content').first().text(), '').trim(),
 			);
 		} else if (jqDIV.hasClass('TIMER')) {
 			ret.TIMER.id = jqDIV.attr('id');
@@ -1020,12 +1032,12 @@ ret='DEFAULT'; `
 			else jqDIV.removeAttr('pbo');
 			const kvars_json = Parser.arrayToKvars(props.kvarsArr);
 			const kvars_string = JSON.stringify(kvars_json);
-			const codeInBase64 = Parser.codeToBase64(kvars_string);
+			const tmpInBase64 = Parser.codeToBase64(kvars_string);
 			let kvarsChildren = jqDIV.find('.kvars');
 			if (kvarsChildren.length === 0) {
-				jqDIV.append('<div class="kvars">' + codeInBase64 + '</div>');
+				jqDIV.append('<div class="kvars">' + tmpInBase64 + '</div>');
 			} else {
-				jqDIV.find('.kvars').first().prop('innerText', codeInBase64);
+				jqDIV.find('.kvars').first().prop('innerText', tmpInBase64);
 			}
 			const instructInBase64 = Parser.codeToBase64(propJSON.instruct);
 			let instructChildren = jqDIV.find('.instruct');
@@ -1053,6 +1065,20 @@ ret='DEFAULT'; `
 			jqDIV.attr('rvk', propJSON.withrvk ? 'yes' : 'no');
 			jqDIV.attr('adhoc', propJSON.withadhoc ? 'yes' : 'no');
 			jqDIV.attr('cmt', propJSON.withcmt ? 'yes' : 'no');
+
+			const code = propJSON.code;
+			const appData_code = code.trim();
+			let codeInBase64 = '';
+			if (hasValue(appData_code)) {
+				codeInBase64 = this.codeToBase64(appData_code);
+			}
+			if (jqDIV.find('code').length > 0) {
+				if (jqDIV.find('code').first().text().trim() !== codeInBase64) {
+					jqDIV.find('code').prop('innerText', codeInBase64);
+				}
+			} else {
+				jqDIV.append('<code>' + codeInBase64 + '</code>');
+			}
 		} else if (jqDIV.hasClass('SCRIPT')) {
 			propJSON = props.SCRIPT;
 			this.setNodeLabel(jqDIV, propJSON.label);
@@ -1133,33 +1159,33 @@ ret='DEFAULT'; `
 			that.designerCallback('showNodeProp', {
 				nodeType: 'SCRIPT',
 				jqDiv: jqDIV,
-				nodeProps: nodeProps
+				nodeProps: nodeProps,
 			});
 		} else if (jqDIV.hasClass('ACTION')) {
 			that.designerCallback('showNodeProp', {
 				nodeType: 'ACTION',
 				jqDiv: jqDIV,
 				nodeProps: nodeProps,
-				nodes: that.JC3.find('.node')
+				nodes: that.JC3.find('.node'),
 			});
 		} else if (jqDIV.hasClass('INFORM')) {
 			that.designerCallback('showNodeProp', {
 				nodeType: 'INFORM',
 				jqDiv: jqDIV,
 				nodeProps: nodeProps,
-				nodes: that.JC3.find('.node')
+				nodes: that.JC3.find('.node'),
 			});
 		} else if (jqDIV.hasClass('TIMER')) {
 			that.designerCallback('showNodeProp', {
 				nodeType: 'TIMER',
 				jqDiv: jqDIV,
-				nodeProps: nodeProps
+				nodeProps: nodeProps,
 			});
 		} else if (jqDIV.hasClass('SUB')) {
 			that.designerCallback('showNodeProp', {
 				nodeType: 'SUB',
 				jqDiv: jqDIV,
-				nodeProps: nodeProps
+				nodeProps: nodeProps,
 			});
 		}
 
@@ -1173,7 +1199,7 @@ ret='DEFAULT'; `
 			theConnect: theConnect,
 			caseValue: theConnect.attr('case'),
 			setValue: theConnect.attr('set'),
-			nodeProps: { label: 'Connect' }
+			nodeProps: { label: 'Connect' },
 		});
 	}
 
@@ -1186,7 +1212,7 @@ ret='DEFAULT'; `
 		}
 		setValue && theConnect.attr('set', base64Set);
 		const tplLinks = that.tpl.find(
-			`.link[from="${theConnect.attr('fid')}"][to="${theConnect.attr('tid')}"]`
+			`.link[from="${theConnect.attr('fid')}"][to="${theConnect.attr('tid')}"]`,
 		);
 		for (let i = 0; i < tplLinks.length; i++) {
 			$(tplLinks[i]).attr('case', caseValue);
@@ -1271,12 +1297,12 @@ ret='DEFAULT'; `
 		that.msgTimer = setTimeout(() => {
 			cloneDIV.animate(
 				{
-					opacity: 0
+					opacity: 0,
 				},
 				500,
 				async function () {
 					cloneDIV.remove();
-				}
+				},
 			);
 		}, staytime);
 	}
@@ -1290,26 +1316,26 @@ ret='DEFAULT'; `
 		const pos = {
 			center: {
 				x: divLeft + divWidth * 0.5,
-				y: divTop + divHeight * 0.5
+				y: divTop + divHeight * 0.5,
 			},
 			points: [
 				{
 					x: divLeft,
-					y: divTop + divHeight * 0.5
+					y: divTop + divHeight * 0.5,
 				},
 				{
 					x: divLeft + divWidth * 0.5,
-					y: divTop
+					y: divTop,
 				},
 				{
 					x: divLeft + divWidth,
-					y: divTop + divHeight * 0.5
+					y: divTop + divHeight * 0.5,
 				},
 				{
 					x: divLeft + divWidth * 0.5,
-					y: divTop + divHeight
-				}
-			]
+					y: divTop + divHeight,
+				},
+			],
 		};
 		return pos;
 	}
@@ -1322,7 +1348,7 @@ ret='DEFAULT'; `
 		setValue: string,
 		_posLimitA = [0, 1, 2, 3], //eslint-disable-line
 		_posLimitB = [0, 1, 2, 3], //eslint-disable-line
-		drawLine = true
+		drawLine = true,
 	) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -1416,7 +1442,7 @@ ret='DEFAULT'; `
 				BPos.points[BIndex].x,
 				BPos.points[BIndex].y,
 				caseValue,
-				setValue
+				setValue,
 			);
 		}
 		return [AIndex, BIndex];
@@ -1612,7 +1638,7 @@ ret='DEFAULT'; `
 			if (theShape.hasClass('selected') === false) {
 				theShape.stroke({
 					width: newWidth,
-					color: color1
+					color: color1,
 				});
 			}
 			if (that.lineLocked(theShape)) {
@@ -1628,9 +1654,9 @@ ret='DEFAULT'; `
 						that.C3MousePos(evt),
 						{
 							x: parr[0][0],
-							y: parr[0][1]
+							y: parr[0][1],
 						},
-						20
+						20,
 					)
 				) {
 					KFKclass.show('#linetransformer');
@@ -1640,17 +1666,17 @@ ret='DEFAULT'; `
 					that.moveLineMoverTo(
 						that.jc3PosToJc1Pos({
 							x: parr[0][0],
-							y: parr[0][1]
-						})
+							y: parr[0][1],
+						}),
 					);
 				} else if (
 					KFKclass.mouseNear(
 						that.C3MousePos(evt),
 						{
 							x: parr[1][0],
-							y: parr[1][1]
+							y: parr[1][1],
 						},
-						20
+						20,
 					)
 				) {
 					KFKclass.show('#linetransformer');
@@ -1660,8 +1686,8 @@ ret='DEFAULT'; `
 					that.moveLineMoverTo(
 						that.jc3PosToJc1Pos({
 							x: parr[1][0],
-							y: parr[1][1]
-						})
+							y: parr[1][1],
+						}),
 					);
 				} else {
 					KFKclass.hide('#linetransformer');
@@ -1676,7 +1702,7 @@ ret='DEFAULT'; `
 				if (theShape.hasClass('selected') === false) {
 					theShape.stroke({
 						width: theShape.attr('origin-width'),
-						color: theShape.attr('origin-color')
+						color: theShape.attr('origin-color'),
 					});
 				}
 			}
@@ -1690,7 +1716,7 @@ ret='DEFAULT'; `
 
 			that.mousePosToRemember = {
 				x: that.currentMousePos.x,
-				y: that.currentMousePos.y
+				y: that.currentMousePos.y,
 			};
 			//begin shape zoom, begin zoom shape
 			if (evt.ctrlKey || evt.metaKey) {
@@ -1704,15 +1730,15 @@ ret='DEFAULT'; `
 				that.setShapeToRemember(theShape);
 				that.shapeSizeCenter = {
 					x: that.scalePoint(theShape.cx()),
-					y: that.scalePoint(theShape.cy())
+					y: that.scalePoint(theShape.cy()),
 				};
 				that.shapeSizeOrigin = {
 					w: theShape.width(),
-					h: theShape.height()
+					h: theShape.height(),
 				};
 				that.shapeZoomStartPoint = {
 					x: that.scalePoint(that.scrXToJc3X(evt.clientX)),
-					y: that.scalePoint(that.scrYToJc3Y(evt.clientY))
+					y: that.scalePoint(that.scrYToJc3Y(evt.clientY)),
 				};
 				//let dis = that.distance(that.shapeSizeCenter, that.shapeZoomStartPoint);
 			} else {
@@ -1722,11 +1748,11 @@ ret='DEFAULT'; `
 				that.setShapeToRemember(theShape);
 				that.shapeDraggingStartPoint = {
 					x: that.scalePoint(that.scrXToJc3X(evt.clientX)),
-					y: that.scalePoint(that.scrYToJc3Y(evt.clientY))
+					y: that.scalePoint(that.scrYToJc3Y(evt.clientY)),
 				};
 				that.shapeFirstDraggingStartPoint = {
 					x: that.scalePoint(that.scrXToJc3X(evt.clientX)),
-					y: that.scalePoint(that.scrYToJc3Y(evt.clientY))
+					y: that.scalePoint(that.scrYToJc3Y(evt.clientY)),
 				};
 			}
 		});
@@ -1762,7 +1788,7 @@ ret='DEFAULT'; `
 			const lineSetting = {
 				color: color,
 				width: width,
-				linecap: linecap === 'round' ? true : false
+				linecap: linecap === 'round' ? true : false,
 			};
 			that.APP.setData('model', 'line', lineSetting);
 		});
@@ -1939,7 +1965,7 @@ ret='DEFAULT'; `
 		try {
 			const click = {
 				x: 0,
-				y: 0
+				y: 0,
 			};
 			jqNodeDIV.off('mouseover mouseout');
 			jqNodeDIV.on('mouseover', async () => {
@@ -1966,19 +1992,19 @@ ret='DEFAULT'; `
 						that.dragging = true;
 						that.positionBeforeDrag = {
 							x: that.divLeft(jqNodeDIV),
-							y: that.divTop(jqNodeDIV)
+							y: that.divTop(jqNodeDIV),
 						};
 					},
 					drag: (
 						evt: MouseEvent,
-						ui: { originalPosition: any; position: { left: number; top: number } }
+						ui: { originalPosition: any; position: { left: number; top: number } },
 					) => {
 						const original = ui.originalPosition;
 
 						// jQuery will simply use the same object we alter here
 						ui.position = {
 							left: (evt.clientX - click.x + original.left) / that.scaleRatio,
-							top: (evt.clientY - click.y + original.top) / that.scaleRatio
+							top: (evt.clientY - click.y + original.top) / that.scaleRatio,
 						};
 					},
 					stop: async (evt: MouseEvent) => {
@@ -2006,7 +2032,7 @@ ret='DEFAULT'; `
 						try {
 							const deltaOfDragging = {
 								x: that.divLeft(jqNodeDIV) - that.positionBeforeDrag.x,
-								y: that.divTop(jqNodeDIV) - that.positionBeforeDrag.y
+								y: that.divTop(jqNodeDIV) - that.positionBeforeDrag.y,
 							};
 
 							const tobeMovedNodes = [];
@@ -2028,7 +2054,7 @@ ret='DEFAULT'; `
 										that.selectedDIVs[i],
 										that.selectedDIVs[i],
 										that.shouldMovedInParalles,
-										treeMap
+										treeMap,
 									);
 								}
 
@@ -2042,11 +2068,11 @@ ret='DEFAULT'; `
 											that.DivStyler.moveDivByDelta(
 												that.shouldMovedInParalles[i],
 												deltaOfDragging.x,
-												deltaOfDragging.y
+												deltaOfDragging.y,
 											);
 											tobeMovedNodes.push({
 												from: tmp,
-												to: that.shouldMovedInParalles[i]
+												to: that.shouldMovedInParalles[i],
 											});
 										}
 									}
@@ -2065,19 +2091,19 @@ ret='DEFAULT'; `
 
 							tobeMovedNodes.push({
 								from: that.fromJQ,
-								to: jqNodeDIV
+								to: jqNodeDIV,
 							});
 						} finally {
 							that.yarkOpHistory({
 								obj: 'node',
 								from: that.fromJQ.clone(),
-								to: jqNodeDIV.clone()
+								to: jqNodeDIV.clone(),
 							});
 							that.onChange('Dragged');
 							that.focusOnNode(jqNodeDIV);
 							that.endTrx();
 						}
-					}
+					},
 				});
 			}
 		} catch (error) {
@@ -2093,7 +2119,7 @@ ret='DEFAULT'; `
 				() => {
 					that.hoverJqDiv(null);
 					that.onC3 = true;
-				}
+				},
 			);
 		} catch (error) {
 			console.error(error);
@@ -2313,7 +2339,7 @@ ret='DEFAULT'; `
 		that.S1 = el(that.JS1);
 		that.JC1.css({
 			width: KFKclass.px(that.PageWidth * (that.PageNumberHori + 2)),
-			height: KFKclass.px(that.PageHeight * (that.PageNumberVert + 2))
+			height: KFKclass.px(that.PageHeight * (that.PageNumberVert + 2)),
 		});
 	}
 
@@ -2372,7 +2398,7 @@ ret='DEFAULT'; `
 				undefined,
 				undefined,
 				'',
-				''
+				'',
 			);
 			that.addMobileHandler([jqDIV]);
 			that.addNodeIdDIV([jqDIV]);
@@ -2380,7 +2406,7 @@ ret='DEFAULT'; `
 			that.yarkOpHistory({
 				obj: 'node',
 				from: null,
-				to: jqDIV.clone()
+				to: jqDIV.clone(),
 			});
 			that.onChange('New Node');
 		}
@@ -2400,14 +2426,14 @@ ret='DEFAULT'; `
 			width: KFKclass.px(that.PageWidth * that.PageNumberHori),
 			height: KFKclass.px(that.PageHeight * that.PageNumberVert),
 			left: KFKclass.px(that.LeftB),
-			top: KFKclass.px(that.TopB)
+			top: KFKclass.px(that.TopB),
 		});
 		that.JCBKG = $('#containerbkg');
 		that.JCBKG.css({
 			width: KFKclass.px(that.PageWidth * that.PageNumberHori),
 			height: KFKclass.px(that.PageHeight * that.PageNumberVert),
 			left: KFKclass.px(that.LeftB),
-			top: KFKclass.px(that.TopB)
+			top: KFKclass.px(that.TopB),
 		});
 
 		that.JC3.dblclick(async function (evt: MouseEvent) {
@@ -2471,7 +2497,7 @@ ret='DEFAULT'; `
 				that.JC3.addClass(that.jc3Cursor);
 				that.panStartAt = {
 					x: evt.clientX,
-					y: evt.clientY
+					y: evt.clientY,
 				};
 			}
 		});
@@ -2485,7 +2511,7 @@ ret='DEFAULT'; `
 
 			const tmpPoint = {
 				x: evt.clientX,
-				y: evt.clientY
+				y: evt.clientY,
 			};
 			//that.pointAfterResize 记录着DIV重新拖动大小后，释放鼠标的一霎那间的鼠标位置
 			//这样，在鼠标释放同时，click事件发起时，下面的代码避免执行
@@ -2506,11 +2532,12 @@ ret='DEFAULT'; `
 
 		//eslint-disable-next-line
 		that.JC3.mouseup(async (_evt: MouseEvent) => {
+			/* console.log('Change to POINTER');
 			if (that.jc3Cursor) {
 				that.JC3.removeClass(that.jc3Cursor);
-			}
-			that.jc3Cursor = `mtc-cursor-POINTER`;
-			that.JC3.addClass(that.jc3Cursor);
+			} */
+			//that.jc3Cursor = `mtc-cursor-POINTER`;
+			//that.JC3.addClass(that.jc3Cursor);
 			that.panStartAt = undefined;
 			that.ignoreClick = false;
 		});
@@ -2541,7 +2568,7 @@ ret='DEFAULT'; `
 			//把屏幕鼠标位置,翻译为JC3的坐标位置,再翻译成放大缩小后的点坐标
 			const tmpPoint = {
 				x: that.scalePoint(that.scrXToJc3X(that.currentMousePos.x)),
-				y: that.scalePoint(that.scrYToJc3Y(that.currentMousePos.y))
+				y: that.scalePoint(that.scrYToJc3Y(that.currentMousePos.y)),
 			};
 
 			//检查是否为正在拖动一个形状,还是正在手绘
@@ -2590,8 +2617,8 @@ ret='DEFAULT'; `
 						tmpPoint.y,
 						{
 							color: that.YIQColorAux || '#888888',
-							stroke: 10
-						}
+							stroke: 10,
+						},
 					);
 				}
 			}
@@ -2720,7 +2747,7 @@ ret='DEFAULT'; `
 		$(textClass).addClass('selected');
 		let mpoint = {
 			x: that.scrXToJc3X(evt.clientX),
-			y: that.scrYToJc3Y(evt.clientY)
+			y: that.scrYToJc3Y(evt.clientY),
 		};
 
 		if (that.KEYDOWN.alt && that.docIsReadOnly() === false) {
@@ -2848,7 +2875,7 @@ ret='DEFAULT'; `
 			originWidth * 2 > that.CONST.MAX_SHAPE_WIDTH ? originWidth : that.CONST.MAX_SHAPE_WIDTH;
 		theShape.stroke({
 			width: newWidth,
-			color: '#0000FF'
+			color: '#0000FF',
 		});
 	}
 	isShapeSelected(theShape: any) {
@@ -2884,7 +2911,7 @@ ret='DEFAULT'; `
 			center: x + width * 0.5,
 			middle: y + height * 0.5,
 			width: width,
-			height: height
+			height: height,
 		};
 	}
 
@@ -2960,7 +2987,7 @@ ret='DEFAULT'; `
 		}
 		return {
 			x: newX,
-			y: newY
+			y: newY,
 		};
 	}
 
@@ -2986,7 +3013,7 @@ ret='DEFAULT'; `
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		_attach: any,
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		_attach2: any
+		_attach2: any,
 	): Promise<myJQuery> {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -3127,13 +3154,13 @@ ret='DEFAULT'; `
 		jqNode: myJQuery,
 		reason = 'unknown',
 		bothside = 'both',
-		allowConnectPoints = [[2], [0], [2], [0]]
+		allowConnectPoints = [[2], [0], [2], [0]],
 	) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		if (!(jqNode instanceof jQuery)) {
 			console.error(
-				`redrawLinkLines reason:[${reason}] for a non-jquery object, sometime caused by no await`
+				`redrawLinkLines reason:[${reason}] for a non-jquery object, sometime caused by no await`,
 			);
 			return;
 		}
@@ -3172,7 +3199,7 @@ ret='DEFAULT'; `
 				setValue,
 				allowConnectPoints[0],
 				allowConnectPoints[1],
-				true
+				true,
 			);
 			//anchorPair返回一个包含两个数字的数组,第一个数字标识父节点的锚点位置,第二个数字标识子节点的锚点位置
 			anchorPositions.push(anchorPair[0]);
@@ -3197,7 +3224,7 @@ ret='DEFAULT'; `
 					setValue,
 					allowConnectPoints[2],
 					allowConnectPoints[3],
-					true
+					true,
 				);
 				anchorPositions.push(anchorPair[0]);
 			}
@@ -3301,7 +3328,7 @@ ret='DEFAULT'; `
 			try {
 				KFK.replaceSTClassTo(
 					$(`#${connectId}`),
-					aRoute.status === 'ST_IGNORE' ? 'ST_IGNORE' : KFK.getSTClass($(`#${aRoute.to_nodeid}`))
+					aRoute.status === 'ST_IGNORE' ? 'ST_IGNORE' : KFK.getSTClass($(`#${aRoute.to_nodeid}`)),
 				);
 				connectNumber += 1;
 			} catch (e) {}
@@ -3321,7 +3348,7 @@ ret='DEFAULT'; `
 		) {
 			ret = {
 				w: that.config.defaultSize[nodeType][variant].width,
-				h: that.config.defaultSize[nodeType][variant].height
+				h: that.config.defaultSize[nodeType][variant].height,
 			};
 		} else if (
 			that.config.node[nodeType] &&
@@ -3331,12 +3358,12 @@ ret='DEFAULT'; `
 		) {
 			ret = {
 				w: that.config.node[nodeType].style.width,
-				h: that.config.node[nodeType].style.height
+				h: that.config.node[nodeType].style.height,
 			};
 		} else {
 			ret = {
 				w: 100,
-				h: 40
+				h: 40,
 			};
 		}
 		return ret;
@@ -3558,13 +3585,13 @@ ret='DEFAULT'; `
 			center: that.divCenter(jqDiv),
 			middle: that.divMiddle(jqDiv),
 			width: that.divWidth(jqDiv),
-			height: that.divHeight(jqDiv)
+			height: that.divHeight(jqDiv),
 		};
 	}
 	divMove(jqDiv: myJQuery, left: number, top: number) {
 		jqDiv.css({
 			left: left,
-			top: top
+			top: top,
 		});
 	}
 	divDMove(jqDiv: myJQuery, deltaX: number, deltaY: number) {
@@ -3574,7 +3601,7 @@ ret='DEFAULT'; `
 		const top = that.divTop(jqDiv);
 		jqDiv.css({
 			left: left + deltaX,
-			top: top + deltaY
+			top: top + deltaY,
 		});
 	}
 
@@ -3680,7 +3707,7 @@ ret='DEFAULT'; `
 
 	async _deleteShape(svgLine: any) {
 		svgLine.attr({
-			'stroke-width': svgLine.attr('origin-width')
+			'stroke-width': svgLine.attr('origin-width'),
 		});
 	}
 
@@ -3730,7 +3757,7 @@ ret='DEFAULT'; `
 			obj: 'node',
 			from: jqDIV,
 			to: null,
-			links: links
+			links: links,
 		});
 		that.deleteLinks(jqDIV, links).then(() => {});
 		jqDIV.remove();
@@ -3907,14 +3934,14 @@ ret='DEFAULT'; `
 
 		const startPoint = {
 			x: that.divLeft(jqstocopy[0]),
-			y: that.divTop(jqstocopy[0])
+			y: that.divTop(jqstocopy[0]),
 		};
 		that.startTrx();
 		try {
 			for (let i = 0; i < jqstocopy.length; i++) {
 				const oldJqPos = {
 					x: that.divLeft(jqstocopy[i]),
-					y: that.divTop(jqstocopy[i])
+					y: that.divTop(jqstocopy[i]),
 				};
 				const deltaX = oldJqPos.x - startPoint.x;
 				const deltaY = oldJqPos.y - startPoint.y;
@@ -3927,7 +3954,7 @@ ret='DEFAULT'; `
 					top:
 						that.scalePoint(that.scrYToJc3Y(that.currentMousePos.y)) -
 						that.tplNode_height * 0.5 +
-						deltaY
+						deltaY,
 				});
 				that.justCreatedJqNode = jqNewNode;
 				that.lastCreatedJqNode = jqNewNode;
@@ -3959,7 +3986,7 @@ ret='DEFAULT'; `
 		const that = this;
 		const startPoint = {
 			x: linestocopy[0].cx(),
-			y: linestocopy[0].cy()
+			y: linestocopy[0].cy(),
 		};
 		for (let i = 0; i < linestocopy.length; i++) {
 			const newLine = linestocopy[i].clone();
@@ -3981,7 +4008,7 @@ ret='DEFAULT'; `
 			//现在第一次点取不马上复制了,+offset已经没有了必要
 			newLine.center(
 				that.scalePoint(that.scrXToJc3X(that.currentMousePos.x)) + deltaX,
-				that.scalePoint(that.scrYToJc3Y(that.currentMousePos.y)) + deltaY
+				that.scalePoint(that.scrYToJc3Y(that.currentMousePos.y)) + deltaY,
 			);
 			// newLine.addTo(linestocopy[i].parent());
 			newLine.addTo(that.svgDraw);
@@ -3999,14 +4026,14 @@ ret='DEFAULT'; `
 			right: that.divRight(that.selectedDIVs[0]),
 			bottom: that.divBottom(that.selectedDIVs[0]),
 			width: 0,
-			height: 0
+			height: 0,
 		};
 		for (let i = 0; i < that.selectedDIVs.length; i++) {
 			const tmpRect = {
 				left: that.divLeft(that.selectedDIVs[i]),
 				top: that.divTop(that.selectedDIVs[i]),
 				right: that.divRight(that.selectedDIVs[i]),
-				bottom: that.divBottom(that.selectedDIVs[i])
+				bottom: that.divBottom(that.selectedDIVs[i]),
 			};
 			if (tmpRect.left < ret.left) {
 				ret.left = tmpRect.left;
@@ -4042,7 +4069,7 @@ ret='DEFAULT'; `
 		const that = this;
 		return {
 			x: pos.x * that.scaleRatio + that.LeftB,
-			y: pos.y * that.scaleRatio + that.TopB
+			y: pos.y * that.scaleRatio + that.TopB,
 		};
 	}
 
@@ -4217,7 +4244,7 @@ ret='DEFAULT'; `
 					that.lineToResize.plot([parr[0], [stopAtPos.x, stopAtPos.y]]);
 				}
 				KFKclass.hide('#linetransformer');
-			}
+			},
 		}); //line transformer. draggable()
 	}
 
@@ -4251,18 +4278,18 @@ ret='DEFAULT'; `
 		that.svgDraw.addClass('svgcanvas');
 
 		that.pageBounding = {
-			Pages: []
+			Pages: [],
 		};
 		const boundingLineOption = {
 			color: '#FFFFFFCC',
 			width: 4,
-			linecap: 'square'
+			linecap: 'square',
 		};
 		for (let i = 0; i < that.PageNumberVert; i++) {
 			for (let j = 0; j < that.PageNumberHori; j++) {
 				that.pageBounding.Pages.push({
 					left: j * that.PageWidth,
-					top: i * that.PageHeight
+					top: i * that.PageHeight,
 				});
 			}
 		}
@@ -4401,7 +4428,7 @@ ret='DEFAULT'; `
 		} finally {
 			//that.addDocumentEventHandler();
 			that.inited = true;
-			that.showHelp('To see node properties, press P then click on a node', 10000);
+			that.showHelp($_('designer.tool.POINTER'), 10000);
 			KFK.C3GotFocus();
 		}
 	}
@@ -4448,7 +4475,7 @@ ret='DEFAULT'; `
 				continue;
 			}
 			$(guiNodes[i]).append(
-				`<div class='mobilehandler m-0 p-0 inline-block text-center'><i class="align-top text-center bi bi-arrow-up-right-circle"/></div>`
+				`<div class='mobilehandler m-0 p-0 inline-block text-center'><i class="align-top text-center bi bi-arrow-up-right-circle"/></div>`,
 			);
 			$(guiNodes[i]).find('.mobilehandler').off('click');
 			$(guiNodes[i])
@@ -4470,7 +4497,7 @@ ret='DEFAULT'; `
 			$(guiNodes[i]).append(
 				`<div class='nodeidlabel ${
 					that.showNodeId ? '' : 'nodisplay'
-				} m-0 p-0 inline-block text-center'>${$(guiNodes[i]).attr('id')}</div>`
+				} m-0 p-0 inline-block text-center'>${$(guiNodes[i]).attr('id')}</div>`,
 			);
 		}
 	}
@@ -4604,7 +4631,7 @@ ret='DEFAULT'; `
 			//如果没有，则滚动到第一屏
 			that.scrollToPos({
 				x: that.LeftB,
-				y: that.TopB
+				y: that.TopB,
 			});
 		}
 	}
@@ -4613,7 +4640,7 @@ ret='DEFAULT'; `
 		const that = this;
 		that.scrollToPos({
 			x: that.LeftB,
-			y: that.TopB
+			y: that.TopB,
 		});
 	}
 
@@ -4623,9 +4650,8 @@ ret='DEFAULT'; `
 		if (startNode) {
 			let thePos = {
 				x: KFKclass.unpx(startNode.css('left')) + that.LeftB - that.bestViewLeft,
-				y: KFKclass.unpx(startNode.css('top')) + that.TopB - that.bestViewTop
+				y: KFKclass.unpx(startNode.css('top')) + that.TopB - that.bestViewTop,
 			};
-			console.log(thePos);
 			that.scrollToPos(thePos);
 		} else {
 			that.scrollToFirstPage();
@@ -4715,8 +4741,10 @@ ret='DEFAULT'; `
 	async cleanupJC3() {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
-		await that.JC3.empty();
-		that.addSvgLayer();
+		if (that.JC3) {
+			await that.JC3.empty();
+			that.addSvgLayer();
+		}
 	}
 
 	getLineOptions(div: JQuery) {
@@ -4747,7 +4775,7 @@ ret='DEFAULT'; `
 	resetShapeStyleToOrigin(shape: any) {
 		shape.attr({
 			'stroke-width': shape.attr('origin-width'),
-			stroke: shape.attr('origin-color')
+			stroke: shape.attr('origin-color'),
 		});
 	}
 
@@ -4872,6 +4900,10 @@ ret='DEFAULT'; `
 					//that.scrollToFirstPage();
 					that.scrollToStartNode();
 					break;
+				case 'e':
+					if (evt.originalEvent.ctrlKey) {
+						that.designerCallback('toggleMode');
+					}
 				default:
 					break;
 			}
@@ -4913,7 +4945,7 @@ ret='DEFAULT'; `
 			if (!that.onC3) return;
 			const tmp = {
 				x: that.scrXToJc3X(evt.clientX),
-				y: that.scrYToJc3Y(evt.clientY)
+				y: that.scrYToJc3Y(evt.clientY),
 			};
 			if (that.isDuringKuangXuan()) {
 				that.kuangXuan(that.kuangXuanStartPoint, tmp);
@@ -4930,7 +4962,7 @@ ret='DEFAULT'; `
 			) {
 				const delta = {
 					x: evt.clientX - that.panStartAt.x,
-					y: evt.clientY - that.panStartAt.y
+					y: evt.clientY - that.panStartAt.y,
 				};
 				that.JS1.scrollLeft(that.JS1.scrollLeft() - delta.x * 2);
 				that.JS1.scrollTop(that.JS1.scrollTop() - delta.y * 2);
@@ -4950,7 +4982,7 @@ ret='DEFAULT'; `
 						that.JC3.addClass(that.jc3Cursor);
 						that.panStartAt = {
 							x: evt.clientX,
-							y: evt.clientY
+							y: evt.clientY,
 						};
 					} else {
 						if (that.jc3Cursor && that.jc3Cursor !== 'mtc-cursor-kuang') {
@@ -4961,7 +4993,7 @@ ret='DEFAULT'; `
 						that.kuangXuanMouseIsDown = true;
 						that.kuangXuanStartPoint = {
 							x: that.scrXToJc3X(evt.clientX),
-							y: that.scrYToJc3Y(evt.clientY)
+							y: that.scrYToJc3Y(evt.clientY),
 						};
 					}
 				} else {
@@ -4974,7 +5006,7 @@ ret='DEFAULT'; `
 						that.JC3.addClass(that.jc3Cursor);
 						that.kuangXuanStartPoint = {
 							x: that.scrXToJc3X(evt.clientX),
-							y: that.scrYToJc3Y(evt.clientY)
+							y: that.scrYToJc3Y(evt.clientY),
 						};
 					} else {
 						if (that.jc3Cursor) {
@@ -4984,7 +5016,7 @@ ret='DEFAULT'; `
 						that.JC3.addClass(that.jc3Cursor);
 						that.panStartAt = {
 							x: evt.clientX,
-							y: evt.clientY
+							y: evt.clientY,
 						};
 					}
 				}
@@ -4992,11 +5024,11 @@ ret='DEFAULT'; `
 		});
 		$(document).on('mouseup', async function (evt: any) {
 			that.panStartAt = undefined;
-			if (that.jc3Cursor) {
+			/* if (that.jc3Cursor) {
 				that.JC3.removeClass(that.jc3Cursor);
 			}
 			that.jc3Cursor = `mtc-cursor-POINTER`;
-			that.JC3.addClass(that.jc3Cursor);
+			that.JC3.addClass(that.jc3Cursor); */
 			if (that.tool === 'POINTER') {
 				that.kuangXuanMouseIsDown = false;
 				if (that.jc3Cursor && that.jc3Cursor === 'mtc-cursor-kuang') {
@@ -5006,7 +5038,7 @@ ret='DEFAULT'; `
 				that.JC3.addClass(that.jc3Cursor);
 				that.kuangXuanEndPoint = {
 					x: that.scrXToJc3X(evt.clientX),
-					y: that.scrYToJc3Y(evt.clientY)
+					y: that.scrYToJc3Y(evt.clientY),
 				};
 				if (that.duringKuangXuan) {
 					that.ignoreClick = true;
@@ -5033,7 +5065,7 @@ ret='DEFAULT'; `
 				const realY = that.scalePoint(that.scrYToJc3Y(evt.clientY));
 				const pt = {
 					x: realX,
-					y: realY
+					y: realY,
 				};
 				// if (that.APP.model.viewConfig.snap) {
 				//     pt = that.getNearGridPoint(realX, realY);
@@ -5091,13 +5123,13 @@ ret='DEFAULT'; `
 						movedSer = movedSer + 1;
 						aShape.attr({
 							'stroke-width': beforeSaveWidth,
-							stroke: beforeSaveColor
+							stroke: beforeSaveColor,
 						});
 					}
 
 					const delta = {
 						x: pt.x - that.shapeFirstDraggingStartPoint.x,
-						y: pt.y - that.shapeFirstDraggingStartPoint.y
+						y: pt.y - that.shapeFirstDraggingStartPoint.y,
 					};
 					for (let i = 0; i < that.selectedDIVs.length; i++) {
 						if (
@@ -5146,7 +5178,7 @@ ret='DEFAULT'; `
 					if (docPos[that.tplid]) {
 						docPos[that.tplid] = {
 							x: sx,
-							y: sy
+							y: sy,
 						};
 					} else {
 						let keyCount = 0;
@@ -5168,7 +5200,7 @@ ret='DEFAULT'; `
 						}
 						docPos[that.tplid] = {
 							x: sx,
-							y: sy
+							y: sy,
 						};
 					}
 					localStorage.setItem('docPos', JSON.stringify(docPos));
@@ -5181,7 +5213,7 @@ ret='DEFAULT'; `
 		$(document).bind({
 			copy: KFK.onCopy,
 			paste: KFK.onPaste,
-			cut: KFK.onCut
+			cut: KFK.onCut,
 		});
 
 		that.documentEventHandlerSet = true;
@@ -5283,7 +5315,7 @@ ret='DEFAULT'; `
 				return true;
 			} else if (that.hoverSvgLine() && (action === undefined || action === 'copy')) {
 				that.hoverSvgLine().attr({
-					'stroke-width': that.hoverSvgLine().attr('origin-width')
+					'stroke-width': that.hoverSvgLine().attr('origin-width'),
 				});
 				that.copyCandidateLines = [that.hoverSvgLine().clone()];
 				that.copyCandidateDIVs = [];
@@ -5408,7 +5440,7 @@ ret='DEFAULT'; `
 			'AND',
 			'OR',
 			'GROUND',
-			'THROUGH'
+			'THROUGH',
 		];
 	}
 
@@ -5418,7 +5450,7 @@ ret='DEFAULT'; `
 		let content = {
 			html: '',
 			text: '',
-			image: null
+			image: null,
 		};
 
 		let blobForm = null;
@@ -5440,9 +5472,9 @@ ret='DEFAULT'; `
 				fetch(`${API_SERVER}/template/set/cover`, {
 					method: 'POST',
 					headers: {
-						Authorization: that.user.sessionToken
+						Authorization: that.user.sessionToken,
 					},
-					body: blobForm
+					body: blobForm,
 				})
 					.then((response) => response.json())
 					.then((result) => {
@@ -5494,7 +5526,7 @@ ret='DEFAULT'; `
 						KFK.divWidth(that.clipboardNode) * 0.5,
 					top:
 						KFK.scalePoint(KFK.scrYToJc3Y(KFK.currentMousePos.y)) -
-						KFK.divHeight(that.clipboardNode) * 0.5
+						KFK.divHeight(that.clipboardNode) * 0.5,
 				});
 				newNode.appendTo(KFK.C3);
 				await KFK.setNodeEventHandler(newNode, async function () {});
@@ -5518,7 +5550,7 @@ ret='DEFAULT'; `
 			width: Math.abs(pt1.x - pt2.x),
 			height: Math.abs(pt1.y - pt2.y),
 			right: 0,
-			bottom: 0
+			bottom: 0,
 		};
 		rect.right = rect.left + rect.width;
 		rect.bottom = rect.top + rect.height;
@@ -5563,7 +5595,7 @@ ret='DEFAULT'; `
 	scrCenter() {
 		return {
 			x: $(window).width() * 0.5,
-			y: $(window).height() * 0.5
+			y: $(window).height() * 0.5,
 		};
 	}
 
@@ -5577,11 +5609,11 @@ ret='DEFAULT'; `
 		const rad: number = 10;
 		const c1: Point = {
 			x: p2.x - rad,
-			y: p1.y
+			y: p1.y,
 		};
 		const c2: Point = {
 			x: p2.x,
-			y: p1.y + rad
+			y: p1.y + rad,
 		};
 
 		const pStr: string = `M${p1.x} ${p1.y} H${c1.x} S${c2.x} ${c1.y} ${c2.x} ${c2.y} V${p2.y}`;
@@ -5594,7 +5626,7 @@ ret='DEFAULT'; `
 		const connect_color = that.YIQColorAux || that.config.connect.styles[styleid].hover.color;
 		theConnect.stroke({
 			width: that.config.connect.styles[styleid].hover.width,
-			color: connect_color
+			color: connect_color,
 		});
 		that.ball.removeClass('noshow');
 		that.ball.fill('#2726ff');
@@ -5620,7 +5652,7 @@ ret='DEFAULT'; `
 		that.ball.timeline().stop();
 		theConnect.stroke({
 			width: cnWidth || that.config.connect.styles[styleid].normal.width,
-			color: cnColor || that.YIQColorAux || that.config.connect.styles[styleid].normal.color
+			color: cnColor || that.YIQColorAux || that.config.connect.styles[styleid].normal.color,
 		});
 		that.hoveredConnectId = null;
 		that.hoveredConnect = null;
@@ -5658,7 +5690,7 @@ ret='DEFAULT'; `
 		triangle: number[],
 		caseValue: string,
 		setValue: string,
-		simpleLineMode: boolean = false
+		simpleLineMode: boolean = false,
 	) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -5713,7 +5745,7 @@ ret='DEFAULT'; `
 						.fill(drawPstr ? theConnect_fill_color : 'none')
 						.stroke({
 							width: theConnect_width,
-							color: theConnect_color
+							color: theConnect_color,
 						});
 
 					if (drawPstr === false) {
@@ -5726,7 +5758,7 @@ ret='DEFAULT'; `
 					}
 					theConnect.attr({
 						id: lineClass,
-						'origin-width': that.APP.model.svg.connect.width
+						'origin-width': that.APP.model.svg.connect.width,
 					});
 					theTriangle = await that.svgDraw
 						.polygon(triangle)
@@ -5755,7 +5787,7 @@ ret='DEFAULT'; `
 			}
 			theConnect.attr({
 				fid: fid,
-				tid: tid
+				tid: tid,
 			});
 			theConnect.off('mouseover mouseout click');
 			connectText.off('mouseover mouseout click');
@@ -5862,7 +5894,7 @@ ret='DEFAULT'; `
 		tx: number,
 		ty: number,
 		caseValue: string,
-		setValue: string
+		setValue: string,
 	) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -6126,12 +6158,12 @@ ret='DEFAULT'; `
 			triangle,
 			caseValue,
 			setValue,
-			that.APP.model.viewConfig.simpleLineMode
+			that.APP.model.viewConfig.simpleLineMode,
 		);
 	}
 
 	showHelp(msg: string, timeout: number = 4000) {
-		this.helpArea.text(msg);
+		this.helpArea.html(msg);
 		this.myFadeIn(this.helpArea);
 		if (this.closeHelpTimer) {
 			clearTimeout(this.closeHelpTimer);
@@ -6145,25 +6177,25 @@ ret='DEFAULT'; `
 			jq
 				.css({
 					visibility: 'visible',
-					opacity: 0.0
+					opacity: 0.0,
 				})
 				.animate(
 					{
-						opacity: 1.0
+						opacity: 1.0,
 					},
-					ms
+					ms,
 				);
 	}
 	myFadeOut(jq: JQuery, ms = 200) {
 		jq &&
 			jq.animate(
 				{
-					opacity: 0.0
+					opacity: 0.0,
 				},
 				ms,
 				function () {
 					jq.css('visibility', 'hidden');
-				}
+				},
 			);
 	}
 	/**

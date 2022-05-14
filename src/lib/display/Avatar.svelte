@@ -13,9 +13,8 @@
 	let imgUrl = `${API_SERVER}/account/avatar/${tenant}/${email}?token=${$session.user.sessionToken}`;
 	onMount(async () => {});
 	export const refresh = () => {
-		console.log('Refresh avatar');
 		avatar = true;
-		imgUrl = imgUrl + '?t=' + new Date().getTime();
+		imgUrl = imgUrl + '&t=' + new Date().getTime();
 	};
 </script>
 
@@ -25,9 +24,9 @@
 		class={style}
 		alt="avatar"
 		on:error={(e) => {
+			console.error(e);
 			avatar = false;
-		}}
-	/>
+		}} />
 {:else}
 	<div class="kfk-avatar-letter-small text-center">
 		{uname ? uname : ' '}

@@ -1,5 +1,6 @@
 <script type="ts">
 	import * as api from '$lib/api';
+	import { _ } from '$lib/i18n';
 	import Avatar from '$lib/display/Avatar.svelte';
 	import { InputGroup, Button, Input, Row, Col, Badge, Icon } from 'sveltestrap';
 	import { tick, createEventDispatcher } from 'svelte';
@@ -33,7 +34,7 @@
 				checkingUserResult = (await api.post(
 					'check/coworkers',
 					{ uids: m },
-					user.sessionToken
+					user.sessionToken,
 				)) as unknown as string;
 			}, 1500);
 		} else {
@@ -55,8 +56,7 @@
 					{placeholder}
 					on:input={inputing}
 					class="border-0 form-control"
-					bind:this={theCommentInputTextArea}
-				/>
+					bind:this={theCommentInputTextArea} />
 			</Col>
 		</Row>
 		<Row>
@@ -64,20 +64,20 @@
 				{#if checkingUserResult}
 					{@html checkingUserResult}
 				{:else}
-					Markdown is enabled
+					{$_('comment.markdown_enabled')}
 				{/if}
 			</Col>
 			<Col class="col-auto">
 				<Button
-					class="py-0 px-5 mb-1"
+					color="primary"
+					class="m-1"
 					on:click={async (e) => {
 						e.preventDefault();
 						if (value.trim().length === 0) return;
 						value = value.trim();
 						checkingUserResult = '';
 						dispatch('comment', value);
-					}}
-				>
+					}}>
 					<i class="bi bi-chat-left-dots" />
 				</Button>
 			</Col>

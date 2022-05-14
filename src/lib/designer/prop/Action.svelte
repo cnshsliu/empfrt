@@ -20,7 +20,7 @@
 		InputGroupText,
 		Input,
 		TabPane,
-		TabContent
+		TabContent,
 	} from 'sveltestrap';
 	import type { KVarDefInput, Workflow, Template } from '$lib/types';
 	import { createEventDispatcher, setContext, getContext } from 'svelte';
@@ -75,7 +75,7 @@
 					todos = (await api.post(
 						'todos/by/workid',
 						{ workid: workid },
-						$session.user.sessionToken
+						$session.user.sessionToken,
 					)) as unknown as any[];
 					todos = todos.map((x) => {
 						x.newdoer = '';
@@ -156,8 +156,7 @@
 					type="checkbox"
 					label="WECOM"
 					bind:checked={nodeInfo.nodeProps.ACTION.bot.wecom}
-					disabled={readonly}
-				/>
+					disabled={readonly} />
 			</InputGroup>
 		</Col>
 	</Row>
@@ -165,13 +164,11 @@
 		pills
 		on:tab={(e) => {
 			setTab(e.detail);
-		}}
-	>
+		}}>
 		<TabPane
 			tabId="participant"
 			tab={$_('prop.action.tab.participant')}
-			active={isActive('participant')}
-		>
+			active={isActive('participant')}>
 			<Col>
 				<InputGroup size="sm">
 					<Input
@@ -179,8 +176,7 @@
 						type="checkbox"
 						label={$_('prop.action.p10t.csv')}
 						bind:checked={nodeInfo.nodeProps.ACTION.withcsv}
-						disabled={readonly}
-					/>
+						disabled={readonly} />
 					{#if nodeInfo.nodeProps.ACTION.withcsv}
 						<Input bind:value={nodeInfo.nodeProps.ACTION.csv} disabled={readonly} />
 					{/if}
@@ -193,8 +189,7 @@
 						type="checkbox"
 						label={$_('prop.action.p10t.alldone')}
 						bind:checked={nodeInfo.nodeProps.ACTION.byall}
-						disabled={readonly}
-					/>
+						disabled={readonly} />
 				</InputGroup>
 			</Col>
 			{#if nodeInfo.nodeProps.ACTION.byall}
@@ -238,16 +233,14 @@
 						type="checkbox"
 						label={$_('prop.action.p10t.transferable')}
 						bind:checked={nodeInfo.nodeProps.ACTION.transferable}
-						disabled={readonly}
-					/>
+						disabled={readonly} />
 					<Input
 						id="chk_sr"
 						type="checkbox"
 						class="ms-3"
 						label={$_('prop.action.p10t.sr')}
 						bind:checked={nodeInfo.nodeProps.ACTION.sr}
-						disabled={readonly}
-					/>
+						disabled={readonly} />
 				</InputGroup>
 			</Col>
 			<Col>
@@ -257,32 +250,28 @@
 						type="checkbox"
 						label={$_('prop.action.p10t.withsb')}
 						bind:checked={nodeInfo.nodeProps.ACTION.withsb}
-						disabled={readonly}
-					/>
+						disabled={readonly} />
 					<Input
 						class="ms-1"
 						id="chk_revoke"
 						type="checkbox"
 						label={$_('prop.action.p10t.withrvk')}
 						bind:checked={nodeInfo.nodeProps.ACTION.withrvk}
-						disabled={readonly}
-					/>
+						disabled={readonly} />
 					<Input
 						class="ms-1"
 						id="chk_revoke"
 						type="checkbox"
 						label={$_('prop.action.p10t.withadhoc')}
 						bind:checked={nodeInfo.nodeProps.ACTION.withadhoc}
-						disabled={readonly}
-					/>
+						disabled={readonly} />
 					<Input
 						class="ms-1"
 						id="chk_revoke"
 						type="checkbox"
 						label={$_('prop.action.p10t.withcmt')}
 						bind:checked={nodeInfo.nodeProps.ACTION.withcmt}
-						disabled={readonly}
-					/>
+						disabled={readonly} />
 				</InputGroup>
 			</Col>
 			{#if nodeInfo.nodeProps.ACTION.withcsv === false}
@@ -291,8 +280,7 @@
 						<RolePicker
 							bind:role={nodeInfo.nodeProps.ACTION.role}
 							bind:existingRoles={roleOptions}
-							{readonly}
-						/>
+							{readonly} />
 					</div>
 				</Col>
 				{#if nodeInfo.nodeProps.ACTION.doer}
@@ -313,15 +301,13 @@
 					style="height: 20em;"
 					placeholder={$_('prop.action.placeholder.instruct')}
 					bind:value={nodeInfo.nodeProps.ACTION.instruct}
-					disabled={readonly}
-				/>
+					disabled={readonly} />
 			</InputGroup>
 			<Button
 				color="primary"
 				on:click={(e) => {
 					previewInstruct = !previewInstruct;
-				}}
-			>
+				}}>
 				{#if previewInstruct}
 					Close Preview
 				{:else}
@@ -349,11 +335,10 @@
 								value: '',
 								breakrow: false,
 								placeholder: '',
-								required: true
+								required: true,
 							});
 							kvarsArr = kvarsArr;
-						}}
-					>
+						}}>
 						{$_('prop.action.button.addnewvar')}
 					</Button>
 					<Input
@@ -362,8 +347,7 @@
 						type="checkbox"
 						label={$_('prop.action.p10t.allowpbo')}
 						bind:checked={nodeInfo.nodeProps.ACTION.allowpbo}
-						disabled={readonly}
-					/>
+						disabled={readonly} />
 				</InputGroup>
 			{:else}
 				<InputGroup size="sm">
@@ -373,8 +357,7 @@
 						type="checkbox"
 						label={$_('prop.action.p10t.allowpbo')}
 						bind:checked={nodeInfo.nodeProps.ACTION.allowpbo}
-						disabled={readonly}
-					/>
+						disabled={readonly} />
 				</InputGroup>
 			{/if}
 			{#each kvarsArr as kvar, index}
@@ -389,8 +372,7 @@
 								disabled={readonly}
 								on:blur={(e) => {
 									kvar.name = Parser.toValidVarName(kvar.name);
-								}}
-							/>
+								}} />
 							<InputGroupText>
 								{$_('prop.action.kvar.label')}
 							</InputGroupText>
@@ -411,8 +393,7 @@
 									disabled={readonly}
 									placeholder={kvar.name.startsWith('ou_')
 										? $_('prop.action.kvar.ou_placeholder')
-										: $_('prop.action.kvar.sel_placeholder')}
-								/>
+										: $_('prop.action.kvar.sel_placeholder')} />
 							</InputGroup>
 						{:else if kvar.name.startsWith('tbl_')}
 							<InputGroup size="sm">
@@ -425,8 +406,7 @@
 										kvar.coldef = qtb(kvar.coldef);
 									}}
 									disabled={readonly}
-									placeholder={$_('prop.action.kvar.tbl_placeholder')}
-								/>
+									placeholder={$_('prop.action.kvar.tbl_placeholder')} />
 							</InputGroup>
 							{#if !readonly}
 								<TableDesigner bind:tableDefString={kvar.coldef} />
@@ -481,11 +461,11 @@
 															e.preventDefault();
 															kvarsArr.splice(index, 1);
 															kvarsArr = kvarsArr;
-														}}
-													>
+														}}>
 														<Icon name="dash" />
 													</Button>
-												</td><td>
+												</td>
+												<td>
 													<Button
 														class="m-0 p-0"
 														on:click={(e) => {
@@ -496,11 +476,10 @@
 																value: '',
 																breakrow: false,
 																placeholder: '',
-																required: true
+																required: true,
 															});
 															kvarsArr = kvarsArr;
-														}}
-													>
+														}}>
 														<Icon name="plus" />
 													</Button>
 												</td>
@@ -515,11 +494,11 @@
 																kvarsArr.splice(index - 1, 0, kvarsArr.splice(index, 1)[0]);
 																kvarsArr = kvarsArr;
 															}
-														}}
-													>
+														}}>
 														<Icon name="chevron-up" />
 													</Button>
-												</td><td>
+												</td>
+												<td>
 													<Button
 														class="m-0 p-0"
 														on:click={(e) => {
@@ -528,8 +507,7 @@
 																kvarsArr.splice(0, 0, kvarsArr.splice(index, 1)[0]);
 																kvarsArr = kvarsArr;
 															}
-														}}
-													>
+														}}>
 														<Icon name="chevron-double-up" />
 													</Button>
 												</td>
@@ -544,8 +522,7 @@
 																kvarsArr.splice(index + 1, 0, kvarsArr.splice(index, 1)[0]);
 																kvarsArr = kvarsArr;
 															}
-														}}
-													>
+														}}>
 														<Icon name="chevron-down" />
 													</Button>
 												</td>
@@ -558,8 +535,7 @@
 																kvarsArr.push(kvarsArr.splice(index, 1)[0]);
 																kvarsArr = kvarsArr;
 															}
-														}}
-													>
+														}}>
 														<Icon name="chevron-double-down" />
 													</Button>
 												</td>
@@ -572,6 +548,16 @@
 					{/if}
 				</div>
 			{/each}
+		</TabPane>
+		<TabPane tabId="code" tab={$_('prop.action.tab.code')} active={isActive('code')}>
+			<InputGroup size="sm">
+				<Input
+					type="textarea"
+					style="height: 20em;"
+					placeholder={$_('prop.action.placeholder.code')}
+					bind:value={nodeInfo.nodeProps.ACTION.code}
+					disabled={readonly} />
+			</InputGroup>
 		</TabPane>
 		{#if scenario === 'workflow' && workid}
 			<TabPane tabId="tasks" tab="Tasks" active={isActive('tasks')}>
@@ -586,12 +572,11 @@
 										'work/reset',
 										{
 											wfid: workflow.wfid,
-											workid: workid
+											workid: workid,
 										},
-										user.sessionToken
+										user.sessionToken,
 									);
-								}}
-							>
+								}}>
 								Reset <br />
 								(Lab Function, may cause problems)
 							</Button>
@@ -601,7 +586,8 @@
 				{#each todos as todo, index}
 					<Row>
 						{#if user.group === 'ADMIN' && todo.status === 'ST_RUN'}
-							workid: {workid} / todoid: {todo.todoid}<br />
+							workid: {workid} / todoid: {todo.todoid}
+							<br />
 							status: {todo.status}
 						{/if}
 						{#if todo.status === 'ST_DONE'}
@@ -609,9 +595,9 @@
 							<a
 								href={`/work/${todo.todoid}`}
 								target="_worktab"
-								class="btn btn-sm clickable text-primary"
-							>
-								<i class="bi bi-emoji-sunglasses" />{todo.cn}
+								class="btn btn-sm clickable text-primary">
+								<i class="bi bi-emoji-sunglasses" />
+								{todo.cn}
 								<sup>{TimeTool.format(todo.doneat, 'LLL')}</sup>
 							</a>
 						{:else}
@@ -619,8 +605,7 @@
 							<a
 								href={`/work/${todo.todoid}`}
 								target="_worktab"
-								class="btn btn-sm clickable text-primary"
-							>
+								class="btn btn-sm clickable text-primary">
 								<i class="bi bi-emoji-expressionless" />
 								{todo.cn}
 							</a>
@@ -638,9 +623,9 @@
 													todoid: todo.todoid,
 													forall: false,
 													doer: todo.doer,
-													newdoer: todo.newdoer
+													newdoer: todo.newdoer,
 												},
-												$session.user.sessionToken
+												$session.user.sessionToken,
 											);
 											if (ret && ret.error) {
 												console.error(ret.message);
@@ -648,8 +633,7 @@
 												todo.doer = ret.newdoer;
 												todo.cn = ret.newcn;
 											}
-										}}
-									>
+										}}>
 										For this
 									</Button>
 									<Button
@@ -661,9 +645,9 @@
 													todoid: todo.todoid,
 													forall: true,
 													doer: todo.doer,
-													newdoer: todo.newdoer
+													newdoer: todo.newdoer,
 												},
-												$session.user.sessionToken
+												$session.user.sessionToken,
 											);
 											if (ret && ret.error) {
 												console.error(ret.message);
@@ -671,8 +655,7 @@
 												todo.doer = ret.newdoer;
 												todo.cn = ret.newcn;
 											}
-										}}
-									>
+										}}>
 										For all
 									</Button>
 								</InputGroup>
@@ -692,8 +675,7 @@
 					helpShowing ? showHelp() : showHelp('ACTION');
 					helpShowing = !helpShowing;
 				}}
-				class="ms-auto p-0 m-0"
-			>
+				class="ms-auto p-0 m-0">
 				{#if helpShowing}
 					<Icon name="chevron-left" />
 					<Icon name="question-circle" />

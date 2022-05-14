@@ -8,8 +8,8 @@
 			props: {
 				teams: await res.json(),
 				user: session.user,
-				config: session.config
-			}
+				config: session.config,
+			},
 		};
 	}
 </script>
@@ -44,7 +44,7 @@
 	let urls = {
 		import: `${API_SERVER}/team/import`,
 		create: `${API_SERVER}/team/create`,
-		search: `${API_SERVER}/team/search`
+		search: `${API_SERVER}/team/search`,
 	};
 	function hide_all_form() {
 		Object.keys(form_status).forEach((key) => {
@@ -88,9 +88,9 @@
 		const upload = fetch(urls.import, {
 			method: 'POST',
 			headers: {
-				Authorization: user.sessionToken
+				Authorization: user.sessionToken,
 			},
-			body: formData
+			body: formData,
 		})
 			.then((response) => response.json())
 			.then((result) => {
@@ -125,13 +125,13 @@
 	<Row class="mt-3">
 		<nav aria-label="breadcrumb">
 			<ol class="breadcrumb">
-				<li class="breadcrumb-item">
+				<li class="breadcrumb-item kfk-tag">
 					<a
+						class="kfk-link"
 						href={'#'}
 						on:click={() => {
 							goto('/settings');
-						}}
-					>
+						}}>
 						{$_('navmenu.settings')}
 					</a>
 				</li>
@@ -153,8 +153,7 @@
 		class="kfk-tab-menu"
 		on:tab={(e) => {
 			showTab(e.detail);
-		}}
-	>
+		}}>
 		<TabPane tabId="search" active={!whichTab || whichTab['team'] === 'search'}>
 			<span slot="tab">
 				<Icon name="code-square" />
@@ -191,9 +190,8 @@
 						}
 						form.reset();
 						//form_status['create'] = false;
-					}
-				}}
-			>
+					},
+				}}>
 				<Container>
 					<Row>
 						<Col>
@@ -201,8 +199,7 @@
 								name="teamid"
 								aria-label="Create team"
 								placeholder="New team name"
-								class="kfk-input-team-name"
-							/>
+								class="kfk-input-team-name" />
 						</Col>
 						<Col>
 							<Button size="sm" type="submit" color="primary">Create</Button>
@@ -225,8 +222,7 @@
 								name="teamid"
 								placeholder="New team name"
 								class="kfk-input-team-name"
-								bind:value={teamidImport}
-							/>
+								bind:value={teamidImport} />
 						</Col>
 						<Col>
 							<input name="file" type="file" class="kfk_input_team_name" bind:files />

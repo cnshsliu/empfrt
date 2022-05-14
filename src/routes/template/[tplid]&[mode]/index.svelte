@@ -12,8 +12,8 @@
 					template: resJson,
 					tplid: tplid,
 					tpl_mode,
-					user: session.user
-				}
+					user: session.user,
+				},
 			};
 		} catch (err) {
 			console.error(err);
@@ -22,8 +22,8 @@
 					template: { tplid: 'Not Found' },
 					tplid: tplid,
 					tpl_mode,
-					user: session.user
-				}
+					user: session.user,
+				},
 			};
 		}
 	}
@@ -91,7 +91,7 @@
 	let urls = {
 		create: `${API_SERVER}/template/create`,
 		rename: `${API_SERVER}/template/rename`,
-		copyto: `${API_SERVER}/template/copyto`
+		copyto: `${API_SERVER}/template/copyto`,
 	};
 
 	export let form_status = {
@@ -102,7 +102,7 @@
 		rename: false,
 		copyto: false,
 		delete: false,
-		start: false
+		start: false,
 	};
 	export let form_name = '';
 	export let export_to_filename = template.tplid;
@@ -128,7 +128,7 @@
 		goto(`/template/${template.tplid}&${tpl_mode}`, {
 			replaceState: true,
 			noscroll: true,
-			keepfocus: true
+			keepfocus: true,
 		});
 		await theDesigner.changeViewMode(tpl_mode);
 	}
@@ -136,7 +136,7 @@
 		goto(`/template/${template.tplid}&${tpl_mode}`, {
 			replaceState: true,
 			noscroll: true,
-			keepfocus: true
+			keepfocus: true,
 		});
 		await theDesigner.changeViewMode(tpl_mode);
 	}
@@ -150,7 +150,7 @@
 			let ret = await api.post(
 				'template/delete/byname',
 				{ tplid: template.tplid },
-				user.sessionToken
+				user.sessionToken,
 			);
 			goto('/template', { replaceState: false });
 		}, 1);
@@ -193,7 +193,7 @@
 		let ret = await api.post(
 			'template/rename',
 			{ fromid: oldTplId, tplid: newTplId },
-			user.sessionToken
+			user.sessionToken,
 		);
 		if (ret.error) {
 			if (ret.error === 'ALREADY_EXIST') {
@@ -208,7 +208,7 @@
 			goto(`/template/${ret.tplid}&${tpl_mode}`, {
 				replaceState: true,
 				keepfocus: true,
-				noscroll: true
+				noscroll: true,
 			});
 			await theDesigner.loadTemplate(ret, tpl_mode);
 		}
@@ -218,7 +218,7 @@
 		let ret = await api.post(
 			'template/copyto',
 			{ fromid: oldTplId, tplid: newTplId },
-			user.sessionToken
+			user.sessionToken,
 		);
 		if (ret.error) {
 			if (ret.error === 'ALREADY_EXIST') {
@@ -233,7 +233,7 @@
 			goto(`/template/${template.tplid}&${tpl_mode}`, {
 				replaceState: true,
 				noscroll: true,
-				keepfocus: true
+				keepfocus: true,
 			});
 			//await theDesigner.loadTemplate(template.tplid, tpl_mode);
 		}
@@ -257,8 +257,7 @@
 			btnTitle="View Instance Template Instead"
 			callback={() => {
 				viewInstanceTemplate($session.wfid);
-			}}
-		/>
+			}} />
 	{:else}
 		<ErrorNotify
 			title="Error Found"
@@ -267,8 +266,7 @@
 			btnTitle="Back"
 			callback={() => {
 				goto('/template');
-			}}
-		/>
+			}} />
 	{/if}
 {:else}
 	<div id="designer-topMenu" class={topmenu_class}>
@@ -279,8 +277,7 @@
 						class="kfk-link"
 						on:click={() => {
 							theDesigner.showTplProp();
-						}}
-					>
+						}}>
 						<AniIcon icon="app" ani="aniShake" />
 						{$_('tpl.prop')}
 					</NavLink>
@@ -289,8 +286,7 @@
 							class="kfk-link"
 							on:click={() => {
 								show_form('create');
-							}}
-						>
+							}}>
 							<AniIcon icon="plus-circle" ani="aniShake" />
 							{$_('tpl.new')}
 						</NavLink>
@@ -304,8 +300,7 @@
 						class="kfk-link"
 						on:click={() => {
 							show_form('export');
-						}}
-					>
+						}}>
 						<AniIcon icon="cloud-download" ani="aniShake" />
 						{$_('tpl.export')}
 					</NavLink>
@@ -316,8 +311,7 @@
 								oldTplId = template.tplid;
 								newTplId = template.tplid;
 								show_form('copyto');
-							}}
-						>
+							}}>
 							<AniIcon icon="files" ani="aniShake" />
 							{$_('tpl.copyto')}
 						</NavLink>
@@ -335,8 +329,7 @@
 									oldTplId = template.tplid;
 									newTplId = template.tplid;
 									show_form('rename');
-								}}
-							>
+								}}>
 								<AniIcon icon="input-cursor-text" ani="aniShake" />
 								{$_('tpl.rename')}
 							</NavLink>
@@ -374,8 +367,7 @@
 									} else {
 										await change_mode('read');
 									}
-								}}
-							>
+								}}>
 								<AniIcon icon={readonly ? 'pen' : 'eye'} ani="aniShake" />
 								{readonly ? $_('tpl.editit') : $_('tpl.viewit')}
 							</NavLink>
@@ -390,8 +382,7 @@
 								class="kfk-link"
 								on:click={() => {
 									show_form('start');
-								}}
-							>
+								}}>
 								<AniIcon icon="hypnotize" ani="aniSpin" />
 								{$_('tpl.startit')}
 							</NavLink>
@@ -410,8 +401,7 @@
 						bind:checked={showNodeId}
 						on:change={async () => {
 							await theDesigner.showNodeIdDIV(showNodeId);
-						}}
-					/>
+						}} />
 					{$_('designer.showid')}
 					<input
 						type="checkbox"
@@ -419,8 +409,7 @@
 						bind:checked={$filterStorage.curve}
 						on:change={async () => {
 							await theDesigner.setLineCurve($filterStorage.curve);
-						}}
-					/>
+						}} />
 					{$_('designer.curve')}
 				</div>
 			</Col>
@@ -446,16 +435,15 @@
 									template = created;
 									goto(`/template/${template.tplid}&${tpl_mode}`, {
 										replaceState: false,
-										keepfocus: true
+										keepfocus: true,
 									});
 									await theDesigner.loadTemplate(template, tpl_mode);
 									form_status['create'] = false;
 									form.reset();
 								}
 								hide_all_form();
-							}
-						}}
-					>
+							},
+						}}>
 						<table class="form-table">
 							<tr>
 								<td>
@@ -467,8 +455,7 @@
 										aria-label="Create template"
 										placeholder="New template name"
 										class="kfk_input_template_name"
-										autocomplete="off"
-									/>
+										autocomplete="off" />
 								</td>
 								<td>
 									<Button type="submit" color="primary">
@@ -481,8 +468,7 @@
 											e.preventDefault();
 											hide_all_form();
 										}}
-										color="secondary"
-									>
+										color="secondary">
 										{$_('button.cancel')}
 									</Button>
 								</td>
@@ -502,8 +488,7 @@
 										placeholder="Export to file"
 										class="kfk_input_template_name"
 										bind:value={export_to_filename}
-										autocomplete="off"
-									/>
+										autocomplete="off" />
 								</td>
 								<td>
 									<Button
@@ -511,8 +496,7 @@
 											e.preventDefault();
 											export_template();
 										}}
-										color="primary"
-									>
+										color="primary">
 										{$_('button.export')}
 									</Button>
 								</td>
@@ -522,8 +506,7 @@
 											e.preventDefault();
 											hide_all_form();
 										}}
-										color="secondary"
-									>
+										color="secondary">
 										{$_('button.cancel')}
 									</Button>
 								</td>
@@ -543,8 +526,7 @@
 										placeholder="Rename: new template name"
 										class="kfk_input_template_name"
 										bind:value={newTplId}
-										autocomplete="off"
-									/>
+										autocomplete="off" />
 								</td>
 								<td>
 									<Button type="submit" color="primary" on:click={renameTemplate}>
@@ -557,8 +539,7 @@
 											e.preventDefault();
 											hide_all_form();
 										}}
-										color="secondary"
-									>
+										color="secondary">
 										{$_('button.cancel')}
 									</Button>
 								</td>
@@ -578,8 +559,7 @@
 										placeholder="New template name"
 										class="kfk_input_template_name"
 										bind:value={newTplId}
-										autocomplete="off"
-									/>
+										autocomplete="off" />
 								</td>
 								<td>
 									<Button type="submit" color="primary" on:click={copyTemplate}>
@@ -592,8 +572,7 @@
 											e.preventDefault();
 											hide_all_form();
 										}}
-										color="secondary"
-									>
+										color="secondary">
 										{$_('button.cancel')}
 									</Button>
 								</td>
@@ -617,8 +596,7 @@
 										e.preventDefault();
 										hide_all_form();
 									}}
-									color="secondary"
-								>
+									color="secondary">
 									{$_('button.cancel')}
 								</Button>
 							</td>
@@ -635,8 +613,7 @@
 									on:click={() => {
 										goto(`/template/start?tplid=${template.tplid}`, { replaceState: false });
 									}}
-									color="primary"
-								>
+									color="primary">
 									{$_('button.startnow')}
 								</Button>
 							</td>
@@ -646,8 +623,7 @@
 										e.preventDefault();
 										hide_all_form();
 									}}
-									color="secondary"
-								>
+									color="secondary">
 									{$_('button.cancel')}
 								</Button>
 							</td>
@@ -662,17 +638,12 @@
 		bind:this={theDesigner}
 		{template}
 		{tpl_mode}
-		on:readInProp={(e) => {
-			change_mode('read');
-			console.log(e.detail);
-			//theDesigner.reloadNodeProp(e.detail);
+		on:readInProp={async (e) => {
+			await change_mode('read');
 		}}
-		on:editInProp={(e) => {
-			change_mode('edit');
-			console.log(e.detail);
-			//theDesigner.reloadNodeProp(e.detail);
-		}}
-	/>
+		on:editInProp={async (e) => {
+			await change_mode('edit');
+		}} />
 {/if}
 
 <style>
