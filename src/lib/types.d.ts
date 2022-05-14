@@ -96,6 +96,7 @@ export interface Workflow {
 export interface Work {
 	_id: string;
 	tenant: string;
+	doer?: string;
 	doerCN?: string;
 	doer_string?: string;
 	role?: string;

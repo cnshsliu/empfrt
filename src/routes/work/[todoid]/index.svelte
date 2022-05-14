@@ -72,6 +72,7 @@
 	import { goto } from '$app/navigation';
 	import { session } from '$app/stores';
 	import Confirm from '$lib/confirm.svelte';
+	import Avatar from '$lib/display/Avatar.svelte';
 	import type { User, Work } from '$lib/types';
 	import { title } from '$lib/title';
 	import { onMount, onDestroy } from 'svelte';
@@ -232,10 +233,16 @@
 				<div class={'fw-light ' + StatusClass(work.status)}>{StatusLabel(work.status)}</div>
 			</Col>
 			<Col>
-				<span class="fw-bold fs-5">
-					{$_('todo.owner')}
-				</span>
-				<div class="fw-light">{work.doerCN}</div>
+				<Row>
+					<Col class="col-auto">
+						<span class="fw-bold fs-5">
+							{$_('todo.owner')}
+						</span>
+						<div class="fw-light">{work.doerCN}</div>
+					</Col><Col>
+						<Avatar email={work.doer} uname={work.doerCN} style={'avatar50-round25'} />
+					</Col>
+				</Row>
 			</Col>
 			<Col>
 				{#if work.doneat}
@@ -248,11 +255,19 @@
 			</Col>
 			<Col>
 				{#if work.wf && work.wf.kvars && work.wf.kvars.starterCN}
-					<span class="fw-bold fs-5">
-						{$_('todo.StarterCN')}
-					</span>
-
-					<div class="fw-light">{work.wf.kvars.starterCN.value}</div>
+					<Row>
+						<Col class="col-auto">
+							<span class="fw-bold fs-5">
+								{$_('todo.StarterCN')}
+							</span>
+							<div class="fw-light">{work.wf.kvars.starterCN.value}</div>
+						</Col><Col>
+							<Avatar
+								email={work.wf.starter}
+								uname={work.wf.kvars.starterCN.value}
+								style={'avatar50-round25'} />
+						</Col>
+					</Row>
 				{/if}
 			</Col>
 		</Row>
