@@ -4,8 +4,8 @@
 		const { user } = session;
 		return {
 			props: {
-				user
-			}
+				user,
+			},
 		};
 	}
 </script>
@@ -30,7 +30,7 @@
 		DropdownToggle,
 		DropdownMenu,
 		DropdownItem,
-		Container
+		Container,
 	} from 'sveltestrap';
 	import { goto } from '$app/navigation';
 	import { post } from '$lib/utils';
@@ -111,86 +111,88 @@
 {/if}
 <div class={navmenu_class}>
 	<Navbar id="myNavBar" class="flex-fill" expand="sm">
-		<div class="d-flex">
-			<div class="d-inline-block col-6 p-0 ml-3">
+		<Row>
+			<Col>
 				<div
 					class="kfk-org-logo org-logo"
 					on:click={() => {
 						goto('/');
-					}}
-				>
+					}}>
 					&nbsp;
 				</div>
-			</div>
-			<div
-				class="d-inline-block col-6 ms-3 align-self-center kfk-header-username tnt-header-username"
-			>
-				{$session.user ? $session.user.username : 'Metatocome'}
-			</div>
-		</div>
-		{#if $session.user}
-			<Dropdown class="navbar-expand-sm">
-				<DropdownToggle nav>
-					<Avatar
-						email={$session.user.email}
-						uname={$session.user.username}
-						style={'avatar40'}
-						bind:this={theAvatar}
-					/>
-				</DropdownToggle>
-				<DropdownMenu dark>
-					<Container style="width:300px; text-align:center;">
-						<Row cols="1">
-							<Col style="text-align:center;">
-								{#if $session.user}
+			</Col>
+			<Col>
+				<Row>
+					{#if $session.user}
+						<Col class="d-flex justify-content-center">
+							<Dropdown class="navbar-expand-sm">
+								<DropdownToggle nav>
 									<Avatar
 										email={$session.user.email}
 										uname={$session.user.username}
-										style={'avatar80-round10'}
-										bind:this={theAvatar2}
-									/>
-								{:else}
-									<div class="w-100 d-flex justify-content-center">
-										<div class="kfk-avatar-letter-middle img-thumbnail">ME</div>
-									</div>
-								{/if}
-							</Col>
-							<Col class="fw-bold mt-2">{$session.user ? $session.user.username : ''}</Col>
-							<Col>{$session.user && $session.user.tenant ? $session.user.tenant.name : ''}</Col>
-							<Col>{DEPLOY_MODE}</Col>
-						</Row>
-						<InputGroup>
-							<InputGroupText>
-								<i class="bi-translate" />
-							</InputGroupText>
-							<LocaleSwitcher />
-						</InputGroup>
-					</Container>
-					<DropdownItem divider />
-					<DropdownItem
-						class="text-center"
-						on:click={(e) => {
-							goto('/settings');
-						}}
-					>
-						{$_('navmenu.settings')}
-					</DropdownItem>
-					<DropdownItem
-						class="text-center"
-						on:click={(e) => {
-							goto('/docs');
-						}}
-					>
-						{$_('navmenu.doc')}
-					</DropdownItem>
-					<DropdownItem divider />
-					<DropdownItem class="text-center" on:click={logout}>
-						<Icon name="door-open" />
-						{$_('account.signout')}
-					</DropdownItem>
-				</DropdownMenu>
-			</Dropdown>
-		{/if}
+										style={'avatar40'}
+										bind:this={theAvatar} />
+								</DropdownToggle>
+								<DropdownMenu dark>
+									<Container style="width:300px; text-align:center;">
+										<Row cols="1">
+											<Col style="text-align:center;">
+												{#if $session.user}
+													<Avatar
+														email={$session.user.email}
+														uname={$session.user.username}
+														style={'avatar80-round10'}
+														bind:this={theAvatar2} />
+												{:else}
+													<div class="w-100 d-flex justify-content-center">
+														<div class="kfk-avatar-letter-middle img-thumbnail">ME</div>
+													</div>
+												{/if}
+											</Col>
+											<Col class="fw-bold mt-2">{$session.user ? $session.user.username : ''}</Col>
+											<Col>
+												{$session.user && $session.user.tenant ? $session.user.tenant.name : ''}
+											</Col>
+											<Col>{DEPLOY_MODE}</Col>
+										</Row>
+										<InputGroup>
+											<InputGroupText>
+												<i class="bi-translate" />
+											</InputGroupText>
+											<LocaleSwitcher />
+										</InputGroup>
+									</Container>
+									<DropdownItem divider />
+									<DropdownItem
+										class="text-center"
+										on:click={(e) => {
+											goto('/settings');
+										}}>
+										{$_('navmenu.settings')}
+									</DropdownItem>
+									<DropdownItem
+										class="text-center"
+										on:click={(e) => {
+											goto('/docs');
+										}}>
+										{$_('navmenu.doc')}
+									</DropdownItem>
+									<DropdownItem divider />
+									<DropdownItem class="text-center" on:click={logout}>
+										<Icon name="door-open" />
+										{$_('account.signout')}
+									</DropdownItem>
+								</DropdownMenu>
+							</Dropdown>
+						</Col>
+					{/if}
+				</Row><Row>
+					<Col class="kfk-header-username tnt-header-username">
+						{$session.user ? $session.user.username : 'Metatocome'}
+					</Col>
+				</Row>
+			</Col>
+		</Row>
 		<button
 			class="navbar-toggler bg-light border border-primary"
 			type="button"
@@ -198,8 +200,7 @@
 			data-bs-target="#navbarSupportedContent"
 			aria-controls="navbarSupportedContent"
 			aria-expanded="true"
-			aria-label="Toggle navigation"
-		>
+			aria-label="Toggle navigation">
 			<span class="navbar-toggler-icon" />
 		</button>
 		<div class="collapse navbar-collapse show" id="navbarSupportedContent">
@@ -214,8 +215,7 @@
 						<NavLink
 							href="/discuss"
 							class="py-2 ps-0 pe-3"
-							active={$page.url.pathname === '/discuss'}
-						>
+							active={$page.url.pathname === '/discuss'}>
 							{$_('navmenu.discuss')}
 						</NavLink>
 					</NavItem>
@@ -223,8 +223,7 @@
 						<NavLink
 							class="py-2 ps-0 pe-3"
 							href="/template"
-							active={$page.url.pathname === '/template'}
-						>
+							active={$page.url.pathname === '/template'}>
 							{$_('navmenu.planning')}
 						</NavLink>
 					</NavItem>
@@ -232,8 +231,7 @@
 						<NavLink
 							class="py-2 ps-0 pe-3"
 							href="/workflow"
-							active={$page.url.pathname === '/workflow'}
-						>
+							active={$page.url.pathname === '/workflow'}>
 							{$_('navmenu.workflow')}
 						</NavLink>
 					</NavItem>

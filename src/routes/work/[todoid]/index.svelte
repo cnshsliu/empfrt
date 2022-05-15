@@ -134,9 +134,9 @@
 					theConfirm.buttons = [$_('confirm.button.confirm')];
 					theConfirm.callbacks = [
 						async (e) => {
+							e.preventDefault();
 							$version = work.version;
 							window.location.reload();
-							e.preventDefault();
 						},
 					];
 					theConfirm.toggle();

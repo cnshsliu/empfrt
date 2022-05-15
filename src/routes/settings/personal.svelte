@@ -27,15 +27,16 @@
 	if (typeof user.ew === 'boolean') {
 		user.ew = { email: user.ew, wecom: false };
 	}
+
 	let enableChangePasswordButton = false;
 
 	const setPersonal = async function (value) {
 		in_progress = true;
 		let payload = {
 			value: value,
-			old_password: my_old_password,
 		};
-		const response = await api.post('account/profile/update', payload, user.sessionToken);
+		const response = (await post(`/auth/update`, payload)) as unknown as EmpResponse;
+
 		if (response.error) {
 			if (
 				response.error === 'Bad Request' &&
@@ -61,9 +62,11 @@
 
 		in_progress = false;
 	};
+
 	const removeSignature = async function (serverId) {
 		let ret = await api.post('account/remove/signature', {}, $session.user.sessionToken);
 	};
+
 	async function setUserSignature() {
 		let ret = await api.post(
 			'account/set/signature',
@@ -71,6 +74,7 @@
 			$session.user.sessionToken,
 		);
 	}
+
 	let webhook_setting = {
 		wecombot_key: '',
 	};
@@ -205,7 +209,7 @@
 			<Col>
 				<InputGroup class="mb-1">
 					<InputGroupText>{$_('setting.personal.signature')}</InputGroupText>
-					{#if user.signature.startsWith('http')}
+					{#if user.signature && user.signature.startsWith('http')}
 						<img alt="signature" src={`${user.signature}`} class="kfk-signature" />
 					{:else}
 						<div class="kfk-textsignature">
@@ -267,7 +271,7 @@
 						disabled={enableChangePasswordButton === false}
 						on:click={async (e) => {
 							e.preventDefault();
-							await setPersonal({ password: user.password });
+							await setPersonal({ old_password: my_old_password, password: user.password });
 						}}>
 						{$_('setting.set')}
 					</Button>

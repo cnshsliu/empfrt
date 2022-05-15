@@ -18,8 +18,8 @@
 			props: {
 				user: session.user,
 				iframeMode: iframeMode,
-				delegators: delegators
-			}
+				delegators: delegators,
+			},
 		};
 	}
 </script>
@@ -35,6 +35,7 @@
 	import Parser from '$lib/parser';
 	import type { User, Work } from '$lib/types';
 	import { session } from '$app/stores';
+	import { mtcConfirm, mtcConfirmReset } from '$lib/Stores';
 	import { Container, Row, Col, Button, FormGroup, Input } from 'sveltestrap';
 	import { onMount, onDestroy } from 'svelte';
 	import { title } from '$lib/title';
@@ -63,7 +64,7 @@
 		let tmp = await api.post(
 			'template/tplid/list',
 			{ tagsForFilter: currentTags },
-			user.sessionToken
+			user.sessionToken,
 		);
 		templates = tmp.map((x) => x.tplid);
 	};
@@ -98,7 +99,7 @@
 		let tmp = await api.post(
 			'template/tplid/list',
 			{ tagsForFilter: currentTags },
-			user.sessionToken
+			user.sessionToken,
 		);
 		templates = tmp.map((x) => x.tplid);
 		theRemoteTable.refresh();
@@ -173,6 +174,21 @@
 		} catch (e) {}
 		goto('/work');
 	}
+	if ($session.user.tenant._id === undefined) {
+		setTimeout(async () => {
+			$mtcConfirm = {
+				title: $_('setting.resign.confirm.title'),
+				body: $_('setting.resign.confirm.body'),
+				buttons: [$_('setting.resign.confirm.doit')],
+				callbacks: [
+					async () => {
+						window.location.reload();
+						mtcConfirmReset();
+					},
+				],
+			};
+		}, 5000);
+	}
 </script>
 
 <Container class="p-2">
@@ -194,22 +210,13 @@
 					theExtraFilter.reset();
 					theRemoteTable.reset();
 				}}
-				class="m-0 p-1"
-			>
+				class="m-0 p-1">
 				{$_('button.resetQuery')}
 			</Button>
 		</div>
 	</div>
 	<TagPicker {currentTags} {useThisTag} {clearTag} />
 </Container>
-{#if $session.user.tenant._id === undefined}
-	<Container class="text-center bg-warning fs-3 fw-bolder">
-		An recent update require users to <a href={'#'} on:click={logout}>logout and login again</a> to
-		enable a new breaking feature, please <a href={'#'} on:click={logout}>do it now</a>.<br />
-		最近的一个更新需要部分已登陆用户 <a href={'#'} on:click={logout}>重新登录，请现在就做 </a>.
-		<br />重新登录只需做一次，即可符合新功能需求
-	</Container>
-{/if}
 <Container>
 	<svelte:component
 		this={ExtraFilter}
@@ -227,9 +234,8 @@
 			{ value: 'All', label: $_('status.All') },
 			{ value: 'ST_RUN', label: $_('status.ST_RUN') },
 			{ value: 'ST_PAUSE', label: $_('status.ST_PAUSE') },
-			{ value: 'ST_DONE', label: $_('status.ST_DONE') }
+			{ value: 'ST_DONE', label: $_('status.ST_DONE') },
 		]}
-		{templates}
-	/>
+		{templates} />
 	<RemoteTable endpoint="work/list" {token} {iframeMode} bind:this={theRemoteTable} />
 </Container>
