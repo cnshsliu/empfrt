@@ -2571,5 +2571,7 @@ div#todo_comments img {
 	border: 1px solid #0000004c;
 	font-weight: 'bolder';
 	font-size: 18px;
-	padding: 1px;
+	padding: 0px 2px 0px 2px;
+	margin: 2px;
+	overflow-x: auto;
 }
