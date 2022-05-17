@@ -5,11 +5,10 @@
 		TimeTool = (await import('$lib/TimeTool')).default;
 		const tplid = url.searchParams.get('tplid');
 		const tpl_mode = 'read';
-		console.log('HHHHHHHAAAA');
 		const res_team: SearchResult = (await api.post(
 			'team/search',
 			{ limit: 1000 },
-			session.user.sessionToken
+			session.user.sessionToken,
 		)) as unknown as SearchResult;
 		const theTeams = res_team.objs;
 
@@ -17,8 +16,8 @@
 			props: {
 				tplid: tplid,
 				user: session.user,
-				teams: theTeams
-			}
+				teams: theTeams,
+			},
 		};
 	}
 </script>
@@ -48,7 +47,7 @@
 		Modal,
 		ModalFooter,
 		ModalHeader,
-		ModalBody
+		ModalBody,
 	} from 'sveltestrap';
 	import { Badge, DropdownItem, DropdownMenu, DropdownToggle, Dropdown } from 'sveltestrap';
 	//export let template;
@@ -114,7 +113,7 @@
 		const res = await api.post(
 			'workflow/start',
 			{ rehearsal, tplid, teamid, wftitle, textPbo, uploadedFiles },
-			user.sessionToken
+			user.sessionToken,
 		);
 		if (res.wfid) {
 			console.log(res);
@@ -220,8 +219,7 @@
 							name="textPbo"
 							id="input-textPbo"
 							class="form-control"
-							bind:value={textPbo}
-						/>
+							bind:value={textPbo} />
 						<Label for="input-textPbo">
 							{$_('start.pbo')}
 						</Label>
@@ -265,8 +263,7 @@
 							uploadingFile = false;
 							uploadedFiles = e.detail;
 							console.log(uploadedFiles);
-						}}
-					/>
+						}} />
 				</Col>
 				<Col>
 					<div class="form-floating">
@@ -275,8 +272,7 @@
 							name="wftitle"
 							id="input-wftitle"
 							class="form-control"
-							bind:value={wftitle}
-						/>
+							bind:value={wftitle} />
 						<Label for="input-wftitle">
 							{$_('start.title')}
 						</Label>
@@ -298,8 +294,7 @@
 							on:click={(e) => {
 								e.preventDefault();
 								_startWorkflow(true);
-							}}
-						>
+							}}>
 							{$_('start.rehearsal')}
 						</Button>
 					</Col>
@@ -322,8 +317,7 @@
 								} else {
 									_startWorkflow(false);
 								}
-							}}
-						>
+							}}>
 							{$_('start.startIt')}
 						</Button>
 					</Col>
@@ -343,12 +337,11 @@
 										on:keyup={searchTeam}
 										bind:value={team_id_for_search}
 										class="w-100 form-control"
-										id="input-team"
-									/>
+										id="input-team" />
 									<Label for="input-team">
 										{$_('start.teamid')}
-										{theTeam ? theTeam.teamid : ''}</Label
-									>
+										{theTeam ? theTeam.teamid : ''}
+									</Label>
 								</div>
 							</DropdownToggle>
 							<DropdownMenu>
@@ -357,8 +350,7 @@
 										on:click={(e) => {
 											e.preventDefault();
 											pickTeam(aTeam.teamid);
-										}}
-									>
+										}}>
 										{aTeam.teamid}
 									</DropdownItem>
 								{/each}
@@ -375,8 +367,7 @@
 										e.preventDefault();
 										team_id_for_search = ateam;
 										pickTeam(ateam);
-									}}
-								>
+									}}>
 									{ateam}
 								</Button>
 							{/each}
@@ -416,8 +407,7 @@
 					on:click={(e) => {
 						e.preventDefault();
 						goto(`/workflow/${startedWorkflow.wfid}`);
-					}}
-				>
+					}}>
 					{$_('start.checkitout')}
 				</Button>
 				<Button
@@ -426,8 +416,7 @@
 					on:click={(e) => {
 						e.preventDefault();
 						goto(`/workflow/${startedWorkflow.wfid}/monitor`);
-					}}
-				>
+					}}>
 					{$_('start.monitorit')}
 				</Button>
 				<Button
@@ -437,8 +426,7 @@
 						e.preventDefault();
 						starting = 0;
 						goto(`/workflow/${startedWorkflow.wfid}/gotofirststep`);
-					}}
-				>
+					}}>
 					{$_('start.firststep')}
 				</Button>
 				<Button
@@ -448,8 +436,7 @@
 						e.preventDefault();
 						starting = 0;
 						startedWorkflow = null;
-					}}
-				>
+					}}>
 					{$_('start.startanother')}
 				</Button>
 			{/if}
@@ -473,8 +460,7 @@
 			on:click={() => {
 				toggle();
 				_startWorkflow(false);
-			}}
-		>
+			}}>
 			{$_('start.startAnyway')}
 		</Button>
 		<Button color="secondary" on:click={toggle}>Cancel</Button>

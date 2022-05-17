@@ -19,30 +19,36 @@
 	export let pageSize;
 	export let serverSide = false;
 	export let isMobile = false;
+	let pageCount;
 
 	export let labels = {
-		first: 'First',
-		last: 'Last',
-		next: 'Next',
-		previous: 'Previous',
-		...globalLabels
+		first: $_('pagination.first'),
+		last: $_('pagination.last'),
+		next: $_('pagination.next'),
+		previous: $_('pagination.prev'),
+		...globalLabels,
 	};
 
-	$: pageCount = Math.ceil(count / pageSize);
+	$: count &&
+		(() => {
+			console.log('Recaculate  pageCount');
+			pageCount = Math.ceil(count / pageSize);
+			console.log('Got ', pageCount);
+		})();
+	pageCount = Math.ceil(count / pageSize);
 
 	function onChange(event, page) {
 		const state = stateContext.getState();
 		const detail = {
 			originalEvent: event,
 			page,
-			pageIndex: serverSide ? 0 : page * state.pageSize,
 			pageSize: state.pageSize,
-			preventDefault: event.preventDefault
+			preventDefault: event.preventDefault,
 		};
 		dispatch('pageChange', detail);
 
 		if (detail.preventDefault !== true) {
-			stateContext.setPage(detail.page, detail.pageIndex);
+			stateContext.setPage(detail.page);
 		}
 	}
 </script>
@@ -52,37 +58,41 @@
 	{$_('remotetable.pageSize')}: {pageSize}
 	{$_('remotetable.pageCount')}: {pageCount}
 {/if}
-<ul class="p-0">
-	<li>
-		<button disabled={page === 0} on:click={(e) => onChange(e, 0)}>
-			{labels.first}
-		</button>
-	</li>
-	<li>
-		<button disabled={page === 0} on:click={(e) => onChange(e, page - 1)}>
-			{labels.previous}
-		</button>
-	</li>
-	{#each buttons as button}
-		{#if page + button >= 0 && page + button + 1 <= pageCount}
-			<li>
-				<button class:active={page === page + button} on:click={(e) => onChange(e, page + button)}>
-					{page + button + 1}
-				</button>
-			</li>
-		{/if}
-	{/each}
-	<li>
-		<button disabled={page >= pageCount - 1} on:click={(e) => onChange(e, page + 1)}>
-			{labels.next}
-		</button>
-	</li>
-	<li>
-		<button disabled={page >= pageCount - 1} on:click={(e) => onChange(e, pageCount - 1)}>
-			{labels.last}
-		</button>
-	</li>
-</ul>
+{#key page}
+	<ul class="p-0">
+		<li>
+			<button disabled={page === 0} on:click={(e) => onChange(e, 0)}>
+				{labels.first}
+			</button>
+		</li>
+		<li>
+			<button disabled={page === 0} on:click={(e) => onChange(e, page - 1)}>
+				{labels.previous}
+			</button>
+		</li>
+		{#each buttons as button}
+			{#if page + button >= 0 && page + button + 1 <= pageCount}
+				<li>
+					<button
+						class:active={page === page + button}
+						on:click={(e) => onChange(e, page + button)}>
+						{page + button + 1}
+					</button>
+				</li>
+			{/if}
+		{/each}
+		<li>
+			<button disabled={page >= pageCount - 1} on:click={(e) => onChange(e, page + 1)}>
+				{labels.next}
+			</button>
+		</li>
+		<li>
+			<button disabled={page >= pageCount - 1} on:click={(e) => onChange(e, pageCount - 1)}>
+				{labels.last}
+			</button>
+		</li>
+	</ul>
+{/key}
 
 <style>
 	.active {

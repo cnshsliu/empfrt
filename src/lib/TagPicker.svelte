@@ -11,7 +11,7 @@
 	export let clearTag;
 	let allTags: any = {
 		org: [],
-		mine: []
+		mine: [],
 	};
 
 	async function reloadTags() {
@@ -45,7 +45,7 @@
 <div class="d-flex">
 	<div class="w-100">
 		<Row class="mb-2">
-			<Col class="fs-3 d-flex justify-content-center">
+			<Col class="fs-3">
 				<Button
 					color={currentTags.length === 0 || currentTags[0].length === 0 ? 'primary' : 'light'}
 					class={`mx-1 badge  border border-primary ${
@@ -54,8 +54,7 @@
 					on:click={(e) => {
 						e.preventDefault();
 						clearTag('');
-					}}
-				>
+					}}>
 					All
 				</Button>
 				{#if allTags && allTags.org && Array.isArray(allTags.org)}
@@ -68,8 +67,7 @@
 							on:click={(e) => {
 								e.preventDefault();
 								useThisTag(tag, e.shiftKey);
-							}}
-						>
+							}}>
 							{tag}
 						</Button>
 					{/each}
@@ -77,7 +75,7 @@
 			</Col>
 		</Row>
 		<Row>
-			<Col class="d-flex justify-content-center">
+			<Col>
 				{#if allTags && allTags.mine && Array.isArray(allTags.mine)}
 					{#each allTags.mine as tag}
 						<Button
@@ -89,8 +87,7 @@
 							on:click={(e) => {
 								e.preventDefault();
 								useThisTag(tag, e.shiftKey);
-							}}
-						>
+							}}>
 							{tag}
 						</Button>
 					{/each}

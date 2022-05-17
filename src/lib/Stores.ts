@@ -1,5 +1,9 @@
 import { writable } from 'svelte/store';
 export const printing = writable(false);
+export const resultCache = writable({});
+export const tplPage = writable(0);
+export const wfPage = writable(0);
+export const todoPage = writable(0);
 export const mtcSearchCondition = writable({
 	todo: {
 		init: 0,

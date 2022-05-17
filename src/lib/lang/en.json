@@ -168,7 +168,7 @@
 	"button": {
 		"check": "Check",
 		"toggleAdvancedSearch": "Advanced Search",
-		"resetQuery": "Reset Query",
+		"resetQuery": "Reset/All",
 		"refreshtodos": "Refresh Worklist",
 		"create": "Create",
 		"import": "Import",
@@ -797,5 +797,11 @@
 		"nameit": "Give it a name, will replace exiting if duplicate",
 		"pick": "Pick on please-->",
 		"reset": "Reset Query"
+	},
+	"pagination": {
+		"first": "Fist",
+		"prev": "Previous",
+		"next": "Next",
+		"last": "Last"
 	}
 }

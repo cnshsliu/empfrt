@@ -200,17 +200,12 @@ export interface KFKclass {
 export interface StateContext {
 	getState: () => {
 		page: number;
-		pageIndex: number;
 		pageSize: number;
 		rows: any;
 		filteredRows: any;
 	};
-	setPage: (
-		_page: number,
-		_pageIndex: number,
-	) => {
+	setPage: (_page: number) => {
 		page: number;
-		pageIndex: number;
 	};
 	setRows: (_rows: any) => any;
 }
@@ -284,24 +279,12 @@ export interface WorkStatus {
 	status: string;
 }
 export interface FilterPicks {
-	wfStatus?: string;
-	workStatus?: string;
-	tplTag?: string;
-	tplid?: string;
-	doer?: string;
-	starter?: string;
-	author?: string;
+	wf?: any;
+	todo?: any;
+	tpl?: any;
 	locale?: string;
 	confirmlocale?: boolean;
-	calendar_begin?: string;
-	calendar_end?: string;
-	workTitlePattern?: string;
-	wfTitlePattern?: string;
-	tplTitlePattern?: string;
 	gotoUID?: string;
-	workSorting?: { dir: string; key: string };
-	wfSorting?: { dir: string; key: string };
-	tplSorting?: { dir: string; key: string };
 	tabs?: string;
 	tabs2nd?: string;
 	settingTab?: string;
