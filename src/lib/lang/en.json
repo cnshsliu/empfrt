@@ -92,6 +92,7 @@
 		"filter": "Filter",
 		"bywhat": "by name or title",
 		"in": "In",
+		"start_end": "Specify Period",
 		"calendarBegin": "Begin",
 		"calendarEnd": "End",
 		"title": "Title",
@@ -166,6 +167,7 @@
 	},
 	"button": {
 		"check": "Check",
+		"toggleAdvancedSearch": "Advanced Search",
 		"resetQuery": "Reset Query",
 		"refreshtodos": "Refresh Worklist",
 		"create": "Create",
@@ -785,5 +787,15 @@
 
 	"error": {
 		"NO_BRUTE": "Please don't operate too frequently"
+	},
+
+	"searchlet": {
+		"new": "Save query",
+		"save": "Save",
+		"cancel": "Cancel",
+		"existing": "Saved Query",
+		"nameit": "Give it a name, will replace exiting if duplicate",
+		"pick": "Pick on please-->",
+		"reset": "Reset Query"
 	}
 }

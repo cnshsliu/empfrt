@@ -11,100 +11,29 @@
 		Button,
 		Input,
 		FormGroup,
-		Label
+		Label,
 	} from 'sveltestrap';
 	import { _ } from '$lib/i18n';
+	import { session } from '$app/stores';
 	import type { User, radioOption } from '$lib/types';
 	import { createEventDispatcher } from 'svelte';
 	import { onMount } from 'svelte';
 	import { filterStorage } from '$lib/empstores';
 	export let object_type: string;
-	let filter_doer: string;
-	let filter_starter: string;
-	let filter_tspan: string;
-	let filter_template: string;
 	export let user: User;
-	export let delegators = [];
-	let filter_status: string;
 	export let fields: string[] = ['statuses'];
-	export let templates: string[] = [];
 	export let statuses: radioOption[] = [
 		{
 			value: 'ST_RUN',
-			label: 'Running'
-		}
+			label: 'Running',
+		},
 	];
-	let statusMessage = '';
 	const dispatch = createEventDispatcher();
-	function radioChanged(e) {
-		dispatch('filterStatusChange', e.target.value);
-		statusMessage = getStatusMessage(e.target.value);
-	}
-	function tplChanged(e) {
-		tplChangedTo((e.target as HTMLInputElement).value);
-	}
-	function tplChangedTo(value) {
-		$filterStorage.tplid = value;
-		dispatch('filterTemplateChange');
-	}
-	function starterChanged() {
-		if (filter_starter[0] === '@') {
-			filter_starter = filter_starter.substring(1);
-		}
-		if (filter_starter !== '' && filter_starter.indexOf('@') < 0) {
-			filter_starter += user.email.substring(user.email.indexOf('@'));
-		}
-		$filterStorage.starter = filter_starter;
-		dispatch('filterStarterChange');
-	}
 
-	function doerChanged() {
-		if (filter_doer[0] === '@') {
-			filter_doer = filter_doer.substring(1);
-		}
-		if (filter_doer.indexOf('@') < 0) {
-			filter_doer += user.email.substring(user.email.indexOf('@'));
-		}
-		dispatch('filterDoerChange', filter_doer);
+	function doSearch() {
+		console.log('tplid onSearch');
+		dispatch('doSearch');
 	}
-
-	function getStatusMessage(aStatus) {
-		switch (aStatus) {
-			case 'ST_RUN':
-				return `show running ${object_type}`;
-			case 'ST_PAUSE':
-				return `show paused ${object_type}`;
-			case 'ST_DONE':
-				return `show completed ${object_type}`;
-			case 'ST_STOP':
-				return `show stopped ${object_type}`;
-			case 'All':
-				return `show all ${object_type}`;
-			default:
-				return `show ${aStatus} ${object_type}`;
-		}
-	}
-
-	export function reload() {
-		if (object_type === 'work items') filter_status = $filterStorage.workStatus;
-		else filter_status = $filterStorage.wfStatus;
-		filter_template = $filterStorage.tplid;
-		filter_doer = $filterStorage.doer;
-		filter_tspan = $filterStorage.tspan;
-		filter_starter = $filterStorage.starter;
-		statusMessage = getStatusMessage(filter_status);
-	}
-	export function reset() {
-		filter_status = 'ST_RUN';
-		filter_template = '';
-		filter_doer = user.email;
-		filter_starter = user.email;
-		filter_tspan = '';
-		statusMessage = getStatusMessage(filter_status);
-	}
-	onMount(async () => {
-		reload();
-	});
 </script>
 
 {#if fields.indexOf('statuses') > -1}
@@ -114,11 +43,10 @@
 				<Col xs="auto">
 					<Input
 						type="radio"
-						bind:group={filter_status}
+						bind:group={$filterStorage.workStatus}
 						value={status.value}
 						label={status.label}
-						on:input={(e) => radioChanged(e)}
-					/>
+						on:input={doSearch} />
 				</Col>
 			{/each}
 		</Row>
@@ -129,35 +57,25 @@
 		<Col>
 			<InputGroup>
 				<InputGroupText>{$_('extrafilter.template')}</InputGroupText>
-				<Input
-					type="select"
-					name="selectTpl"
-					id="tplSelect"
-					bind:value={filter_template}
-					on:change={tplChanged}
-				>
-					<option value="">
-						{$_('extrafilter.allTemplate')}
-					</option>
-					{#each templates as tpl, index (tpl)}
-						{#if tpl !== $filterStorage.tplid}
-							<option value={tpl}>{tpl}</option>
-						{:else}
-							<option value={tpl} selected>--&gt;&gt; {tpl}</option>
+				{#key $filterStorage.tplid}
+					<select
+						class="form-select"
+						name="selectTpl"
+						id="tplSelect"
+						bind:value={$filterStorage.tplid}
+						on:input={doSearch}>
+						<option value="">
+							{$_('extrafilter.allTemplate')}
+						</option>
+						{#if $session.templatesForSearch}
+							{#each $session.templatesForSearch as tpl, index (tpl)}
+								<option value={tpl} selected={tpl === $filterStorage.tplid}>
+									{tpl}
+								</option>
+							{/each}
 						{/if}
-					{/each}
-				</Input>
-				<Button
-					on:click={(e) => {
-						e.preventDefault();
-						//filter_template = '';
-						//tplChangedTo('');
-						dispatch('filterTemplateChange');
-					}}
-					color="primary"
-				>
-					<i class="bi bi-arrow-return-left" />
-				</Button>
+					</select>
+				{/key}
 			</InputGroup>
 		</Col>
 		{#if fields.indexOf('starter') > -1}
@@ -167,29 +85,25 @@
 					<Input
 						class="flex-fill"
 						name="other_doer"
-						bind:value={filter_starter}
+						bind:value={$filterStorage.starter}
 						aria-label="User Email"
-						placeholder="email"
-					/>
-					<Button on:click={starterChanged} color="primary">
+						placeholder="email" />
+					<Button on:click={doSearch} color="primary">
 						<i class="bi bi-arrow-return-left" />
 					</Button>
 					<Button
 						on:click={() => {
-							filter_starter = user.email;
-							starterChanged();
+							$filterStorage.starter = user.email;
 						}}
-						color="secondary"
-					>
+						color="secondary">
 						{$_('extrafilter.me')}
 					</Button>
 					<Button
 						on:click={() => {
-							filter_starter = '';
-							starterChanged();
+							$filterStorage.starter = '';
+							doSearch();
 						}}
-						color="secondary"
-					>
+						color="secondary">
 						{$_('extrafilter.any')}
 					</Button>
 				</InputGroup>
@@ -205,26 +119,25 @@
 						<Input
 							class="flex-fill"
 							name="other_doer"
-							bind:value={filter_doer}
-							aria-label="User Email"
-							placeholder="Input user email to query his/her workitems"
-						/>
-						<Button on:click={doerChanged} color="primary">List&gt;</Button>
+							bind:value={$filterStorage.doer}
+							placeholder="Input user email to query his/her workitems" />
+						<Button on:click={doSearch} color="primary">
+							<i class="bi bi-arrow-return-left" />
+						</Button>
 						<Button
 							on:click={() => {
-								filter_doer = user.email;
-								doerChanged();
+								$filterStorage.doer = user.email;
+								doSearch();
 							}}
-							color="secondary"
-						>
+							color="secondary">
 							{$_('extrafilter.mine')}
 						</Button>
 					</InputGroup>
-				{:else if delegators.length > 0}
+				{:else if $session.delegators && $session.delegators.length > 0}
 					<InputGroup>
 						<InputGroupText>Delegator:</InputGroupText>
-						<Input type="select" name="select" id="exampleSelect" bind:value={filter_doer}>
-							{#each delegators as delegator, index (delegator)}
+						<Input type="select" name="select" id="exampleSelect" bind:value={$filterStorage.doer}>
+							{#each $session.delegators as delegator, index (delegator)}
 								{#if delegator === $filterStorage.doer}
 									<option value={delegator} selected>{delegator}</option>
 								{:else}
@@ -232,7 +145,7 @@
 								{/if}
 							{/each}
 						</Input>
-						<Button on:click={doerChanged} color="primary">
+						<Button on:click={doSearch} color="primary">
 							<i class="bi bi-arrow-return-left" />
 						</Button>
 					</InputGroup>

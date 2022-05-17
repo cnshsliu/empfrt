@@ -15,6 +15,10 @@ declare namespace App {
 		version?: string;
 		q?: string;
 		whichwf?: string;
+		showAdvancedSearch?: boolean;
+		templatesForSearch?: any[];
+		delegators?: any[];
+		savedSearches?: { todo?: any[]; wf?: any[] };
 	}
 
 	interface Stuff {}

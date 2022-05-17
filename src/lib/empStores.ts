@@ -32,7 +32,7 @@ export const filterStorage = storage<FilterPicks>('filter', {
 	locale: '',
 	confirmlocale: false,
 	starter: '',
-	tspan: '1w',
+	tspan: 'any',
 	calendar_begin: '',
 	calendar_end: '',
 	workTitlePattern: '',

@@ -91,7 +91,8 @@
 		"sortBy": "排序",
 		"filter": "过滤",
 		"bywhat": "根据名称或标题过滤",
-		"in": "时间",
+		"in": "时间区",
+		"start_end": "自定义起止时间",
 		"calendarBegin": "开始",
 		"calendarEnd": "结束",
 		"title": "名称",
@@ -166,6 +167,7 @@
 	},
 	"button": {
 		"check": "检查",
+		"toggleAdvancedSearch": "高级查询",
 		"resetQuery": "重置查询",
 		"refreshtodos": "刷新工作列表",
 		"create": "新建",
@@ -785,5 +787,15 @@
 
 	"error": {
 		"NO_BRUTE": "请勿频繁操作"
+	},
+
+	"searchlet": {
+		"new": "保存当前搜索条件",
+		"save": "保存",
+		"cancel": "取消",
+		"existing": "保存的搜索",
+		"nameit": "给它一个名字, 同名将被替换",
+		"pick": "请选择-->",
+		"reset": "重置搜索"
 	}
 }
