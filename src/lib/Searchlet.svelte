@@ -1,43 +1,38 @@
 <script type="ts">
 	import { onMount } from 'svelte';
 	import { _ } from '$lib/i18n';
+	import { savedSearches, lastQuery } from '$lib/Stores';
 	import { session } from '$app/stores';
 	import { createEventDispatcher, getContext, setContext } from 'svelte';
 	import * as api from '$lib/api';
 	import { mtcSearchCondition, mtcConfirm, mtcConfirmReset } from './Stores';
 
 	export let objtype;
-	export let searchCondition;
+	export let aSsPicked;
 	const dispatch = createEventDispatcher();
 	let user = $session.user;
 	let showSaveSearchForm = false;
 	let newSsName = '';
-	let aSsPicked = '';
 
 	onMount(async () => {
-		if (!$session.savedSearches) {
-			$session.savedSearches = {};
-		}
-		if (!$session.savedSearches[objtype]) {
-			$session.savedSearches[objtype] = await api.post(
-				'search/list',
-				{ objtype: objtype },
-				user.sessionToken,
-			);
-		}
+		$savedSearches[objtype] = await api.post(
+			'search/list',
+			{ objtype: objtype },
+			user.sessionToken,
+		);
 	});
 
 	const saveSearch = async () => {
-		delete searchCondition.init;
 		api
 			.post(
 				'search/save',
-				{ objtype: objtype, name: newSsName, ss: JSON.stringify(searchCondition) },
+				{ objtype: objtype, name: newSsName, ss: JSON.stringify($lastQuery[objtype]) },
 				user.sessionToken,
 			)
 			.then((res) => {
-				$session.savedSearches[objtype].unshift(res);
-				$session.savedSearches = $session.savedSearches;
+				$savedSearches[objtype] = $savedSearches[objtype].filter((x) => x !== res);
+				$savedSearches[objtype].unshift(res);
+				$savedSearches = $savedSearches;
 			});
 		showSaveSearchForm = false;
 		newSsName = '';
@@ -59,7 +54,7 @@
 		<div class="input-group-text">
 			{$_('searchlet.existing')}
 		</div>
-		{#if $session.savedSearches && $session.savedSearches[objtype] && $session.savedSearches[objtype].length > 0}
+		{#if $savedSearches[objtype].length > 0}
 			<select
 				class="form-control"
 				bind:value={aSsPicked}
@@ -71,8 +66,8 @@
 					}
 				}}>
 				<option value={'---PLS_PICK_ONE---'}>{$_('searchlet.pick')}</option>
-				{#each $session.savedSearches[objtype] as aSS}
-					<option value={aSS.name}>{aSS.name}</option>
+				{#each $savedSearches[objtype] as aSS}
+					<option value={aSS}>{aSS}</option>
 				{/each}
 			</select>
 		{:else}

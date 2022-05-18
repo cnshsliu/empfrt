@@ -23,8 +23,7 @@
 				on:click|preventDefault={() => {
 					col_per_row = { xs: 1, md: 1 };
 					$filterStorage.col_per_row = col_per_row;
-				}}
-			>
+				}}>
 				{$_('remotetable.cols-1')}
 			</a>
 		</DropdownItem>
@@ -35,8 +34,7 @@
 				on:click|preventDefault={() => {
 					col_per_row = { xs: 1, md: 2 };
 					$filterStorage.col_per_row = col_per_row;
-				}}
-			>
+				}}>
 				{$_('remotetable.cols-2')}
 			</a>
 		</DropdownItem>
@@ -47,8 +45,7 @@
 				on:click|preventDefault={() => {
 					col_per_row = { xs: 1, md: 3 };
 					$filterStorage.col_per_row = col_per_row;
-				}}
-			>
+				}}>
 				{$_('remotetable.cols-3')}
 			</a>
 		</DropdownItem>
@@ -59,8 +56,7 @@
 				on:click|preventDefault={() => {
 					col_per_row = { xs: 1, md: 4 };
 					$filterStorage.col_per_row = col_per_row;
-				}}
-			>
+				}}>
 				{$_('remotetable.cols-4')}
 			</a>
 		</DropdownItem>

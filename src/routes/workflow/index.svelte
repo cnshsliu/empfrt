@@ -5,26 +5,21 @@
 	import * as Utils from '$lib/utils';
 	import * as api from '$lib/api';
 	import TagPicker from '$lib/TagPicker.svelte';
-	import ExtraFilter from '$lib/form/ExtraFilter.svelte';
 	import AniIcon from '$lib/AniIcon.svelte';
-	import { wfPage, resultCache } from '$lib/Stores';
-	import { slide, fade } from 'svelte/transition';
+	import { showAdvancedSearch, srPage, resultCache, lastQuery } from '$lib/Stores';
 	import { navigating, session } from '$app/stores';
+	import { mtcConfirm, mtcConfirmReset } from '$lib/Stores';
 	import { setFadeMessage } from '$lib/Notifier';
-	import Transition from '$lib/Transition.svelte';
 	import { filterStorage } from '$lib/empstores';
 	import Searchlet from '$lib/Searchlet.svelte';
 	import ColPerRowSelection from '$lib/ColPerRowSelection.svelte';
 	import PageSize from '$lib/PageSize.svelte';
 	import { tspans } from '$lib/variables';
-	import Confirm from '$lib/confirm.svelte';
 	import Parser from '$lib/parser';
 	import { onMount } from 'svelte';
 	import type { Workflow } from '$lib/types';
 	import { StatusLabel } from '$lib/status';
-	import Table from '$lib/pagination/Table.svelte';
 	import Pagination from '$lib/pagination/Pagination.svelte';
-	import Search from '$lib/pagination/Search.svelte';
 	import Sort from '$lib/pagination/Sort.svelte';
 	import { goto } from '$app/navigation';
 	import {
@@ -38,33 +33,31 @@
 		Button,
 	} from 'sveltestrap';
 	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, NavLink } from 'sveltestrap';
-	import { getData } from '$lib/pagination/Server';
 	import { ClientPermControl } from '$lib/clientperm';
 	import { createEventDispatcher, getContext, setContext } from 'svelte';
 
+	const ENDPOINT = 'workflow/search';
+	const BIZ = 'wf';
+	let loadTimer = null;
+	let LOADING_TIMEOUT = 400;
+
 	let rows: Workflow[] = [] as Workflow[];
-	let theConfirm;
-	if (!$filterStorage.wf) $filterStorage.wf = {};
 
 	let loading = true;
 	let rowsCount = 0;
-	let input_search;
-	let filter_tspan = '1w';
 	let show_calendar_select = false;
 	let setPboAtFor = '';
 	let settingFor = '';
 	let sorting = { dir: 'desc', key: 'updatedAt' };
-	let storeSorting = $filterStorage.wf.wfSorting;
-	let useTransition = true;
+	let storeSorting = $filterStorage[BIZ].wfSorting;
 	let user = $session.user;
-	let bizSearchCondition = { init: true, search: '', extra: {} };
 	let currentTags = [];
-	let searchTimer = undefined;
+	let aSsPicked = '';
 	if (storeSorting) {
 		if (storeSorting.dir && storeSorting.key) {
 			sorting = storeSorting;
 		} else {
-			$filterStorage.wf.wfSorting = sorting;
+			$filterStorage[BIZ].wfSorting = sorting;
 		}
 	}
 	let statuses = [
@@ -77,7 +70,7 @@
 	if (!$session.templatesForSearch_for_wf) {
 		$session.templatesForSearch_for_wf = [];
 	}
-	if ($filterStorage.wf.calendar_begin !== '' || $filterStorage.wf.calendar_end !== '') {
+	if ($filterStorage[BIZ].calendar_begin !== '' || $filterStorage[BIZ].calendar_end !== '') {
 		show_calendar_select = true;
 	} else {
 		show_calendar_select = false;
@@ -87,34 +80,30 @@
 
 	setContext('state', {
 		getState: () => ({
-			page: $wfPage,
+			page: $srPage[BIZ],
 			pageSize: $filterStorage.pageSize,
 			rows,
 			filteredRows,
 		}),
 		setPage: (_page) => {
-			$wfPage = _page;
+			$srPage[BIZ] = _page;
 		},
 		setRows: (_rows) => {
 			filteredRows = _rows;
 		},
 	});
-	let storeTspan = $filterStorage.wf.tspan;
-	if (storeTspan && Object.keys(tspans).includes(storeTspan)) {
-		filter_tspan = storeTspan;
-	} else {
-		filter_tspan = '1w';
-	}
+
 	const clearTag = async function () {
 		currentTags = [];
-		$filterStorage.wf.tplTag = '';
+		$filterStorage[BIZ].tplTag = '';
 		let tmp = await api.post('template/tplid/list', {}, user.sessionToken);
 		$session.templatesForSearch_for_wf = tmp.map((x) => x.tplid);
 		await searchNow();
 	};
+
 	const useThisTag = async function (tag, appendMode = false) {
 		if (appendMode) {
-			let existingTags = $filterStorage.wf.tplTag;
+			let existingTags = $filterStorage[BIZ].tplTag;
 			if (Parser.isEmpty(existingTags)) {
 				existingTags = '';
 			}
@@ -129,8 +118,8 @@
 			if (tag.trim().length > 0) currentTags = [tag];
 			else currentTags = [];
 		}
-		$filterStorage.wf.tplTag = currentTags.join(';');
-		$filterStorage.wf.tplid = '';
+		$filterStorage[BIZ].tplTag = currentTags.join(';');
+		//$filterStorage[BIZ].tplid = '';
 		let tmp = await api.post(
 			'template/tplid/list',
 			{ tagsForFilter: currentTags },
@@ -139,8 +128,9 @@
 		$session.templatesForSearch_for_wf = tmp.map((x) => x.tplid);
 		await searchNow();
 	};
+
 	const loadTemplatesOnCurrentTags = async function () {
-		let existingTags = $filterStorage.wf.tplTag;
+		let existingTags = $filterStorage[BIZ].tplTag;
 		if (Parser.isEmpty(existingTags)) {
 			existingTags = '';
 		}
@@ -158,142 +148,143 @@
 		if (storeSorting.dir && storeSorting.key) {
 			sorting = storeSorting;
 		} else {
-			$filterStorage.wf.workSorting = sorting;
+			$filterStorage[BIZ].workSorting = sorting;
 		}
 	}
 
-	async function load(_page, reason = 'unknown') {
+	async function load(_page, reason = 'refresh') {
 		loading = true;
-		let payload_extra = {
-			status: $filterStorage.wf.wfStatus,
-			tspan: $filterStorage.wf.tspan,
+		let payload = {
+			pattern: $filterStorage[BIZ].pattern,
+			skip: _page * $filterStorage.pageSize,
+			limit: $filterStorage.pageSize,
+			sort_order: sorting && sorting.dir === 'desc' ? -1 : 1,
+			status: $filterStorage[BIZ].status,
+			tspan: $filterStorage[BIZ].tspan,
+			starter: $filterStorage[BIZ].starter,
+			reason: reason,
 		};
-		payload_extra['starter'] = $filterStorage.wf.starter;
-		if ($filterStorage.wf.tplTag)
-			payload_extra['tagsForFilter'] = $filterStorage.wf.tplTag.split(';');
-		if ($filterStorage.wf.tplid.trim()) payload_extra['tplid'] = $filterStorage.wf.tplid.trim();
-		if ($filterStorage.wf.calendar_begin && $filterStorage.wf.calendar_end) {
-			payload_extra['calendar_begin'] = $filterStorage.wf.calendar_begin;
-			payload_extra['calendar_end'] = $filterStorage.wf.calendar_end;
+		if ($filterStorage[BIZ].tplTag)
+			payload['tagsForFilter'] = $filterStorage[BIZ].tplTag.split(';');
+		if ($filterStorage[BIZ].tplid.trim()) payload['tplid'] = $filterStorage[BIZ].tplid.trim();
+		if ($filterStorage[BIZ].calendar_begin && $filterStorage[BIZ].calendar_end) {
+			payload['calendar_begin'] = $filterStorage[BIZ].calendar_begin;
+			payload['calendar_end'] = $filterStorage[BIZ].calendar_end;
+		}
+		let { skip: _skip, ...payloadWithoutSkip } = payload;
+		if (false === Utils.objectEqual(payloadWithoutSkip, $lastQuery[BIZ])) {
+			payload.skip = 0;
+			$srPage[BIZ] = 0;
+			console.log('Skip  to 0');
+			console.log(payloadWithoutSkip, $lastQuery[BIZ]);
+		}
+		$lastQuery[BIZ] = payloadWithoutSkip;
+
+		let searchResult = null;
+		let theResultCache = $resultCache;
+		for (let i = 0; i < theResultCache[BIZ].length; i++) {
+			if (Utils.objectEqual(theResultCache[BIZ][i].PAYLOAD, payload)) {
+				searchResult = theResultCache[BIZ][i].RESULT;
+				console.log(BIZ, 'Use cached SearchResult');
+				break;
+			}
 		}
 
-		//在getData之前,记录下来,供savedSearch使用
-		bizSearchCondition = {
-			init: false,
-			search: $filterStorage.wf.wfTitlePattern,
-			extra: payload_extra,
-		};
-
-		const data = await getData(
-			'workflow/search',
-			user.sessionToken,
-			_page,
-			$filterStorage.pageSize,
-			$filterStorage.wf.wfTitlePattern,
-			sorting,
-			payload_extra,
-			reason,
-		);
-		if (data && data.rows) {
-			rows = data.rows;
-			rowsCount = data.rowsCount;
-			if (data.gotoPage0) {
-				console.log('OK, i am goint to page 0');
-				//onPageChange({ detail: { page: 0 } });
-				//$tplPage = 0;
-			}
-			if (data.fromCache) {
-				useTransition = false;
-			}
-		} else if (data && (<any>data).error) {
-			if ((<any>data).error === 'KICKOUT') {
-				setFadeMessage($_('session.forcetohome'));
-				goto('/');
-			} else {
-			}
+		if (!searchResult) {
+			loadTimer && clearTimeout(loadTimer);
+			loadTimer = setTimeout(async () => {
+				console.log('Loading from server', LOADING_TIMEOUT);
+				const ret = await api.post(ENDPOINT, payload, user.sessionToken);
+				if (ret.error) {
+					if (ret.error === 'KICKOUT') {
+						setFadeMessage($_('session.forcetohome'));
+						goto('/');
+					} else {
+						setFadeMessage(ret.message, 'warning');
+					}
+				} else {
+					searchResult = { rows: ret.objs, rowsCount: ret.total };
+					$resultCache[BIZ].push({ PAYLOAD: payload, RESULT: searchResult });
+					rows = searchResult.rows;
+					rowsCount = searchResult.rowsCount;
+				}
+				loadTimer = null;
+			}, LOADING_TIMEOUT);
 		} else {
-			console.warn(JSON.stringify(data));
+			rows = searchResult.rows;
+			rowsCount = searchResult.rowsCount;
 		}
 		loading = false;
 	}
 
 	function onPageChange(event) {
-		load(event.detail.page);
-		$wfPage = event.detail.page;
+		load(event.detail.page, 'refresh');
+		$srPage[BIZ] = event.detail.page;
 	}
 
 	const calendar_changed = function () {
 		if (
-			Parser.hasValue($filterStorage.wf.calendar_begin) &&
-			Parser.isEmpty($filterStorage.wf.calendar_end)
+			Parser.hasValue($filterStorage[BIZ].calendar_begin) &&
+			Parser.isEmpty($filterStorage[BIZ].calendar_end)
 		) {
-			$filterStorage.wf.calendar_end = $filterStorage.wf.calendar_begin;
+			$filterStorage[BIZ].calendar_end = $filterStorage[BIZ].calendar_begin;
 		}
 		if (
-			Parser.hasValue($filterStorage.wf.calendar_begin) &&
-			Parser.hasValue($filterStorage.wf.calendar_end)
+			Parser.hasValue($filterStorage[BIZ].calendar_begin) &&
+			Parser.hasValue($filterStorage[BIZ].calendar_end)
 		) {
 			searchNow(null).then();
 		}
 	};
 
 	async function searchNow(detail = null) {
-		searchTimer && clearTimeout(searchTimer);
-		searchTimer = setTimeout(() => {
-			if (Utils.isBlank($filterStorage.wf.tplTag)) {
-				$filterStorage.wf.tplTag = '';
-			}
-			if (Utils.isBlank($filterStorage.wf.tplid)) {
-				$filterStorage.wf.tplid = '';
-			}
-			if (Utils.isBlank($filterStorage.wf.starter)) {
-				$filterStorage.wf.starter = user.email;
-			}
-			if (Utils.isBlank($filterStorage.wf.doer)) {
-				$filterStorage.wf.doer = user.email;
-			}
-			if (Utils.isBlank($filterStorage.wf.wfStatus)) {
-				$filterStorage.wf.wfStatus = 'ST_RUN';
-			}
-			if (Utils.isBlank($filterStorage.wf.workStatus)) {
-				$filterStorage.wf.workStatus = 'ST_RUN';
-			}
-			if (Utils.isBlank($filterStorage.wf.wfTitlePattern)) {
-				$filterStorage.wf.wfTitlePattern = '';
-			}
-			if (Utils.isBlank($filterStorage.wf.wfTitlePattern)) {
-				$filterStorage.wf.wfTitlePattern = '';
-			}
-			if (Utils.isBlank($filterStorage.wf.calendar_begin)) $filterStorage.wf.calendar_begin = '';
-			if (Utils.isBlank($filterStorage.wf.calendar_end)) $filterStorage.wf.calendar_end = '';
-			if (detail && detail.page) $wfPage = detail.page;
-			if (detail && detail.sorting) sorting = detail.sorting;
-			if (!$filterStorage.pageSize) $filterStorage.pageSize = 10;
-			load($wfPage, 'refresh').then((res) => {});
-			searchTimer = undefined;
-		}, 200);
+		if (Utils.isBlank($filterStorage[BIZ].tplTag)) {
+			$filterStorage[BIZ].tplTag = '';
+		}
+		if (Utils.isBlank($filterStorage[BIZ].starter)) {
+			$filterStorage[BIZ].starter = user.email;
+		}
+		if (Utils.isBlank($filterStorage[BIZ].doer)) {
+			$filterStorage[BIZ].doer = user.email;
+		}
+		if (Utils.isBlank($filterStorage[BIZ].status)) {
+			$filterStorage[BIZ].status = 'ST_RUN';
+		}
+		if (Utils.isBlank($filterStorage[BIZ].pattern)) {
+			$filterStorage[BIZ].pattern = '';
+		}
+		if (Utils.isBlank($filterStorage[BIZ].calendar_begin)) $filterStorage[BIZ].calendar_begin = '';
+		if (Utils.isBlank($filterStorage[BIZ].calendar_end)) $filterStorage[BIZ].calendar_end = '';
+		if (detail && detail.page) $srPage[BIZ] = detail.page;
+		if (detail && detail.sorting) sorting = detail.sorting;
+		if (!$filterStorage.pageSize) $filterStorage.pageSize = 10;
+		load($srPage[BIZ], 'refresh').then((res) => {});
 	}
 
 	export function resetQuery(clearCache = false) {
 		clearTag();
-		$filterStorage.wf.wfStatus = 'ST_RUN';
-		$filterStorage.wf.tplid = '';
-		$filterStorage.wf.starter = user.email;
-		$filterStorage.wf.doer = user.email;
-		$filterStorage.wf.wfTitlePattern = '';
-		$filterStorage.wf.tspan = 'any';
-		$filterStorage.wf.calendar_begin = '';
-		$filterStorage.wf.calendar_end = '';
+		$filterStorage[BIZ].status = 'ST_RUN';
+		$filterStorage[BIZ].tplid = '';
+		$filterStorage[BIZ].starter = user.email;
+		$filterStorage[BIZ].doer = user.email;
+		$filterStorage[BIZ].pattern = '';
+		$filterStorage[BIZ].tspan = 'any';
+		$filterStorage[BIZ].calendar_begin = '';
+		$filterStorage[BIZ].calendar_end = '';
 		show_calendar_select = false;
-		clearCache && delete $resultCache['workflow/search'];
+		aSsPicked = '';
+		if (clearCache) {
+			delete $resultCache[BIZ];
+			$resultCache[BIZ] = [];
+		}
 	}
 
 	const toggleAdvancedSearch = async () => {
-		$session.showAdvancedSearch = !$session.showAdvancedSearch;
-		if ($session.showAdvancedSearch == false) {
+		$showAdvancedSearch[BIZ] = !$showAdvancedSearch[BIZ];
+		if ($showAdvancedSearch[BIZ] == false) {
 			resetQuery();
 		} else {
-			let existingTags = $filterStorage.wf.tplTag;
+			let existingTags = $filterStorage[BIZ].tplTag;
 			if (Parser.hasValue(existingTags)) {
 				let existingArr = existingTags.split(';');
 				currentTags = existingArr;
@@ -318,8 +309,8 @@
 
 	async function onSort(event) {
 		sorting = { dir: event.detail.dir, key: event.detail.key };
-		$filterStorage.wf.wfSorting = sorting;
-		await load($wfPage);
+		$filterStorage[BIZ].wfSorting = sorting;
+		await load($srPage[BIZ], 'refresh');
 	}
 
 	const opWorkflow = async function (workflow: Workflow, op: string): Promise<void> {
@@ -327,18 +318,18 @@
 			goto(`/template/start?tplid=${workflow.tplid}`);
 			return;
 		} else if (op === 'works') {
-			$filterStorage.todo.tplid_for_todo = workflow.tplid;
+			$filterStorage.todo.tplid = workflow.tplid;
 			$filterStorage.todo.workTitlePattern = 'wf:' + workflow.wfid;
 			goto('/work');
 			return;
 		} else if (op === 'works_running') {
-			$filterStorage.todo.tplid_for_todo = workflow.tplid;
+			$filterStorage.todo.tplid = workflow.tplid;
 			$filterStorage.todo.workTitlePattern = 'wf:' + workflow.wfid;
 			$filterStorage.todo.workStatus = 'ST_RUN';
 			goto('/work');
 			return;
 		} else if (op === 'works_all') {
-			$filterStorage.todo.tplid_for_todo = workflow.tplid;
+			$filterStorage.todo.tplid = workflow.tplid;
 			$filterStorage.todo.workTitlePattern = 'wf:' + workflow.wfid;
 			$filterStorage.todo.workStatus = 'All';
 			goto('/work');
@@ -394,35 +385,28 @@
 		$filterStorage.todo.workTitlePattern = 'wf:' + ret.wfid;
 	};
 
-	export function reset() {
-		input_search = '';
-	}
-
-	const stateContext = getContext('state');
-	$: if ($filterStorage && $filterStorage.wf) {
-		filter_tspan = $filterStorage.wf.tspan;
-		input_search = $filterStorage.wf.wfTitlePattern;
-	}
 	let isMobile = false;
 	onMount(async () => {
+		if ($filterStorage[BIZ].pattern && $filterStorage[BIZ].pattern.startsWith('wf:')) {
+			$filterStorage[BIZ].pattern = '';
+		}
 		isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-		if ($session.showAdvancedSearch === undefined) {
+		if ($showAdvancedSearch[BIZ] === undefined) {
 			console.log('First time loading...');
-			$session.showAdvancedSearch = false;
+			LOADING_TIMEOUT = 0;
+			$showAdvancedSearch[BIZ] = false;
 			resetQuery();
 		} else {
+			LOADING_TIMEOUT = 400;
 			console.log('Not First time loading...');
-			if ($session.showAdvancedSearch === false) {
+			if ($showAdvancedSearch[BIZ] === false) {
 				console.log('showAdvancedSearch === false...');
 				resetQuery();
 			} else {
 				console.log('showAdvancedSearch === true...');
+				await searchNow();
 			}
 		}
-		if ($filterStorage.wf.wfTitlePattern && $filterStorage.wf.wfTitlePattern.startsWith('wf:')) {
-			$filterStorage.wf.wfTitlePattern = '';
-		}
-		await searchNow();
 	});
 	const toggleDiscuss = async (row) => {
 		return await api.post(
@@ -431,7 +415,7 @@
 			user.sessionToken,
 		);
 	};
-	if (Utils.isBlank($filterStorage.wf.starter)) $filterStorage.wf.starter = user.email;
+	if (Utils.isBlank($filterStorage[BIZ].starter)) $filterStorage[BIZ].starter = user.email;
 </script>
 
 <Container class="p-2 border border-1 rounded">
@@ -442,29 +426,37 @@
 		<div class="ms-5 align-self-center flex-grow-1">&nbsp;</div>
 		<div class="justify-content-end flex-shrink-0">
 			<Button color="primary" on:click={toggleAdvancedSearch} class="m-0 p-1">
-				{#if $session.showAdvancedSearch}
+				{#if $showAdvancedSearch[BIZ]}
 					<i class="bi bi-x-circle" />
 				{:else}
 					<i class="bi bi-search" />
 				{/if}
 				{$_('button.toggleAdvancedSearch')}
 			</Button>
-			<Button color="primary" on:click={resetQuery} class="m-0 p-1" size="lg">
+			<Button
+				color="primary"
+				on:click={(e) => {
+					resetQuery(true);
+				}}
+				class="m-0 p-1"
+				size="lg">
 				{$_('button.resetQuery')}
 			</Button>
 		</div>
 	</div>
-	{#if $session.showAdvancedSearch}
+	{#if $showAdvancedSearch[BIZ]}
 		<TagPicker {currentTags} {useThisTag} {clearTag} />
 		<Row class="mb-3 d-flex justify-content-end">
 			{#each statuses as status, index (status)}
 				<Col xs="auto">
-					<Input
-						type="radio"
-						bind:group={$filterStorage.wf.wfStatus}
-						value={status.value}
-						label={status.label}
-						on:input={searchNow} />
+					<label>
+						<input
+							type="radio"
+							bind:group={$filterStorage[BIZ].status}
+							value={status.value}
+							on:change={searchNow} />
+						{status.label}
+					</label>
 				</Col>
 			{/each}
 		</Row>
@@ -472,25 +464,26 @@
 			<Col>
 				<InputGroup>
 					<InputGroupText>{$_('extrafilter.template')}</InputGroupText>
-					{#key $filterStorage.wf.tplid}
-						<select
-							class="form-select"
-							name="selectTpl"
-							id="tplSelect"
-							bind:value={$filterStorage.wf.tplid}
-							on:input={searchNow}>
-							<option value="">
-								{$_('extrafilter.allTemplate')}
-							</option>
-							{#if $session.templatesForSearch_for_wf}
-								{#each $session.templatesForSearch_for_wf as tpl, index (tpl)}
-									<option value={tpl} selected={tpl === $filterStorage.wf.tplid}>
-										{tpl}
-									</option>
-								{/each}
-							{/if}
-						</select>
-					{/key}
+					<select
+						class="form-select"
+						name="selectTpl"
+						id="tplSelect"
+						bind:value={$filterStorage[BIZ].tplid}
+						on:change|preventDefault={async (e) => {
+							e.preventDefault();
+							await searchNow();
+						}}>
+						<option value="">
+							{$_('extrafilter.allTemplate')}
+						</option>
+						{#if $session.templatesForSearch_for_wf}
+							{#each $session.templatesForSearch_for_wf as tpl, index (tpl)}
+								<option value={tpl}>
+									{tpl}
+								</option>
+							{/each}
+						{/if}
+					</select>
 				</InputGroup>
 			</Col>
 			<Col>
@@ -499,7 +492,7 @@
 					<Input
 						class="flex-fill"
 						name="other_doer"
-						bind:value={$filterStorage.wf.starter}
+						bind:value={$filterStorage[BIZ].starter}
 						aria-label="User Email"
 						placeholder="email" />
 					<Button on:click={searchNow} color="primary">
@@ -507,7 +500,7 @@
 					</Button>
 					<Button
 						on:click={() => {
-							$filterStorage.wf.starter = user.email;
+							$filterStorage[BIZ].starter = user.email;
 							searchNow();
 						}}
 						color="secondary">
@@ -529,7 +522,7 @@
 							type="search"
 							title={$_('remotetable.bywhat')}
 							placeholder={$_('remotetable.bywhat')}
-							bind:value={$filterStorage.wf.wfTitlePattern} />
+							bind:value={$filterStorage[BIZ].pattern} />
 						<div class="btn btn-primary" on:click|preventDefault={searchNow}>
 							<i class="bi bi-arrow-return-left" />
 						</div>
@@ -545,10 +538,10 @@
 						class="form-control"
 						type="select"
 						id="timespanSelect"
-						bind:value={$filterStorage.wf.tspan}
+						bind:value={$filterStorage[BIZ].tspan}
 						on:change={async (e) => {
 							e.preventDefault();
-							await load($wfPage, 'onTspan');
+							await load($srPage[BIZ], 'refresh');
 						}}>
 						{#each Object.keys(tspans) as key}
 							<option value={key}>{tspans[key]}</option>
@@ -557,8 +550,8 @@
 					<Button
 						on:click={async () => {
 							if (show_calendar_select) {
-								$filterStorage.wf.calendar_begin = '';
-								$filterStorage.wf.calendar_end = '';
+								$filterStorage[BIZ].calendar_begin = '';
+								$filterStorage[BIZ].calendar_end = '';
 								show_calendar_select = false;
 								await searchNow(null);
 							} else {
@@ -577,7 +570,7 @@
 						<InputGroupText>Begin:</InputGroupText>
 						<Input
 							type="date"
-							bind:value={$filterStorage.wf.calendar_begin}
+							bind:value={$filterStorage[BIZ].calendar_begin}
 							on:change={calendar_changed} />
 					</InputGroup>
 				</Col>
@@ -586,7 +579,7 @@
 						<InputGroupText>End:</InputGroupText>
 						<Input
 							type="date"
-							bind:value={$filterStorage.wf.calendar_end}
+							bind:value={$filterStorage[BIZ].calendar_end}
 							on:change={calendar_changed} />
 						<Button on:click={calendar_changed} color="primary">
 							<i class="bi bi-arrow-return-left" />
@@ -596,27 +589,20 @@
 			</Row>
 		{/if}
 		<Searchlet
-			searchCondition={bizSearchCondition}
-			objtype="workflow"
+			objtype="wf"
+			bind:aSsPicked
 			on:searchlet={(msg) => {
 				let ss = JSON.parse(msg.detail.ss);
-				console.log('Searchlet:', JSON.stringify(ss, null, 2));
-				if (ss.extra.status) $filterStorage.wf.wfStatus = ss.extra.status;
-				if (ss.extra.tplid) {
-					$filterStorage.wf.tplid = ss.extra.tplid;
-				} else {
-					$filterStorage.wf.tplid = '';
-				}
-				if (ss.extra.starter) $filterStorage.wf.starter = ss.extra.starter;
-				if (ss.extra.doer) $filterStorage.wf.doer = ss.extra.doer;
-				if (ss.search) $filterStorage.wf.wfTitlePattern = ss.search;
-				else $filterStorage.wf.wfTitlePattern = '';
-				if (ss.extra.tspan) $filterStorage.wf.tspan = ss.extra.tspan;
-				if (ss.extra.calendar_begin) $filterStorage.wf.calendar_begin = ss.extra.calendar_begin;
-				else $filterStorage.wf.calendar_begin = '';
-				if (ss.extra.calendar_end) $filterStorage.wf.calendar_end = ss.extra.calendar_end;
-				else $filterStorage.wf.calendar_end = '';
-				if ($filterStorage.wf.calendar_begin !== '' || $filterStorage.wf.calendar_end !== '') {
+				ss.pattern && ($filterStorage[BIZ].pattern = ss.pattern);
+				ss.status && ($filterStorage[BIZ].status = ss.status);
+				ss.tspan && ($filterStorage[BIZ].tspan = ss.tspan);
+				ss.starter && ($filterStorage[BIZ].starter = ss.starter);
+				if (ss.tplid) $filterStorage[BIZ].tplid = ss.tplid;
+				else $filterStorage[BIZ].tplid = '';
+				ss.calendar_begin && ($filterStorage[BIZ].calendar_begin = ss.calendar_begin);
+				ss.calendar_end && ($filterStorage[BIZ].calendar_end = ss.calendar_end);
+
+				if ($filterStorage[BIZ].calendar_begin !== '' || $filterStorage[BIZ].calendar_end !== '') {
 					show_calendar_select = true;
 				} else {
 					show_calendar_select = false;
@@ -624,17 +610,17 @@
 				searchNow().then();
 			}}
 			on:resetSearchlet={(msg) => {
-				resetQuery();
+				aSsPicked = '';
+				resetQuery(true);
 			}} />
 	{/if}
 
 	{#key rowsCount}
 		<div class="mt-3 ">
 			<Pagination
-				page={$wfPage}
+				page={$srPage[BIZ]}
 				pageSize={$filterStorage.pageSize}
 				count={rowsCount}
-				serverSide={true}
 				{isMobile}
 				on:pageChange={onPageChange} />
 		</div>
@@ -664,7 +650,7 @@
 		<div class="flex-shrink-1">
 			<PageSize
 				on:pagesize={async (e) => {
-					await load(0);
+					await load(0, 'refresh');
 				}} />
 		</div>
 		<div class="flex-shrink-1">
@@ -778,15 +764,17 @@
 												<NavLink
 													on:click={(e) => {
 														e.preventDefault();
-														theConfirm.title = $_('confirm.title.areyousure');
-														theConfirm.body = $_('confirm.body.deleteWorkflow');
-														theConfirm.buttons = [$_('confirm.button.confirm')];
-														theConfirm.callbacks = [
-															async () => {
-																opWorkflow(row, 'destroy');
-															},
-														];
-														theConfirm.toggle();
+														$mtcConfirm = {
+															title: $_('confirm.title.areyousure'),
+															body: $_('confirm.body.deleteWorkflow'),
+															buttons: [$_('confirm.button.confirm')],
+															callbacks: [
+																async () => {
+																	opWorkflow(row, 'destroy');
+																	mtcConfirmReset();
+																},
+															],
+														};
 													}}>
 													<Icon name="trash" />
 													{$_('remotetable.wfa.deleteThisWorkflow')}
@@ -796,15 +784,17 @@
 												<NavLink
 													on:click={(e) => {
 														e.preventDefault();
-														theConfirm.title = $_('confirm.title.areyousure');
-														theConfirm.body = $_('confirm.body.deleteWorkflow');
-														theConfirm.buttons = [$_('confirm.button.confirm')];
-														theConfirm.callbacks = [
-															async () => {
-																opWorkflow(row, 'restartthendestroy');
-															},
-														];
-														theConfirm.toggle();
+														$mtcConfirm = {
+															title: $_('confirm.title.areyousure'),
+															body: $_('confirm.body.deleteWorkflow'),
+															buttons: [$_('confirm.button.confirm')],
+															callbacks: [
+																async () => {
+																	opWorkflow(row, 'restartthendestroy');
+																	mtcConfirmReset();
+																},
+															],
+														};
 													}}>
 													<Icon name="trash" />
 													{$_('remotetable.wfa.restartthendeleteThisWorkflow')}
@@ -903,10 +893,9 @@
 	{#key rowsCount}
 		<div class="mt-3 ">
 			<Pagination
-				page={$wfPage}
+				page={$srPage[BIZ]}
 				pageSize={$filterStorage.pageSize}
 				count={rowsCount}
-				serverSide={true}
 				{isMobile}
 				on:pageChange={onPageChange} />
 		</div>

@@ -12,10 +12,8 @@
 	import { API_SERVER } from '$lib/Env';
 	import { enhance } from '$lib/form';
 	import TagPicker from '$lib/TagPicker.svelte';
-	import { slide, fade } from 'svelte/transition';
-	import Transition from '$lib/Transition.svelte';
 	import { session } from '$app/stores';
-	import { tplPage, resultCache } from '$lib/Stores';
+	import { showAdvancedSearch, srPage, resultCache, lastQuery } from '$lib/Stores';
 	import ItemEditor from './TplSearchResultItemEditor.svelte';
 	import ColPerRowSelection from '$lib/ColPerRowSelection.svelte';
 	import PageSize from '$lib/PageSize.svelte';
@@ -50,9 +48,11 @@
 	import { getData } from '$lib/pagination/Server';
 	import { createEventDispatcher, getContext, setContext } from 'svelte';
 
-	if (!$filterStorage.tpl) $filterStorage.tpl = {};
+	const ENDPOINT = 'template/search';
+	const BIZ = 'tpl';
+	let loadTimer = null;
+	let LOADING_TIMEOUT = 400;
 
-	let endpoint;
 	let rows = [];
 	let user = $session.user;
 	let rowsCount = 0;
@@ -82,19 +82,17 @@
 	let thePdsResolver;
 	let searchTimer = null;
 	let sorting = { dir: 'desc', key: 'updatedAt' };
-	let useTransition = true;
 	export let menu_has_form = false;
 	export let form_status = { create: false, search: false, sort: false, import: false };
 	let urls = {
 		create: `${API_SERVER}/template/create`,
-		search: `${API_SERVER}/template/search`,
 	};
-	let storeSorting = $filterStorage.tpl.tplSorting;
+	let storeSorting = $filterStorage[BIZ].tplSorting;
 	if (storeSorting) {
 		if (storeSorting.dir && storeSorting.key) {
 			sorting = storeSorting;
 		} else {
-			$filterStorage.tpl.tplSorting = sorting;
+			$filterStorage[BIZ].tplSorting = sorting;
 		}
 	}
 	$: filteredRows = rows;
@@ -105,6 +103,7 @@
 		});
 		menu_has_form = false;
 	}
+
 	function show_form(form_name: string) {
 		hide_all_form();
 		form_status[form_name] = true;
@@ -131,7 +130,7 @@
 			.then(async (result) => {
 				//templates = [result, ...templates];
 				rows = [result, ...rows];
-				delete $resultCache['template/search'];
+				delete $resultCache[BIZ];
 			})
 			.catch((error) => {
 				console.error('Error:', error);
@@ -140,13 +139,13 @@
 
 	setContext('state', {
 		getState: () => ({
-			page: $tplPage,
+			page: $srPage[BIZ],
 			pageSize: $filterStorage.pageSize,
 			rows,
 			filteredRows,
 		}),
 		setPage: (_page) => {
-			$tplPage = _page;
+			$srPage[BIZ] = _page;
 		},
 		setRows: (_rows) => {
 			filteredRows = _rows;
@@ -154,57 +153,75 @@
 	});
 
 	async function searchNow(detail = null) {
-		searchTimer && clearTimeout(searchTimer);
-		searchTimer = setTimeout(() => {
-			if (Utils.isBlank($filterStorage.tpl.tplTag)) {
-				$filterStorage.tpl.tplTag = '';
+		if (Utils.isBlank($filterStorage[BIZ].tplTag)) {
+			$filterStorage[BIZ].tplTag = '';
+		}
+		if (Parser.isEmpty($filterStorage[BIZ].author)) {
+			//$filterStorage[BIZ].author = user.email;
+		} else {
+			if ($filterStorage[BIZ].author[0] === '@') {
+				$filterStorage[BIZ].author = $filterStorage[BIZ].author.substring(1);
 			}
-			if (Parser.isEmpty($filterStorage.tpl.author)) {
-				//$filterStorage.tpl.author = user.email;
-			} else {
-				if ($filterStorage.tpl.author[0] === '@') {
-					$filterStorage.tpl.author = $filterStorage.tpl.author.substring(1);
-				}
-				if ($filterStorage.tpl.author.indexOf('@') < 0) {
-					$filterStorage.tpl.author += user.email.substring(user.email.indexOf('@'));
-				}
+			if ($filterStorage[BIZ].author.indexOf('@') < 0) {
+				$filterStorage[BIZ].author += user.email.substring(user.email.indexOf('@'));
 			}
-			if (Utils.isBlank($filterStorage.tpl.tplTitlePattern)) {
-				$filterStorage.tpl.tplTitlePattern = '';
-			}
-			if (detail && detail.page) $tplPage = detail.page;
-			if (detail && detail.sorting) sorting = detail.sorting;
-			if (!$filterStorage.pageSize) $filterStorage.pageSize = 10;
-			load($tplPage, 'refresh').then((res) => {});
-			searchTimer = undefined;
-		}, 200);
+		}
+		if (Utils.isBlank($filterStorage[BIZ].pattern)) {
+			$filterStorage[BIZ].pattern = '';
+		}
+		if (detail && detail.page) $srPage[BIZ] = detail.page;
+		if (detail && detail.sorting) sorting = detail.sorting;
+		if (!$filterStorage.pageSize) $filterStorage.pageSize = 10;
+		load($srPage[BIZ], 'refresh').then((res) => {});
 	}
 
 	async function load(_page, reason = 'unknown') {
 		loading = true;
-		let tagsForFilter = $filterStorage.tpl.tplTag.split(';');
-		const data = await getData(
-			'template/search',
-			user.sessionToken,
-			_page,
-			$filterStorage.pageSize,
-			$filterStorage.tpl.tplTitlePattern,
-			sorting,
-			{
-				tagsForFilter: tagsForFilter,
-				author: $filterStorage.tpl.author,
-			},
-			reason,
-		);
-		rows = data.rows;
-		rowsCount = data.rowsCount;
-		if (data.gotoPage0) {
-			console.log('OK, i am goint to page 0');
-			//onPageChange({ detail: { page: 0 } });
-			//$tplPage = 0;
+		let payload = {
+			pattern: $filterStorage[BIZ].pattern,
+			skip: _page * $filterStorage.pageSize,
+			limit: $filterStorage.pageSize,
+			sort_order: sorting && sorting.dir === 'desc' ? -1 : 1,
+			tagsForFilter: $filterStorage[BIZ].tplTag.split(';'),
+			author: $filterStorage[BIZ].author,
+			reason: reason,
+		};
+		let { skip: _skip, ...payloadWithoutSkip } = payload;
+		if (false === Utils.objectEqual(payloadWithoutSkip, $lastQuery[BIZ])) {
+			payload.skip = 0;
+			$srPage[BIZ] = 0;
+			console.log('Skip  to 0');
 		}
-		if (data.fromCache) {
-			useTransition = false;
+		$lastQuery[BIZ] = payloadWithoutSkip;
+
+		let searchResult = null;
+		let theResultCache = $resultCache;
+		for (let i = 0; i < theResultCache[BIZ].length; i++) {
+			if (Utils.objectEqual(theResultCache[BIZ][i].PAYLOAD, payload)) {
+				searchResult = theResultCache[BIZ][i].RESULT;
+				console.log(BIZ, 'Use cached SearchResult');
+				break;
+			}
+		}
+
+		if (!searchResult) {
+			loadTimer && clearTimeout(loadTimer);
+			loadTimer = setTimeout(async () => {
+				console.log('Loading from server', LOADING_TIMEOUT);
+				const ret = await api.post(ENDPOINT, payload, user.sessionToken);
+				if (ret.error) {
+					setFadeMessage(ret.message, 'warning');
+				} else {
+					searchResult = { rows: ret.objs, rowsCount: ret.total };
+					$resultCache[BIZ].push({ PAYLOAD: payload, RESULT: searchResult });
+					rows = searchResult.rows;
+					rowsCount = searchResult.rowsCount;
+				}
+				loadTimer = null;
+			}, LOADING_TIMEOUT);
+		} else {
+			rows = searchResult.rows;
+			rowsCount = searchResult.rowsCount;
 		}
 		loading = false;
 	}
@@ -216,18 +233,18 @@
 
 	function onPageChange(event) {
 		load(event.detail.page, 'refresh');
-		$tplPage = event.detail.page;
+		$srPage[BIZ] = event.detail.page;
 	}
 
 	async function onSort(event) {
 		sorting = { dir: event.detail.dir, key: event.detail.key };
-		$filterStorage.tpl.tplSorting = sorting;
-		await load($tplPage);
+		$filterStorage[BIZ].tplSorting = sorting;
+		await load($srPage[BIZ]);
 	}
 
 	const useThisTag = function (tag, appendMode = false) {
 		if (appendMode) {
-			let existingTags = $filterStorage.tpl.tplTag;
+			let existingTags = $filterStorage[BIZ].tplTag;
 			if (Parser.isEmpty(existingTags)) {
 				existingTags = '';
 			}
@@ -242,7 +259,7 @@
 			if (tag.trim().length > 0) currentTags = [tag];
 			else currentTags = [];
 		}
-		$filterStorage.tpl.tplTag = currentTags.join(';');
+		$filterStorage[BIZ].tplTag = currentTags.join(';');
 		searchNow();
 	};
 
@@ -304,20 +321,18 @@
 		if (localStorage) {
 			recentTemplates = JSON.parse(localStorage.getItem('recentTemplates') ?? JSON.stringify([]));
 		}
-		if ($session.showAdvancedSearch === undefined) {
-			console.log('First time loading...');
-			$session.showAdvancedSearch = false;
+		if ($showAdvancedSearch[BIZ] === undefined) {
+			LOADING_TIMEOUT = 0;
+			$showAdvancedSearch[BIZ] = false;
 			resetQuery();
 		} else {
-			console.log('Not First time loading...');
-			if ($session.showAdvancedSearch === false) {
-				console.log('showAdvancedSearch === false...');
+			LOADING_TIMEOUT = 400;
+			if ($showAdvancedSearch[BIZ] === false) {
 				resetQuery();
 			} else {
-				console.log('showAdvancedSearch === true...');
+				await searchNow();
 			}
 		}
-		useThisTag('', true);
 	});
 	const stateContext = getContext('state');
 
@@ -365,25 +380,27 @@
 
 	const clearTag = async function () {
 		currentTags = [];
-		$filterStorage.tpl.tplTag = '';
+		$filterStorage[BIZ].tplTag = '';
 		let tmp = await api.post('template/tplid/list', {}, user.sessionToken);
 		await searchNow();
 	};
 
 	function resetQuery(clearCache = false) {
-		console.warn('Reset Query');
 		clearTag();
-		$filterStorage.tpl.author = user.email;
-		$filterStorage.tpl.tplTitlePattern = '';
-		clearCache && delete $resultCache['template/search'];
+		$filterStorage[BIZ].author = user.email;
+		$filterStorage[BIZ].pattern = '';
+		if (clearCache) {
+			delete $resultCache[BIZ];
+			$resultCache[BIZ] = [];
+		}
 	}
 
 	const toggleAdvancedSearch = async () => {
-		$session.showAdvancedSearch = !$session.showAdvancedSearch;
-		if ($session.showAdvancedSearch == false) {
+		$showAdvancedSearch[BIZ] = !$showAdvancedSearch[BIZ];
+		if ($showAdvancedSearch[BIZ] == false) {
 			resetQuery();
 		} else {
-			let existingTags = $filterStorage.tpl.tplTag;
+			let existingTags = $filterStorage[BIZ].tplTag;
 			if (Parser.hasValue(existingTags)) {
 				let existingArr = existingTags.split(';');
 				currentTags = existingArr;
@@ -408,9 +425,9 @@
 					rows = [created, ...rows];
 					rowsCount = rowsCount + 1;
 					form.reset();
-					$filterStorage.tpl.author = user.email;
-					$filterStorage.tpl.tplTitlePattern = '';
-					delete $resultCache['template/search'];
+					$filterStorage[BIZ].author = user.email;
+					$filterStorage[BIZ].pattern = '';
+					delete $resultCache[BIZ];
 				},
 				error: async (res, error, form) => {
 					let retError = await res.json();
@@ -547,7 +564,7 @@
 				{$_('button.import')}
 			</Button>
 			<Button color="primary" on:click={toggleAdvancedSearch} class="m-0 p-1">
-				{#if $session.showAdvancedSearch}
+				{#if $showAdvancedSearch[BIZ]}
 					<i class="bi bi-x-circle" />
 				{:else}
 					<i class="bi bi-search" />
@@ -565,7 +582,7 @@
 			</Button>
 		</div>
 	</div>
-	{#if $session.showAdvancedSearch}
+	{#if $showAdvancedSearch[BIZ]}
 		<TagPicker {currentTags} {useThisTag} {clearTag} />
 		<div class="mb-3">&nbsp;</div>
 		<div>
@@ -581,7 +598,7 @@
 								type="search"
 								title={$_('remotetable.bywhat')}
 								placeholder={$_('remotetable.bywhat')}
-								bind:value={$filterStorage.tpl.tplTitlePattern} />
+								bind:value={$filterStorage[BIZ].pattern} />
 							<div class="btn btn-primary" on:click|preventDefault={searchNow}>
 								<i class="bi bi-arrow-return-left" />
 							</div>
@@ -595,12 +612,12 @@
 						</InputGroupText>
 						<Input
 							class="flex-fill"
-							bind:value={$filterStorage.tpl.author}
+							bind:value={$filterStorage[BIZ].author}
 							placeholder="author email" />
 						<Button on:click={searchNow} color="primary">List</Button>
 						<Button
 							on:click={async () => {
-								$filterStorage.tpl.author = user.email;
+								$filterStorage[BIZ].author = user.email;
 								await searchNow();
 							}}
 							class="btn-outline-primary m-0 py-1 px-3"
@@ -609,7 +626,7 @@
 						</Button>
 						<Button
 							on:click={async () => {
-								$filterStorage.tpl.author = '';
+								$filterStorage[BIZ].author = '';
 								await searchNow();
 							}}
 							class="btn-outline-primary m-0 py-1 px-3"
@@ -637,10 +654,9 @@
 	{#key rowsCount}
 		<div class="mt-3 ">
 			<Pagination
-				page={$tplPage}
+				page={$srPage[BIZ]}
 				pageSize={$filterStorage.pageSize}
 				count={rowsCount}
-				serverSide={true}
 				{isMobile}
 				on:pageChange={onPageChange} />
 		</div>
@@ -745,7 +761,7 @@
 											<a
 												href={'#'}
 												on:click|preventDefault={async () => {
-													$filterStorage.tpl.wf.tplid = row.tplid;
+													$filterStorage.wf.tplid = row.tplid;
 													goto('/workflow');
 												}}
 												class="nav-link ">
@@ -757,7 +773,7 @@
 											<a
 												href={'#'}
 												on:click|preventDefault={async () => {
-													$filterStorage.tpl.todo.tplid = row.tplid;
+													$filterStorage.todo.tplid = row.tplid;
 													goto('/work');
 												}}
 												class="nav-link ">
@@ -973,10 +989,9 @@
 	</Row>
 	{#key rowsCount}
 		<Pagination
-			page={$tplPage}
+			page={$srPage[BIZ]}
 			pageSize={$filterStorage.pageSize}
 			count={rowsCount}
-			serverSide={true}
 			{isMobile}
 			on:pageChange={onPageChange} />
 	{/key}

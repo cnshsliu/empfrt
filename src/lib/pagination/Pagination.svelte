@@ -17,7 +17,6 @@
 	export let count;
 	export let page = 0;
 	export let pageSize;
-	export let serverSide = false;
 	export let isMobile = false;
 	let pageCount;
 
@@ -31,9 +30,7 @@
 
 	$: count &&
 		(() => {
-			console.log('Recaculate  pageCount');
 			pageCount = Math.ceil(count / pageSize);
-			console.log('Got ', pageCount);
 		})();
 	pageCount = Math.ceil(count / pageSize);
 
@@ -113,7 +110,7 @@
 	button {
 		background: transparent;
 		border: 1px solid #ccc;
-		padding: 5px 10px;
+		padding: 1px 10px;
 		margin-left: 3px;
 		float: left;
 		cursor: pointer;

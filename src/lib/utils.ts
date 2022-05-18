@@ -4,8 +4,8 @@ export async function post(endpoint: string, data = {}): Promise<Response> {
 		credentials: 'include',
 		body: JSON.stringify(data || {}),
 		headers: {
-			'Content-Type': 'application/json'
-		}
+			'Content-Type': 'application/json',
+		},
 	}).then((r) => r.json());
 }
 export const isBlank = function (val: string) {
@@ -52,4 +52,8 @@ export const formatId = function (id) {
 	} else {
 		return 'wrong format';
 	}
+};
+
+export const objectEqual = (obj1, obj2) => {
+	return Object.entries(obj1).toString() === Object.entries(obj2).toString();
 };

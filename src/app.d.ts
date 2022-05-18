@@ -19,8 +19,6 @@ declare namespace App {
 		templatesForSearch_for_todo?: any[];
 		templatesForSearch_for_wf?: any[];
 		delegators?: any[];
-		savedSearches?: { todo?: any[]; wf?: any[] };
-		resultCache?: any;
 	}
 
 	interface Stuff {}

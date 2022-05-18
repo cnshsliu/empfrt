@@ -1,5 +1,3 @@
-<svelte:options accessors />
-
 <script type="ts">
 	import { _, date, time } from '$lib/i18n';
 	import * as Utils from '$lib/utils';
@@ -14,7 +12,7 @@
 	import { navigating, session } from '$app/stores';
 	import { filterStorage } from '$lib/empstores';
 	import ColPerRowSelection from '$lib/ColPerRowSelection.svelte';
-	import { todoPage, resultCache } from '$lib/Stores';
+	import { showAdvancedSearch, srPage, resultCache, lastQuery } from '$lib/Stores';
 	import PageSize from '$lib/PageSize.svelte';
 	import { tspans } from '$lib/variables';
 	import { onMount, onDestroy } from 'svelte';
@@ -42,6 +40,11 @@
 	import { getData } from '$lib/pagination/Server';
 	import { createEventDispatcher, getContext, setContext } from 'svelte';
 
+	const ENDPOINT = 'work/search';
+	const BIZ = 'todo';
+	let loadTimer = null;
+	let LOADING_TIMEOUT = 400;
+
 	if ($session.user.tenant._id === undefined) {
 		setTimeout(async () => {
 			$mtcConfirm = {
@@ -59,18 +62,18 @@
 	}
 	let rows = [];
 	let pageIndex = 0; //first row
-	if (!$filterStorage.todo) $filterStorage.todo = {};
+	if (!$filterStorage[BIZ]) $filterStorage[BIZ] = {};
 
 	let loading = true;
 	let rowsCount = 0;
 	let show_calendar_select = false;
 	let sorting = { dir: 'desc', key: 'lastdays' };
-	let storeSorting = $filterStorage.todo.workSorting;
+	let storeSorting = $filterStorage[BIZ].workSorting;
 	let user = $session.user;
 	let autoRefreshTimes = 0;
 	let bizSearchCondition = { init: true, search: '', extra: {} };
 	let currentTags = [];
-	let searchTimer = undefined;
+	let aSsPicked = '';
 	let statuses = [
 		{ value: 'All', label: $_('status.All') },
 		{ value: 'ST_RUN', label: $_('status.ST_RUN') },
@@ -81,21 +84,39 @@
 	if (!$session.templatesForSearch_for_todo) {
 		$session.templatesForSearch_for_todo = [];
 	}
-	if ($filterStorage.todo.calendar_begin !== '' || $filterStorage.todo.calendar_end !== '') {
+	if ($filterStorage[BIZ].calendar_begin !== '' || $filterStorage[BIZ].calendar_end !== '') {
 		show_calendar_select = true;
 	} else {
 		show_calendar_select = false;
 	}
+
+	$: filteredRows = rows;
+	setContext('state', {
+		getState: () => ({
+			page: $srPage[BIZ],
+			pageSize: $filterStorage.pageSize,
+			rows,
+			filteredRows,
+		}),
+		setPage: (_page) => {
+			$srPage[BIZ] = _page;
+		},
+		setRows: (_rows) => {
+			filteredRows = _rows;
+		},
+	});
+
 	const clearTag = async function () {
 		currentTags = [];
-		$filterStorage.todo.tplTag = '';
+		$filterStorage[BIZ].tplTag = '';
 		let tmp = await api.post('template/tplid/list', {}, user.sessionToken);
 		$session.templatesForSearch_for_todo = tmp.map((x) => x.tplid);
 		await searchNow();
 	};
+
 	const useThisTag = async function (tag, appendMode = false) {
 		if (appendMode) {
-			let existingTags = $filterStorage.todo.tplTag;
+			let existingTags = $filterStorage[BIZ].tplTag;
 			if (Parser.isEmpty(existingTags)) {
 				existingTags = '';
 			}
@@ -110,8 +131,8 @@
 			if (tag.trim().length > 0) currentTags = [tag];
 			else currentTags = [];
 		}
-		$filterStorage.todo.tplTag = currentTags.join(';');
-		$filterStorage.todo.tplid = '';
+		$filterStorage[BIZ].tplTag = currentTags.join(';');
+		$filterStorage[BIZ].tplid = '';
 		let tmp = await api.post(
 			'template/tplid/list',
 			{ tagsForFilter: currentTags },
@@ -120,8 +141,9 @@
 		$session.templatesForSearch_for_todo = tmp.map((x) => x.tplid);
 		await searchNow();
 	};
+
 	const loadTemplatesOnCurrentTags = async function () {
-		let existingTags = $filterStorage.todo.tplTag;
+		let existingTags = $filterStorage[BIZ].tplTag;
 		if (Parser.isEmpty(existingTags)) {
 			existingTags = '';
 		}
@@ -139,138 +161,142 @@
 		if (storeSorting.dir && storeSorting.key) {
 			sorting = storeSorting;
 		} else {
-			$filterStorage.todo.workSorting = sorting;
+			$filterStorage[BIZ].workSorting = sorting;
 		}
 	}
 
-	async function load(_page, reason = 'unknown') {
+	async function load(_page, reason = 'refresh') {
 		loading = true;
-		let payload_extra = {
-			status: $filterStorage.todo.workStatus,
-			tspan: $filterStorage.todo.tspan,
+		let payload = {
+			pattern: $filterStorage[BIZ].pattern,
+			skip: _page * $filterStorage.pageSize,
+			limit: $filterStorage.pageSize,
+			sort_order: sorting && sorting.dir === 'desc' ? -1 : 1,
+			status: $filterStorage[BIZ].status,
+			tspan: $filterStorage[BIZ].tspan,
+			doer: $filterStorage[BIZ].doer,
+			reason: reason,
 		};
-		if ($filterStorage.todo.doer) {
-			payload_extra['doer'] = $filterStorage.todo.doer;
-		} else {
-			$filterStorage.todo.doer = user.email;
-			payload_extra['doer'] = $filterStorage.todo.doer;
+		if ($filterStorage[BIZ].tplTag) {
+			payload['tagsForFilter'] = $filterStorage[BIZ].tplTag.split(';');
 		}
-		if ($filterStorage.todo.tplTag) {
-			payload_extra['tagsForFilter'] = $filterStorage.todo.tplTag.split(';');
+		if ($filterStorage[BIZ].tplid && $filterStorage[BIZ].tplid.trim().length > 0) {
+			payload['tplid'] = $filterStorage[BIZ].tplid.trim();
 		}
-		if ($filterStorage.todo.tplid && $filterStorage.todo.tplid.trim().length > 0) {
-			payload_extra['tplid'] = $filterStorage.todo.tplid.trim();
-		}
-		if (
-			Parser.hasValue($filterStorage.todo.calendar_begin) &&
-			Parser.hasValue($filterStorage.todo.calendar_end)
-		) {
-			payload_extra['calendar_begin'] = $filterStorage.todo.calendar_begin;
-			payload_extra['calendar_end'] = $filterStorage.todo.calendar_end;
+		if ($filterStorage[BIZ].calendar_begin && $filterStorage[BIZ].calendar_end) {
+			payload['calendar_begin'] = $filterStorage[BIZ].calendar_begin;
+			payload['calendar_end'] = $filterStorage[BIZ].calendar_end;
 		}
 
-		if (!$filterStorage.pageSize) $filterStorage.pageSize = 10;
-		bizSearchCondition = {
-			init: false,
-			search: $filterStorage.todo.workTitlePattern,
-			extra: payload_extra,
-		};
+		let { skip: _skip, ...payloadWithoutSkip } = payload;
+		if (false === Utils.objectEqual(payloadWithoutSkip, $lastQuery[BIZ])) {
+			payload.skip = 0;
+			$srPage[BIZ] = 0;
+			console.log('Skip  to 0');
+			console.log(payloadWithoutSkip, $lastQuery[BIZ]);
+		}
+		$lastQuery[BIZ] = payloadWithoutSkip;
 
-		console.log(JSON.stringify(payload_extra, null, 2));
-		const data = await getData(
-			'work/search',
-			user.sessionToken,
-			_page,
-			$filterStorage.pageSize,
-			$filterStorage.todo.workTitlePattern,
-			sorting,
-			payload_extra,
-			reason,
-		);
-		if (data && data.rows) {
-			rows = data.rows;
-			rowsCount = data.rowsCount;
-		} else if (data && (<any>data).error) {
-			if ((<any>data).error === 'KICKOUT') {
-				setFadeMessage($_('session.forcetohome'));
-				goto('/');
-			} else {
+		let searchResult = null;
+		let theResultCache = $resultCache;
+		for (let i = 0; i < theResultCache[BIZ].length; i++) {
+			if (Utils.objectEqual(theResultCache[BIZ][i].PAYLOAD, payload)) {
+				searchResult = theResultCache[BIZ][i].RESULT;
+				console.log(BIZ, 'Use cached SearchResult');
+				break;
 			}
+		}
+
+		if (!searchResult) {
+			console.log('Loading from server', LOADING_TIMEOUT);
+			loadTimer && clearTimeout(loadTimer);
+			loadTimer = setTimeout(async () => {
+				const ret = await api.post(ENDPOINT, payload, user.sessionToken);
+				if (ret.error) {
+					if (ret.error === 'KICKOUT') {
+						setFadeMessage($_('session.forcetohome'));
+						goto('/');
+					} else {
+						setFadeMessage(ret.message, 'warning');
+					}
+				} else {
+					searchResult = { rows: ret.objs, rowsCount: ret.total };
+					$resultCache[BIZ].push({ PAYLOAD: payload, RESULT: searchResult });
+					rows = searchResult.rows;
+					rowsCount = searchResult.rowsCount;
+				}
+				loadTimer = null;
+			}, LOADING_TIMEOUT);
 		} else {
-			console.warn(JSON.stringify(data));
+			rows = searchResult.rows;
+			rowsCount = searchResult.rowsCount;
 		}
 		loading = false;
 	}
 
-	export const unshiftRows = function (obj) {
-		rows = [obj, ...rows];
-		rowsCount = rowsCount + 1;
-	};
-
 	function onPageChange(event) {
-		load(event.detail.page, 'onPageChange');
-		$todoPage = event.detail.page;
+		load(event.detail.page, 'refresh');
+		$srPage[BIZ] = event.detail.page;
 	}
 
 	const calendar_changed = function () {
 		if (
-			Parser.hasValue($filterStorage.todo.calendar_begin) &&
-			Parser.isEmpty($filterStorage.todo.calendar_end)
+			Parser.hasValue($filterStorage[BIZ].calendar_begin) &&
+			Parser.isEmpty($filterStorage[BIZ].calendar_end)
 		) {
-			$filterStorage.todo.calendar_end = $filterStorage.todo.calendar_begin;
+			$filterStorage[BIZ].calendar_end = $filterStorage[BIZ].calendar_begin;
 		}
 		if (
-			Parser.hasValue($filterStorage.todo.calendar_begin) &&
-			Parser.hasValue($filterStorage.todo.calendar_end)
+			Parser.hasValue($filterStorage[BIZ].calendar_begin) &&
+			Parser.hasValue($filterStorage[BIZ].calendar_end)
 		) {
 			searchNow(null).then();
 		}
 	};
 
 	async function searchNow(detail = null) {
-		searchTimer && clearTimeout(searchTimer);
-		searchTimer = setTimeout(() => {
-			if (Utils.isBlank($filterStorage.todo.doer)) {
-				$filterStorage.todo.doer = user.email;
-			}
-			if (Utils.isBlank($filterStorage.todo.wfStatus)) {
-				$filterStorage.todo.wfStatus = 'ST_RUN';
-			}
-			if (Utils.isBlank($filterStorage.todo.workStatus)) {
-				$filterStorage.todo.workStatus = 'ST_RUN';
-			}
-			if (Utils.isBlank($filterStorage.todo.workTitlePattern)) {
-				$filterStorage.todo.workTitlePattern = '';
-			}
-			if (Utils.isBlank($filterStorage.todo.wfTitlePattern)) {
-				$filterStorage.todo.wfTitlePattern = '';
-			}
-			if (detail && detail.page) $todoPage = detail.page;
-			if (detail && detail.sorting) sorting = detail.sorting;
-			load($todoPage, 'refresh').then((res) => {});
-			searchTimer = undefined;
-		}, 200);
+		if (Utils.isBlank($filterStorage[BIZ].tplTag)) {
+			$filterStorage[BIZ].tplTag = '';
+		}
+		if (Utils.isBlank($filterStorage[BIZ].doer)) {
+			$filterStorage[BIZ].doer = user.email;
+		}
+		if (Utils.isBlank($filterStorage[BIZ].status)) {
+			$filterStorage[BIZ].status = 'ST_RUN';
+		}
+		if (Utils.isBlank($filterStorage[BIZ].pattern)) {
+			$filterStorage[BIZ].pattern = '';
+		}
+		if (Utils.isBlank($filterStorage[BIZ].calendar_begin)) $filterStorage[BIZ].calendar_begin = '';
+		if (Utils.isBlank($filterStorage[BIZ].calendar_end)) $filterStorage[BIZ].calendar_end = '';
+		if (detail && detail.page) $srPage[BIZ] = detail.page;
+		if (detail && detail.sorting) sorting = detail.sorting;
+		load($srPage[BIZ], 'refresh').then((res) => {});
 	}
 
 	function resetQuery(clearCache = false) {
 		clearTag();
-		$filterStorage.todo.workStatus = 'ST_RUN';
-		$filterStorage.todo.tplid = '';
-		$filterStorage.todo.doer = user.email;
-		$filterStorage.todo.workTitlePattern = '';
-		$filterStorage.todo.tspan = 'any';
-		$filterStorage.todo.calendar_begin = '';
-		$filterStorage.todo.calendar_end = '';
+		$filterStorage[BIZ].status = 'ST_RUN';
+		$filterStorage[BIZ].tplid = '';
+		$filterStorage[BIZ].doer = user.email;
+		$filterStorage[BIZ].pattern = '';
+		$filterStorage[BIZ].tspan = 'any';
+		$filterStorage[BIZ].calendar_begin = '';
+		$filterStorage[BIZ].calendar_end = '';
 		show_calendar_select = false;
-		clearCache && delete $resultCache['work/search'];
+		aSsPicked = '';
+		if (clearCache) {
+			delete $resultCache[BIZ];
+			$resultCache[BIZ] = [];
+		}
 	}
 
 	const toggleAdvancedSearch = async () => {
-		$session.showAdvancedSearch = !$session.showAdvancedSearch;
-		if ($session.showAdvancedSearch == false) {
+		$showAdvancedSearch[BIZ] = !$showAdvancedSearch[BIZ];
+		if ($showAdvancedSearch[BIZ] == false) {
 			resetQuery();
 		} else {
-			let existingTags = $filterStorage.todo.tplTag;
+			let existingTags = $filterStorage[BIZ].tplTag;
 			if (Parser.hasValue(existingTags)) {
 				let existingArr = existingTags.split(';');
 				currentTags = existingArr;
@@ -294,8 +320,8 @@
 
 	async function onSort(event) {
 		sorting = { dir: event.detail.dir, key: event.detail.key };
-		$filterStorage.todo.workSorting = sorting;
-		await load($todoPage, 'onSort');
+		$filterStorage[BIZ].workSorting = sorting;
+		await load($srPage[BIZ], 'refresh');
 	}
 	function gotoWorkitem(work: Work, anchor = '') {
 		goto(`/work/${work.todoid}${anchor}`, {
@@ -305,39 +331,25 @@
 	function gotoWorkflow(wfid: string) {
 		goto(`/workflow/${wfid}`, { replaceState: false });
 	}
-	$: filteredRows = rows;
-	setContext('state', {
-		getState: () => ({
-			page: $todoPage,
-			pageSize: $filterStorage.pageSize,
-			rows,
-			filteredRows,
-		}),
-		setPage: (_page) => {
-			$todoPage = _page;
-		},
-		setRows: (_rows) => {
-			filteredRows = _rows;
-		},
-	});
-	const stateContext = getContext('state');
 	let isMobile = false;
 	onMount(async () => {
 		isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-		if ($session.showAdvancedSearch === undefined) {
+		if ($showAdvancedSearch[BIZ] === undefined) {
 			console.log('First time loading...');
-			$session.showAdvancedSearch = false;
+			LOADING_TIMEOUT = 0;
+			$showAdvancedSearch[BIZ] = false;
 			resetQuery();
 		} else {
+			LOADING_TIMEOUT = 400;
 			console.log('Not First time loading...');
-			if ($session.showAdvancedSearch === false) {
+			if ($showAdvancedSearch[BIZ] === false) {
 				console.log('showAdvancedSearch === false...');
 				resetQuery();
 			} else {
 				console.log('showAdvancedSearch === true...');
+				await searchNow();
 			}
 		}
-		await searchNow();
 	});
 </script>
 
@@ -349,7 +361,7 @@
 		<div class="ms-5 align-self-center flex-grow-1">&nbsp;</div>
 		<div class="justify-content-end flex-shrink-0">
 			<Button color="primary" on:click={toggleAdvancedSearch} class="m-0 p-1">
-				{#if $session.showAdvancedSearch}
+				{#if $showAdvancedSearch[BIZ]}
 					<i class="bi bi-x-circle" />
 				{:else}
 					<i class="bi bi-search" />
@@ -367,17 +379,19 @@
 			</Button>
 		</div>
 	</div>
-	{#if $session.showAdvancedSearch}
+	{#if $showAdvancedSearch[BIZ]}
 		<TagPicker {currentTags} {useThisTag} {clearTag} />
 		<Row class="mb-3 d-flex justify-content-end">
 			{#each statuses as status, index (status)}
 				<Col xs="auto">
-					<Input
-						type="radio"
-						bind:group={$filterStorage.todo.workStatus}
-						value={status.value}
-						label={status.label}
-						on:input={searchNow} />
+					<label>
+						<input
+							type="radio"
+							bind:group={$filterStorage[BIZ].status}
+							value={status.value}
+							on:change={searchNow} />
+						{status.label}
+					</label>
 				</Col>
 			{/each}
 		</Row>
@@ -385,25 +399,26 @@
 			<Col>
 				<InputGroup>
 					<InputGroupText>{$_('extrafilter.template')}</InputGroupText>
-					{#key $filterStorage.todo.tplid}
-						<select
-							class="form-select"
-							name="selectTpl"
-							id="tplSelect"
-							bind:value={$filterStorage.todo.tplid}
-							on:input={searchNow}>
-							<option value="">
-								{$_('extrafilter.allTemplate')}
-							</option>
-							{#if $session.templatesForSearch_for_todo}
-								{#each $session.templatesForSearch_for_todo as tpl, index (tpl)}
-									<option value={tpl} selected={tpl === $filterStorage.todo.tplid}>
-										{tpl}
-									</option>
-								{/each}
-							{/if}
-						</select>
-					{/key}
+					<select
+						class="form-select"
+						name="selectTpl"
+						id="tplSelect"
+						bind:value={$filterStorage[BIZ].tplid}
+						on:change|preventDefault={async (e) => {
+							e.preventDefault();
+							await searchNow();
+						}}>
+						<option value="">
+							{$_('extrafilter.allTemplate')}
+						</option>
+						{#if $session.templatesForSearch_for_todo}
+							{#each $session.templatesForSearch_for_todo as tpl, index (tpl)}
+								<option value={tpl} selected={tpl === $filterStorage[BIZ].tplid}>
+									{tpl}
+								</option>
+							{/each}
+						{/if}
+					</select>
 				</InputGroup>
 			</Col>
 			<Col>
@@ -412,7 +427,7 @@
 					<Input
 						class="flex-fill"
 						name="other_doer"
-						bind:value={$filterStorage.todo.doer}
+						bind:value={$filterStorage[BIZ].doer}
 						aria-label="User Email"
 						placeholder="email" />
 					<Button on:click={searchNow} color="primary">
@@ -420,7 +435,7 @@
 					</Button>
 					<Button
 						on:click={() => {
-							$filterStorage.todo.doer = user.email;
+							$filterStorage[BIZ].doer = user.email;
 							searchNow();
 						}}
 						color="secondary">
@@ -442,7 +457,7 @@
 							type="search"
 							title={$_('remotetable.bywhat')}
 							placeholder={$_('remotetable.bywhat')}
-							bind:value={$filterStorage.todo.workTitlePattern} />
+							bind:value={$filterStorage[BIZ].pattern} />
 						<div class="btn btn-primary" on:click|preventDefault={searchNow}>
 							<i class="bi bi-arrow-return-left" />
 						</div>
@@ -458,10 +473,10 @@
 						class="form-control"
 						type="select"
 						id="timespanSelect"
-						bind:value={$filterStorage.todo.tspan}
+						bind:value={$filterStorage[BIZ].tspan}
 						on:change={async (e) => {
 							e.preventDefault();
-							await load($todoPage, 'onTspan');
+							await load($srPage[BIZ], 'refresh');
 						}}>
 						{#each Object.keys(tspans) as key}
 							<option value={key}>{tspans[key]}</option>
@@ -470,8 +485,8 @@
 					<Button
 						on:click={async () => {
 							if (show_calendar_select) {
-								$filterStorage.todo.calendar_begin = '';
-								$filterStorage.todo.calendar_end = '';
+								$filterStorage[BIZ].calendar_begin = '';
+								$filterStorage[BIZ].calendar_end = '';
 								show_calendar_select = false;
 								await searchNow(null);
 							} else {
@@ -490,7 +505,7 @@
 						<InputGroupText>Begin:</InputGroupText>
 						<Input
 							type="date"
-							bind:value={$filterStorage.todo.calendar_begin}
+							bind:value={$filterStorage[BIZ].calendar_begin}
 							on:change={calendar_changed} />
 					</InputGroup>
 				</Col>
@@ -499,7 +514,7 @@
 						<InputGroupText>End:</InputGroupText>
 						<Input
 							type="date"
-							bind:value={$filterStorage.todo.calendar_end}
+							bind:value={$filterStorage[BIZ].calendar_end}
 							on:change={calendar_changed} />
 						<Button on:click={calendar_changed} color="primary">
 							<i class="bi bi-arrow-return-left" />
@@ -509,47 +524,44 @@
 			</Row>
 		{/if}
 		<Searchlet
-			searchCondition={bizSearchCondition}
 			objtype="todo"
+			bind:aSsPicked
 			on:searchlet={(msg) => {
 				let ss = JSON.parse(msg.detail.ss);
-				console.log(JSON.stringify(ss, null, 2));
-				if (ss.extra.status) $filterStorage.todo.workStatus = ss.extra.status;
-				if (ss.extra.tplid) {
-					$filterStorage.todo.tplid = ss.extra.tplid;
-				} else {
-					$filterStorage.todo.tplid = '';
-				}
-				if (ss.extra.starter) $filterStorage.todo.starter = ss.extra.starter;
-				if (ss.extra.doer) $filterStorage.todo.doer = ss.extra.doer;
-				if (ss.search) $filterStorage.todo.workTitlePattern = ss.search;
-				else $filterStorage.todo.workTitlePattern = '';
-				if (ss.extra.tspan) $filterStorage.todo.tspan = ss.extra.tspan;
-				if (ss.extra.calendar_begin) $filterStorage.todo.calendar_begin = ss.extra.calendar_begin;
-				else $filterStorage.todo.calendar_begin = '';
-				if (ss.extra.calendar_end) $filterStorage.todo.calendar_end = ss.extra.calendar_end;
-				else $filterStorage.todo.calendar_end = '';
-				if ($filterStorage.todo.calendar_begin !== '' || $filterStorage.todo.calendar_end !== '') {
+				ss.pattern && ($filterStorage[BIZ].pattern = ss.pattern);
+				ss.status && ($filterStorage[BIZ].status = ss.status);
+				ss.tspan && ($filterStorage[BIZ].tspan = ss.tspan);
+				if (ss.doer) $filterStorage[BIZ].doer = ss.doer;
+				else $filterStorage[BIZ].doer = user.email;
+				if (ss.tplid) $filterStorage[BIZ].tplid = ss.tplid;
+				else $filterStorage[BIZ].tplid = '';
+				ss.calendar_begin && ($filterStorage[BIZ].calendar_begin = ss.calendar_begin);
+				ss.calendar_end && ($filterStorage[BIZ].calendar_end = ss.calendar_end);
+
+				if ($filterStorage[BIZ].calendar_begin !== '' || $filterStorage[BIZ].calendar_end !== '') {
 					show_calendar_select = true;
 				} else {
 					show_calendar_select = false;
 				}
+
 				searchNow().then();
 			}}
 			on:resetSearchlet={(msg) => {
-				resetQuery();
+				aSsPicked = '';
+				resetQuery(true);
 			}} />
 	{/if}
-</Container>
 
-<Container>
-	<Pagination
-		page={$todoPage}
-		pageSize={$filterStorage.pageSize}
-		count={rowsCount}
-		serverSide={true}
-		{isMobile}
-		on:pageChange={onPageChange} />
+	{#key rowsCount}
+		<div class="mt-3 ">
+			<Pagination
+				page={$srPage[BIZ]}
+				pageSize={$filterStorage.pageSize}
+				count={rowsCount}
+				{isMobile}
+				on:pageChange={onPageChange} />
+		</div>
+	{/key}
 	<div class="d-flex mt-2 p-0 w-100">
 		<div class="w-100">
 			<Row>
@@ -571,7 +583,7 @@
 		<div class="flex-shrink-1">
 			<PageSize
 				on:pagesize={async (e) => {
-					await load(0, 'change page size');
+					await load(0, 'refresh');
 				}} />
 		</div>
 		<div class="flex-shrink-1">
@@ -654,11 +666,14 @@
 		{/each}
 	</Row>
 
-	<Pagination
-		page={$todoPage}
-		pageSize={$filterStorage.pageSize}
-		count={rowsCount}
-		serverSide={true}
-		{isMobile}
-		on:pageChange={onPageChange} />
+	{#key rowsCount}
+		<div class="mt-3 ">
+			<Pagination
+				page={$srPage[BIZ]}
+				pageSize={$filterStorage.pageSize}
+				count={rowsCount}
+				{isMobile}
+				on:pageChange={onPageChange} />
+		</div>
+	{/key}
 </Container>
