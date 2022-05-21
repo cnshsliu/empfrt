@@ -102,6 +102,7 @@
 		"updatedAt": "最后更新",
 		"startedAt": "启动时间",
 		"lastingDays": "持续天数",
+		"createdAt": "下达时间",
 		"lasting": "天数",
 		"actions": "操作",
 		"author": "作者",

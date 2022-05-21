@@ -10,7 +10,6 @@
 	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import Parser from '$lib/parser';
-	import { filterStorage } from '$lib/empstores';
 	import { setFadeMessage } from '$lib/Notifier';
 	import { text_area_resize } from '$lib/autoresize_textarea';
 	import { createEventDispatcher } from 'svelte';
@@ -27,12 +26,11 @@
 	import { debugOption } from '$lib/empstores';
 	import WorkFile from '$lib/workfile.svelte';
 	import List from '$lib/input/List.svelte';
-	import { printing, notifyMessage } from '$lib/Stores';
+	import { printing, notifyMessage, worklistChangeFlag } from '$lib/Stores';
 	import type { User, Work, oneArgFunc } from '$lib/types';
 	export let work: Work;
-	export let user: User;
 	export let delegators: String[];
-	export let iframeMode: boolean;
+	let user: User = $session.user;
 	let theCommentInput;
 	let recentUsers = [];
 	let check_timer = null;
@@ -77,8 +75,10 @@
 			payload.kvars[work.kvarsArr[i]['name']] = work.kvarsArr[i];
 		}
 		api.post('work/sendback', payload, user.sessionToken);
+		api.removeCacheByPath('work/search');
+		$worklistChangeFlag++;
 		setTimeout(() => {
-			goto(iframeMode ? '/work?iframe' : '/work');
+			goto('/work');
 		}, 500);
 	}
 	function _revokeWork() {
@@ -89,8 +89,10 @@
 			comment: comment,
 		};
 		api.post('work/revoke', payload, user.sessionToken);
+		api.removeCacheByPath('work/search');
+		$worklistChangeFlag++;
 		setTimeout(() => {
-			goto(iframeMode ? '/work?iframe' : '/work');
+			goto('/work');
 		}, 500);
 	}
 	function _toggleAdhoc() {
@@ -145,6 +147,8 @@
 		if (res.error) {
 			setFadeMessage(res.message, 'warning');
 		} else {
+			api.removeCacheByPath('work/search');
+			$worklistChangeFlag++;
 			saveOneRecentUser(adhocTaskDoer);
 			setFadeMessage('Adhoc Task created successfully');
 		}
@@ -221,6 +225,8 @@
 		if (ret.error) {
 			setFadeMessage(ret.message, 'error');
 		} else {
+			api.removeCacheByPath('work/search');
+			$worklistChangeFlag++;
 			dispatch('statusChanged', ret);
 			setFadeMessage('Completed', 'success');
 			//If have endpoint, post to endpoint
@@ -274,7 +280,6 @@
 				}
 			}
 		}
-		//goto(iframeMode ? '/work?iframe' : '/work');
 		workJustDone = work;
 		tick().then(() => {
 			_refreshWork(work.todoid).then(() => {});
@@ -302,6 +307,7 @@
 			work.status === 'ST_RUN';
 		return is_doable;
 	};
+
 	const saveOneRecentUser = function (user) {
 		let tmp = recentUsers.indexOf(user);
 		if (tmp > -1) {
@@ -328,6 +334,7 @@
 		}
 		return null;
 	};
+
 	const splitWhen = (x) => {
 		x = x.trim();
 		let tmp = x.match(/(\w+)(\={1,3}|\>=?|\<=?|\!=)(.+)/);
@@ -426,6 +433,7 @@
 			}
 		}, 500);
 	};
+
 	const pickUser = (uid) => {
 		console.log(uid);
 	};
@@ -691,7 +699,7 @@
 							</Row>
 						{/if}
 						<!-- Transfer --->
-						<TransferWork {work} {iframeMode} />
+						<TransferWork {work} />
 					{:else if work.revocable}
 						<Row>
 							<Col>
@@ -812,6 +820,5 @@
 		bind:workid={work.workid}
 		{onPrint}
 		{_refreshWork}
-		{iframeMode}
 		{workJustDone} />
 </Container>

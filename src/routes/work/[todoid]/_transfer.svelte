@@ -5,7 +5,6 @@
 	import * as api from '$lib/api';
 	import { goto } from '$app/navigation';
 	export let work;
-	export let iframeMode;
 	let transferee = '';
 	let valid_tansferee = false;
 	let input_class = '';
@@ -52,8 +51,7 @@
 			placeholder="whom? "
 			bind:value={transferee}
 			on:input={checkTransfeee}
-			class={input_class}
-		/>
+			class={input_class} />
 		<Button
 			disabled={status !== 'good'}
 			on:click={async (e) => {
@@ -62,13 +60,12 @@
 					'transfer/work',
 					{
 						todoid: work.todoid,
-						whom: transferee
+						whom: transferee,
 					},
-					$session.user.sessionToken
+					$session.user.sessionToken,
 				);
-				goto(iframeMode ? '/work?iframe' : '/work');
-			}}
-		>
+				goto('/work');
+			}}>
 			{$_('todo.transfer')}
 		</Button>
 	</InputGroup>

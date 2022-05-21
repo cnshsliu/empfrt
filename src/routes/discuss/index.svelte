@@ -1,20 +1,6 @@
-<script context="module" lang="ts">
-	import TimeTool from '$lib/TimeTool';
-	export async function load({ fetch, session }) {
-		const res = await fetch('/team.json');
-
-		return {
-			props: {
-				teams: await res.json(),
-				user: session.user,
-				config: session.config
-			}
-		};
-	}
-</script>
-
 <script lang="ts">
 	import { _, locale } from '$lib/i18n';
+	import TimeTool from '$lib/TimeTool';
 	import * as api from '$lib/api';
 	import { onMount } from 'svelte';
 	import Avatar from '$lib/display/Avatar.svelte';
@@ -32,7 +18,7 @@
 		TabPane,
 		FormGroup,
 		Label,
-		Input
+		Input,
 	} from 'sveltestrap';
 	import type { User } from '$lib/types';
 	import { Container, Row, Col, Icon, Button, Nav, NavLink } from 'sveltestrap';
@@ -40,19 +26,16 @@
 	import type { StateContext } from '$lib/types';
 	import Pagination from '$lib/pagination/Pagination.svelte';
 	let page = 0;
-	let pageIndex = 0;
 	let pageSize = 20;
 
 	setContext('state', {
 		getState: () => ({
 			page,
-			pageIndex,
-			pageSize
+			pageSize,
 		}),
-		setPage: (_page, _pageIndex) => {
+		setPage: (_page) => {
 			page = _page;
-			pageIndex = _pageIndex;
-		}
+		},
 	} as StateContext);
 
 	let user = $session.user;
@@ -62,7 +45,7 @@
 		{ key: 'ALL_VISIED', display: $_('discuss.category.ALL_VISIED'), checked: false },
 		{ key: 'I_STARTED', display: $_('discuss.category.I_STARTED'), checked: false },
 		{ key: 'I_AM_IN', display: $_('discuss.category.I_AM_IN'), checked: false },
-		{ key: 'I_AM_QED', display: $_('discuss.category.I_AM_QED'), checked: true }
+		{ key: 'I_AM_QED', display: $_('discuss.category.I_AM_QED'), checked: true },
 	];
 
 	let total = 0;
@@ -121,8 +104,7 @@
 						value={cate.key}
 						id={'cate_' + cate.key}
 						checked={payload.category[0] === cate.key}
-						on:change={onCategoryChange}
-					/>
+						on:change={onCategoryChange} />
 					<label class="form-check-label" for={'cate_' + cate.key}>
 						{cate.display}
 					</label>
@@ -142,8 +124,7 @@
 						name="searchq"
 						bind:value={q}
 						id="searchq"
-						placeholder="Search here"
-					/>
+						placeholder="Search here" />
 				</div>
 				<Button on:click={onSearch}><i class="bi bi-search" /></Button>
 			</InputGroup>
@@ -218,8 +199,7 @@
 							class="kfk-link px-2 fw-bolder"
 							on:click|preventDefault={(e) => {
 								goto(`/workflow/${cmt.context.wfid}?showComment=true`);
-							}}
-						>
+							}}>
 							进入流程讨论详情
 						</a>
 					</span>

@@ -29,6 +29,7 @@
 	import { setFadeMessage } from '$lib/Notifier';
 	import FileUploader from '$lib/FileUploader.svelte';
 	import { filterStorage } from '$lib/empstores';
+	import { worklistChangeFlag } from '$lib/Stores';
 	import type { User, Template, Team, oneArgFunc } from '$lib/types';
 	import * as api from '$lib/api';
 	import {
@@ -116,10 +117,13 @@
 			user.sessionToken,
 		);
 		if (res.wfid) {
-			console.log(res);
+			await api.removeCacheByPath('workflow/search');
+			await api.removeCacheByPath('work/search');
+			$worklistChangeFlag++;
 			startedWorkflow = { wfid: res.wfid, tplid: res.tplid, ts: new Date().getTime() };
 			fade_message = `Workflow ${res.wftitle} Started.`;
 			setFadeMessage(fade_message, 'success');
+
 			starting = 1;
 		} else {
 			startedWorkflow = null;

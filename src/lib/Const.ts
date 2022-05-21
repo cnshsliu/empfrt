@@ -1,5 +1,5 @@
 const internals = {
-	VERSION: '5.1',
+	VERSION: '6.0',
 };
 
 export default internals;

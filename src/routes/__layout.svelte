@@ -14,14 +14,13 @@
 </script>
 
 <script lang="ts">
+	import * as api from '$lib/api';
 	import { Container } from 'sveltestrap';
 	import Confirm from '$lib/confirm.svelte';
 	import { printing, notifyMessage, mtcConfirm, mtcConfirmReset } from '$lib/Stores';
 	import { filterStorage } from '$lib/empstores';
-	import { navigating, session } from '$app/stores';
-	import { onMount } from 'svelte';
-	import { slide, fade } from 'svelte/transition';
-	import Transition from '$lib/Transition.svelte';
+	import { navigating } from '$app/stores';
+	import { onMount, onDestroy } from 'svelte';
 	import { DEPLOY_MODE } from '$lib/Env';
 	import NavMenu from '$lib/NavMenu.svelte';
 	import EmpFooter from '$lib/EmpFooter.svelte';
@@ -115,6 +114,7 @@
 				notifyTimeout = null;
 			}, 3000);
 		})();
+
 	$: $mtcConfirm.title != '' &&
 		(() => {
 			theConfirm.title = $mtcConfirm.title;
@@ -135,9 +135,7 @@
 			integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
 			crossorigin="anonymous" />
 	{/if}
-	<link
-		rel="stylesheet"
-		href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.2/font/bootstrap-icons.css" />
+	<link rel="stylesheet" href="/css/bootstrap-icons/font/bootstrap-icons.css" />
 	<link rel="stylesheet" href="/css/app.css" />
 </svelte:head>
 
@@ -145,7 +143,10 @@
 	<PreloadingIndicator />
 {/if}
 {#if showNotify}
-	<div class={'text-center fixed-bottom fs-3 bg-' + $notifyMessage.type}>
+	<div
+		class={'text-center fixed-bottom fs-3 bg-' +
+			$notifyMessage.type +
+			(['success'].includes($notifyMessage.type) ? ' text-white' : '')}>
 		{$notifyMessage.message}
 	</div>
 {/if}

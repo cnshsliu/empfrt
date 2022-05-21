@@ -2,7 +2,6 @@
 	export async function load({ url, params, fetch, session }) {
 		let showComment = false;
 		if (url.searchParams.has('showComment') && url.searchParams.get('showComment') == 'true') {
-			console.log('showCOmmnent....');
 			showComment = true;
 		}
 		let wfid = params.wfid;
@@ -10,7 +9,7 @@
 		const workflow = await api.post(
 			'workflow/read',
 			{ wfid: wfid, withdoc: false },
-			session.user.sessionToken
+			session.user.sessionToken,
 		);
 		if (workflow.error) {
 			workflow.wftitle = 'Not Found';
@@ -22,19 +21,19 @@
 					workflow: workflow,
 					wfid: params.wfid,
 					user: session.user,
-					showComment: showComment
-				}
+					showComment: showComment,
+				},
 			};
 		} catch (e) {
 			console.error(e);
 			return {
 				props: {
 					workflow: {
-						wftitle: 'Not Found'
+						wftitle: 'Not Found',
 					},
 					wfid: params.wfid,
-					user: session.user
-				}
+					user: session.user,
+				},
 			};
 		}
 	}
@@ -78,7 +77,7 @@
 			let ret: Workflow = (await api.post(
 				'workflow/op',
 				{ wfid, op },
-				user.sessionToken
+				user.sessionToken,
 			)) as Workflow;
 			workflow.status = ret.status;
 		}, 1);
@@ -96,11 +95,10 @@
 		logs = (await api.post(
 			'/workflow/readlog',
 			{ wfid: wfid },
-			user.sessionToken
+			user.sessionToken,
 		)) as unknown as string;
 	};
 	onMount(async () => {
-		$filterStorage.tplid = workflow.tplid;
 		//$filterStorage.workTitlePattern = 'wf:' + wfid;
 		if ($session.comment_wfid === wfid) {
 			comments = $session.comments;
@@ -112,7 +110,6 @@
 				delete $session.comments;
 			} else {
 				comments = cmtRes as any;
-				console.log(comments);
 				//session.comment_wfid = theWork.wfid;
 				//session.comments = theWork.comments;
 			}
@@ -142,6 +139,5 @@
 		btnTitle="Back"
 		callback={() => {
 			goto('/workflow');
-		}}
-	/>
+		}} />
 {/if}

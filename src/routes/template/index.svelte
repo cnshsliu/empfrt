@@ -7,13 +7,19 @@
 	import TimeTool from '$lib/TimeTool';
 	import { setFadeMessage } from '$lib/Notifier';
 	import * as api from '$lib/api';
-	import { mtcConfirm, mtcConfirmReset } from '$lib/Stores';
 	import Cover from '$lib/display/Cover.svelte';
 	import { API_SERVER } from '$lib/Env';
 	import { enhance } from '$lib/form';
 	import TagPicker from '$lib/TagPicker.svelte';
 	import { session } from '$app/stores';
-	import { showAdvancedSearch, srPage, resultCache, lastQuery } from '$lib/Stores';
+	import {
+		showAdvancedSearch,
+		srPage,
+		lastQuery,
+		mtcConfirm,
+		mtcConfirmReset,
+		worklistChangeFlag,
+	} from '$lib/Stores';
 	import ItemEditor from './TplSearchResultItemEditor.svelte';
 	import ColPerRowSelection from '$lib/ColPerRowSelection.svelte';
 	import PageSize from '$lib/PageSize.svelte';
@@ -45,13 +51,18 @@
 		Button,
 		Badge,
 	} from 'sveltestrap';
-	import { getData } from '$lib/pagination/Server';
 	import { createEventDispatcher, getContext, setContext } from 'svelte';
 
 	const ENDPOINT = 'template/search';
 	const BIZ = 'tpl';
 	let loadTimer = null;
 	let LOADING_TIMEOUT = 400;
+	if (!$filterStorage[BIZ]) {
+		$filterStorage[BIZ] = { tplTag: '', sortby: '-updatedAt' };
+	}
+	if ($filterStorage[BIZ].hasOwnProperty('sortby') === false) {
+		$filterStorage[BIZ].sortby = '-updatedAt';
+	}
 
 	let rows = [];
 	let user = $session.user;
@@ -72,7 +83,6 @@
 	let showform = '';
 
 	let loading = true;
-	let currentTags = [];
 	let editlogfor = '';
 	let editlogs: any = [];
 	let editCronFor = '';
@@ -81,20 +91,11 @@
 	let crons = [];
 	let thePdsResolver;
 	let searchTimer = null;
-	let sorting = { dir: 'desc', key: 'updatedAt' };
 	export let menu_has_form = false;
 	export let form_status = { create: false, search: false, sort: false, import: false };
 	let urls = {
 		create: `${API_SERVER}/template/create`,
 	};
-	let storeSorting = $filterStorage[BIZ].tplSorting;
-	if (storeSorting) {
-		if (storeSorting.dir && storeSorting.key) {
-			sorting = storeSorting;
-		} else {
-			$filterStorage[BIZ].tplSorting = sorting;
-		}
-	}
 	$: filteredRows = rows;
 
 	function hide_all_form() {
@@ -130,7 +131,7 @@
 			.then(async (result) => {
 				//templates = [result, ...templates];
 				rows = [result, ...rows];
-				delete $resultCache[BIZ];
+				api.removeCacheByPath('template/search');
 			})
 			.catch((error) => {
 				console.error('Error:', error);
@@ -169,8 +170,6 @@
 		if (Utils.isBlank($filterStorage[BIZ].pattern)) {
 			$filterStorage[BIZ].pattern = '';
 		}
-		if (detail && detail.page) $srPage[BIZ] = detail.page;
-		if (detail && detail.sorting) sorting = detail.sorting;
 		if (!$filterStorage.pageSize) $filterStorage.pageSize = 10;
 		load($srPage[BIZ], 'refresh').then((res) => {});
 	}
@@ -181,7 +180,7 @@
 			pattern: $filterStorage[BIZ].pattern,
 			skip: _page * $filterStorage.pageSize,
 			limit: $filterStorage.pageSize,
-			sort_order: sorting && sorting.dir === 'desc' ? -1 : 1,
+			sortby: $filterStorage[BIZ].sortby,
 			tagsForFilter: $filterStorage[BIZ].tplTag.split(';'),
 			author: $filterStorage[BIZ].author,
 			reason: reason,
@@ -190,38 +189,30 @@
 		if (false === Utils.objectEqual(payloadWithoutSkip, $lastQuery[BIZ])) {
 			payload.skip = 0;
 			$srPage[BIZ] = 0;
-			console.log('Skip  to 0');
+			console.log('Query changed, Skip  to 0');
 		}
 		$lastQuery[BIZ] = payloadWithoutSkip;
-
-		let searchResult = null;
-		let theResultCache = $resultCache;
-		for (let i = 0; i < theResultCache[BIZ].length; i++) {
-			if (Utils.objectEqual(theResultCache[BIZ][i].PAYLOAD, payload)) {
-				searchResult = theResultCache[BIZ][i].RESULT;
-				console.log(BIZ, 'Use cached SearchResult');
-				break;
-			}
+		let cachedInFetch = await api.getCache(ENDPOINT, payload, user.sessionToken);
+		if (cachedInFetch) {
+			console.log('Use pure client cache, no fetch request');
+			//console.log(cachedInFetch);
 		}
 
-		if (!searchResult) {
+		if (cachedInFetch) {
+			rows = cachedInFetch.objs;
+			rowsCount = cachedInFetch.total;
+		} else {
 			loadTimer && clearTimeout(loadTimer);
 			loadTimer = setTimeout(async () => {
-				console.log('Loading from server', LOADING_TIMEOUT);
 				const ret = await api.post(ENDPOINT, payload, user.sessionToken);
 				if (ret.error) {
 					setFadeMessage(ret.message, 'warning');
 				} else {
-					searchResult = { rows: ret.objs, rowsCount: ret.total };
-					$resultCache[BIZ].push({ PAYLOAD: payload, RESULT: searchResult });
-					rows = searchResult.rows;
-					rowsCount = searchResult.rowsCount;
+					rows = ret.objs;
+					rowsCount = ret.total;
 				}
 				loadTimer = null;
 			}, LOADING_TIMEOUT);
-		} else {
-			rows = searchResult.rows;
-			rowsCount = searchResult.rowsCount;
 		}
 		loading = false;
 	}
@@ -237,10 +228,16 @@
 	}
 
 	async function onSort(event) {
-		sorting = { dir: event.detail.dir, key: event.detail.key };
-		$filterStorage[BIZ].tplSorting = sorting;
-		await load($srPage[BIZ]);
+		$filterStorage[BIZ].sortby =
+			(event.detail.dir === 'desc' ? '-' : '') +
+			(event.detail.key === 'name' ? 'tplid' : event.detail.key);
+		await load($srPage[BIZ], 'refresh');
 	}
+
+	const clearTag = async function () {
+		$filterStorage[BIZ].tplTag = '';
+		await searchNow();
+	};
 
 	const useThisTag = function (tag, appendMode = false) {
 		if (appendMode) {
@@ -250,27 +247,28 @@
 			}
 			let existingArr = existingTags.split(';');
 			if (existingArr.includes(tag)) {
-				currentTags = existingArr.filter((x) => x !== tag);
+				existingArr = existingArr.filter((x) => x !== tag);
 			} else {
-				let newTags = existingTags + ';' + tag;
-				currentTags = newTags.split(';').filter((x) => x.length > 0);
+				existingArr.push(tag);
+				existingArr = existingArr.filter((x) => x.length > 0);
 			}
+			$filterStorage[BIZ].tplTag = existingArr.join(';');
 		} else {
-			if (tag.trim().length > 0) currentTags = [tag];
-			else currentTags = [];
+			if (tag.trim().length > 0) $filterStorage[BIZ].tplTag = tag.trim();
+			else $filterStorage[BIZ].tplTag = '';
 		}
-		$filterStorage[BIZ].tplTag = currentTags.join(';');
 		searchNow();
 	};
 
 	let desc_input = '';
 	let visi_rds_input = '';
 
-	async function __deleteRow(tplid) {
+	async function __deleteTemplate(tplid) {
 		let res = await api.post('template/delete/byname', { tplid: tplid }, user.sessionToken);
 		if (res.error) {
 			setFadeMessage(res.message, 'warning');
 		} else {
+			api.removeCacheByPath('template/search');
 			let deletedIndex = -1;
 			for (let i = 0; i < rows.length; i++) {
 				if (rows[i].tplid === tplid) {
@@ -304,7 +302,7 @@
 			buttons: [$_('confirm.delete.template.yes')],
 			callbacks: [
 				async () => {
-					await __deleteRow(tplid);
+					await __deleteTemplate(tplid);
 					mtcConfirmReset();
 				},
 			],
@@ -366,6 +364,9 @@
 			{ tplid: tplid, starters: cronStarters },
 			user.sessionToken,
 		);
+		api.removeCacheByPath('workflow/search');
+		api.removeCacheByPath('work/search');
+		$worklistChangeFlag++;
 	};
 
 	const deleteCrontab = async function (e, tplid, cronId) {
@@ -378,20 +379,12 @@
 		console.log(crons);
 	};
 
-	const clearTag = async function () {
-		currentTags = [];
-		$filterStorage[BIZ].tplTag = '';
-		let tmp = await api.post('template/tplid/list', {}, user.sessionToken);
-		await searchNow();
-	};
-
 	function resetQuery(clearCache = false) {
 		clearTag();
 		$filterStorage[BIZ].author = user.email;
 		$filterStorage[BIZ].pattern = '';
 		if (clearCache) {
-			delete $resultCache[BIZ];
-			$resultCache[BIZ] = [];
+			api.removeCacheByPath('template/search');
 		}
 	}
 
@@ -399,12 +392,6 @@
 		$showAdvancedSearch[BIZ] = !$showAdvancedSearch[BIZ];
 		if ($showAdvancedSearch[BIZ] == false) {
 			resetQuery();
-		} else {
-			let existingTags = $filterStorage[BIZ].tplTag;
-			if (Parser.hasValue(existingTags)) {
-				let existingArr = existingTags.split(';');
-				currentTags = existingArr;
-			}
 		}
 	};
 </script>
@@ -427,7 +414,7 @@
 					form.reset();
 					$filterStorage[BIZ].author = user.email;
 					$filterStorage[BIZ].pattern = '';
-					delete $resultCache[BIZ];
+					api.removeCacheByPath('template/search');
 				},
 				error: async (res, error, form) => {
 					let retError = await res.json();
@@ -583,7 +570,7 @@
 		</div>
 	</div>
 	{#if $showAdvancedSearch[BIZ]}
-		<TagPicker {currentTags} {useThisTag} {clearTag} />
+		<TagPicker {BIZ} {useThisTag} {clearTag} />
 		<div class="mb-3">&nbsp;</div>
 		<div>
 			<Row cols={{ xs: 1, md: 2 }} class="mt-1">
@@ -667,11 +654,36 @@
 				<Col>{$_('remotetable.sortBy')}:</Col>
 				<Col>
 					{$_('remotetable.name')}
-					<Sort key="tplid" on:sort={onSort} />
+					<Sort
+						key="tplid"
+						on:sort={onSort}
+						dir={$filterStorage[BIZ].sortby.indexOf('tplid') < 0
+							? 'asc'
+							: $filterStorage[BIZ].sortby[0] === '-'
+							? 'desc'
+							: 'asc'} />
 				</Col>
 				<Col>
 					{$_('remotetable.author')}
-					<Sort key="author" on:sort={onSort} />
+					<Sort
+						key="author"
+						on:sort={onSort}
+						dir={$filterStorage[BIZ].sortby.indexOf('author') < 0
+							? 'asc'
+							: $filterStorage[BIZ].sortby[0] === '-'
+							? 'desc'
+							: 'asc'} />
+				</Col>
+				<Col>
+					{$_('remotetable.updatedAt')}
+					<Sort
+						key="updatedAt"
+						on:sort={onSort}
+						dir={$filterStorage[BIZ].sortby.indexOf('updatedAt') < 0
+							? 'asc'
+							: $filterStorage[BIZ].sortby[0] === '-'
+							? 'desc'
+							: 'asc'} />
 				</Col>
 			</Row>
 		</div>

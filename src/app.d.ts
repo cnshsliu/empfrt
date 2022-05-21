@@ -16,8 +16,8 @@ declare namespace App {
 		q?: string;
 		whichwf?: string;
 		showAdvancedSearch?: boolean;
-		templatesForSearch_for_todo?: any[];
-		templatesForSearch_for_wf?: any[];
+		tplIdsForSearch_for_todo?: any[];
+		tplIdsForSearch_for_wf?: any[];
 		delegators?: any[];
 	}
 

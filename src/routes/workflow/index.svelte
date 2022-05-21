@@ -6,7 +6,7 @@
 	import * as api from '$lib/api';
 	import TagPicker from '$lib/TagPicker.svelte';
 	import AniIcon from '$lib/AniIcon.svelte';
-	import { showAdvancedSearch, srPage, resultCache, lastQuery } from '$lib/Stores';
+	import { showAdvancedSearch, srPage, lastQuery, worklistChangeFlag } from '$lib/Stores';
 	import { navigating, session } from '$app/stores';
 	import { mtcConfirm, mtcConfirmReset } from '$lib/Stores';
 	import { setFadeMessage } from '$lib/Notifier';
@@ -40,6 +40,12 @@
 	const BIZ = 'wf';
 	let loadTimer = null;
 	let LOADING_TIMEOUT = 400;
+	if (!$filterStorage[BIZ]) {
+		$filterStorage[BIZ] = { tplTag: '', sortby: '-updatedAt' };
+	}
+	if ($filterStorage[BIZ].hasOwnProperty('sortby') === false) {
+		$filterStorage[BIZ].sortby = '-updatedAt';
+	}
 
 	let rows: Workflow[] = [] as Workflow[];
 
@@ -48,18 +54,8 @@
 	let show_calendar_select = false;
 	let setPboAtFor = '';
 	let settingFor = '';
-	let sorting = { dir: 'desc', key: 'updatedAt' };
-	let storeSorting = $filterStorage[BIZ].wfSorting;
 	let user = $session.user;
-	let currentTags = [];
 	let aSsPicked = '';
-	if (storeSorting) {
-		if (storeSorting.dir && storeSorting.key) {
-			sorting = storeSorting;
-		} else {
-			$filterStorage[BIZ].wfSorting = sorting;
-		}
-	}
 	let statuses = [
 		{ value: 'All', label: $_('status.All') },
 		{ value: 'ST_RUN', label: $_('status.ST_RUN') },
@@ -67,8 +63,8 @@
 		{ value: 'ST_DONE', label: $_('status.ST_DONE') },
 	];
 
-	if (!$session.templatesForSearch_for_wf) {
-		$session.templatesForSearch_for_wf = [];
+	if (!$session.tplIdsForSearch_for_wf) {
+		$session.tplIdsForSearch_for_wf = [];
 	}
 	if ($filterStorage[BIZ].calendar_begin !== '' || $filterStorage[BIZ].calendar_end !== '') {
 		show_calendar_select = true;
@@ -94,11 +90,14 @@
 	});
 
 	const clearTag = async function () {
-		currentTags = [];
 		$filterStorage[BIZ].tplTag = '';
-		let tmp = await api.post('template/tplid/list', {}, user.sessionToken);
-		$session.templatesForSearch_for_wf = tmp.map((x) => x.tplid);
-		await searchNow();
+		try {
+			let tmp = await api.post('template/tplid/list', {}, user.sessionToken);
+			$session.tplIdsForSearch_for_wf = tmp.map((x) => x.tplid);
+			await searchNow();
+		} catch (err) {
+			console.error(err);
+		}
 	};
 
 	const useThisTag = async function (tag, appendMode = false) {
@@ -109,48 +108,25 @@
 			}
 			let existingArr = existingTags.split(';');
 			if (existingArr.includes(tag)) {
-				currentTags = existingArr.filter((x) => x !== tag);
+				existingArr = existingArr.filter((x) => x !== tag);
 			} else {
-				let newTags = existingTags + ';' + tag;
-				currentTags = newTags.split(';').filter((x) => x.length > 0);
+				existingArr.push(tag);
+				existingArr = existingArr.filter((x) => x.length > 0);
 			}
+			$filterStorage[BIZ].tplTag = existingArr.join(';');
 		} else {
-			if (tag.trim().length > 0) currentTags = [tag];
-			else currentTags = [];
+			if (tag.trim().length > 0) $filterStorage[BIZ].tplTag = tag.trim();
+			else $filterStorage[BIZ].tplTag = '';
 		}
-		$filterStorage[BIZ].tplTag = currentTags.join(';');
 		//$filterStorage[BIZ].tplid = '';
 		let tmp = await api.post(
 			'template/tplid/list',
-			{ tagsForFilter: currentTags },
+			{ tags: $filterStorage[BIZ].tplTag },
 			user.sessionToken,
 		);
-		$session.templatesForSearch_for_wf = tmp.map((x) => x.tplid);
+		$session.tplIdsForSearch_for_wf = tmp.map((x) => x.tplid);
 		await searchNow();
 	};
-
-	const loadTemplatesOnCurrentTags = async function () {
-		let existingTags = $filterStorage[BIZ].tplTag;
-		if (Parser.isEmpty(existingTags)) {
-			existingTags = '';
-		}
-		let existingArr = existingTags.split(';');
-		currentTags = existingArr;
-		let tmp = await api.post(
-			'template/tplid/list',
-			{ tagsForFilter: currentTags },
-			user.sessionToken,
-		);
-		$session.templatesForSearch_for_wf = tmp.map((x) => x.tplid);
-	};
-
-	if (storeSorting) {
-		if (storeSorting.dir && storeSorting.key) {
-			sorting = storeSorting;
-		} else {
-			$filterStorage[BIZ].workSorting = sorting;
-		}
-	}
 
 	async function load(_page, reason = 'refresh') {
 		loading = true;
@@ -158,7 +134,7 @@
 			pattern: $filterStorage[BIZ].pattern,
 			skip: _page * $filterStorage.pageSize,
 			limit: $filterStorage.pageSize,
-			sort_order: sorting && sorting.dir === 'desc' ? -1 : 1,
+			sortby: $filterStorage[BIZ].sortby,
 			status: $filterStorage[BIZ].status,
 			tspan: $filterStorage[BIZ].tspan,
 			starter: $filterStorage[BIZ].starter,
@@ -175,25 +151,23 @@
 		if (false === Utils.objectEqual(payloadWithoutSkip, $lastQuery[BIZ])) {
 			payload.skip = 0;
 			$srPage[BIZ] = 0;
-			console.log('Skip  to 0');
-			console.log(payloadWithoutSkip, $lastQuery[BIZ]);
+			console.log('Query changed, Skip  to 0');
+			//console.log(payloadWithoutSkip, $lastQuery[BIZ]);
 		}
 		$lastQuery[BIZ] = payloadWithoutSkip;
 
-		let searchResult = null;
-		let theResultCache = $resultCache;
-		for (let i = 0; i < theResultCache[BIZ].length; i++) {
-			if (Utils.objectEqual(theResultCache[BIZ][i].PAYLOAD, payload)) {
-				searchResult = theResultCache[BIZ][i].RESULT;
-				console.log(BIZ, 'Use cached SearchResult');
-				break;
-			}
+		let cachedInFetch = await api.getCache(ENDPOINT, payload, user.sessionToken);
+		if (cachedInFetch) {
+			console.log('Use pure client cache, no fetch request');
+			//console.log(cachedInFetch);
 		}
 
-		if (!searchResult) {
+		if (cachedInFetch) {
+			rows = cachedInFetch.objs;
+			rowsCount = cachedInFetch.total;
+		} else {
 			loadTimer && clearTimeout(loadTimer);
 			loadTimer = setTimeout(async () => {
-				console.log('Loading from server', LOADING_TIMEOUT);
 				const ret = await api.post(ENDPOINT, payload, user.sessionToken);
 				if (ret.error) {
 					if (ret.error === 'KICKOUT') {
@@ -203,16 +177,11 @@
 						setFadeMessage(ret.message, 'warning');
 					}
 				} else {
-					searchResult = { rows: ret.objs, rowsCount: ret.total };
-					$resultCache[BIZ].push({ PAYLOAD: payload, RESULT: searchResult });
-					rows = searchResult.rows;
-					rowsCount = searchResult.rowsCount;
+					rows = ret.objs;
+					rowsCount = ret.total;
 				}
 				loadTimer = null;
 			}, LOADING_TIMEOUT);
-		} else {
-			rows = searchResult.rows;
-			rowsCount = searchResult.rowsCount;
 		}
 		loading = false;
 	}
@@ -233,16 +202,13 @@
 			Parser.hasValue($filterStorage[BIZ].calendar_begin) &&
 			Parser.hasValue($filterStorage[BIZ].calendar_end)
 		) {
-			searchNow(null).then();
+			searchNow().then();
 		}
 	};
 
-	async function searchNow(detail = null) {
+	async function searchNow() {
 		if (Utils.isBlank($filterStorage[BIZ].tplTag)) {
 			$filterStorage[BIZ].tplTag = '';
-		}
-		if (Utils.isBlank($filterStorage[BIZ].starter)) {
-			$filterStorage[BIZ].starter = user.email;
 		}
 		if (Utils.isBlank($filterStorage[BIZ].doer)) {
 			$filterStorage[BIZ].doer = user.email;
@@ -255,8 +221,6 @@
 		}
 		if (Utils.isBlank($filterStorage[BIZ].calendar_begin)) $filterStorage[BIZ].calendar_begin = '';
 		if (Utils.isBlank($filterStorage[BIZ].calendar_end)) $filterStorage[BIZ].calendar_end = '';
-		if (detail && detail.page) $srPage[BIZ] = detail.page;
-		if (detail && detail.sorting) sorting = detail.sorting;
 		if (!$filterStorage.pageSize) $filterStorage.pageSize = 10;
 		load($srPage[BIZ], 'refresh').then((res) => {});
 	}
@@ -274,8 +238,7 @@
 		show_calendar_select = false;
 		aSsPicked = '';
 		if (clearCache) {
-			delete $resultCache[BIZ];
-			$resultCache[BIZ] = [];
+			api.removeCacheByPath('workflow/search');
 		}
 	}
 
@@ -284,13 +247,13 @@
 		if ($showAdvancedSearch[BIZ] == false) {
 			resetQuery();
 		} else {
-			let existingTags = $filterStorage[BIZ].tplTag;
-			if (Parser.hasValue(existingTags)) {
-				let existingArr = existingTags.split(';');
-				currentTags = existingArr;
-			}
-			if (!$session.templatesForSearch_for_wf || $session.templatesForSearch_for_wf.length === 0) {
-				await loadTemplatesOnCurrentTags();
+			if (!$session.tplIdsForSearch_for_wf || $session.tplIdsForSearch_for_wf.length === 0) {
+				let tmp = await api.post(
+					'template/tplid/list',
+					{ tags: $filterStorage[BIZ].tplTag },
+					user.sessionToken,
+				);
+				$session.tplIdsForSearch_for_wf = tmp.map((x) => x.tplid);
 			}
 
 			if (!$session.delegators) {
@@ -308,8 +271,9 @@
 	};
 
 	async function onSort(event) {
-		sorting = { dir: event.detail.dir, key: event.detail.key };
-		$filterStorage[BIZ].wfSorting = sorting;
+		$filterStorage[BIZ].sortby =
+			(event.detail.dir === 'desc' ? '-' : '') +
+			(event.detail.key === 'name' ? 'wftitle' : event.detail.key);
 		await load($srPage[BIZ], 'refresh');
 	}
 
@@ -357,11 +321,13 @@
 
 		let payload = { wfid: workflow.wfid, op: op };
 		let ret: Workflow = (await api.post('workflow/op', payload, user.sessionToken)) as Workflow;
+		api.removeCacheByPath('workflow/search');
+		api.removeCacheByPath('work/search');
+		$worklistChangeFlag++;
 		if (op === 'pause' || op === 'resume' || op === 'stop') {
 			for (let i = 0; i < rows.length; i++) {
 				if (rows[i].wfid === workflow.wfid) {
 					rows[i].status = ret.status;
-					rows[i].statusLabel = StatusLabel(rows[i].status);
 					rows[i] = rows[i];
 				}
 			}
@@ -380,7 +346,7 @@
 				rowsCount = rowsCount - 1;
 			}
 		} else {
-			await searchNow({});
+			await searchNow();
 		}
 		$filterStorage.todo.workTitlePattern = 'wf:' + ret.wfid;
 	};
@@ -392,18 +358,18 @@
 		}
 		isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 		if ($showAdvancedSearch[BIZ] === undefined) {
-			console.log('First time loading...');
+			//console.log('First time loading...');
 			LOADING_TIMEOUT = 0;
 			$showAdvancedSearch[BIZ] = false;
 			resetQuery();
 		} else {
 			LOADING_TIMEOUT = 400;
-			console.log('Not First time loading...');
+			//console.log('Not First time loading...');
 			if ($showAdvancedSearch[BIZ] === false) {
-				console.log('showAdvancedSearch === false...');
+				//console.log('showAdvancedSearch === false...');
 				resetQuery();
 			} else {
-				console.log('showAdvancedSearch === true...');
+				//console.log('showAdvancedSearch === true...');
 				await searchNow();
 			}
 		}
@@ -445,7 +411,7 @@
 		</div>
 	</div>
 	{#if $showAdvancedSearch[BIZ]}
-		<TagPicker {currentTags} {useThisTag} {clearTag} />
+		<TagPicker {BIZ} {useThisTag} {clearTag} />
 		<Row class="mb-3 d-flex justify-content-end">
 			{#each statuses as status, index (status)}
 				<Col xs="auto">
@@ -476,8 +442,8 @@
 						<option value="">
 							{$_('extrafilter.allTemplate')}
 						</option>
-						{#if $session.templatesForSearch_for_wf}
-							{#each $session.templatesForSearch_for_wf as tpl, index (tpl)}
+						{#if $session.tplIdsForSearch_for_wf}
+							{#each $session.tplIdsForSearch_for_wf as tpl, index (tpl)}
 								<option value={tpl}>
 									{tpl}
 								</option>
@@ -505,6 +471,15 @@
 						}}
 						color="secondary">
 						{$_('extrafilter.me')}
+					</Button>
+					<Button
+						on:click={async () => {
+							$filterStorage[BIZ].starter = '';
+							await searchNow();
+						}}
+						class="btn-outline-primary m-0 py-1 px-3"
+						color="light">
+						{$_('remotetable.any')}
 					</Button>
 				</InputGroup>
 			</Col>
@@ -553,7 +528,7 @@
 								$filterStorage[BIZ].calendar_begin = '';
 								$filterStorage[BIZ].calendar_end = '';
 								show_calendar_select = false;
-								await searchNow(null);
+								await searchNow();
 							} else {
 								show_calendar_select = true;
 							}
@@ -631,19 +606,47 @@
 				<Col>{$_('remotetable.sortBy')}:</Col>
 				<Col>
 					{$_('remotetable.title')}
-					<Sort key="wftitle" on:sort={onSort} />
+					<Sort
+						key="wftitle"
+						on:sort={onSort}
+						dir={$filterStorage[BIZ].sortby.indexOf('wftitle') < 0
+							? 'asc'
+							: $filterStorage[BIZ].sortby[0] === '-'
+							? 'desc'
+							: 'asc'} />
 				</Col>
 				<Col>
 					{$_('remotetable.status')}
-					<Sort key="status" on:sort={onSort} />
+					<Sort
+						key="status"
+						on:sort={onSort}
+						dir={$filterStorage[BIZ].sortby.indexOf('status') < 0
+							? 'asc'
+							: $filterStorage[BIZ].sortby[0] === '-'
+							? 'desc'
+							: 'asc'} />
 				</Col>
 				<Col>
 					{$_('remotetable.starter')}
-					<Sort key="starter" on:sort={onSort} />
+					<Sort
+						key="starter"
+						on:sort={onSort}
+						dir={$filterStorage[BIZ].sortby.indexOf('starter') < 0
+							? 'asc'
+							: $filterStorage[BIZ].sortby[0] === '-'
+							? 'desc'
+							: 'asc'} />
 				</Col>
 				<Col>
 					{$_('remotetable.updatedAt')}
-					<Sort key="updatedAt" dir="desc" on:sort={onSort} />
+					<Sort
+						key="updatedAt"
+						on:sort={onSort}
+						dir={$filterStorage[BIZ].sortby.indexOf('updatedAt') < 0
+							? 'asc'
+							: $filterStorage[BIZ].sortby[0] === '-'
+							? 'desc'
+							: 'asc'} />
 				</Col>
 			</Row>
 		</div>
@@ -808,7 +811,8 @@
 						<Row cols={{ md: 2, xs: 1 }}>
 							<Col>
 								<h6 class=" mb-2 text-muted">
-									{row.statusLabel}
+									{$_('remotetable.status')}:
+									{$_(`status.${row.status}`)}
 								</h6>
 							</Col>
 						</Row>

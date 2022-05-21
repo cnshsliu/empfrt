@@ -11,13 +11,13 @@
 	const dispatch = createEventDispatcher();
 	const stateContext = getContext('state');
 
-	export let dir = 'none';
+	export let dir = 'asc';
 	export let key;
 	export let labels = {
 		asc: { title: 'Ascending', html: '&#8593;' },
 		desc: { title: 'Desceding', html: '&#8595;' },
 		unsorted: { title: 'Unsorted', html: '&#8645;' },
-		...globalLabels
+		...globalLabels,
 	};
 
 	function onClick(event) {
@@ -28,7 +28,7 @@
 			originalEvent: event,
 			key,
 			dir: dir !== 'desc' ? 'desc' : 'asc',
-			rows: state.filteredRows
+			rows: state.filteredRows,
 		};
 
 		dispatch('sort', detail);

@@ -9,10 +9,6 @@
 		let todoid = params.todoid;
 		if (todoid && todoid.charAt(0) === '@') todoid = todoid.substring(1);
 		let anchor = url.searchParams.get('anchor');
-		let iframeMode = false;
-		if (url.searchParams.has('iframe')) {
-			iframeMode = true;
-		}
 		const res = await fetch(`/work/${todoid}.json`);
 
 		const theWork = await res.json();
@@ -57,7 +53,6 @@
 			props: {
 				todoid: todoid,
 				work: theWork,
-				iframeMode: iframeMode,
 				user: session.user,
 				delegators: delegators,
 				anchor: anchor,
@@ -76,7 +71,8 @@
 	import type { User, Work } from '$lib/types';
 	import { title } from '$lib/title';
 	import { onMount, onDestroy } from 'svelte';
-	import { printing, notifyMessage } from '$lib/Stores';
+	import { printing, notifyMessage, worklistChangeFlag } from '$lib/Stores';
+	import { mtcConfirm, mtcConfirmReset } from '$lib/Stores';
 	import { version } from '$lib/empstores';
 	import WorkPage from './workpage.svelte';
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
@@ -90,12 +86,8 @@
 	export let anchor;
 
 	let radioGroup;
-	let theConfirm;
 
 	$title = work.title;
-
-	export let iframeMode;
-	let theWorkPage;
 
 	onMount(async () => {
 		let findAnchorInterval = null;
@@ -128,19 +120,18 @@
 		}
 		if (needReload) {
 			setTimeout(async () => {
-				if (theConfirm) {
-					theConfirm.title = $_('confirm.title.needReload');
-					theConfirm.body = $_('confirm.body.needReload');
-					theConfirm.buttons = [$_('confirm.button.confirm')];
-					theConfirm.callbacks = [
-						async (e) => {
-							e.preventDefault();
+				$mtcConfirm = {
+					title: $_('confirm.title.needReload'),
+					body: $_('confirm.body.needReload'),
+					buttons: [$_('confirm.button.confirm')],
+					callbacks: [
+						async () => {
 							$version = work.version;
 							window.location.reload();
+							mtcConfirmReset();
 						},
-					];
-					theConfirm.toggle();
-				}
+					],
+				};
 			}, 5000);
 		}
 	});
@@ -175,20 +166,23 @@
 						class="btn-xs"
 						on:click={async (e) => {
 							e.preventDefault();
-							console.log('restart then destroy', work.wfid);
-							theConfirm.title = $_('confirm.title.areyousure');
-							theConfirm.body = $_('confirm.body.restartthendestroy');
-							theConfirm.buttons = [$_('confirm.button.confirm')];
-							theConfirm.callbacks = [
-								async () => {
-									api
-										.post('workflow/restart/then/destroy', { wfid: work.wfid }, user.sessionToken)
-										.then((res) => {
-											goto('/work');
-										});
-								},
-							];
-							theConfirm.toggle();
+							$mtcConfirm = {
+								title: $_('confirm.title.areyousure'),
+								body: $_('confirm.body.restartthendestroy'),
+								buttons: [$_('confirm.button.confirm')],
+								callbacks: [
+									async () => {
+										api
+											.post('workflow/restart/then/destroy', { wfid: work.wfid }, user.sessionToken)
+											.then((res) => {
+												api.removeCacheByPath('work/search');
+												$worklistChangeFlag++;
+												goto('/work');
+											});
+										mtcConfirmReset();
+									},
+								],
+							};
 						}}>
 						{$_('todo.restartrehearsal')}
 					</Button>
@@ -200,19 +194,23 @@
 						class="btn-xs"
 						on:click={async (e) => {
 							e.preventDefault();
-							theConfirm.title = $_('confirm.title.areyousure');
-							theConfirm.body = $_('confirm.body.cancelworkflowatfirststep');
-							theConfirm.buttons = [$_('confirm.button.confirm')];
-							theConfirm.callbacks = [
-								async () => {
-									api
-										.post('workflow/op', { wfid: work.wfid, op: 'destroy' }, user.sessionToken)
-										.then((res) => {
-											goto('/work');
-										});
-								},
-							];
-							theConfirm.toggle();
+							$mtcConfirm = {
+								title: $_('confirm.title.areyousure'),
+								body: $_('confirm.body.cancelworkflowatfirststep'),
+								buttons: [$_('confirm.button.confirm')],
+								callbacks: [
+									async () => {
+										api
+											.post('workflow/op', { wfid: work.wfid, op: 'destroy' }, user.sessionToken)
+											.then((res) => {
+												api.removeCacheByPath('work/search');
+												$worklistChangeFlag++;
+												goto('/work');
+											});
+										mtcConfirmReset();
+									},
+								],
+							};
 						}}>
 						{$_('todo.cancelworkflowatfirststep')}
 					</Button>
@@ -249,7 +247,6 @@
 					<span class="fw-bold fs-5">
 						{$_('todo.doneat')}
 					</span>
-
 					<div class="fw-light">{mtcDate(work.doneat)}</div>
 				{/if}
 			</Col>
@@ -274,10 +271,7 @@
 	</div>
 	<WorkPage
 		{work}
-		{user}
-		{iframeMode}
 		{delegators}
-		bind:this={theWorkPage}
 		on:statusChanged={(e) => {
 			work.status = e.detail.status;
 			work.doneat = e.detail.doneat;
@@ -292,4 +286,3 @@
 			goto('/work');
 		}} />
 {/if}
-<Confirm bind:this={theConfirm} />

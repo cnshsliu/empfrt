@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 export const printing = writable(false);
-export const resultCache = writable({ todo: [], wf: [], tpl: [] });
+export const fetchCache = writable({});
+export const worklistChangeFlag = writable(0);
 export const showAdvancedSearch = writable({}); //Caution: please dont' give it any intial value
 export const srPage = writable({ todo: 0, tpl: 0, wf: 0 });
 export const lastQuery = writable({ todo: {}, wf: {}, tpl: {} });

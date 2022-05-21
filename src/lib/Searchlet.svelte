@@ -16,7 +16,7 @@
 
 	onMount(async () => {
 		$savedSearches[objtype] = await api.post(
-			'search/list',
+			'savedsearch/list',
 			{ objtype: objtype },
 			user.sessionToken,
 		);
@@ -25,7 +25,7 @@
 	const saveSearch = async () => {
 		api
 			.post(
-				'search/save',
+				'savedsearch/save',
 				{ objtype: objtype, name: newSsName, ss: JSON.stringify($lastQuery[objtype]) },
 				user.sessionToken,
 			)
@@ -41,7 +41,11 @@
 	const useSearch = async () => {
 		dispatch(
 			'searchlet',
-			await api.post('search/getone', { objtype: objtype, name: aSsPicked }, user.sessionToken),
+			await api.post(
+				'savedsearch/getone',
+				{ objtype: objtype, name: aSsPicked },
+				user.sessionToken,
+			),
 		);
 	};
 	const resetSearchlet = async () => {

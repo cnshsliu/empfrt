@@ -23,17 +23,12 @@ export const whichTabStorage = storage<WhichTab>('whichtab', {
 });
 
 export const filterStorage = storage<FilterPicks>('filter', {
-	wf: {},
-	todo: {},
-	tpl: {},
+	wf: { tplTag: '', sortby: '-updatedAt' },
+	todo: { tplTag: '', sortby: 'lastdays' },
+	tpl: { tplTag: '', sortby: '-updatedAt' },
 	locale: '',
 	confirmlocale: false,
-	tspan: 'any',
 	gotoUID: '',
-	tabs: '',
-	tabs2nd: '',
-	settingTab: '',
-	settingTab2nd: '',
 	try_with_teamid: '',
 	try_with_email: '',
 	try_with_kvar: '',

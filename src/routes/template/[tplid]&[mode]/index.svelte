@@ -37,9 +37,7 @@
 	import AniIcon from '$lib/AniIcon.svelte';
 	import { filterStorage } from '$lib/empstores';
 	import { setFadeMessage } from '$lib/Notifier';
-	import type { oneArgFunc } from '$lib/types';
 	import { ClientPermControl } from '$lib/clientperm';
-	import Parser from '$lib/parser';
 	import { goto } from '$app/navigation';
 	import { session } from '$app/stores';
 	import { title } from '$lib/title';
@@ -79,8 +77,6 @@
 	onMount(async () => {
 		const module = await import('$lib/designer/Designer.svelte');
 		Designer = module.default;
-		//$filterStorage.tplid = tplid;
-		$filterStorage.workTitlePattern = '';
 		if (localStorage) {
 			recentTemplates = JSON.parse(localStorage.getItem('recentTemplates') ?? JSON.stringify([]));
 			recentTeams = JSON.parse(localStorage.getItem('recentTeams') ?? JSON.stringify([]));
@@ -109,6 +105,7 @@
 	export let user: User;
 
 	$: topmenu_class = form_name === '' ? '' : 'whiteback';
+
 	function hide_all_form() {
 		Object.keys(form_status).forEach((key) => {
 			form_status[key] = false;
@@ -116,12 +113,14 @@
 		form_name = '';
 		theDesigner.documentEventOn();
 	}
+
 	function show_form(what: string) {
 		hide_all_form();
 		form_status[what] = true;
 		form_name = what;
 		theDesigner.documentEventOff();
 	}
+
 	async function change_mode(what: string) {
 		tpl_mode = what;
 		readonly = tpl_mode === 'read';
@@ -132,6 +131,7 @@
 		});
 		await theDesigner.changeViewMode(tpl_mode);
 	}
+
 	async function startIt() {
 		goto(`/template/${template.tplid}&${tpl_mode}`, {
 			replaceState: true,
@@ -140,10 +140,12 @@
 		});
 		await theDesigner.changeViewMode(tpl_mode);
 	}
+
 	//$: readonly = tpl_mode === 'read';
 	function show_delete_template_modal() {
 		hide_all_form();
 	}
+
 	function delete_template() {
 		hide_all_form();
 		setTimeout(async () => {
@@ -152,7 +154,12 @@
 				{ tplid: template.tplid },
 				user.sessionToken,
 			);
-			goto('/template', { replaceState: false });
+			if (ret.error) {
+				setFadeMessage(ret.message);
+			} else {
+				await api.removeCacheByPath('template/search');
+				goto('/template', { replaceState: false });
+			}
 		}, 1);
 	}
 
@@ -202,6 +209,7 @@
 				setFadeMessage(ret.message, 'warning');
 			}
 		} else {
+			await api.removeCacheByPath('template/search');
 			form_status['rename'] = false;
 			hide_all_form();
 			//await theDesigner.setTemplateId(ret);
@@ -227,6 +235,7 @@
 				setFadeMessage(ret.message, 'warning');
 			}
 		} else {
+			await api.removeCacheByPath('template/search');
 			template = ret;
 			form_status['copyto'] = false;
 			$title = template.tplid;

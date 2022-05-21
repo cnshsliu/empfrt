@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { Button, Row, Col, Input } from 'sveltestrap';
-	import { TagStorage } from '$lib/empstores';
+	import { TagStorage, filterStorage } from '$lib/empstores';
 	import { onMount } from 'svelte';
 	import { session } from '$app/stores';
 	import * as api from '$lib/api';
 
 	let user = $session.user;
 	export let currentTags = [];
+	export let BIZ;
 	export let useThisTag;
 	export let clearTag;
 	let allTags: any = {
@@ -33,6 +34,8 @@
 	$: if ($TagStorage) {
 		allTags = $TagStorage;
 	}
+
+	$: currentTags = $filterStorage[BIZ].tplTag.split(';');
 
 	onMount(async () => {
 		await reloadTags();
