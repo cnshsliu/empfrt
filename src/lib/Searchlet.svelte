@@ -19,6 +19,7 @@
 			'savedsearch/list',
 			{ objtype: objtype },
 			user.sessionToken,
+			api.CACHE_FLAG.useIfExists,
 		);
 	});
 
@@ -49,6 +50,12 @@
 		);
 	};
 	const resetSearchlet = async () => {
+		$savedSearches[objtype] = await api.post(
+			'savedsearch/list',
+			{ objtype: objtype },
+			user.sessionToken,
+			api.CACHE_FLAG.preDelete,
+		);
 		dispatch('resetSearchlet', '');
 	};
 </script>

@@ -10,7 +10,7 @@
 	import Transition from '$lib/Transition.svelte';
 	import AniIcon from '$lib/AniIcon.svelte';
 	import { navigating, session } from '$app/stores';
-	import { filterStorage } from '$lib/empstores';
+	import { autorefreshid, filterStorage } from '$lib/empstores';
 	import ColPerRowSelection from '$lib/ColPerRowSelection.svelte';
 	import {
 		showAdvancedSearch,
@@ -47,6 +47,10 @@
 
 	const ENDPOINT = 'work/search';
 	const BIZ = 'todo';
+	const AUTO_RELOAD_IN_MINUTES = 30;
+	const AUTO_RELOAD_EVERY_SECONDS = 30;
+	let myAutoRefreshId = new Date().getTime().toString();
+	let autoReloadStartAt = 0;
 	let loadTimer = null;
 	let reloadInterval = null;
 	let bypassCache = false;
@@ -78,6 +82,7 @@
 	if (!$filterStorage[BIZ]) $filterStorage[BIZ] = {};
 
 	let loading = true;
+	let loadingFromServer = false;
 	let rowsCount = 0;
 	let show_calendar_select = false;
 	let user = $session.user;
@@ -150,7 +155,7 @@
 		await searchNow();
 	};
 
-	async function load(_page, reason = 'refresh') {
+	async function load(_page, reason = 'refresh', cacheFlag = api.CACHE_FLAG.bypass) {
 		loading = true;
 		let payload = {
 			pattern: $filterStorage[BIZ].pattern,
@@ -182,34 +187,44 @@
 		}
 		$lastQuery[BIZ] = payloadWithoutSkip;
 
-		let cachedInFetch = null;
-		if (!bypassCache) {
-			cachedInFetch = await api.getCache(ENDPOINT, payload, user.sessionToken);
-			bypassCache = false;
-		}
-		if (cachedInFetch) {
-			console.log('Use pure client cache, no fetch request');
-			//console.log(cachedInFetch);
-		}
-
-		if (cachedInFetch) {
-			rows = cachedInFetch.objs;
-			rowsCount = cachedInFetch.total;
-		} else {
-			loadTimer && clearTimeout(loadTimer);
-			loadTimer = setTimeout(async () => {
-				const ret = await api.post(ENDPOINT, payload, user.sessionToken);
-				if (ret.error) {
-					if (ret.error === 'KICKOUT') {
-						setFadeMessage($_('session.forcetohome'));
-						goto('/');
-					} else {
-						setFadeMessage(ret.message, 'warning');
-					}
+		const loadPost = async () => {
+			loadingFromServer = true;
+			const ret = await api.post(
+				ENDPOINT,
+				payload,
+				user.sessionToken,
+				bypassCache ? api.CACHE_FLAG.bypass : cacheFlag,
+			);
+			if (bypassCache === true) {
+				bypassCache = false;
+			}
+			setTimeout(() => {
+				loadingFromServer = false;
+			}, 2000);
+			if (ret.error) {
+				if (ret.error === 'KICKOUT') {
+					setFadeMessage($_('session.forcetohome'));
+					goto('/');
 				} else {
-					rows = ret.objs;
-					rowsCount = ret.total;
+					setFadeMessage(ret.message, 'warning');
 				}
+			} else {
+				rows = ret.objs;
+				rowsCount = ret.total;
+			}
+		};
+		loadTimer && clearTimeout(loadTimer);
+		if (
+			bypassCache === false &&
+			cacheFlag === api.CACHE_FLAG.useIfExists &&
+			api.hasCache(ENDPOINT, payload, user.sessionToken)
+		)
+			//Direct return cache without wait.
+			await loadPost();
+		else {
+			//Wait certain ms to fetch from server
+			loadTimer = setTimeout(async () => {
+				await loadPost();
 				loadTimer = null;
 			}, LOADING_TIMEOUT);
 		}
@@ -217,7 +232,7 @@
 	}
 
 	function onPageChange(event) {
-		load(event.detail.page, 'refresh');
+		load(event.detail.page, 'refresh', api.CACHE_FLAG.useIfExists);
 		$srPage[BIZ] = event.detail.page;
 	}
 
@@ -232,11 +247,11 @@
 			Parser.hasValue($filterStorage[BIZ].calendar_begin) &&
 			Parser.hasValue($filterStorage[BIZ].calendar_end)
 		) {
-			searchNow(null).then();
+			searchNow().then();
 		}
 	};
 
-	async function searchNow(detail = null) {
+	async function searchNow(clearCache = false) {
 		if (Utils.isBlank($filterStorage[BIZ].tplTag)) {
 			$filterStorage[BIZ].tplTag = '';
 		}
@@ -251,11 +266,15 @@
 		}
 		if (Utils.isBlank($filterStorage[BIZ].calendar_begin)) $filterStorage[BIZ].calendar_begin = '';
 		if (Utils.isBlank($filterStorage[BIZ].calendar_end)) $filterStorage[BIZ].calendar_end = '';
-		load($srPage[BIZ], 'refresh').then((res) => {});
+		load(
+			$srPage[BIZ],
+			'refresh',
+			clearCache ? api.CACHE_FLAG.preDelete : api.CACHE_FLAG.useIfExists,
+		).then((res) => {});
 	}
 
 	function resetQuery(clearCache = false) {
-		clearTag();
+		$filterStorage[BIZ].tplTag = '';
 		$filterStorage[BIZ].status = 'ST_RUN';
 		$filterStorage[BIZ].tplid = '';
 		$filterStorage[BIZ].doer = user.email;
@@ -265,13 +284,25 @@
 		$filterStorage[BIZ].calendar_end = '';
 		show_calendar_select = false;
 		aSsPicked = '';
+		$srPage[BIZ] = 0;
+		searchNow(clearCache).then();
 		if (clearCache) {
-			api.removeCacheByPath('work/search');
-			reloadInterval && clearInterval(reloadInterval);
-			reloadInterval = setInterval(() => {
-				immediateReload();
-			}, 10 * 1000);
+			immediateReload();
 		}
+	}
+
+	function restartAutoRefresh() {
+		reloadInterval && clearInterval(reloadInterval);
+		$autorefreshid = myAutoRefreshId;
+		autoReloadStartAt = new Date().getTime();
+		reloadInterval = setInterval(() => {
+			if ($autorefreshid === myAutoRefreshId) {
+				immediateReload();
+				if (new Date().getTime() - autoReloadStartAt > AUTO_RELOAD_IN_MINUTES * 60 * 1000) {
+					$autorefreshid = '0';
+				}
+			} else reloadInterval && clearInterval(reloadInterval);
+		}, AUTO_RELOAD_EVERY_SECONDS * 1000);
 	}
 
 	const toggleAdvancedSearch = async () => {
@@ -302,7 +333,7 @@
 		$filterStorage[BIZ].sortby =
 			(event.detail.dir === 'desc' ? '-' : '') +
 			(event.detail.key === 'name' ? 'title' : event.detail.key);
-		await load($srPage[BIZ], 'refresh');
+		await load($srPage[BIZ], 'refresh', api.CACHE_FLAG.useIfExists);
 	}
 
 	function gotoWorkitem(work: Work, anchor = '') {
@@ -319,6 +350,9 @@
 	const immediateReload = () => {
 		bypassCache = true;
 		searchNow();
+		if ($worklistChangeFlag) {
+			$worklistChangeFlag = 0;
+		}
 	};
 
 	$: $worklistChangeFlag && immediateReload();
@@ -342,15 +376,26 @@
 			}
 		}
 
-		reloadInterval = setInterval(() => {
-			immediateReload();
-		}, 10 * 1000);
+		restartAutoRefresh();
 	});
 
 	onDestroy(async () => {
 		bypassCache = false;
+		$autorefreshid = '0';
 		clearInterval(reloadInterval);
 	});
+
+	let showform = '';
+	let flexible = { name: '' };
+	const startFlexible = async () => {
+		let res = await api.post('flexible/start', flexible, user.sessionToken);
+		if (res.error) {
+			setFadeMessage(res.message, 'warning');
+		} else {
+			setFadeMessage($_('notify.success_create_flexible'));
+		}
+		showform = '';
+	};
 </script>
 
 <Container class="p-2 border border-1 rounded">
@@ -358,27 +403,74 @@
 		<div class="flex-shrink-0 fs-3">
 			{$_('title.worklist')}
 		</div>
-		<div class="ms-5 align-self-center flex-grow-1">&nbsp;</div>
-		<div class="justify-content-end flex-shrink-0">
-			<Button color="primary" on:click={toggleAdvancedSearch} class="m-0 p-1">
+		<div class="ms-5 align-self-start flex-grow-1">
+			<div
+				class="btn btn-primary-outline"
+				on:click|preventDefault={(e) => {
+					showform = showform === 'flexible' ? '' : 'flexible';
+				}}>
+				{$_('flexible.btn_showform')}
+			</div>
+		</div>
+		<div class="justify-content-end">
+			<div class="btn border-0 me-3">
+				<div
+					style="display:inline-flex; width:28px; height:28px; justify-content:center; align-items: center;"
+					on:click={(e) => {
+						if ($autorefreshid === myAutoRefreshId) {
+							setFadeMessage($_('notify.stop_refresh_work'));
+							$autorefreshid = '0';
+						} else {
+							restartAutoRefresh();
+							setFadeMessage(
+								$_('notify.auto_refresh_work', { values: { minutes: AUTO_RELOAD_IN_MINUTES } }),
+							);
+						}
+					}}>
+					{#if $autorefreshid === myAutoRefreshId}
+						<div
+							class={'text-center refreshIndicator active' +
+								(loadingFromServer ? '  loading' : '')}>
+							&nbsp;
+						</div>
+					{:else}
+						<div class={'refreshIndicator stale'}>&nbsp;</div>
+					{/if}
+				</div>
+			</div>
+			<div class="btn btn-primary m-0 p-1" color="primary" on:click={toggleAdvancedSearch}>
 				{#if $showAdvancedSearch[BIZ]}
 					<i class="bi bi-x-circle" />
 				{:else}
 					<i class="bi bi-search" />
 				{/if}
 				{$_('button.toggleAdvancedSearch')}
-			</Button>
-			<Button
+			</div>
+			<div
+				class="btn btn-primary m-0 p-1 btn-lg"
 				color="primary"
 				on:click={(e) => {
 					resetQuery(true);
-				}}
-				class="m-0 p-1"
-				size="lg">
+				}}>
 				{$_('button.resetQuery')}
-			</Button>
+			</div>
 		</div>
 	</div>
+	{#if showform === 'flexible'}
+		<div class="row">
+			<input
+				class="form-control"
+				bind:value={flexible.name}
+				placeholder={$_('flexible.placeholder')} />
+			<div
+				class="btn btn-primary"
+				on:click|preventDefault={(e) => {
+					startFlexible();
+				}}>
+				{$_('flexible.btn_create')}
+			</div>
+		</div>
+	{/if}
 	{#if $showAdvancedSearch[BIZ]}
 		<TagPicker {BIZ} {useThisTag} {clearTag} />
 		<Row class="mb-3 d-flex justify-content-end">
@@ -389,7 +481,9 @@
 							type="radio"
 							bind:group={$filterStorage[BIZ].status}
 							value={status.value}
-							on:change={searchNow} />
+							on:change|preventDefault={(e) => {
+								searchNow();
+							}} />
 						{status.label}
 					</label>
 				</Col>
@@ -430,7 +524,12 @@
 						bind:value={$filterStorage[BIZ].doer}
 						aria-label="User Email"
 						placeholder="email" />
-					<Button on:click={searchNow} color="primary">
+					<Button
+						on:click={(e) => {
+							e.preventDefault();
+							searchNow();
+						}}
+						color="primary">
 						<i class="bi bi-arrow-return-left" />
 					</Button>
 					<Button
@@ -467,7 +566,11 @@
 							title={$_('remotetable.bywhat')}
 							placeholder={$_('remotetable.bywhat')}
 							bind:value={$filterStorage[BIZ].pattern} />
-						<div class="btn btn-primary" on:click|preventDefault={searchNow}>
+						<div
+							class="btn btn-primary"
+							on:click|preventDefault={(e) => {
+								searchNow();
+							}}>
 							<i class="bi bi-arrow-return-left" />
 						</div>
 					</InputGroup>
@@ -485,7 +588,7 @@
 						bind:value={$filterStorage[BIZ].tspan}
 						on:change={async (e) => {
 							e.preventDefault();
-							await load($srPage[BIZ], 'refresh');
+							await load($srPage[BIZ], 'refresh', api.CACHE_FLAG.useIfExists);
 						}}>
 						{#each Object.keys(tspans) as key}
 							<option value={key}>{tspans[key]}</option>
@@ -624,7 +727,7 @@
 		<div class="flex-shrink-1">
 			<PageSize
 				on:pagesize={async (e) => {
-					await load(0, 'refresh');
+					await load(0, 'refresh', api.CACHE_FLAG.useIfExists);
 				}} />
 		</div>
 		<div class="flex-shrink-1">

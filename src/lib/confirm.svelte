@@ -22,10 +22,9 @@
 					color={'light'}
 					class="btn-outline-primary m-0 py-1 px-3"
 					on:click={async () => {
-						await callbacks[index]();
+						callbacks[index]();
 						open = false;
-					}}
-				>
+					}}>
 					{btn}
 				</Button>
 			{/each}

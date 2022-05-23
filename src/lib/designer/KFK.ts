@@ -4,19 +4,18 @@ import { API_SERVER } from '$lib/Env';
 import { _ } from '$lib/i18n';
 import suuid from 'short-uuid';
 import Parser from '$lib/parser';
-import html2canvas from 'html2canvas';
 import cocoConfig from './cococonfig';
 import APP from './appConfig';
 import { Buffer } from 'buffer';
-import { filterStorage } from '$lib/empstores';
+import { setFadeMessage } from '$lib/Notifier';
 import NodeController from './NodeController';
 //import RegHelper from './RegHelper';
 import * as api from '$lib/api';
 import type { NodePropJSON } from '$lib/types';
-let $_;
+let I18N: any;
 
-const unsubscribe = _.subscribe((value) => {
-	$_ = value;
+_.subscribe((value) => {
+	I18N = value;
 });
 declare global {
 	interface Array<T> {
@@ -525,7 +524,7 @@ class KFKclass {
 			that.APP.setData('show', 'customline', true);
 		}
 		that.designerCallback('setTool', tool);
-		that.showHelp($_(`designer.tool.${tool}`));
+		that.showHelp(I18N(`designer.tool.${tool}`));
 		that.focusOnC3();
 	}
 
@@ -4428,7 +4427,7 @@ ret='DEFAULT'; `,
 		} finally {
 			//that.addDocumentEventHandler();
 			that.inited = true;
-			that.showHelp($_('designer.tool.POINTER'), 10000);
+			that.showHelp(I18N('designer.tool.POINTER'), 10000);
 			KFK.C3GotFocus();
 		}
 	}
@@ -5464,25 +5463,27 @@ ret='DEFAULT'; `,
 			if (items[0].kind === 'string' && (content.html !== '' || content.text !== '')) {
 				console.log('content:', content);
 			} else if (items[0].kind === 'file') {
-				var blob = items[0].getAsFile();
-				console.log(blob);
-				(blobForm = new FormData()),
-					blobForm.append('tplid', that.tplid),
-					blobForm.append('blob', blob, 'pastedImage');
-				fetch(`${API_SERVER}/template/set/cover`, {
-					method: 'POST',
-					headers: {
-						Authorization: that.user.sessionToken,
-					},
-					body: blobForm,
-				})
-					.then((response) => response.json())
-					.then((result) => {
-						console.log('Cover was uploaded');
+				const postCover = async () => {
+					var blob = items[0].getAsFile();
+					(blobForm = new FormData()),
+						blobForm.append('tplid', that.tplid),
+						blobForm.append('blob', blob, 'pastedImage');
+					fetch(`${API_SERVER}/template/set/cover`, {
+						method: 'POST',
+						headers: {
+							Authorization: that.user.sessionToken,
+						},
+						body: blobForm,
 					})
-					.catch((error) => {
-						console.error('Error:', error);
-					});
+						.then((response) => response.json())
+						.then((result) => {
+							setFadeMessage('Cover was uploaded');
+						})
+						.catch((error) => {
+							console.error('Error:', error);
+						});
+				};
+				postCover();
 			}
 		}
 

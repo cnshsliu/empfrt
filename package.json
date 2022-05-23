@@ -50,7 +50,6 @@
 		"filepond": "^4.30.3",
 		"filepond-plugin-image-exif-orientation": "^1.0.11",
 		"filepond-plugin-image-preview": "^4.6.10",
-		"html2canvas": "^1.4.1",
 		"jquery": "^3.6.0",
 		"jquery-ui-dist": "^1.12.1",
 		"lodash": "^4.17.21",

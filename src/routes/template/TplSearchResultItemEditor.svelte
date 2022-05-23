@@ -28,7 +28,7 @@
 		return await api.post(
 			'comment/toggle',
 			{ objtype: 'template', objid: row.tplid },
-			user.sessionToken
+			user.sessionToken,
 		);
 	};
 </script>
@@ -46,8 +46,7 @@
 					SetFor.setVisiFor = '';
 					visi_rds_input = '';
 				}
-			}}
-		>
+			}}>
 			<AniIcon icon="people-fill" ani="aniShake" />
 			{row.visi}
 		</div>
@@ -70,8 +69,7 @@
 					desc_input = row.desc;
 					SetFor.setDescFor = row.tplid;
 				}
-			}}
-		>
+			}}>
 			<AniIcon icon="card-text" ani="aniShake" />
 			{row.desc}
 		</div>
@@ -91,8 +89,7 @@
 			} else {
 				SetFor.setTagFor = '';
 			}
-		}}
-	>
+		}}>
 		<AniIcon icon="tag" ani="aniShake" />
 		{#each row.tags as tag, tagIndex}
 			{#if tag.owner === user.email}
@@ -102,13 +99,12 @@
 						let tags = await api.post(
 							'tag/del',
 							{ objtype: 'template', objid: row.tplid, text: tag.text },
-							token
+							token,
 						);
 						row.tags = tags;
 						row = row;
 						await reloadTags();
-					}}
-				/>
+					}} />
 			{/if}
 		{/each}
 	</div>
@@ -131,8 +127,7 @@
 						SetFor.setWeComBotFor = '';
 						SetFor.setVisiFor = '';
 						visi_rds_input = '';
-					}}
-				>
+					}}>
 					{$_('button.close')}
 				</Button>
 			</InputGroup>
@@ -145,9 +140,8 @@
 							class="form-control"
 							id={'input-tplid-' + index}
 							placeholder="Template ID"
-							bind:value={tplid_input}
-						/>
-						<label for={`input-tplid-${index}`}> {$_('remotetable.template.set.tplid')}</label>
+							bind:value={tplid_input} />
+						<label for={`input-tplid-${index}`}>{$_('remotetable.template.set.tplid')}</label>
 					</div>
 					<Button
 						color="primary"
@@ -157,7 +151,7 @@
 							let ret = await api.post(
 								'template/rename',
 								{ fromid: row.tplid, tplid: tplid_input },
-								token
+								token,
 							);
 							if (ret.error) {
 								setFadeMessage(ret.message, 'warning');
@@ -166,8 +160,7 @@
 								row.tplid = ret;
 								dispatch('tplidSet', row);
 							}
-						}}
-					>
+						}}>
 						{$_('button.set')}
 					</Button>
 				</InputGroup>
@@ -179,9 +172,8 @@
 							class="form-control"
 							id={'input-desc-' + index}
 							placeholder="Description"
-							bind:value={desc_input}
-						/>
-						<label for={`input-desc-${index}`}> {$_('remotetable.template.set.setdesc')}</label>
+							bind:value={desc_input} />
+						<label for={`input-desc-${index}`}>{$_('remotetable.template.set.setdesc')}</label>
 					</div>
 					<Button
 						color="primary"
@@ -191,7 +183,7 @@
 							let ret = await api.post(
 								'template/desc',
 								{ tplid: row.tplid, desc: desc_input },
-								token
+								token,
 							);
 							if (ret.err) {
 								setFadeMessage(ret.message, 'warning');
@@ -200,8 +192,7 @@
 							}
 							row.desc = desc_input;
 							rows = rows;
-						}}
-					>
+						}}>
 						{$_('button.set')}
 					</Button>
 				</InputGroup>
@@ -221,7 +212,7 @@
 									let tags = await api.post(
 										'tag/add',
 										{ objtype: 'template', objid: row.tplid, text: tag_input.trim() },
-										token
+										token,
 									);
 									if (tags.error) {
 										setFadeMessage(tags.message, 'warning');
@@ -232,8 +223,7 @@
 									}
 								}
 								tag_input = '';
-							}}
-						/>
+							}} />
 						<label for={`input-tags-${index}`}>
 							{$_('remotetable.template.set.settags')}
 						</label>
@@ -246,7 +236,7 @@
 								let tags = await api.post(
 									'tag/add',
 									{ objtype: 'template', objid: row.tplid, text: tag_input.trim() },
-									token
+									token,
 								);
 								if (tags.error) {
 									setFadeMessage(tags.message, 'warning');
@@ -257,8 +247,7 @@
 								}
 							}
 							tag_input = '';
-						}}
-					>
+						}}>
 						{$_('button.set')}
 					</Button>
 				</InputGroup>
@@ -270,9 +259,8 @@
 							class="form-control"
 							id={'input-owner-' + index}
 							placeholder="User ID"
-							bind:value={author_input}
-						/>
-						<label for={`input-owner-${index}`}> {$_('remotetable.template.set.setauthor')}</label>
+							bind:value={author_input} />
+						<label for={`input-owner-${index}`}>{$_('remotetable.template.set.setauthor')}</label>
 					</div>
 					<Button
 						color="primary"
@@ -283,7 +271,7 @@
 							let ret = await api.post(
 								'template/set/author',
 								{ tplid: row.tplid, author: author_input },
-								token
+								token,
 							);
 							if (ret.error) {
 								setFadeMessage(ret.message, 'warning');
@@ -294,8 +282,7 @@
 								row = row;
 								dispatch('authorSet', row);
 							}
-						}}
-					>
+						}}>
 						{$_('button.set')}
 					</Button>
 				</InputGroup>
@@ -307,8 +294,7 @@
 							class="form-control"
 							id={'input-visi-pds-' + index}
 							placeholder="PDS"
-							bind:value={visi_rds_input}
-						/>
+							bind:value={visi_rds_input} />
 						<label for={`input-visi-pds-${index}`}>
 							{$_('remotetable.template.set.setvisito')}
 						</label>
@@ -326,19 +312,18 @@
 							row.checked = true;
 							rows[index] = row;
 							rows = rows;
-						}}
-					>
+						}}>
 						{$_('button.check')}
 					</Button>
 					<Button
-						color="success"
+						color="secondary"
 						on:click={async (e) => {
 							e.preventDefault();
 							visi_rds_input = qtb(visi_rds_input);
 							let res = await api.post(
 								'template/setvisi',
 								{ tplid: row.tplid, visi: visi_rds_input },
-								token
+								token,
 							);
 							if (res.error) {
 								setFadeMessage(res.message, 'warning');
@@ -348,8 +333,7 @@
 								rows = rows;
 							}
 						}}
-						disabled={!row.checked}
-					>
+						disabled={!row.checked}>
 						{$_('button.set')}
 					</Button>
 					<Button
@@ -366,8 +350,7 @@
 								rows[index] = row;
 								rows = rows;
 							}
-						}}
-					>
+						}}>
 						{$_('button.clear')}
 					</Button>
 				</InputGroup>
@@ -427,8 +410,7 @@
 							on:change={async (e) => {
 								row.allowdiscuss = await toggleDiscuss(row);
 								row = row;
-							}}
-						/>
+							}} />
 						<label class="form-check-label" for="flexSwitchCheckChecked">
 							{row.allowdiscuss ? '允许讨论' : '已关闭讨论'} （切换以切换状态）
 						</label>

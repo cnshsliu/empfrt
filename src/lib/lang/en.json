@@ -160,10 +160,10 @@
 	},
 	"adhoc": {
 		"header": "Send out an Adhoc Task",
-		"title": "Task description",
+		"title": "Task title",
 		"pds": "Who should take it? (use PDS format)",
 		"recent": "Recent doers",
-		"comment": "Extra comments",
+		"comment": "Extra instructions",
 		"foundduser": "Found {num} users"
 	},
 	"button": {
@@ -804,5 +804,26 @@
 		"prev": "Previous",
 		"next": "Next",
 		"last": "Last"
+	},
+	"notify": {
+		"create_template_success": "Template {tplid} created successfully",
+		"create_adhoc_success": "Adhoc Task dispatched",
+		"auto_refresh_work": "Auto retrieve tasks in {minutes} mins.",
+		"stop_refresh_work": "Stop auto retrieving, click [Reset/All] to get new tasks manually"
+	},
+	"flexible": {
+		"placeholder": "Input issue name",
+		"btn_showform": "Start a flexible issue",
+		"btn_create": "Start it",
+		"res_success": "Started, see it in 'My Task'"
+	},
+	"homecard": {
+		"template": { "title": "Template", "body": "Arrange tasks in a standard way" },
+		"flexible": { "title": "Flexible", "body": "Arrange tasks in a flexible way" },
+		"workflow": { "title": "Monitor", "body": "Monitor running status" },
+		"work": { "title": "Worklist", "body": "See current worklist" },
+		"discuss": { "title": "Discuss", "body": "Discuss on certain tasks" },
+		"setting": { "title": "Setting", "body": "Customize your work environment" },
+		"help": { "title": "Help", "body": "Help, Q&A etc." }
 	}
 }

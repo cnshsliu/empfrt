@@ -48,7 +48,6 @@
 		InputGroup,
 		InputGroupText,
 		Input,
-		Button,
 		Badge,
 	} from 'sveltestrap';
 	import { createEventDispatcher, getContext, setContext } from 'svelte';
@@ -83,6 +82,8 @@
 	let showform = '';
 
 	let loading = true;
+	let newTplName = '';
+	let newTplTags = '';
 	let editlogfor = '';
 	let editlogs: any = [];
 	let editCronFor = '';
@@ -92,7 +93,13 @@
 	let thePdsResolver;
 	let searchTimer = null;
 	export let menu_has_form = false;
-	export let form_status = { create: false, search: false, sort: false, import: false };
+	export let form_status = {
+		create: false,
+		search: false,
+		sort: false,
+		import: false,
+		flexible: false,
+	};
 	let urls = {
 		create: `${API_SERVER}/template/create`,
 	};
@@ -153,7 +160,7 @@
 		},
 	});
 
-	async function searchNow(detail = null) {
+	async function searchNow(clearCache = false) {
 		if (Utils.isBlank($filterStorage[BIZ].tplTag)) {
 			$filterStorage[BIZ].tplTag = '';
 		}
@@ -171,10 +178,14 @@
 			$filterStorage[BIZ].pattern = '';
 		}
 		if (!$filterStorage.pageSize) $filterStorage.pageSize = 10;
-		load($srPage[BIZ], 'refresh').then((res) => {});
+		load(
+			$srPage[BIZ],
+			'refresh',
+			clearCache ? api.CACHE_FLAG.preDelete : api.CACHE_FLAG.useIfExists,
+		).then((res) => {});
 	}
 
-	async function load(_page, reason = 'unknown') {
+	async function load(_page, reason = 'refresh', cacheFlag = api.CACHE_FLAG.bypass) {
 		loading = true;
 		let payload = {
 			pattern: $filterStorage[BIZ].pattern,
@@ -192,25 +203,27 @@
 			console.log('Query changed, Skip  to 0');
 		}
 		$lastQuery[BIZ] = payloadWithoutSkip;
-		let cachedInFetch = await api.getCache(ENDPOINT, payload, user.sessionToken);
-		if (cachedInFetch) {
-			console.log('Use pure client cache, no fetch request');
-			//console.log(cachedInFetch);
-		}
 
-		if (cachedInFetch) {
-			rows = cachedInFetch.objs;
-			rowsCount = cachedInFetch.total;
-		} else {
-			loadTimer && clearTimeout(loadTimer);
+		const loadPost = async () => {
+			const ret = await api.post(ENDPOINT, payload, user.sessionToken, cacheFlag);
+			if (ret.error) {
+				setFadeMessage(ret.message, 'warning');
+			} else {
+				rows = ret.objs;
+				rowsCount = ret.total;
+			}
+		};
+		loadTimer && clearTimeout(loadTimer);
+		if (
+			cacheFlag === api.CACHE_FLAG.useIfExists &&
+			api.hasCache(ENDPOINT, payload, user.sessionToken)
+		)
+			//Direct return cache without wait.
+			await loadPost();
+		else {
+			//Wait certain ms to fetch from server
 			loadTimer = setTimeout(async () => {
-				const ret = await api.post(ENDPOINT, payload, user.sessionToken);
-				if (ret.error) {
-					setFadeMessage(ret.message, 'warning');
-				} else {
-					rows = ret.objs;
-					rowsCount = ret.total;
-				}
+				await loadPost();
 				loadTimer = null;
 			}, LOADING_TIMEOUT);
 		}
@@ -223,7 +236,7 @@
 	};
 
 	function onPageChange(event) {
-		load(event.detail.page, 'refresh');
+		load(event.detail.page, 'refresh', api.CACHE_FLAG.useIfExists);
 		$srPage[BIZ] = event.detail.page;
 	}
 
@@ -231,12 +244,12 @@
 		$filterStorage[BIZ].sortby =
 			(event.detail.dir === 'desc' ? '-' : '') +
 			(event.detail.key === 'name' ? 'tplid' : event.detail.key);
-		await load($srPage[BIZ], 'refresh');
+		await load($srPage[BIZ], 'refresh', api.CACHE_FLAG.useIfExists);
 	}
 
-	const clearTag = async function () {
+	const clearTag = async function (clearCache = false) {
 		$filterStorage[BIZ].tplTag = '';
-		await searchNow();
+		await searchNow(clearCache);
 	};
 
 	const useThisTag = function (tag, appendMode = false) {
@@ -380,12 +393,11 @@
 	};
 
 	function resetQuery(clearCache = false) {
-		clearTag();
+		$filterStorage[BIZ].tplTag = '';
 		$filterStorage[BIZ].author = user.email;
 		$filterStorage[BIZ].pattern = '';
-		if (clearCache) {
-			api.removeCacheByPath('template/search');
-		}
+		$srPage[BIZ] = 0;
+		searchNow(clearCache).then();
 	}
 
 	const toggleAdvancedSearch = async () => {
@@ -398,35 +410,14 @@
 
 {#if showform === 'create'}
 	{#if user.perms && ClientPermControl(user.perms, user.email, 'template', '', 'create')}
-		<form
-			class="new"
-			action={urls.create}
-			method="post"
-			use:enhance={{
-				preCheck: () => {
-					return ClientPermControl(user.perms, user.email, 'template', '', 'create');
-				},
-				token: user.sessionToken,
-				result: async (res, form) => {
-					const created = await res.json();
-					rows = [created, ...rows];
-					rowsCount = rowsCount + 1;
-					form.reset();
-					$filterStorage[BIZ].author = user.email;
-					$filterStorage[BIZ].pattern = '';
-					api.removeCacheByPath('template/search');
-				},
-				error: async (res, error, form) => {
-					let retError = await res.json();
-					console.log(retError);
-				},
-			}}>
+		<form>
 			<Container class="my-3" style="max-width:400px;">
 				<Row cols="1" class="mb-5">
 					<Col>
 						<div class="form-floating flex-fill">
 							<input
 								name="tplid"
+								bind:value={newTplName}
 								class="form-control"
 								id="input-tplid"
 								aria-label="Create template"
@@ -440,6 +431,7 @@
 						<div class="form-floating flex-fill">
 							<input
 								name="tags"
+								bind:value={newTplTags}
 								id="input-tags"
 								class="w-100 form-control"
 								aria-label="template tags"
@@ -449,24 +441,50 @@
 							</label>
 						</div>
 					</Col>
-					<Col class="mb-5">
+					<Col class="my-3">
 						<Row>
 							<Col class="col-8">
-								<Button type="submit" class="h-100 w-100 mt-3" color="primary">
+								<div
+									class="btn btn-primary h-100 w-100"
+									on:click|preventDefault={async (e) => {
+										if (ClientPermControl(user.perms, user.email, 'template', '', 'create')) {
+											let res = await api.post(
+												'template/create',
+												{ tplid: newTplName, tags: newTplTags },
+												user.sessionToken,
+											);
+											if (res.error) {
+												setFadeMessage(res.message, 'warning');
+											} else {
+												rows = [res, ...rows];
+												rowsCount++;
+												newTplName = '';
+												newTplTags = '';
+												$filterStorage[BIZ].author = user.email;
+												$filterStorage[BIZ].pattern = '';
+												api.removeCacheByPath('template/search');
+												setFadeMessage(
+													$_('notify.create_template_success', {
+														values: { tplid: res.tplid },
+													}),
+												);
+											}
+										} else {
+											setFadeMessage("You don't have permision", 'warning');
+										}
+									}}>
 									{$_('button.create')}
-								</Button>
+								</div>
 							</Col>
 							<Col class="col-4">
-								<Button
-									class="h-100 w-100 mt-3"
-									color="secondary"
-									on:click={(e) => {
-										e.preventDefault();
+								<div
+									class="btn btn-primary h-100 w-100"
+									on:click|preventDefault={(e) => {
 										e.stopPropagation();
 										showform = '';
 									}}>
 									{$_('button.cancel')}
-								</Button>
+								</div>
 							</Col>
 						</Row>
 					</Col>
@@ -499,24 +517,25 @@
 							<input name="file" id="input-file" type="file" bind:files />
 						</div>
 					</Col>
-					<Col class="mb-5">
+					<Col class="mt-3 mb-5">
 						<Row>
 							<Col class="col-8">
-								<Button on:click={importTemplate} color="primary" class="h-100 w-100 mt-3">
+								<div
+									class="btn btn-primary h-100 w-100"
+									on:click|preventDefault={importTemplate}
+									color="primary">
 									{$_('button.import')}
-								</Button>
+								</div>
 							</Col>
 							<Col class="col-4">
-								<Button
-									class="h-100 w-100 mt-3"
+								<div
+									class="btn btn-primary h-100 w-100"
 									color="secondary"
-									on:click={(e) => {
-										e.preventDefault();
-										e.stopPropagation();
+									on:click|preventDefault={(e) => {
 										showform = '';
 									}}>
 									{$_('button.cancel')}
-								</Button>
+								</div>
 							</Col>
 						</Row>
 					</Col>
@@ -532,41 +551,37 @@
 		<div class="flex-shrink-0 fs-3">
 			{$_('title.template')}
 		</div>
-		<div class="ms-5 align-self-center flex-grow-1">&nbsp;</div>
-		<div class="justify-content-end flex-shrink-0">
-			<Button
-				color="primary"
-				on:click={async () => {
+		<div class="ms-5 align-self-start flex-grow-1">&nbsp;</div>
+		<div class="justify-content-end">
+			<div
+				class="btn btn-primary m-0 py-1 px-3"
+				on:click|preventDefault={async () => {
 					showform = 'create';
-				}}
-				class="m-0  py-1 px-3">
+				}}>
 				{$_('button.create')}
-			</Button>
-			<Button
-				color="primary"
-				on:click={async () => {
+			</div>
+			<div
+				class="btn btn-primary m-0 py-1 px-3"
+				on:click|preventDefault={async () => {
 					showform = 'import';
-				}}
-				class="m-0 py-1 px-3">
+				}}>
 				{$_('button.import')}
-			</Button>
-			<Button color="primary" on:click={toggleAdvancedSearch} class="m-0 p-1">
+			</div>
+			<div class="btn btn-primary m-0 p-1" on:click|preventDefault={toggleAdvancedSearch}>
 				{#if $showAdvancedSearch[BIZ]}
 					<i class="bi bi-x-circle" />
 				{:else}
 					<i class="bi bi-search" />
 				{/if}
 				{$_('button.toggleAdvancedSearch')}
-			</Button>
-			<Button
-				color="primary"
+			</div>
+			<div
+				class="btn btn-primary m-0 p-1 btn-lg"
 				on:click={(e) => {
 					resetQuery(true);
-				}}
-				class="m-0 p-1"
-				size="lg">
+				}}>
 				{$_('button.resetQuery')}
-			</Button>
+			</div>
 		</div>
 	</div>
 	{#if $showAdvancedSearch[BIZ]}
@@ -586,7 +601,11 @@
 								title={$_('remotetable.bywhat')}
 								placeholder={$_('remotetable.bywhat')}
 								bind:value={$filterStorage[BIZ].pattern} />
-							<div class="btn btn-primary" on:click|preventDefault={searchNow}>
+							<div
+								class="btn btn-primary"
+								on:click|preventDefault={(e) => {
+									searchNow().then();
+								}}>
 								<i class="bi bi-arrow-return-left" />
 							</div>
 						</InputGroup>
@@ -601,25 +620,32 @@
 							class="flex-fill"
 							bind:value={$filterStorage[BIZ].author}
 							placeholder="author email" />
-						<Button on:click={searchNow} color="primary">List</Button>
-						<Button
-							on:click={async () => {
+						<div
+							class="btn btn-primary"
+							on:click|preventDefault={(e) => {
+								searchNow().then();
+							}}
+							color="primary">
+							List
+						</div>
+						<div
+							class="btn btn-secondary m-0 py-1 px-3"
+							on:click|preventDefault={async () => {
 								$filterStorage[BIZ].author = user.email;
 								await searchNow();
 							}}
-							class="btn-outline-primary m-0 py-1 px-3"
 							color={'light'}>
 							{$_('remotetable.me')}
-						</Button>
-						<Button
-							on:click={async () => {
+						</div>
+						<div
+							class="btn btn-secondary  m-0 py-1 px-3"
+							on:click|preventDefault={async () => {
 								$filterStorage[BIZ].author = '';
 								await searchNow();
 							}}
-							class="btn-outline-primary m-0 py-1 px-3"
 							color="light">
 							{$_('remotetable.any')}
-						</Button>
+						</div>
 					</InputGroup>
 				</Col>
 			</Row>
@@ -628,14 +654,14 @@
 	<div class="mt-3 mx-0 w-100">
 		{$_('recent')}
 		{#each recentTemplates as aTplid}
-			<Button
-				class="mx-1 badge bg-info text-dark border-info"
-				on:click={(e) => {
+			<div
+				class="btn btn-primary mx-1 badge bg-info text-dark border-info"
+				on:click|preventDefault={(e) => {
 					e.preventDefault();
 					goto(`template/start?tplid=${aTplid}`, { replaceState: false });
 				}}>
 				{aTplid}
-			</Button>
+			</div>
 		{/each}
 	</div>
 	{#key rowsCount}
@@ -690,7 +716,7 @@
 		<div class="flex-shrink-1">
 			<PageSize
 				on:pagesize={async (e) => {
-					await load(0, 'change page size');
+					await load(0, 'refresh', api.CACHE_FLAG.useIfExists);
 				}} />
 		</div>
 		<div class="flex-shrink-1">
@@ -732,14 +758,13 @@
 										{row.tplid}
 									</a>
 									{#if row.cron > 0}
-										<Button
-											class="m-0 ms-3 p-0"
-											on:click={(e) => {
-												e.preventDefault();
+										<div
+											class="btn btn-primary m-0 ms-3 p-0"
+											on:click|preventDefault={(e) => {
 												showCronTable(e, row.tplid);
 											}}>
 											crontab
-										</Button>
+										</div>
 									{/if}
 								</h5>
 							</div>
@@ -893,14 +918,15 @@
 						{#if editlogfor === row.tplid}
 							<Container>
 								<Row>
-									<Button
+									<div
+										class="btn btn-primary"
 										color="primary"
-										on:click={(e) => {
+										on:click|preventDefault={(e) => {
 											e.preventDefault();
 											editlogfor = '';
 										}}>
 										Close
-									</Button>
+									</div>
 								</Row>
 								{#each editlogs as elog}
 									<Row>
@@ -916,14 +942,15 @@
 							<Container class="border border-2 rounded py-2 bg-light">
 								<Row>
 									<!-- svelte-ignore missing-declaration -->
-									<Button
+									<div
+										class="btn btn-primary"
 										color="primary"
 										on:click={(e) => {
 											e.preventDefault();
 											editCronFor = '';
 										}}>
 										Close
-									</Button>
+									</div>
 								</Row>
 								{#each crons as cron}
 									<Row>
@@ -936,13 +963,13 @@
 											</a>
 										</Col>
 										<Col>
-											<Button
-												size="sm"
+											<div
+												class="btn btn-primary btn-sm"
 												on:click={async (e) => {
 													await deleteCrontab(e, cron.tplid, cron._id);
 												}}>
 												Del
-											</Button>
+											</div>
 										</Col>
 									</Row>
 								{/each}
@@ -958,20 +985,21 @@
 												btnText={'Check'} />
 										{/if}
 										<Input bind:value={cronExpr} />
-										<Button
+										<div
+											class="btn btn-primary"
 											color="primary"
 											on:click={(e) => {
 												addCron(e, row.tplid);
 											}}>
 											Add
-										</Button>
-										<Button
-											class="ms-1"
+										</div>
+										<div
+											class="btn btn-primary ms-1"
 											on:click={(e) => {
 												startNow(e, row.tplid);
 											}}>
 											Start Now
-										</Button>
+										</div>
 									</InputGroup>
 								</Row>
 							</Container>

@@ -22,16 +22,7 @@
 	import Pagination from '$lib/pagination/Pagination.svelte';
 	import Sort from '$lib/pagination/Sort.svelte';
 	import { goto } from '$app/navigation';
-	import {
-		Container,
-		Row,
-		Col,
-		InputGroup,
-		InputGroupText,
-		Input,
-		Icon,
-		Button,
-	} from 'sveltestrap';
+	import { Container, Row, Col, InputGroup, InputGroupText, Input, Icon } from 'sveltestrap';
 	import { Dropdown, DropdownItem, DropdownMenu, DropdownToggle, NavLink } from 'sveltestrap';
 	import { ClientPermControl } from '$lib/clientperm';
 	import { createEventDispatcher, getContext, setContext } from 'svelte';
@@ -89,12 +80,16 @@
 		},
 	});
 
-	const clearTag = async function () {
+	const clearTag = async function (clearCache = false) {
 		$filterStorage[BIZ].tplTag = '';
 		try {
-			let tmp = await api.post('template/tplid/list', {}, user.sessionToken);
+			let tmp = await api.post(
+				'template/tplid/list',
+				{},
+				user.sessionToken,
+				clearCache ? api.CACHE_FLAG.preDelete : api.CACHE_FLAG.useIfExists,
+			);
 			$session.tplIdsForSearch_for_wf = tmp.map((x) => x.tplid);
-			await searchNow();
 		} catch (err) {
 			console.error(err);
 		}
@@ -123,12 +118,13 @@
 			'template/tplid/list',
 			{ tags: $filterStorage[BIZ].tplTag },
 			user.sessionToken,
+			api.CACHE_FLAG.useIfExists,
 		);
 		$session.tplIdsForSearch_for_wf = tmp.map((x) => x.tplid);
 		await searchNow();
 	};
 
-	async function load(_page, reason = 'refresh') {
+	async function load(_page, reason = 'refresh', cacheFlag = api.CACHE_FLAG.bypass) {
 		loading = true;
 		let payload = {
 			pattern: $filterStorage[BIZ].pattern,
@@ -151,35 +147,35 @@
 		if (false === Utils.objectEqual(payloadWithoutSkip, $lastQuery[BIZ])) {
 			payload.skip = 0;
 			$srPage[BIZ] = 0;
-			console.log('Query changed, Skip  to 0');
-			//console.log(payloadWithoutSkip, $lastQuery[BIZ]);
+			console.log('Query changed, Skip to 0');
 		}
 		$lastQuery[BIZ] = payloadWithoutSkip;
 
-		let cachedInFetch = await api.getCache(ENDPOINT, payload, user.sessionToken);
-		if (cachedInFetch) {
-			console.log('Use pure client cache, no fetch request');
-			//console.log(cachedInFetch);
-		}
-
-		if (cachedInFetch) {
-			rows = cachedInFetch.objs;
-			rowsCount = cachedInFetch.total;
-		} else {
-			loadTimer && clearTimeout(loadTimer);
-			loadTimer = setTimeout(async () => {
-				const ret = await api.post(ENDPOINT, payload, user.sessionToken);
-				if (ret.error) {
-					if (ret.error === 'KICKOUT') {
-						setFadeMessage($_('session.forcetohome'));
-						goto('/');
-					} else {
-						setFadeMessage(ret.message, 'warning');
-					}
+		const loadPost = async () => {
+			const ret = await api.post(ENDPOINT, payload, user.sessionToken, cacheFlag);
+			if (ret.error) {
+				if (ret.error === 'KICKOUT') {
+					setFadeMessage($_('session.forcetohome'));
+					goto('/');
 				} else {
-					rows = ret.objs;
-					rowsCount = ret.total;
+					setFadeMessage(ret.message, 'warning');
 				}
+			} else {
+				rows = ret.objs;
+				rowsCount = ret.total;
+			}
+		};
+		loadTimer && clearTimeout(loadTimer);
+		if (
+			cacheFlag === api.CACHE_FLAG.useIfExists &&
+			api.hasCache(ENDPOINT, payload, user.sessionToken)
+		)
+			//Direct return cache without wait.
+			await loadPost();
+		else {
+			//Wait certain ms to fetch from server
+			loadTimer = setTimeout(async () => {
+				await loadPost();
 				loadTimer = null;
 			}, LOADING_TIMEOUT);
 		}
@@ -187,7 +183,7 @@
 	}
 
 	function onPageChange(event) {
-		load(event.detail.page, 'refresh');
+		load(event.detail.page, 'refresh', api.CACHE_FLAG.useIfExists);
 		$srPage[BIZ] = event.detail.page;
 	}
 
@@ -206,7 +202,7 @@
 		}
 	};
 
-	async function searchNow() {
+	async function searchNow(clearCache = false) {
 		if (Utils.isBlank($filterStorage[BIZ].tplTag)) {
 			$filterStorage[BIZ].tplTag = '';
 		}
@@ -222,11 +218,15 @@
 		if (Utils.isBlank($filterStorage[BIZ].calendar_begin)) $filterStorage[BIZ].calendar_begin = '';
 		if (Utils.isBlank($filterStorage[BIZ].calendar_end)) $filterStorage[BIZ].calendar_end = '';
 		if (!$filterStorage.pageSize) $filterStorage.pageSize = 10;
-		load($srPage[BIZ], 'refresh').then((res) => {});
+		load(
+			$srPage[BIZ],
+			'refresh',
+			clearCache ? api.CACHE_FLAG.preDelete : api.CACHE_FLAG.useIfExists,
+		).then((res) => {});
 	}
 
 	export function resetQuery(clearCache = false) {
-		clearTag();
+		$filterStorage[BIZ].tplTag = '';
 		$filterStorage[BIZ].status = 'ST_RUN';
 		$filterStorage[BIZ].tplid = '';
 		$filterStorage[BIZ].starter = user.email;
@@ -237,9 +237,8 @@
 		$filterStorage[BIZ].calendar_end = '';
 		show_calendar_select = false;
 		aSsPicked = '';
-		if (clearCache) {
-			api.removeCacheByPath('workflow/search');
-		}
+		$srPage[BIZ] = 0;
+		searchNow(clearCache).then();
 	}
 
 	const toggleAdvancedSearch = async () => {
@@ -274,7 +273,7 @@
 		$filterStorage[BIZ].sortby =
 			(event.detail.dir === 'desc' ? '-' : '') +
 			(event.detail.key === 'name' ? 'wftitle' : event.detail.key);
-		await load($srPage[BIZ], 'refresh');
+		await load($srPage[BIZ], 'refresh', api.CACHE_FLAG.useIfExists);
 	}
 
 	const opWorkflow = async function (workflow: Workflow, op: string): Promise<void> {
@@ -389,25 +388,27 @@
 		<div class="flex-shrink-0 fs-3">
 			{$_('title.workflow')}
 		</div>
-		<div class="ms-5 align-self-center flex-grow-1">&nbsp;</div>
-		<div class="justify-content-end flex-shrink-0">
-			<Button color="primary" on:click={toggleAdvancedSearch} class="m-0 p-1">
+		<div class="ms-5 align-self-start flex-grow-1">&nbsp;</div>
+		<div class="justify-content-end">
+			<div
+				class="btn btn-primary m-0 p-1"
+				color="primary"
+				on:click|preventDefault={toggleAdvancedSearch}>
 				{#if $showAdvancedSearch[BIZ]}
 					<i class="bi bi-x-circle" />
 				{:else}
 					<i class="bi bi-search" />
 				{/if}
 				{$_('button.toggleAdvancedSearch')}
-			</Button>
-			<Button
+			</div>
+			<div
+				class="btn btn-primary m-0 p-1 btn-lg"
 				color="primary"
-				on:click={(e) => {
+				on:click|preventDefault={(e) => {
 					resetQuery(true);
-				}}
-				class="m-0 p-1"
-				size="lg">
+				}}>
 				{$_('button.resetQuery')}
-			</Button>
+			</div>
 		</div>
 	</div>
 	{#if $showAdvancedSearch[BIZ]}
@@ -420,7 +421,9 @@
 							type="radio"
 							bind:group={$filterStorage[BIZ].status}
 							value={status.value}
-							on:change={searchNow} />
+							on:change={async () => {
+								await searchNow();
+							}} />
 						{status.label}
 					</label>
 				</Col>
@@ -461,26 +464,32 @@
 						bind:value={$filterStorage[BIZ].starter}
 						aria-label="User Email"
 						placeholder="email" />
-					<Button on:click={searchNow} color="primary">
+					<div
+						class="btn btn-primary"
+						on:click|preventDefault={(e) => {
+							searchNow().then();
+						}}
+						color="primary">
 						<i class="bi bi-arrow-return-left" />
-					</Button>
-					<Button
-						on:click={() => {
+					</div>
+					<div
+						class="btn btn-primary"
+						on:click|preventDefault={() => {
 							$filterStorage[BIZ].starter = user.email;
 							searchNow();
 						}}
 						color="secondary">
 						{$_('extrafilter.me')}
-					</Button>
-					<Button
-						on:click={async () => {
+					</div>
+					<div
+						class="btn btn-primary btn-outline-primary m-0 py-1 px-3"
+						on:click|preventDefault={async () => {
 							$filterStorage[BIZ].starter = '';
 							await searchNow();
 						}}
-						class="btn-outline-primary m-0 py-1 px-3"
 						color="light">
 						{$_('remotetable.any')}
-					</Button>
+					</div>
 				</InputGroup>
 			</Col>
 		</Row>
@@ -498,7 +507,11 @@
 							title={$_('remotetable.bywhat')}
 							placeholder={$_('remotetable.bywhat')}
 							bind:value={$filterStorage[BIZ].pattern} />
-						<div class="btn btn-primary" on:click|preventDefault={searchNow}>
+						<div
+							class="btn btn-primary"
+							on:click|preventDefault={(e) => {
+								searchNow().then();
+							}}>
 							<i class="bi bi-arrow-return-left" />
 						</div>
 					</InputGroup>
@@ -516,14 +529,15 @@
 						bind:value={$filterStorage[BIZ].tspan}
 						on:change={async (e) => {
 							e.preventDefault();
-							await load($srPage[BIZ], 'refresh');
+							await load($srPage[BIZ], 'refresh', api.CACHE_FLAG.useIfExists);
 						}}>
 						{#each Object.keys(tspans) as key}
 							<option value={key}>{tspans[key]}</option>
 						{/each}
 					</select>
-					<Button
-						on:click={async () => {
+					<div
+						class="btn btn-primary"
+						on:click|preventDefault={async () => {
 							if (show_calendar_select) {
 								$filterStorage[BIZ].calendar_begin = '';
 								$filterStorage[BIZ].calendar_end = '';
@@ -534,7 +548,7 @@
 							}
 						}}>
 						{$_('remotetable.start_end')}
-					</Button>
+					</div>
 				</InputGroup>
 			</Col>
 		</Row>
@@ -556,9 +570,9 @@
 							type="date"
 							bind:value={$filterStorage[BIZ].calendar_end}
 							on:change={calendar_changed} />
-						<Button on:click={calendar_changed} color="primary">
+						<div class="btn btn-primary" on:click|preventDefault={calendar_changed} color="primary">
 							<i class="bi bi-arrow-return-left" />
-						</Button>
+						</div>
 					</InputGroup>
 				</Col>
 			</Row>
@@ -653,7 +667,7 @@
 		<div class="flex-shrink-1">
 			<PageSize
 				on:pagesize={async (e) => {
-					await load(0, 'refresh');
+					await load(0, 'refresh', api.CACHE_FLAG.useIfExists);
 				}} />
 		</div>
 		<div class="flex-shrink-1">
@@ -848,10 +862,10 @@
 							<div class="mt-3">Set Title to:</div>
 							<InputGroup>
 								<Input bind:value={row.wftitle} />
-								<Button
-									size="sm"
+								<div
+									class="btn btn-primary btn-sm"
 									color="primary"
-									on:click={async (e) => {
+									on:click|preventDefault={async (e) => {
 										e.preventDefault();
 										await api.post(
 											'workflow/set/title',
@@ -861,16 +875,16 @@
 										settingFor = '';
 									}}>
 									Set
-								</Button>
-								<Button
-									size="sm"
+								</div>
+								<div
+									class="btn btn-primary btn-sm"
 									color="secondary"
-									on:click={async (e) => {
+									on:click|preventDefault={async (e) => {
 										e.preventDefault();
 										settingFor = '';
 									}}>
 									Cancel
-								</Button>
+								</div>
 							</InputGroup>
 							<div class="form-check form-switch">
 								<input

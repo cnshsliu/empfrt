@@ -25,10 +25,19 @@
 		alt="cover"
 		on:error={(e) => {
 			cover = false;
-		}}
-	/>
+		}} />
 {:else}
-	<div class="kfk-avatar-letter-small text-center">
-		{tplid}
+	<div class="kfk-cover-virtual text-center">
+		{(() => {
+			//如有中文，取出中文
+			try {
+				var reg = /[\u4e00-\u9fa5]/g;
+				let m = tplid.match(reg);
+				if (m) return m.join('');
+				else return tplid;
+			} catch (err) {
+				return tplid;
+			}
+		})()}
 	</div>
 {/if}

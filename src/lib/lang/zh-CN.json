@@ -4,7 +4,7 @@
 		"doc": "文档",
 		"discuss": "讨论",
 		"template": "规划",
-		"planning": "超脑规划",
+		"planning": "业务规划",
 		"workflow": "运行监控",
 		"worklist": "我的任务",
 		"settings": "设置",
@@ -160,10 +160,10 @@
 	},
 	"adhoc": {
 		"header": "发送一个独立任务",
-		"title": "独立任务说明",
+		"title": "独立任务名称",
 		"pds": "独立任务承担人, 使用PDS格式",
 		"recent": "最近承担人",
-		"comment": "附加性说明",
+		"comment": "附加性指引说明",
 		"founduser": "找到{num}个用户"
 	},
 	"button": {
@@ -804,5 +804,26 @@
 		"prev": "前一页",
 		"next": "后一页",
 		"last": "最后页"
+	},
+	"notify": {
+		"create_template_success": "模版{tplid}创建成功",
+		"create_adhoc_success": "独立任务发送成功",
+		"auto_refresh_work": "在{minutes}分钟内自动更新",
+		"stop_refresh_work": "自动更新已停止，点【重置/全部】按钮手动获得新任务"
+	},
+	"flexible": {
+		"placeholder": "请输入一件事项（项目）的名称",
+		"btn_showform": "发起灵活事项",
+		"btn_create": "开始",
+		"res_success": "已启动，请在【我的任务】中查看"
+	},
+	"homecard": {
+		"template": { "title": "工作模版", "body": "按标准流程方式安排工作" },
+		"flexible": { "title": "灵活事项", "body": "按灵活机动方式安排工作" },
+		"workflow": { "title": "运行监控", "body": "监控各项工作任务进展情况 " },
+		"work": { "title": "工作任务 ", "body": "查看工作任务列表" },
+		"discuss": { "title": "工作讨论", "body": "参与、查看行动任务的讨论" },
+		"setting": { "title": "系统设置", "body": "按需求定制使用环境" },
+		"help": { "title": "帮助信息", "body": "查看用户使用帮助" }
 	}
 }

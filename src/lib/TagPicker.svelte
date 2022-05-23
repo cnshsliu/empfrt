@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { Button, Row, Col, Input } from 'sveltestrap';
 	import { TagStorage, filterStorage } from '$lib/empstores';
+	import { createEventDispatcher } from 'svelte';
 	import { onMount } from 'svelte';
 	import { session } from '$app/stores';
 	import * as api from '$lib/api';
 
+	const dispatch = createEventDispatcher();
 	let user = $session.user;
 	export let currentTags = [];
 	export let BIZ;
@@ -56,7 +58,7 @@
 					}`}
 					on:click={(e) => {
 						e.preventDefault();
-						clearTag('');
+						clearTag();
 					}}>
 					All
 				</Button>

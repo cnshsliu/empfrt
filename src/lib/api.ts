@@ -5,9 +5,11 @@ import MD5 from 'blueimp-md5';
 
 let theCache = {};
 
-const unsubscribe = fetchCache.subscribe((value) => {
+fetchCache.subscribe((value) => {
 	theCache = value;
 });
+
+export const CACHE_FLAG = { bypass: 0, useIfExists: 1, preDelete: 2 };
 
 type OPTS = {
 	method: string;
@@ -31,7 +33,13 @@ export async function sendSimple({ method, path, data = null, token = null }) {
 	return await fetch(`${API_SERVER}/${path}`, opts as RequestInit);
 }
 
-async function send({ method, path, data = null, token = null }): Promise<any> {
+async function send({
+	method,
+	path,
+	data = null,
+	token = null,
+	cacheFlag = CACHE_FLAG.bypass,
+}): Promise<any> {
 	const opts: OPTS = { method, headers: {} };
 	const cacheKey = { method: method, path: path, body: {}, token: '' };
 
@@ -57,15 +65,23 @@ async function send({ method, path, data = null, token = null }): Promise<any> {
 	let returnCode304 = false;
 	let foundCache = false;
 	const cacheID = MD5(JSON.stringify(cacheKey));
+	if (cacheFlag === CACHE_FLAG.preDelete) {
+		console.log(path, 'Preclear cache');
+		delete theCache[cacheID];
+	}
 	if (theCache[cacheID]) {
 		foundCache = true;
 		//console.log(path, 'Found cacheID in cache, should add If-None-Match header');
 		opts.headers['If-None-Match'] = theCache[cacheID].etag;
 		// } else {
 		//   console.log(path, 'no local cache');
+		if (cacheFlag === CACHE_FLAG.useIfExists) {
+			console.log(path, 'Return cached');
+			return JSON.parse(theCache[cacheID].data);
+		}
 	}
 
-	let fullPath = path.startsWith('/') ? `${API_SERVER}${path}` : `${API_SERVER}/${path}`;
+	const fullPath = path.startsWith('/') ? `${API_SERVER}${path}` : `${API_SERVER}/${path}`;
 	let responseETag = '';
 	return fetch(fullPath, opts as RequestInit)
 		.then((response) => {
@@ -96,20 +112,23 @@ async function send({ method, path, data = null, token = null }): Promise<any> {
 								etag: responseETag ? responseETag : '',
 							};
 							//console.log(path, 'Update cache to', theCache);
-							console.log(path, 'Update cache ');
+							console.log(path, 'Update cache, etag ', responseETag);
 							fetchCache.set(theCache);
 							// } else {
 							//   console.log(path, 'Not cachable, no etag');
 						}
 					} else {
-						console.log(path, 'HIT fetch cache on 304, etag', responseETag);
+						console.log(path, 'HIT 304, use cached etag', responseETag);
 					}
 				}
 				return ret;
 			} catch (err) {
-				let ret = jsonText;
+				const ret = jsonText;
 				return ret;
 			}
+		})
+		.catch((err) => {
+			return { error: 'API_ERROR', message: err.message };
 		});
 }
 
@@ -121,8 +140,23 @@ export function del(path: string, token: string): Promise<any> {
 	return send({ method: 'DELETE', path, data: null, token });
 }
 
-export function post(path: string, data: any = null, token: string = null): Promise<any> {
-	return send({ method: 'POST', path, data, token });
+export function post(
+	path: string,
+	data: any = null,
+	token: string = null,
+	cacheFlag = CACHE_FLAG.bypass,
+): Promise<any> {
+	return send({ method: 'POST', path, data, token, cacheFlag });
+}
+
+export function hasCache(path: string, data: {}, token: string): boolean {
+	const cacheKey = { method: 'POST', path: path, body: JSON.stringify(data), token: token };
+	const cacheID = MD5(JSON.stringify(cacheKey));
+	if (theCache[cacheID]) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 export function getCache(path: string, data: {}, token: string): Promise<any> {
