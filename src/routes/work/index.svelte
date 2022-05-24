@@ -62,10 +62,11 @@
 		$filterStorage[BIZ].sortby = '-createdAt';
 	}
 
-	if ($session.user.tenant._id === undefined) {
+	if ($session.user.tenant === undefined) {
+		console.log(JSON.stringify($session.user.tenant));
 		setTimeout(async () => {
 			$mtcConfirm = {
-				title: $_('confirm.title.needReload'),
+				title: $_('confirm.title.needReload') + 'Tenant id',
 				body: $_('confirm.body.needReload'),
 				buttons: [$_('confirm.button.confirm')],
 				callbacks: [

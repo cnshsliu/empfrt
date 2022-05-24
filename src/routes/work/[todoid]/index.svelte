@@ -12,40 +12,42 @@
 		const res = await fetch(`/work/${todoid}.json`);
 
 		const theWork = await res.json();
-		theWork.wf.history.map((x) => {
-			x.isCurrent = x.workid === theWork.workid;
-			x.classname = 'col mt-3 kfk-highlight-track' + (x.isCurrent ? '-current' : '');
-			return x;
-		});
-		theWork.routingOptions.sort();
 		let delegators = [];
-		try {
-			let delegations = await api.post('/delegation/to/me/today', {}, session.user.sessionToken);
-			delegators = (delegations as unknown as any[]).map((x) => x.delegator);
-			if (delegators.includes(session.user.email) === false) {
-				delegators.push(session.user.email);
+		if (theWork && theWork.wf) {
+			theWork.wf.history.map((x) => {
+				x.isCurrent = x.workid === theWork.workid;
+				x.classname = 'col mt-3 kfk-highlight-track' + (x.isCurrent ? '-current' : '');
+				return x;
+			});
+			theWork.routingOptions.sort();
+			try {
+				let delegations = await api.post('/delegation/to/me/today', {}, session.user.sessionToken);
+				delegators = (delegations as unknown as any[]).map((x) => x.delegator);
+				if (delegators.includes(session.user.email) === false) {
+					delegators.push(session.user.email);
+				}
+			} catch (e) {
+				console.error(e);
 			}
-		} catch (e) {
-			console.error(e);
-		}
-		//console.log('Load workflow comments...');
-		if (session.comment_wfid === theWork.wfid) {
-			//console.log('use session comments');
-			theWork.comments = session.comments;
-		} else {
-			let cmtRes = await api.post(
-				'comment/workflow/load',
-				{ wfid: theWork.wfid },
-				session.user.sessionToken,
-			);
-			if (cmtRes.error) {
-				console.log(cmtRes.message);
-				delete session.comment_wfid;
-				delete session.comments;
+			//console.log('Load workflow comments...');
+			if (session.comment_wfid === theWork.wfid) {
+				//console.log('use session comments');
+				theWork.comments = session.comments;
 			} else {
-				theWork.comments = cmtRes as any;
-				//session.comment_wfid = theWork.wfid;
-				//session.comments = theWork.comments;
+				let cmtRes = await api.post(
+					'comment/workflow/load',
+					{ wfid: theWork.wfid },
+					session.user.sessionToken,
+				);
+				if (cmtRes.error) {
+					console.log(cmtRes.message);
+					delete session.comment_wfid;
+					delete session.comments;
+				} else {
+					theWork.comments = cmtRes as any;
+					//session.comment_wfid = theWork.wfid;
+					//session.comments = theWork.comments;
+				}
 			}
 		}
 
@@ -110,8 +112,8 @@
 		}
 		let needReload = false;
 		if ($version) {
-			if ($version !== work.version) {
-				console.log('You need to reload1');
+			if (work && work.version && $version !== work.version) {
+				console.log('You need to reload1', 'version:', $version, 'work.version', work.version);
 				needReload = true;
 			}
 		} else {
@@ -121,7 +123,7 @@
 		if (needReload) {
 			setTimeout(async () => {
 				$mtcConfirm = {
-					title: $_('confirm.title.needReload'),
+					title: $_('confirm.title.needReload') + 'hello',
 					body: $_('confirm.body.needReload'),
 					buttons: [$_('confirm.button.confirm')],
 					callbacks: [
@@ -132,7 +134,7 @@
 						},
 					],
 				};
-			}, 5000);
+			}, 1000);
 		}
 	});
 	onDestroy(async () => {

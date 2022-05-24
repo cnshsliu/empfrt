@@ -60,12 +60,14 @@
 	//刚刚完成的todo，检测到后，更新history中对应todo的状态
 	$: workJustDone &&
 		(() => {
-			for (let i = 0; i < wf.history.length; i++) {
-				if (wf.history[i].workid === workJustDone.workid) {
-					wf.history[i].justDone = true;
-					wf.history[i].status = workJustDone.status;
-					wf.history = wf.history;
-					break;
+			if (wf) {
+				for (let i = 0; i < wf.history.length; i++) {
+					if (wf.history[i].workid === workJustDone.workid) {
+						wf.history[i].justDone = true;
+						wf.history[i].status = workJustDone.status;
+						wf.history = wf.history;
+						break;
+					}
 				}
 			}
 		})();
@@ -131,7 +133,7 @@
 			</Col>
 		{/if}
 	</Row>
-	{#if $filterStorage.showprocesstrack}
+	{#if wf && $filterStorage.showprocesstrack}
 		<Row class="p-3" cols={{ lg: 4, md: 2, sm: 1 }}>
 			<Col>
 				{$_('todo.startat')}: {mtcDate(wf.beginat)}

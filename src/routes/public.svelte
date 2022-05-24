@@ -44,7 +44,12 @@
 		},
 		{ title: $_('homecard.work.title'), body: $_('homecard.work.body'), target: '/work' },
 		{ title: $_('homecard.discuss.title'), body: $_('homecard.discuss.body'), target: '/discuss' },
-		{ title: $_('homecard.help.title'), body: $_('homecard.help.body'), target: '/docs' },
+		//{ title: $_('homecard.help.title'), body: $_('homecard.help.body'), target: '/docs' },
+		{
+			title: $_('homecard.myfile.title'),
+			body: $_('homecard.myfile.body'),
+			target: '/settings/files',
+		},
 	];
 
 	let homecardmouseover = -1;
@@ -99,11 +104,11 @@
 
 		{#if user}
 			<div class="container mt-5 px-4 px-md-3">
-				<div class="row">
+				<div class="row row-cols-2 row-cols-sm-2 row-cols-md-3 row-cols-lg-6 d-flex">
 					{#each homeCards as homecard, index}
-						<div class="col-sm mt-2 d-flex align-items-stretch homecard">
+						<div class="col-sm mt-2 d-flex align-items-stretch homecard flex-grow-1">
 							<div
-								class={'card text-center text-dark ' +
+								class={'card text-center text-dark w-100 ' +
 									(homecardmouseover === index ? 'bg-info' : 'bg-light')}
 								on:focus={() => (homecardmouseover = index)}
 								on:mouseover={(e) => {

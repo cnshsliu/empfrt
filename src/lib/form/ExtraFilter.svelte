@@ -19,7 +19,6 @@
 	import { createEventDispatcher } from 'svelte';
 	import { onMount } from 'svelte';
 	import { filterStorage } from '$lib/empstores';
-	export let object_type: string;
 	export let user: User;
 	export let fields: string[] = ['statuses'];
 	export let statuses: radioOption[] = [

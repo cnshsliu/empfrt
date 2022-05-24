@@ -965,11 +965,7 @@ class KFKclass {
 				//kvarsString = that.base64ToCode(kvarsString);
 			}
 
-			let defaultScript = that.codeToBase64(
-				`// read Hyperflow Developer's Guide for details
-ret='DEFAULT'; `,
-			);
-			let str = blankToDefault(jqDIV.find('code').first().text(), defaultScript).trim();
+			let str = blankToDefault(jqDIV.find('code').first().text(), '').trim();
 			str = that.base64ToCode(str);
 			ret.ACTION.code = str;
 		} else if (jqDIV.hasClass('SCRIPT')) {

@@ -306,10 +306,12 @@
 			"tab": {
 				"participant": "Participant",
 				"instruction": "Instruction",
-				"variables": "Variables"
+				"variables": "Variables",
+				"code": "Script code"
 			},
 			"placeholder": {
-				"instruct": "may use simple HTML format and Handlebars to include Kvars"
+				"instruct": "may use simple HTML format and Handlebars to include Kvars",
+				"code": "Keep it blank unless MUST-to-have"
 			},
 			"p10t": {
 				"alldone": "Vote if multiple participants",
@@ -824,6 +826,7 @@
 		"work": { "title": "Worklist", "body": "See current worklist" },
 		"discuss": { "title": "Discuss", "body": "Discuss on certain tasks" },
 		"setting": { "title": "Setting", "body": "Customize your work environment" },
-		"help": { "title": "Help", "body": "Help, Q&A etc." }
+		"help": { "title": "Help", "body": "Help, Q&A etc." },
+		"myfile": { "title": "My Files", "body": "File uploaded by me" }
 	}
 }

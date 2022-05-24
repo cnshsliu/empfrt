@@ -306,10 +306,12 @@
 			"tab": {
 				"participant": "参与人",
 				"instruction": "操作指引",
-				"variables": "节点参数"
+				"variables": "节点参数",
+				"code": "节点脚本"
 			},
 			"placeholder": {
-				"instruct": "可以使用简单HTML格式，也可使用Handlebars嵌入流程变量,like {{varname.label}}, {{varname.value}}"
+				"instruct": "可以使用简单HTML格式，也可使用Handlebars嵌入流程变量,like {{varname.label}}, {{varname.value}}",
+				"code": "节点脚本，如非必要，请保持为空"
 			},
 			"p10t": {
 				"alldone": "多人参与时投票",
@@ -824,6 +826,7 @@
 		"work": { "title": "工作任务 ", "body": "查看工作任务列表" },
 		"discuss": { "title": "工作讨论", "body": "参与、查看行动任务的讨论" },
 		"setting": { "title": "系统设置", "body": "按需求定制使用环境" },
-		"help": { "title": "帮助信息", "body": "查看用户使用帮助" }
+		"help": { "title": "帮助信息", "body": "查看用户使用帮助" },
+		"myfile": { "title": "我的文件", "body": "我上传的文件" }
 	}
 }
