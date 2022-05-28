@@ -802,7 +802,8 @@
 
 	"session": {
 		"kickout": "过多非正常操作刷新-你的登录被退出",
-		"forcetohome": "过多非正常操作刷新-退回首页"
+		"forcetohome": "过多非正常操作刷新-退回首页",
+		"relogin": "您需要重新登录"
 	},
 
 	"error": {

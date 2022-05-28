@@ -802,7 +802,8 @@
 
 	"session": {
 		"kickout": "abnormal refreshs detected-session terminated",
-		"forcetohome": "abnormal refreshs detected-force to home"
+		"forcetohome": "abnormal refreshs detected-force to home",
+		"relogin": "You need to relogin"
 	},
 
 	"error": {

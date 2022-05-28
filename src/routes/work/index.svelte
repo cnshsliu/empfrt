@@ -216,7 +216,7 @@
 			}, 2000);
 			if (ret.error) {
 				if (ret.error === 'KICKOUT') {
-					setFadeMessage($_('session.forcetohome'));
+					setFadeMessage($_('session.forcetohome'), 'warning');
 					goto('/');
 				} else {
 					setFadeMessage(ret.message, 'warning');
@@ -377,8 +377,22 @@
 	//delayLoadOnMount缺省为0，
 	$: $worklistChangeFlag && $delayLoadOnMount === 0 && immediateReload();
 
+	const relogin = async () => {
+		await post(`/auth/logout`);
+		try {
+			$session = { user: null };
+		} catch (e) {}
+		goto('/login');
+		setFadeMessage($_('session.relogin'), 'warning');
+	};
+
 	onMount(async () => {
 		isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+		//根据产品的更新情况，这里是新的代码要求有tenant._id
+		const tenantid = $session.user.tenant._id;
+		if (!tenantid) {
+			await relogin();
+		}
 		if ($workRefreshInterval) {
 			console.log('Clear existing interval');
 			clearInterval($workRefreshInterval as number);
