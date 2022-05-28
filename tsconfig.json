@@ -22,5 +22,12 @@
 		}
 	},
 	"include": ["src/**/*.d.ts", "src/**/*.js", "src/**/*.ts", "src/**/*.svelte"],
-	"extends": "./.svelte-kit/tsconfig.json"
+	"extends": "./.svelte-kit/tsconfig.json",
+	"@typescript-eslint/no-this-alias": [
+    "error",
+    {
+      "allowDestructuring": false, // Disallow `const { props, state } = this`; true by default
+      "allowedNames": ["self"] // Allow `const self = this`; `[]` by default
+    }
+  ]
 }

@@ -9,7 +9,7 @@
 	import Confirm from '$lib/confirm.svelte';
 	import suuid from 'short-uuid';
 	import { Status } from '$lib/status';
-	import { filterStorage } from '$lib/empstores';
+	import { wfMonitorInterval, filterStorage } from '$lib/empstores';
 	import * as api from '$lib/api';
 	import { session } from '$app/stores';
 	import { createEventDispatcher, setContext, getContext } from 'svelte';
@@ -371,15 +371,20 @@
 			let stopEvery = 5; //minutes
 			await remoteCheck();
 			checkWorkflowUpdateInterval = setInterval(async () => {
-				await remoteCheck();
-				if (checkWorkflowTimes > (stopEvery * 60) / workflowCheckIntervalSeconds) {
-					//if (checkWorkflowTimes > 3) {
+				if (
+					$wfMonitorInterval !== checkWorkflowUpdateInterval ||
+					checkWorkflowTimes > (stopEvery * 60) / workflowCheckIntervalSeconds
+				) {
 					clearInterval(checkWorkflowUpdateInterval);
 					checkWorkflowUpdateInterval = null;
 					checkWorkflowTimes = 0;
+				} else {
+					console.log('checkstatus', $wfMonitorInterval, checkWorkflowUpdateInterval);
+					await remoteCheck();
 				}
 			}, workflowCheckIntervalSeconds * 1000);
 		}
+		$wfMonitorInterval = checkWorkflowUpdateInterval;
 	};
 	let isMobile = false;
 	onMount(async () => {
@@ -476,6 +481,7 @@
 	if (workflow) setContext('workflow', workflow);
 	if (template) setContext('template', template);
 	setContext('theDesigner', this);
+	console.log(routeStatus);
 </script>
 
 <div id="S1">

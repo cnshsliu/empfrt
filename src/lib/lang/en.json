@@ -62,7 +62,16 @@
 			"user_not_found": "User not found"
 		},
 		"usernotfound": "User not found",
-		"sendvrfcodeerror": "Email is invalid"
+		"sendvrfcodeerror": "Email is invalid",
+		"yourFullEmail": "Your full email address",
+		"yourEmailOrId": "Full email address or prefix ID"
+	},
+	"register": {
+		"dberror": "Registration failed",
+		"duplicate": "Account already registered",
+		"dismiss": "Acknowledged",
+		"emailverifytips": "You will be directed to MTC main interface on successful registration, however, before your next login, you must reply to the confirmation email sent to you",
+		"upgradeorgtips": "If you are going to upgrade your account to enterprise-level, please contact Metatocome client representives. After upgrading succesfully, your workmates will be able to collaborate with MTC, and your account will be the Administrator automatically."
 	},
 	"extrafilter": {
 		"template": "Template",
@@ -591,11 +600,15 @@
 			"nav": "Team",
 			"title": "Manage Flexible Team",
 			"body": "Team is used to map user to role",
-			"action": "Manage"
+			"action": "Manage",
+			"list": "Exiting Teams",
+			"create": "Create Team",
+			"import": "Import Team"
 		},
 		"tenant": {
 			"nav": "Org Account",
 			"title": "Set your Org Account",
+			"messagefornoadmin": "Please contact administrator to change org level settings",
 			"body": "Config Org Account, manage org members",
 			"action": "Admin",
 			"adiministrator": "Administrator",
@@ -716,6 +729,10 @@
 				"todo": "Owned Tasks",
 				"tpl": "Participated Templates"
 			},
+			"placeholder": {
+				"from": "ID or email of the leaver",
+				"to": "ID or email of the replacer"
+			},
 			"confirm": {
 				"title": "Caution",
 				"body": "Resign {from} account will be frozen, no operation will be allowed.",
@@ -828,5 +845,21 @@
 		"setting": { "title": "Setting", "body": "Customize your work environment" },
 		"help": { "title": "Help", "body": "Help, Q&A etc." },
 		"myfile": { "title": "My Files", "body": "File uploaded by me" }
+	},
+	"tips": {
+		"orgtag": {
+			"title": "Org-level Tags",
+			"content": "Set by administrators, click to see details"
+		},
+		"flexible": {
+			"title": "Flexible Actions",
+			"content": "Start to arrange tasks in a flexible way."
+		}
+	},
+	"search": {
+		"condition": {
+			"all": "All",
+			"template": "Search '{pattern}', Author: {author}"
+		}
 	}
 }

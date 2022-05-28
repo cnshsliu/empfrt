@@ -3,7 +3,7 @@
 		if (session.user) {
 			return {
 				status: 302,
-				redirect: '/work'
+				redirect: '/work',
 			};
 		}
 
@@ -21,7 +21,7 @@
 	import type { oneArgFunc, EmpResponse } from '$lib/types';
 	import * as api from '$lib/api';
 	import { Input, Card, NavLink } from 'sveltestrap';
-	import { filterStorage } from '$lib/empstores';
+	import { filterStorage, emailDomainForLogin } from '$lib/empstores';
 	import Countdown from '$lib/Countdown.svelte';
 
 	let email = '';
@@ -73,7 +73,9 @@
 		} else {
 			login_wait = -1;
 			if (response.user) {
-				delete $filterStorage.doer;
+				$emailDomainForLogin = {
+					domain: response.user.email.substring(response.user.email.indexOf('@')),
+				};
 				$session.user = response.user;
 				goto('/work');
 			}
@@ -92,6 +94,18 @@
 	}
 
 	let needFullEmailToResetPassword = '';
+
+	const addDomain = () => {
+		if (email.indexOf('@') >= 0) return;
+		if (
+			$emailDomainForLogin &&
+			$emailDomainForLogin.domain &&
+			$emailDomainForLogin.domain !== '@' &&
+			$emailDomainForLogin.domain.length > 3
+		) {
+			email = email + $emailDomainForLogin.domain;
+		}
+	};
 </script>
 
 <svelte:head>
@@ -107,7 +121,7 @@
 		</Col>
 		<Col>
 			<p class="text-center">
-				<a href="/register"> {$_('account.needAnAccount')}</a>
+				<a href="/register">{$_('account.needAnAccount')}</a>
 			</p>
 		</Col>
 		<Col>
@@ -121,9 +135,15 @@
 						autocomplete="username"
 						placeholder="Email"
 						bind:value={email}
-						aria-describedby="validationServerUsernameFeedback"
-					/>
-					<label for="input-email"> {$_('account.yourEmail')} </label>
+						on:blur={addDomain}
+						aria-describedby="validationServerUsernameFeedback" />
+					<label for="input-email">
+						{$emailDomainForLogin &&
+						$emailDomainForLogin.domain &&
+						$emailDomainForLogin.domain !== '@'
+							? $_('account.yourEmailOrId') + $emailDomainForLogin.domain
+							: $_('account.yourFullEmail')}
+					</label>
 					<div id="validationServerUsernameFeedback" class="invalid-feedback">
 						{#if errResponse.error && errResponse.message}
 							{errResponse.message}
@@ -142,9 +162,8 @@
 						placeholder="Password"
 						autocomplete="current-password"
 						bind:value={password}
-						aria-describedby="validationServerPwdFeedback"
-					/>
-					<label for="input-password"> {$_('account.password')}</label>
+						aria-describedby="validationServerPwdFeedback" />
+					<label for="input-password">{$_('account.password')}</label>
 					<div id="validationServerPwdFeedback" class="invalid-feedback">
 						{#if errResponse.error && errResponse.message}
 							{errResponse.message}
@@ -155,8 +174,7 @@
 					<button
 						class="w-100 btn btn-lg btn-primary pull-xs-right mt-3"
 						type="submit"
-						disabled={login_wait >= 0}
-					>
+						disabled={login_wait >= 0}>
 						{$_('account.signin')}
 						{login_wait < 0 ? '' : `(${login_wait})`}
 					</button>
@@ -177,8 +195,7 @@
 							$session.rstPwdFor = email;
 							goto('/resetpassword');
 						}
-					}}
-				>
+					}}>
 					{$_('login.reset_password')}
 				</NavLink>
 			</Col>
@@ -193,8 +210,7 @@
 				<NavLink
 					on:click={() => {
 						resendEmailVerification();
-					}}
-				>
+					}}>
 					Resend Verification Email
 				</NavLink>
 			{:else if resendCountdown > 0}

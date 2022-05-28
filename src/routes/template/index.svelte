@@ -9,6 +9,7 @@
 	import * as api from '$lib/api';
 	import Cover from '$lib/display/Cover.svelte';
 	import { API_SERVER } from '$lib/Env';
+	import { TagStorage } from '$lib/empstores';
 	import { enhance } from '$lib/form';
 	import TagPicker from '$lib/TagPicker.svelte';
 	import { session } from '$app/stores';
@@ -160,7 +161,7 @@
 		},
 	});
 
-	async function searchNow(clearCache = false) {
+	async function searchNow(preDelete = false) {
 		if (Utils.isBlank($filterStorage[BIZ].tplTag)) {
 			$filterStorage[BIZ].tplTag = '';
 		}
@@ -181,7 +182,7 @@
 		load(
 			$srPage[BIZ],
 			'refresh',
-			clearCache ? api.CACHE_FLAG.preDelete : api.CACHE_FLAG.useIfExists,
+			preDelete ? api.CACHE_FLAG.preDelete : api.CACHE_FLAG.useIfExists,
 		).then((res) => {});
 	}
 
@@ -200,7 +201,6 @@
 		if (false === Utils.objectEqual(payloadWithoutSkip, $lastQuery[BIZ])) {
 			payload.skip = 0;
 			$srPage[BIZ] = 0;
-			console.log('Query changed, Skip  to 0');
 		}
 		$lastQuery[BIZ] = payloadWithoutSkip;
 
@@ -247,9 +247,9 @@
 		await load($srPage[BIZ], 'refresh', api.CACHE_FLAG.useIfExists);
 	}
 
-	const clearTag = async function (clearCache = false) {
+	const clearTag = async function (preDelete = false) {
 		$filterStorage[BIZ].tplTag = '';
-		await searchNow(clearCache);
+		await searchNow(preDelete);
 	};
 
 	const useThisTag = function (tag, appendMode = false) {
@@ -305,7 +305,7 @@
 	async function reloadTags() {
 		allTags.org = await api.post('tag/org', {}, user.sessionToken);
 		allTags.mine = await api.post('tag/list', { objtype: 'template' }, user.sessionToken);
-		//$TagStorage = allTags;
+		$TagStorage = allTags;
 	}
 
 	function deleteRow(tplid) {
@@ -392,12 +392,15 @@
 		console.log(crons);
 	};
 
-	function resetQuery(clearCache = false) {
+	function resetQuery(preDelete = false) {
 		$filterStorage[BIZ].tplTag = '';
-		$filterStorage[BIZ].author = user.email;
+		$filterStorage[BIZ].author = '';
 		$filterStorage[BIZ].pattern = '';
 		$srPage[BIZ] = 0;
-		searchNow(clearCache).then();
+		if (preDelete) {
+			api.removeCacheByPath('template/search');
+		}
+		searchNow(preDelete).then();
 	}
 
 	const toggleAdvancedSearch = async () => {
@@ -460,7 +463,7 @@
 												rowsCount++;
 												newTplName = '';
 												newTplTags = '';
-												$filterStorage[BIZ].author = user.email;
+												$filterStorage[BIZ].author = '';
 												$filterStorage[BIZ].pattern = '';
 												api.removeCacheByPath('template/search');
 												setFadeMessage(
@@ -584,9 +587,8 @@
 			</div>
 		</div>
 	</div>
+	<TagPicker {BIZ} {useThisTag} {clearTag} />
 	{#if $showAdvancedSearch[BIZ]}
-		<TagPicker {BIZ} {useThisTag} {clearTag} />
-		<div class="mb-3">&nbsp;</div>
 		<div>
 			<Row cols={{ xs: 1, md: 2 }} class="mt-1">
 				<Col>
@@ -651,11 +653,11 @@
 			</Row>
 		</div>
 	{/if}
-	<div class="mt-3 mx-0 w-100">
+	<div class="mt-1 mx-0 w-100">
 		{$_('recent')}
 		{#each recentTemplates as aTplid}
 			<div
-				class="btn btn-primary mx-1 badge bg-info text-dark border-info"
+				class="btn btn-primary mx-1 badge bg-info text-dark border-info fw-light"
 				on:click|preventDefault={(e) => {
 					e.preventDefault();
 					goto(`template/start?tplid=${aTplid}`, { replaceState: false });

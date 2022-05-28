@@ -11,6 +11,15 @@
 	--background-without-opacity: rgba(255, 255, 255, 0.7);
 	--column-width: 42rem;
 	--column-margin-top: 4rem;
+	--bs-body-color: #29282d;
+	--bs-primary-rgb: 101, 104, 172;
+	--bs-primary: #6667ab;
+	--bs-link-color: #6667ab;
+}
+
+.btn-primary {
+	--bs-btn-bg: #6667ab;
+	--bs-btn-border-color: #6667ab;
 }
 
 body {
@@ -2557,7 +2566,7 @@ div#todo_comments img {
 	width: 24px;
 	height: 24px;
 	border: 1px solid;
-	border-color: #0d6efd66;
+	border-color: #6667ad66;
 	border-radius: 12px;
 	background-color: #d2e1ef;
 	display: inline-block;
@@ -2595,8 +2604,9 @@ div#todo_comments img {
 	}
 }
 .refreshIndicator.active {
-	background: transparent url(/metatocome.png) no-repeat center center;
-	background-size: cover;
+	background: transparent url(/metatocome-no-text.png) no-repeat center center;
+	background-size: contain;
+	background-repeat: no-repeat;
 	transform-origin: center center;
 	animation: 2s linear 0s infinite normal none running huxi;
 	transition: width 2s, height 2s, background-color 2s, transform 2s;

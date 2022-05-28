@@ -35,22 +35,26 @@
 	import { goto } from '$app/navigation';
 	import { post } from '$lib/utils';
 	import { DEPLOY_MODE } from '$lib/Env';
-	import { whichTabStorage } from '$lib/empstores';
+	import { emailDomainForLogin } from '$lib/empstores';
 	import { onMount, onDestroy } from 'svelte';
 	import Avatar from '$lib/display/Avatar.svelte';
 
 	let isMenuOpen = true;
-	let theAvatar;
-	let theAvatar2;
+	let theAvatar: any;
+	let theAvatar2: any;
 
 	const toggle = () => (isMenuOpen = !isMenuOpen);
 	async function logout() {
+		let emailDomain = $emailDomainForLogin;
+		console.log('Logout', emailDomain);
 		await post(`/auth/logout`);
 
-		whichTabStorage.set(null);
 		try {
 			localStorage.clear();
 		} catch (e) {}
+		setTimeout(() => {
+			localStorage.setItem('edforlogin', JSON.stringify(emailDomain));
+		}, 2000);
 
 		// this will trigger a redirect, because it
 		// causes the `load` function to run again
@@ -205,49 +209,43 @@
 		</button>
 		<div class="collapse navbar-collapse show" id="navbarSupportedContent">
 			<Nav class="ms-auto">
-				<NavItem>
-					<NavLink href="/" class="py-2 ps-0 pe-3" active={$page.url.pathname === '/'}>
+				<NavItem class="px-1">
+					<NavLink class="m-0 p-0" href="/" active={$page.url.pathname === '/'}>
 						{$_('navmenu.home')}
 					</NavLink>
 				</NavItem>
 				{#if $session.user}
-					<NavItem>
-						<NavLink
-							href="/discuss"
-							class="py-2 ps-0 pe-3"
-							active={$page.url.pathname === '/discuss'}>
+					<NavItem class="px-1">
+						<NavLink class="m-0 p-0" href="/discuss" active={$page.url.pathname === '/discuss'}>
 							{$_('navmenu.discuss')}
 						</NavLink>
 					</NavItem>
-					<NavItem>
-						<NavLink
-							class="py-2 ps-0 pe-3"
-							href="/template"
-							active={$page.url.pathname === '/template'}>
+					<NavItem class="px-1">
+						<NavLink class="m-0 p-0" href="/template" active={$page.url.pathname === '/template'}>
 							{$_('navmenu.planning')}
 						</NavLink>
 					</NavItem>
-					<NavItem>
-						<NavLink
-							class="py-2 ps-0 pe-3"
-							href="/workflow"
-							active={$page.url.pathname === '/workflow'}>
+					<NavItem class="px-1">
+						<NavLink class="m-0 p-0" href="/workflow" active={$page.url.pathname === '/workflow'}>
 							{$_('navmenu.workflow')}
 						</NavLink>
 					</NavItem>
-					<NavItem>
-						<NavLink class="py-2 ps-0 pe-3" href="/work" active={$page.url.pathname === '/work'}>
+					<NavItem class="px-1">
+						<NavLink class="m-0 p-0" href="/work" active={$page.url.pathname === '/work'}>
 							{$_('navmenu.worklist')}
 						</NavLink>
 					</NavItem>
 				{:else}
-					<NavItem>
-						<NavLink href="/login" class="nav-link" active={$page.url.pathname === '/login'}>
+					<NavItem class="px-1">
+						<NavLink class="m-0 ms-3 p-0" href="/login" active={$page.url.pathname === '/login'}>
 							{$_('account.signin')}
 						</NavLink>
 					</NavItem>
 					<NavItem>
-						<NavLink href="/register" class="nav-link" active={$page.url.pathname === '/register'}>
+						<NavLink
+							class="m-0 p-0 px-3 "
+							href="/register"
+							active={$page.url.pathname === '/register'}>
 							{$_('account.signup')}
 						</NavLink>
 					</NavItem>

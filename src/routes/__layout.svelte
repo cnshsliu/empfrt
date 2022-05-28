@@ -17,7 +17,7 @@
 	import * as api from '$lib/api';
 	import { Container } from 'sveltestrap';
 	import Confirm from '$lib/confirm.svelte';
-	import { printing, notifyMessage, mtcConfirm, mtcConfirmReset } from '$lib/Stores';
+	import { bootstrap, printing, notifyMessage, mtcConfirm, mtcConfirmReset } from '$lib/Stores';
 	import { filterStorage } from '$lib/empstores';
 	import { navigating } from '$app/stores';
 	import { onMount, onDestroy } from 'svelte';
@@ -25,10 +25,9 @@
 	import NavMenu from '$lib/NavMenu.svelte';
 	import EmpFooter from '$lib/EmpFooter.svelte';
 	import PreloadingIndicator from '$lib/PreloadingIndicator.svelte';
-	export let url;
+	export let url: string;
 
-	let bootstrap: any;
-	let theConfirm;
+	let theConfirm: any;
 	let browserLocale = '';
 
 	onMount(async () => {
@@ -75,8 +74,6 @@
 				theConfirm.toggle();
 			}
 		}
-		const module = await import('bootstrap');
-		bootstrap = module.default;
 	});
 
 	const setI18N = async function (locale) {

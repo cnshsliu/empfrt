@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-this-alias */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 import { API_SERVER } from '$lib/Env';
@@ -37,7 +38,7 @@ declare global {
 let SVG = null;
 let jQuery = null;
 let $ = null;
-let history = [];
+const history = [];
 let history_pointer = 0;
 let tmptmptmp = null;
 import('@svgdotjs/svg.js').then((pack) => {
@@ -351,7 +352,7 @@ class KFKclass {
 	jc3Cursor = null;
 
 	constructor() {
-		let that = this;
+		const that = this;
 		import('jquery').then((pack) => {
 			jQuery = pack.default;
 			$ = jQuery;
@@ -422,27 +423,29 @@ class KFKclass {
 	}
 
 	C3MousePos(evt: any) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		return {
 			x: that.scalePoint(that.scrXToJc3X(evt.clientX)),
 			y: that.scalePoint(that.scrYToJc3Y(evt.clientY)),
 		};
 	}
+
 	ScreenMousePos(pos: Point) {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		return {
 			x: pos.x - that.scrollContainer.scrollLeft(),
 			y: pos.y - that.scrollContainer.scrollTop(),
 		};
 	}
+
 	hideLineTransformer() {
 		KFKclass.hide($('#linetransformer'));
 	}
+
 	showLineTransformer() {
 		KFKclass.show($('#linetransformer'));
 	}
+
 	cancelTempLine() {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
@@ -453,6 +456,7 @@ class KFKclass {
 			that.drawPoints.clear();
 		}
 	}
+
 	//select tool set tool settool
 	setTool(tool: string, event?: any): void {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
@@ -621,7 +625,6 @@ class KFKclass {
 	}
 
 	C3Blur() {
-		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		that.onC3 = false;
 	}
@@ -709,21 +712,21 @@ class KFKclass {
 		);
 	}
 	idsOfNodesToThis(jcNode: any) {
-		let that = this;
-		let ret = [];
-		let connectsToThis = that.JC3.find(`.connect[tid="${jcNode.attr('id')}"]`);
-		let number = connectsToThis.length;
+		const that = this;
+		const ret = [];
+		const connectsToThis = that.JC3.find(`.connect[tid="${jcNode.attr('id')}"]`);
+		const number = connectsToThis.length;
 		for (let i = 0; i < number; i++) {
-			let jqC = $(connectsToThis[i]);
-			let fid = jqC.attr('fid');
+			const jqC = $(connectsToThis[i]);
+			const fid = jqC.attr('fid');
 			ret.push(fid);
 		}
 		return ret;
 	}
 
 	toStart(jcNode: any, backPaths: any[]) {
-		let that = this;
-		let id = jcNode.attr('id');
+		const that = this;
+		const id = jcNode.attr('id');
 		if (jcNode.hasClass('START')) {
 			backPaths.push(id);
 			return;
@@ -731,7 +734,7 @@ class KFKclass {
 			if (backPaths.includes(id)) return;
 			else {
 				backPaths.push(id);
-				let ids = that.idsOfNodesToThis(jcNode);
+				const ids = that.idsOfNodesToThis(jcNode);
 				for (let i = 0; i < ids.length; i++) {
 					that.toStart(that.JC3.find('#' + ids[i]).first(), backPaths);
 				}
@@ -740,10 +743,10 @@ class KFKclass {
 	}
 
 	setAndORCounterPart(jcAnd: any) {
-		let that = this;
-		let andId = jcAnd.attr('id');
-		let ids = that.idsOfNodesToThis(jcAnd);
-		let paths = [];
+		const that = this;
+		const andId = jcAnd.attr('id');
+		const ids = that.idsOfNodesToThis(jcAnd);
+		const paths = [];
 		for (let i = 0; i < ids.length; i++) {
 			paths.push([andId]);
 		}
@@ -769,7 +772,7 @@ class KFKclass {
 	}
 
 	setAndORGraph() {
-		let that = this;
+		const that = this;
 
 		//给每个AND找到自己的counterPart。
 		const andNodes = that.JC3.find('.node.AND');
@@ -806,8 +809,10 @@ class KFKclass {
 			let linkHtml = `<div class="link" from="${aConnect.attr('fid')}" to="${aConnect.attr(
 				'tid',
 			)}">link</div>`;
-			let caseSeg = Parser.isEmpty(aConnect.attr('case')) ? '' : `case="${aConnect.attr('case')}"`;
-			let setSeg = Parser.isEmpty(aConnect.attr('set')) ? '' : `set="${aConnect.attr('set')}"`;
+			const caseSeg = Parser.isEmpty(aConnect.attr('case'))
+				? ''
+				: `case="${aConnect.attr('case')}"`;
+			const setSeg = Parser.isEmpty(aConnect.attr('set')) ? '' : `set="${aConnect.attr('set')}"`;
 			linkHtml = `<div class="link" from="${aConnect.attr('fid')}" to="${aConnect.attr(
 				'tid',
 			)}" ${caseSeg} ${setSeg}>link</div>`;
@@ -954,7 +959,7 @@ class KFKclass {
 			ret.ACTION.withcmt = blankToDefault(jqDIV.attr('cmt'), 'yes') === 'yes';
 
 			if (that.workflow) {
-				let theWork = jqDIV.find('.work').first();
+				const theWork = jqDIV.find('.work').first();
 				ret.ACTION.kvars = (await api.post(
 					'workflow/kvars',
 					{ wfid: that.wfid, workid: theWork.attr('id') },
@@ -973,7 +978,7 @@ class KFKclass {
 			ret.SCRIPT.runmode = jqDIV.attr('runmode') ? jqDIV.attr('runmode') : 'SYNC';
 			ret.SCRIPT.label = blankToDefault(jqDIV.find('p').first().text(), 'Script').trim();
 			ret.label = ret.SCRIPT.label;
-			let defaultScript = that.codeToBase64(
+			const defaultScript = that.codeToBase64(
 				`// read Hyperflow Developer's Guide for details
 ret='DEFAULT'; `,
 			);
@@ -1013,7 +1018,7 @@ ret='DEFAULT'; `,
 	}
 
 	setNodeProperties(jqDIV: myJQuery, props: any) {
-		let that = this;
+		const that = this;
 		let propJSON: NodePropJSON;
 		if (jqDIV.hasClass('ACTION')) {
 			propJSON = props.ACTION;
@@ -1028,14 +1033,14 @@ ret='DEFAULT'; `,
 			const kvars_json = Parser.arrayToKvars(props.kvarsArr);
 			const kvars_string = JSON.stringify(kvars_json);
 			const tmpInBase64 = Parser.codeToBase64(kvars_string);
-			let kvarsChildren = jqDIV.find('.kvars');
+			const kvarsChildren = jqDIV.find('.kvars');
 			if (kvarsChildren.length === 0) {
 				jqDIV.append('<div class="kvars">' + tmpInBase64 + '</div>');
 			} else {
 				jqDIV.find('.kvars').first().prop('innerText', tmpInBase64);
 			}
 			const instructInBase64 = Parser.codeToBase64(propJSON.instruct);
-			let instructChildren = jqDIV.find('.instruct');
+			const instructChildren = jqDIV.find('.instruct');
 			if (instructChildren.length === 0) {
 				jqDIV.append('<div class="instruct">' + instructInBase64 + '</div>');
 			} else {
@@ -1902,43 +1907,43 @@ ret='DEFAULT'; `,
 	}
 
 	async changeId(oldId: any, newId: string) {
-		let that = this;
+		const that = this;
 		console.log(oldId, newId);
-		let jqDIV = that.JC3.find(`#${oldId}`);
+		const jqDIV = that.JC3.find(`#${oldId}`);
 		jqDIV.attr('id', newId);
 		jqDIV.find(`.nodeidlabel`).text(newId);
-		let connectsFromThis = that.JC3.find(`.connect[fid="${oldId}"]`);
+		const connectsFromThis = that.JC3.find(`.connect[fid="${oldId}"]`);
 		for (let i = 0; i < connectsFromThis.length; i++) {
-			let jqC = $(connectsFromThis[i]);
-			let toId = jqC.attr('tid');
-			let oldClass = `connect_${oldId}_${toId}`;
-			let newClass = `connect_${newId}_${toId}`;
+			const jqC = $(connectsFromThis[i]);
+			const toId = jqC.attr('tid');
+			const oldClass = `connect_${oldId}_${toId}`;
+			const newClass = `connect_${newId}_${toId}`;
 			jqC.attr('id', newClass);
 			jqC.removeClass(oldClass).addClass(newClass);
 			jqC.attr('fid', newId);
-			let oldTriClass = `${oldClass}_triangle`;
-			let newTriClass = `${newClass}_triangle`;
+			const oldTriClass = `${oldClass}_triangle`;
+			const newTriClass = `${newClass}_triangle`;
 			that.JC3.find(`.${oldTriClass}`).removeClass(oldTriClass).addClass(newTriClass);
 
-			let oldTextClass = `${oldClass}_text`;
-			let newTextClass = `${newClass}_text`;
+			const oldTextClass = `${oldClass}_text`;
+			const newTextClass = `${newClass}_text`;
 			that.JC3.find(`.${oldTextClass}`).removeClass(oldTextClass).addClass(newTextClass);
 		}
-		let connectsToThis = that.JC3.find(`.connect[tid="${oldId}"]`);
+		const connectsToThis = that.JC3.find(`.connect[tid="${oldId}"]`);
 		for (let i = 0; i < connectsToThis.length; i++) {
-			let jqC = $(connectsToThis[i]);
-			let fromId = jqC.attr('fid');
-			let oldClass = `connect_${fromId}_${oldId}`;
-			let newClass = `connect_${fromId}_${newId}`;
+			const jqC = $(connectsToThis[i]);
+			const fromId = jqC.attr('fid');
+			const oldClass = `connect_${fromId}_${oldId}`;
+			const newClass = `connect_${fromId}_${newId}`;
 			jqC.attr('id', newClass);
 			jqC.removeClass(oldClass).addClass(newClass);
 			jqC.attr('tid', newId);
-			let oldTriClass = `${oldClass}_triangle`;
-			let newTriClass = `${newClass}_triangle`;
+			const oldTriClass = `${oldClass}_triangle`;
+			const newTriClass = `${newClass}_triangle`;
 			that.JC3.find(`.${oldTriClass}`).removeClass(oldTriClass).addClass(newTriClass);
 
-			let oldTextClass = `${oldClass}_text`;
-			let newTextClass = `${newClass}_text`;
+			const oldTextClass = `${oldClass}_text`;
+			const newTextClass = `${newClass}_text`;
 			that.JC3.find(`.${oldTextClass}`).removeClass(oldTextClass).addClass(newTextClass);
 		}
 		let tplLinks = that.tpl.find(`.link[from="${oldId}"]`);
@@ -2738,30 +2743,30 @@ ret='DEFAULT'; `,
 		const that = this;
 		svgConnect.addClass('selected');
 		that.selectedConnects.push(svgConnect);
-		let textClass = '.' + svgConnect.attr('id') + '_text';
+		const textClass = '.' + svgConnect.attr('id') + '_text';
 		$(textClass).addClass('selected');
-		let mpoint = {
+		const mpoint = {
 			x: that.scrXToJc3X(evt.clientX),
 			y: that.scrYToJc3Y(evt.clientY),
 		};
 
 		if (that.KEYDOWN.alt && that.docIsReadOnly() === false) {
-			let length = svgConnect.length();
+			const length = svgConnect.length();
 			let nearest = 999999999;
 			let nearestIndex = -1;
 			for (let i = 0; i <= 20; i++) {
-				let point = svgConnect.pointAt((i / 20) * length);
-				let tmp = that.distance(point, mpoint);
+				const point = svgConnect.pointAt((i / 20) * length);
+				const tmp = that.distance(point, mpoint);
 				if (tmp < nearest) {
 					nearest = tmp;
 					nearestIndex = i;
 				}
 			}
 
-			let fromId = svgConnect.attr('fid');
-			let toId = svgConnect.attr('tid');
-			let jqFrom = $('#' + fromId);
-			let jqTo = $('#' + toId);
+			const fromId = svgConnect.attr('fid');
+			const toId = svgConnect.attr('tid');
+			const jqFrom = $('#' + fromId);
+			const jqTo = $('#' + toId);
 			that.cancelLinkNode();
 			that.setTool('CONNECT');
 			that.tobeRemovedConnectId = svgConnect.attr('id');
@@ -2793,7 +2798,7 @@ ret='DEFAULT'; `,
 		jqConnect.removeClass('selected');
 		const index = that.selectedConnects.indexOf(jqConnect);
 		if (index > -1) that.selectedConnects.splice(index, 1);
-		let textClass = '.' + jqConnect.attr('id') + '_text';
+		const textClass = '.' + jqConnect.attr('id') + '_text';
 		$(textClass).removeClass('selected');
 	}
 
@@ -2936,7 +2941,7 @@ ret='DEFAULT'; `,
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
 		const that = this;
 		const exist = that.selectedConnects.indexOf(jqConnect);
-		let shiftKey = evt.shiftKey;
+		const shiftKey = evt.shiftKey;
 		if (shiftKey) {
 			if (exist >= 0) {
 				that.deselectConnect(jqConnect);
@@ -3231,7 +3236,7 @@ ret='DEFAULT'; `,
 	 *
 	 */
 	async procKeypool(evt: any) {
-		let that = this;
+		const that = this;
 		if (that.keypoolCleanTimeout) {
 			clearTimeout(that.keypoolCleanTimeout);
 		}
@@ -3250,8 +3255,8 @@ ret='DEFAULT'; `,
 				that.setTool('CONNECT');
 				that.tobeRemovedConnectId = that.hoveredConnect.attr('id');
 				that.movingConnect = true;
-				let jqFrom = $('#' + that.hoveredConnect.attr('fid'));
-				let jqTo = $('#' + that.hoveredConnect.attr('tid'));
+				const jqFrom = $('#' + that.hoveredConnect.attr('fid'));
+				const jqTo = $('#' + that.hoveredConnect.attr('tid'));
 				that.clipboardConnectText = that.hoveredConnect.attr('case');
 				if (Parser.isEmpty(that.clipboardConnectText)) {
 					that.clipboardConnectText = null;
@@ -3291,8 +3296,8 @@ ret='DEFAULT'; `,
 			that.setTool('CONNECT');
 			that.tobeRemovedConnectId = that.hoveredConnect.attr('id');
 			that.movingConnect = true;
-			let jqFrom = $('#' + that.hoveredConnect.attr('fid'));
-			let jqTo = $('#' + that.hoveredConnect.attr('tid'));
+			const jqFrom = $('#' + that.hoveredConnect.attr('fid'));
+			const jqTo = $('#' + that.hoveredConnect.attr('tid'));
 			that.clipboardConnectText = that.hoveredConnect.attr('case');
 			if (Parser.isEmpty(that.clipboardConnectText)) {
 				that.clipboardConnectText = null;
@@ -3318,8 +3323,8 @@ ret='DEFAULT'; `,
 	async setConnectionStatusColor(routeStatus: any[]) {
 		let connectNumber = 0;
 		for (let i = 0; i < routeStatus.length; i++) {
-			let aRoute = routeStatus[i];
-			let connectId = 'connect_' + aRoute.from_nodeid + '_' + aRoute.to_nodeid;
+			const aRoute = routeStatus[i];
+			const connectId = 'connect_' + aRoute.from_nodeid + '_' + aRoute.to_nodeid;
 			try {
 				KFK.replaceSTClassTo(
 					$(`#${connectId}`),
@@ -3729,7 +3734,7 @@ ret='DEFAULT'; `,
 	}
 
 	deleteSingleNode(jqDIV: any, cutMode: boolean, immediateOnChange: boolean = true) {
-		let that = this;
+		const that = this;
 		if (that.anyLocked(jqDIV)) return;
 		if (jqDIV.hasClass('START') || jqDIV.hasClass('END')) {
 			return;
@@ -3760,7 +3765,7 @@ ret='DEFAULT'; `,
 	}
 
 	async deleteSingleConnect(connectId: string) {
-		let that = this;
+		const that = this;
 		//delete connect
 		//最后看鼠标滑过的connect（节点间连接线）
 		//Find ids of the two nodes connected by this connect.
@@ -4429,14 +4434,14 @@ ret='DEFAULT'; `,
 	}
 
 	async resetWorkflowStatusClasses(statusObj: any) {
-		let that = this;
+		const that = this;
 		for (let i = 0; i < statusObj.nodeStatus.length; i++) {
 			const jqNode = that.JC3.find('#' + statusObj.nodeStatus[i].nodeid);
 			KFK.replaceSTClassTo(jqNode, statusObj.nodeStatus[i].status);
 		}
 
 		that.JC3.find('.work').remove();
-		let works = $(statusObj.doc).first('.workflow').find('.work');
+		const works = $(statusObj.doc).first('.workflow').find('.work');
 		for (let i = 0; i < works.length; i++) {
 			const aWork = $(works[i]);
 			const theGuiNode = that.JC3.find('#' + aWork.attr('nodeid'));
@@ -4448,24 +4453,24 @@ ret='DEFAULT'; `,
 
 	replaceSTClassTo(jqObj: myJQuery, newClassName: string) {
 		try {
-			let old_classes = jqObj.attr('class').split(/\s+/);
+			const old_classes = jqObj.attr('class').split(/\s+/);
 			old_classes.map((x: string) => (x.startsWith('ST_') ? jqObj.removeClass(x) : ''));
 			jqObj.addClass(newClassName);
 		} catch (err) {}
 	}
 
 	getSTClass(jqObj: myJQuery) {
-		let old_classes = jqObj.attr('class').split(/\s+/);
-		let tmp = old_classes.filter((x: string) => x.startsWith('ST_'));
+		const old_classes = jqObj.attr('class').split(/\s+/);
+		const tmp = old_classes.filter((x: string) => x.startsWith('ST_'));
 		if (tmp.length > 0) return tmp[0];
 		else return '';
 	}
 
 	async addMobileHandler(guiNodes: any[]) {
-		let that = this;
+		const that = this;
 		//if (!that.isMobile) return;
 		for (let i = 0; i < guiNodes.length; i++) {
-			let kfkClass = that.getKfkClass($(guiNodes[i]));
+			const kfkClass = that.getKfkClass($(guiNodes[i]));
 			if (['AND', 'OR', 'START', 'END', 'GROUND', 'THROUGH'].includes(kfkClass)) {
 				continue;
 			}
@@ -4482,10 +4487,10 @@ ret='DEFAULT'; `,
 	}
 
 	async addNodeIdDIV(guiNodes: any[]) {
-		let that = this;
+		const that = this;
 		//if (!that.isMobile) return;
 		for (let i = 0; i < guiNodes.length; i++) {
-			let kfkClass = that.getKfkClass($(guiNodes[i]));
+			const kfkClass = that.getKfkClass($(guiNodes[i]));
 			if (['AND', 'OR', 'START', 'END', 'GROUND', 'THROUGH'].includes(kfkClass)) {
 				continue;
 			}
@@ -4498,7 +4503,7 @@ ret='DEFAULT'; `,
 	}
 
 	async showNodeIdDIV(flag: boolean) {
-		let that = this;
+		const that = this;
 		that.showNodeId = flag;
 		if (flag) {
 			that.JC3.find('.nodeidlabel').removeClass('nodisplay');
@@ -4508,13 +4513,13 @@ ret='DEFAULT'; `,
 	}
 
 	async setLineCurve(curve: boolean) {
-		let that = this;
+		const that = this;
 		that.curve = curve;
 		//TODO: redrawLinkLines
 		await that.redrawAllLines();
 	}
 	async redrawAllLines() {
-		let that = this;
+		const that = this;
 		console.log('Redraw on curve', that.curve);
 		const guiNodes = that.JC3.find('.kfknode');
 		for (let i = 0; i < guiNodes.length; i++) {
@@ -4561,7 +4566,7 @@ ret='DEFAULT'; `,
 			//所以，必须用下面这句话重新读取workflow中的.template，解析后复制给that.tpl
 			//这地方很奇怪，似乎跟JC3.append有关，append会从tpl中抽走对象？又不是完全抽走？什么机制？
 			that.tpl = $(wfobj.doc).first('.template');
-			let setDrag = false;
+			const setDrag = false;
 			for (let i = 0; i < guiNodes.length; i++) {
 				const jqNode = $(guiNodes[i]);
 				await that.setNodeEventHandler(jqNode, null, setDrag);
@@ -4592,7 +4597,7 @@ ret='DEFAULT'; `,
 			}
 			*/
 			tmptmptmp = routeStatus;
-			//let connectionNumber = await that.setConnectionStatusColor(routeStatus);
+			const connectionNumber = await that.setConnectionStatusColor(routeStatus);
 
 			that.myFadeOut($('.loading'));
 			that.myFadeIn(that.JC3, 1000);
@@ -4641,9 +4646,9 @@ ret='DEFAULT'; `,
 
 	scrollToStartNode() {
 		const that = this;
-		let startNode = that.JC3.find('.START').first();
+		const startNode = that.JC3.find('.START').first();
 		if (startNode) {
-			let thePos = {
+			const thePos = {
 				x: KFKclass.unpx(startNode.css('left')) + that.LeftB - that.bestViewLeft,
 				y: KFKclass.unpx(startNode.css('top')) + that.TopB - that.bestViewTop,
 			};
@@ -5384,7 +5389,7 @@ ret='DEFAULT'; `,
 
 	async onCopy(evt: any) {
 		//eslint-disable-next-line  @typescript-eslint/no-this-alias
-		let that = KFK;
+		const that = KFK;
 
 		if (that.showingProp) return;
 
@@ -5418,7 +5423,7 @@ ret='DEFAULT'; `,
 	}
 
 	setKfkClass(jq: myJQuery, kc: string) {
-		let oldKc = KFK.getKfkClass(jq);
+		const oldKc = KFK.getKfkClass(jq);
 		jq.removeClass(oldKc);
 		jq.addClass(kc);
 	}
@@ -5442,7 +5447,7 @@ ret='DEFAULT'; `,
 	async onPaste(evt: any) {
 		const that = KFK;
 		if (that.scenario !== 'template') return;
-		let content = {
+		const content = {
 			html: '',
 			text: '',
 			image: null,
@@ -5452,7 +5457,7 @@ ret='DEFAULT'; `,
 		//content.html = evt.clipboardData.getData('text/html');
 		//content.text = evt.clipboardData.getData('Text');
 
-		var items = (evt.clipboardData || evt.originalEvent.clipboardData).items;
+		const items = (evt.clipboardData || evt.originalEvent.clipboardData).items;
 		if (items[1] && (content.html !== '' || content.text !== '')) {
 			console.log('content:', content);
 		} else if (items[0]) {
@@ -5460,7 +5465,7 @@ ret='DEFAULT'; `,
 				console.log('content:', content);
 			} else if (items[0].kind === 'file') {
 				const postCover = async () => {
-					var blob = items[0].getAsFile();
+					const blob = items[0].getAsFile();
 					(blobForm = new FormData()),
 						blobForm.append('tplid', that.tplid),
 						blobForm.append('blob', blob, 'pastedImage');
@@ -5502,12 +5507,12 @@ ret='DEFAULT'; `,
 		) {
 			//if (that.hoverJqDiv()) {
 			if (that.getPropertyApplyToJqNode()) {
-				let pasteToJq = that.getPropertyApplyToJqNode();
+				const pasteToJq = that.getPropertyApplyToJqNode();
 				if (pasteToJq.hasClass('END') || pasteToJq.hasClass('START')) {
 					console.log('paste to START/END not allowed');
 				} else {
 					console.log('paste hover node');
-					let newNode = KFK.makeCloneDIV(that.clipboardNode, KFK.myuid(), {});
+					const newNode = KFK.makeCloneDIV(that.clipboardNode, KFK.myuid(), {});
 					pasteToJq.empty();
 					newNode.children().each((_index: any, aChild: any) => {
 						$(aChild).appendTo(pasteToJq);
@@ -5517,7 +5522,7 @@ ret='DEFAULT'; `,
 
 				//that.onChange('Paste node');
 			} else {
-				let newNode = KFK.makeCloneDIV(that.clipboardNode, KFK.myuid(), {
+				const newNode = KFK.makeCloneDIV(that.clipboardNode, KFK.myuid(), {
 					left:
 						KFK.scalePoint(KFK.scrXToJc3X(KFK.currentMousePos.x)) -
 						KFK.divWidth(that.clipboardNode) * 0.5,
@@ -5539,9 +5544,9 @@ ret='DEFAULT'; `,
 		pt2.x = KFK.scalePoint(pt2.x);
 		pt2.y = KFK.scalePoint(pt2.y);
 
-		let jqRect = $('#selectingrect');
+		const jqRect = $('#selectingrect');
 		jqRect.hide();
-		let rect = {
+		const rect = {
 			left: Math.min(pt1.x, pt2.x),
 			top: Math.min(pt1.y, pt2.y),
 			width: Math.abs(pt1.x - pt2.x),
@@ -5563,8 +5568,8 @@ ret='DEFAULT'; `,
 		}
 		//为防止混乱，框选只对node div有效果
 		KFK.JC3.find('.kfknode').each((index: number, div: any) => {
-			let jqDiv = $(div);
-			let divRect = KFK.divRect(jqDiv);
+			const jqDiv = $(div);
+			const divRect = KFK.divRect(jqDiv);
 			if (
 				rect.left < divRect.right + index - index &&
 				rect.right > divRect.left &&
@@ -5576,8 +5581,8 @@ ret='DEFAULT'; `,
 		});
 
 		KFK.JC3.find('.kfkshape').each((index: number, shape: any) => {
-			let svgShape = SVG(shape);
-			let shapeRect = KFK.getShapeRect(svgShape);
+			const svgShape = SVG(shape);
+			const shapeRect = KFK.getShapeRect(svgShape);
 			if (
 				rect.left < shapeRect.right + index - index && //remove index not used warning
 				rect.right > shapeRect.left &&
@@ -5618,7 +5623,7 @@ ret='DEFAULT'; `,
 	}
 
 	mouseOverConnect(theConnect: any) {
-		let that = this;
+		const that = this;
 		const styleid = theConnect.attr('styleid');
 		const connect_color = that.YIQColorAux || that.config.connect.styles[styleid].hover.color;
 		theConnect.stroke({
@@ -5643,7 +5648,7 @@ ret='DEFAULT'; `,
 		that.onC3 = true;
 	}
 	mouseOutConnect(theConnect: any, cnWidth: any, cnColor: any) {
-		let that = this;
+		const that = this;
 		const styleid = theConnect.attr('styleid');
 		that.ball.addClass('noshow');
 		that.ball.timeline().stop();
@@ -5655,7 +5660,7 @@ ret='DEFAULT'; `,
 		that.hoveredConnect = null;
 	}
 	async mouseClickConnect(evt: MouseEvent, theConnect: myJQuery) {
-		let that = this;
+		const that = this;
 		if (evt.shiftKey) {
 			if (theConnect.attr('fid') !== 'start') that.showConnectionProperties(theConnect);
 			else {
@@ -5771,7 +5776,7 @@ ret='DEFAULT'; `,
 			}
 			theConnect.attr('case', caseValue);
 			theConnect.attr('set', setValue);
-			let caseDisplay = `${caseValue}${setValue ? '+++' : ''}`;
+			const caseDisplay = `${caseValue}${setValue ? '+++' : ''}`;
 			const connectText = await that.svgDraw.text(function (add: any) {
 				add.tspan(caseDisplay).dy(-2);
 			});
@@ -5821,14 +5826,14 @@ ret='DEFAULT'; `,
 	}
 
 	async reloadNodeProp(nodeid: string) {
-		let that = this;
+		const that = this;
 		console.log('KFK reloadNodeProp', nodeid);
-		let jqNodeDIV = that.JC3.find(`#${nodeid}`);
+		const jqNodeDIV = that.JC3.find(`#${nodeid}`);
 		await that.showNodeProperties(jqNodeDIV);
 	}
 
 	async onClickNode(evt: MouseEvent, jqNodeDIV: myJQuery) {
-		let that = this;
+		const that = this;
 		if (that.tool === 'POINTER') {
 			if (evt.shiftKey) {
 				await that.showNodeProperties(jqNodeDIV);
@@ -6407,6 +6412,7 @@ const KFK = new KFKclass();
 /* document.onpaste = KFK.onPaste;
 document.oncopy = KFK.onCopy;
 document.oncut = KFK.onCut; */
+// eslint-disable-next-line no-self-assign
 tmptmptmp = tmptmptmp;
 
 export default KFK;

@@ -62,7 +62,16 @@
 			"user_not_found": "用户不存在"
 		},
 		"usernotfound": "所输入的用户不存在",
-		"sendvrfcodeerror": "邮件输入有误"
+		"sendvrfcodeerror": "邮件输入有误",
+		"yourFullEmail": "请使用你的完整邮箱地址",
+		"yourEmailOrId": "完整邮箱地址或邮箱前缀"
+	},
+	"register": {
+		"dberror": "注册不成功",
+		"duplicate": "该账号已被注册",
+		"dismiss": "知道了",
+		"emailverifytips": "注册成功以后，将直接进入MTC服务页面，在下次登录之前，你需要查收邮箱验证你的邮箱地址",
+		"upgradeorgtips": "如果您需要升级为企业账号，请联系您在的客户代表。升级企业账号后，您和您的同事将可通过MTC进行工作协作，而您的账号自动成为管理员账号"
 	},
 	"extrafilter": {
 		"template": "模板",
@@ -591,11 +600,15 @@
 			"nav": "敏捷团队",
 			"title": "机动组定义管理",
 			"body": "机动组用于定义用户到角色的映射关系",
-			"action": "敏捷团队"
+			"action": "敏捷团队",
+			"list": "敏捷团队列表",
+			"create": "创建新团队",
+			"import": "导入团队"
 		},
 		"tenant": {
 			"nav": "组织账号",
 			"title": "管理你的组织账号",
+			"messagefornoadmin": "您不是管理员，如有调整组织配置需求，请联系管理员",
 			"body": "设置组织配置信息及管理组织成员",
 			"action": "组织账号",
 			"administrator": "组织管理员",
@@ -716,6 +729,10 @@
 				"todo": "相关工作项",
 				"tpl": "相关流程模版"
 			},
+			"placeholder": {
+				"from": "离职人员ID或邮箱地址",
+				"to": "接手人ID或邮箱地址"
+			},
 			"confirm": {
 				"title": "危险操作",
 				"body": "{from}的账号将被做离职冻结，不再可用",
@@ -828,5 +845,18 @@
 		"setting": { "title": "系统设置", "body": "按需求定制使用环境" },
 		"help": { "title": "帮助信息", "body": "查看用户使用帮助" },
 		"myfile": { "title": "我的文件", "body": "我上传的文件" }
+	},
+	"tips": {
+		"orgtag": { "title": "组织级分类标签", "content": "组织管理员可根据需要设定，点击进入设置" },
+		"flexible": {
+			"title": "创建灵活事项",
+			"content": "无须规划模版，灵活发布工作任务"
+		}
+	},
+	"search": {
+		"condition": {
+			"all": "全部",
+			"template": "当前搜索 {pattern}, 作者: {author}"
+		}
 	}
 }

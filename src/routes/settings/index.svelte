@@ -156,7 +156,7 @@
 					</div>
 				</div>
 				<div class="card-footer text-muted text-end">
-					<a href={'#'} class="btn btn-success" on:click|preventDefault={(e) => goto('team')}>
+					<a href={'#'} class="btn btn-success" on:click|preventDefault={(e) => goto('/team')}>
 						{$_('setting.team.action')}
 					</a>
 				</div>

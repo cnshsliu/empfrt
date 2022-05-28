@@ -29,7 +29,7 @@ const Parser = {
 	},
 	kvarsToArrayForActionPropertyModal: function (
 		kvars: KVars,
-		workid: string
+		workid: string,
 	): Record<string, unknown>[] {
 		const kvarsArr = [];
 		for (const [name, valueDef] of Object.entries(kvars)) {
@@ -93,7 +93,6 @@ const Parser = {
 		try {
 			return Buffer.from(base64, 'base64').toString('utf-8');
 		} catch (error) {
-			console.error(error);
 			return ifErrorValue;
 		}
 	},
@@ -174,7 +173,7 @@ const Parser = {
 	evalFormula_use_server_backend: async function (
 		user: any,
 		kvarArr: any[],
-		formula: string
+		formula: string,
 	): Promise<any> {
 		const replaceKvar = function (formula: string) {
 			for (let i = 0; i < kvarArr.length; i++) {
@@ -209,6 +208,6 @@ const Parser = {
 		} else {
 			return value;
 		}
-	}
+	},
 };
 export default Parser;

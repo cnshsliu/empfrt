@@ -1,24 +1,10 @@
-<script context="module" lang="ts">
-	let TimeTool = null;
-	export async function load({ fetch, session }) {
-		TimeTool = (await import('$lib/TimeTool')).default;
-		const res = await fetch('/team.json');
-
-		return {
-			props: {
-				teams: await res.json(),
-				user: session.user,
-				config: session.config,
-			},
-		};
-	}
-</script>
-
 <script lang="ts">
 	import { _ } from '$lib/i18n';
 	import { API_SERVER } from '$lib/Env';
-	import RemoteTable from './RemoteTable.svelte';
 	import { get } from 'svelte/store';
+	import TimeTool from '$lib/TimeTool';
+	import { onMount } from 'svelte';
+	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import type { WhichTab } from '$lib/types';
 	import { whichTabStorage } from '$lib/empstores';
@@ -31,21 +17,23 @@
 	import { enhance } from '$lib/form';
 	import { TabContent, TabPane } from 'sveltestrap';
 	export let teams: Team[];
-	export let user: User;
 	export let config: any;
 	export let lastSearchCondition: string = '';
 	export let form_status = { create: false, search: false, sort: false, import: false };
 	import { title } from '$lib/title';
 	$title = 'HyperFlow';
-	$: token = user.sessionToken;
-	let remoteTable;
 	export let form_name = '';
 	export let menu_has_form = false;
+
+	let user: User = $session.user;
+	let token: string = user.sessionToken;
 	let urls = {
 		import: `${API_SERVER}/team/import`,
 		create: `${API_SERVER}/team/create`,
 		search: `${API_SERVER}/team/search`,
 	};
+	let rows = [];
+	let rowsCount = 0;
 	function hide_all_form() {
 		Object.keys(form_status).forEach((key) => {
 			form_status[key] = false;
@@ -95,7 +83,7 @@
 			.then((response) => response.json())
 			.then((result) => {
 				console.log('Success:', result);
-				remoteTable.rows = [result, ...remoteTable.rows];
+				rows = [result, ...rows];
 			})
 			.catch((error) => {
 				console.error('Error:', error);
@@ -119,6 +107,28 @@
 			fade_message = '';
 		}, time);
 	}
+
+	async function deleteRow(tid) {
+		await api.post('team/delete', { teamid: tid }, token);
+		let deletedIndex = -1;
+		for (let i = 0; i < rows.length; i++) {
+			if (rows[i].teamid === tid) {
+				deletedIndex = i;
+				break;
+			}
+		}
+		if (deletedIndex >= 0) {
+			rows.splice(deletedIndex, 1);
+			rows = rows;
+			rowsCount = rowsCount - 1;
+		}
+	}
+
+	onMount(async () => {
+		const data = await api.post('team/search', { sort_field: 'name' }, token);
+		rows = data.objs;
+		rowsCount = data.total;
+	});
 </script>
 
 <Container>
@@ -141,10 +151,8 @@
 	</Row>
 	<Row>
 		<div class="d-flex">
-			<div class="flex-shrink-0 fs-3">Teams</div>
-			<div class="mx-5 align-self-center flex-grow-1">
-				Map role definition in template to real people
-			</div>
+			<div class="flex-shrink-0 fs-3">{$_('setting.team.title')}</div>
+			<div class="mx-5 align-self-center flex-grow-1">&nbsp;</div>
 		</div>
 	</Row>
 </Container>
@@ -157,16 +165,16 @@
 		<TabPane tabId="search" active={!whichTab || whichTab['team'] === 'search'}>
 			<span slot="tab">
 				<Icon name="code-square" />
-				Team
+				{$_('setting.team.list')}
 			</span>
 			<div class="mx-3">
-				Team is used to define the mapping between workflow roles and real people.
+				{$_('setting.team.body')}
 			</div>
 		</TabPane>
 		<TabPane tabId="create" active={whichTab && whichTab['team'] === 'create'}>
 			<span slot="tab">
 				<Icon name="plus-circle" />
-				Create
+				{$_('setting.team.create')}
 			</span>
 			<form
 				class="new"
@@ -185,8 +193,8 @@
 							} else console.error(created.error);
 						} else {
 							lastSearchCondition = created.teamid;
-							remoteTable.rows = [created, ...remoteTable.rows];
-							remoteTable.rowsCount = remoteTable.rowsCount + 1;
+							rows = [created, ...rows];
+							rowsCount = rowsCount + 1;
 						}
 						form.reset();
 						//form_status['create'] = false;
@@ -202,8 +210,10 @@
 								class="kfk-input-team-name" />
 						</Col>
 						<Col>
-							<Button size="sm" type="submit" color="primary">Create</Button>
-							<Button size="sm" on:click={hide_all_form} color="secondary">Cancel</Button>
+							<Button size="sm" type="submit" color="primary">{$_('button.create')}</Button>
+							<Button size="sm" on:click={hide_all_form} color="secondary">
+								{$_('button.cancel')}
+							</Button>
 						</Col>
 					</Row>
 				</Container>
@@ -212,7 +222,7 @@
 		<TabPane tabId="import" active={whichTab && whichTab['team'] === 'import'}>
 			<span slot="tab">
 				<Icon name="cloud-upload" />
-				Import
+				{$_('setting.team.import')}
 			</span>
 			<form class="new" enctype="multipart/form-data">
 				<Container>
@@ -228,8 +238,10 @@
 							<input name="file" type="file" class="kfk_input_team_name" bind:files />
 						</Col>
 						<Col>
-							<Button size="sm" on:click={upload} color="primary">Import</Button>
-							<Button size="sm" on:click={hide_all_form} color="secondary">Cancel</Button>
+							<Button size="sm" on:click={upload} color="primary">{$_('button.import')}</Button>
+							<Button size="sm" on:click={hide_all_form} color="secondary">
+								{$_('button.cancel')}
+							</Button>
 						</Col>
 					</Row>
 				</Container>
@@ -237,15 +249,33 @@
 		</TabPane>
 	</TabContent>
 </Container>
-<Container class="mt-3">
-	<Row class="mt-3">
-		<Col>
-			<RemoteTable endpoint="team/search" {token} {user} bind:this={remoteTable} {TimeTool} />
-		</Col>
-	</Row>
-</Container>
-<Fade isOpen={fade_message != ''} class="kfk-fade">
-	<Card body>
-		{fade_message}
-	</Card>
-</Fade>
+{#if rows && rows.length > 0}
+	<Container class="mt-3">
+		{#each rows as row, index (row)}
+			<div
+				class="row"
+				class:kfk-odd={index % 2 !== 0}
+				class:kfk-even={index % 2 === 0}
+				class:tnt-odd={index % 2 !== 0}
+				class:tnt-even={index % 2 === 0}>
+				<div class="col" data-label="Name">
+					<a class="preview-link kfk-team-id tnt-team-id" href="/team/{row.teamid}">
+						{row.teamid}
+					</a>
+				</div>
+				<div class="col-auto" data-label="Author">{row.author}</div>
+				<div class="col-auto" data-label="Updated at">
+					{TimeTool.format(row.updatedAt, 'YYYY/MM/DD')}
+				</div>
+				<div class="col-auto">
+					{#if user.perms && ClientPermControl(user.perms, user.email, 'team', row, 'delete')}
+						<a href={'#'} on:click|preventDefault={() => deleteRow(row.teamid)} class="nav-link ">
+							<Icon name="trash" />
+							Delete this team
+						</a>
+					{/if}
+				</div>
+			</div>
+		{/each}
+	</Container>
+{/if}

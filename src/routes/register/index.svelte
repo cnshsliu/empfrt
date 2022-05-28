@@ -37,7 +37,7 @@
 		const response: EmpResponse = (await post(`auth/register`, {
 			username,
 			email,
-			password
+			password,
 		})) as unknown as EmpResponse;
 
 		if (response.error) {
@@ -45,6 +45,13 @@
 			if (response.error === 'NO_FREE_REG') {
 				errMsg = email.substring(email.indexOf('@') + 1) + $_('account.nofreereg');
 			} else {
+				if (response.error === 'MongoServerError') {
+					if (response.message.indexOf('duplicate key')) {
+						response.message = $_('register.duplicate');
+					} else {
+						response.message = $_('register.dberror');
+					}
+				}
 				setFadeMessage(response.message);
 				errMsg = response.message;
 			}
@@ -135,7 +142,7 @@
 		</Col>
 		<Col>
 			<p class="text-center">
-				<a href="/login"> {$_('account.haveAnAccount')}</a>
+				<a href="/login">{$_('account.haveAnAccount')}</a>
 			</p>
 		</Col>
 		<Col>
@@ -151,9 +158,8 @@
 						bind:value={email}
 						on:change={checkFreeReg}
 						on:blur={checkFreeReg}
-						on:input={emailInputting}
-					/>
-					<label for="input-email"> {$_('account.yourEmail')}</label>
+						on:input={emailInputting} />
+					<label for="input-email">{$_('account.yourEmail')}</label>
 				</div>
 				{#if errMsg === ''}
 					<div class="form-floating">
@@ -163,9 +169,8 @@
 							id="input-username"
 							required
 							placeholder="Your display name"
-							bind:value={username}
-						/>
-						<label for="input-username"> {$_('account.yourDisplayName')}</label>
+							bind:value={username} />
+						<label for="input-username">{$_('account.yourDisplayName')}</label>
 					</div>
 					<div class="form-floating">
 						<input
@@ -180,9 +185,8 @@
 							on:input={(e) => {
 								e.preventDefault();
 								onInputPassword();
-							}}
-						/>
-						<label for="input-password"> {$_('account.choosePassword')}</label>
+							}} />
+						<label for="input-password">{$_('account.choosePassword')}</label>
 						{passwordCheckingMsgs}
 					</div>
 					<!-- svelte-ignore missing-declaration -->
@@ -198,20 +202,29 @@
 							on:input={(e) => {
 								e.preventDefault();
 								onInputPassword2();
-							}}
-						/>
-						<label for="input-password-repeat"> {$_('account.verifyPassword')}</label>
+							}} />
+						<label for="input-password-repeat">{$_('account.verifyPassword')}</label>
 						{password2CheckingMsgs}
 					</div>
 					<button
 						class="w-100 btn btn-lg btn-primary pull-xs-right mt-3"
-						disabled={enableSigninButton === false}
-					>
+						disabled={enableSigninButton === false}>
 						{$_('account.signup')}
 					</button>
+					<div class="mt-3">{$_('register.emailverifytips')}</div>
+					<div class="mt-3">{$_('register.upgradeorgtips')}</div>
+				{:else}
+					{errMsg}
+					<a
+						href={'#'}
+						class="btn btn-primary"
+						on:click={(e) => {
+							errMsg = '';
+						}}>
+						{$_('register.dismiss_error')}
+					</a>
 				{/if}
 			</form>
-			{errMsg}
 		</Col>
 	</Row>
 </Container>

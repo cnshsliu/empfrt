@@ -76,7 +76,7 @@
 <div class="m-3 py-3 kfk-highlight-2 text-center position-relative">
 	<Row>
 		<Col>
-			<div class="fs-5">{$_('todo.worklogof')}</div>
+			<div class="fw-bolder fs-3">{$_('todo.worklogof')}</div>
 			<div
 				class="clickable text-primary fs-3 text-center"
 				on:click={(e) => {

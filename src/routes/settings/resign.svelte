@@ -23,8 +23,8 @@
 	const CHECK_INTERVAL = 1000;
 	let user = $session.user;
 	let replace = {
-		from: 'yangsiyong@xihuanwu.com',
-		to: 'liuab',
+		from: '',
+		to: '',
 	};
 	let tranx = suuid.generate();
 	let checked = { all: false, todo: false, wf: false, tpl: false };
@@ -332,9 +332,11 @@
 					<Row>
 						<InputGroup>
 							<InputGroupText>{$_('setting.resign.from')}</InputGroupText>
-							<Input bind:value={replace.from} />
+							<Input
+								bind:value={replace.from}
+								placeholder={$_('setting.resign.placeholder.from')} />
 							<InputGroupText>{$_('setting.resign.to')}</InputGroupText>
-							<Input bind:value={replace.to} />
+							<Input bind:value={replace.to} placeholder={$_('setting.resign.placeholder.to')} />
 							<Button
 								on:click={(e) => {
 									e.preventDefault();

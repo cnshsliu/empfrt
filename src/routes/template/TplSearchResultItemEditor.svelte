@@ -220,6 +220,7 @@
 										row.tags = tags;
 										row = row;
 										await reloadTags();
+										api.removeCacheByPath('template/search');
 									}
 								}
 								tag_input = '';

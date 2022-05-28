@@ -401,6 +401,7 @@
 						{orgtimezone}
 						{TimeZone.getDiff(orgtimezone)}
 					</CardText>
+					<CardText>{$_('setting.tenant.messagefornoadmin')}</CardText>
 				</CardBody>
 			</Card>
 		{/if}

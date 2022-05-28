@@ -4,12 +4,12 @@
 		const workflow = await api.post(
 			'workflow/read',
 			{ wfid: wfid, withdoc: true },
-			session.user.sessionToken
+			session.user.sessionToken,
 		);
 		const routeStatus = await api.post(
 			'/workflow/routes',
 			{ wfid: wfid },
-			session.user.sessionToken
+			session.user.sessionToken,
 		);
 
 		try {
@@ -18,20 +18,20 @@
 					workflow: workflow,
 					routeStatus: routeStatus,
 					wfid: params.wfid,
-					user: session.user
-				}
+					user: session.user,
+				},
 			};
 		} catch (e) {
 			console.error(e);
 			return {
 				props: {
 					workflow: {
-						wftitle: 'Not Found'
+						wftitle: 'Not Found',
 					},
 					routeStatus: [],
 					wfid: params.wfid,
-					user: session.user
-				}
+					user: session.user,
+				},
 			};
 		}
 	}
@@ -76,7 +76,7 @@
 			let ret: Workflow = (await api.post(
 				'workflow/op',
 				{ wfid, op },
-				user.sessionToken
+				user.sessionToken,
 			)) as Workflow;
 			workflow.status = ret.status;
 		}, 1);
@@ -94,8 +94,7 @@
 					class="kfk-link"
 					on:click={() => {
 						opWorkflow(workflow.wfid, 'works');
-					}}
-				>
+					}}>
 					<AniIcon icon="list-check" ani="aniShake" />
 					{'Works'}
 				</NavLink>
@@ -105,8 +104,7 @@
 							class="kfk-link"
 							on:click={() => {
 								opWorkflow(workflow.wfid, 'pause');
-							}}
-						>
+							}}>
 							<AniIcon icon="pause-btn" ani="aniShake" />
 							{'PAUSE'}
 						</NavLink>
@@ -116,8 +114,7 @@
 							class="kfk-link"
 							on:click={() => {
 								opWorkflow(workflow.wfid, 'resume');
-							}}
-						>
+							}}>
 							<AniIcon icon="arrow-counterclockwise" ani="aniShake" />
 							{'RESUME'}
 						</NavLink>
@@ -127,8 +124,7 @@
 							class="kfk-link"
 							on:click={() => {
 								opWorkflow(workflow.wfid, 'stop');
-							}}
-						>
+							}}>
 							<AniIcon icon="slash-square" ani="aniShake" />
 							{'STOP'}
 						</NavLink>
@@ -140,8 +136,7 @@
 								e.preventDefault();
 								opWorkflow(workflow.wfid, 'restart');
 								goto('/workflow');
-							}}
-						>
+							}}>
 							<AniIcon icon="caret-right-square" ani="aniShake" />
 							{'RESTART'}
 						</NavLink>
@@ -151,8 +146,7 @@
 						on:click={(e) => {
 							e.preventDefault();
 							showRenameForm = !showRenameForm;
-						}}
-					>
+						}}>
 						<AniIcon icon="pen" ani="aniShake" />
 						{'Rename'}
 					</NavLink>
@@ -162,8 +156,7 @@
 							e.preventDefault();
 							opWorkflow(workflow.wfid, 'restart');
 							goto(`/template/${workflow.tplid}&read`);
-						}}
-					>
+						}}>
 						<AniIcon icon="bar-chart-steps" ani="aniShake" />
 						{'Template'}
 					</NavLink>
@@ -209,9 +202,9 @@
 								'workflow/set/title',
 								{
 									wfid: workflow.wfid,
-									wftitle: workflow.wftitle
+									wftitle: workflow.wftitle,
 								},
-								user.sessionToken
+								user.sessionToken,
 							);
 							if (res.error) {
 								setFadeMessage(res.message, 'warning');
@@ -221,8 +214,8 @@
 						} catch (err) {
 							setFadeMessage(err.message, 'error');
 						}
-					}}
-					>Rename it
+					}}>
+					Rename it
 				</Button>
 			</InputGroup>
 		</Row>
@@ -238,6 +231,5 @@
 		btnTitle="Back"
 		callback={() => {
 			goto('/workflow');
-		}}
-	/>
+		}} />
 {/if}

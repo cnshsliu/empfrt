@@ -80,16 +80,17 @@
 		},
 	});
 
-	const clearTag = async function (clearCache = false) {
+	const clearTag = async function (preDelete = false) {
 		$filterStorage[BIZ].tplTag = '';
 		try {
 			let tmp = await api.post(
 				'template/tplid/list',
 				{},
 				user.sessionToken,
-				clearCache ? api.CACHE_FLAG.preDelete : api.CACHE_FLAG.useIfExists,
+				preDelete ? api.CACHE_FLAG.preDelete : api.CACHE_FLAG.useIfExists,
 			);
 			$session.tplIdsForSearch_for_wf = tmp.map((x) => x.tplid);
+			searchNow();
 		} catch (err) {
 			console.error(err);
 		}
@@ -147,7 +148,6 @@
 		if (false === Utils.objectEqual(payloadWithoutSkip, $lastQuery[BIZ])) {
 			payload.skip = 0;
 			$srPage[BIZ] = 0;
-			console.log('Query changed, Skip to 0');
 		}
 		$lastQuery[BIZ] = payloadWithoutSkip;
 
@@ -202,7 +202,7 @@
 		}
 	};
 
-	async function searchNow(clearCache = false) {
+	async function searchNow(preDelete = false) {
 		if (Utils.isBlank($filterStorage[BIZ].tplTag)) {
 			$filterStorage[BIZ].tplTag = '';
 		}
@@ -221,15 +221,15 @@
 		load(
 			$srPage[BIZ],
 			'refresh',
-			clearCache ? api.CACHE_FLAG.preDelete : api.CACHE_FLAG.useIfExists,
+			preDelete ? api.CACHE_FLAG.preDelete : api.CACHE_FLAG.useIfExists,
 		).then((res) => {});
 	}
 
-	export function resetQuery(clearCache = false) {
+	export function resetQuery(preDelete = false) {
 		$filterStorage[BIZ].tplTag = '';
 		$filterStorage[BIZ].status = 'ST_RUN';
 		$filterStorage[BIZ].tplid = '';
-		$filterStorage[BIZ].starter = user.email;
+		$filterStorage[BIZ].starter = '';
 		$filterStorage[BIZ].doer = user.email;
 		$filterStorage[BIZ].pattern = '';
 		$filterStorage[BIZ].tspan = 'any';
@@ -238,7 +238,10 @@
 		show_calendar_select = false;
 		aSsPicked = '';
 		$srPage[BIZ] = 0;
-		searchNow(clearCache).then();
+		if (preDelete) {
+			api.removeCacheByPath('workflow/search');
+		}
+		searchNow(preDelete).then();
 	}
 
 	const toggleAdvancedSearch = async () => {
@@ -380,7 +383,6 @@
 			user.sessionToken,
 		);
 	};
-	if (Utils.isBlank($filterStorage[BIZ].starter)) $filterStorage[BIZ].starter = user.email;
 </script>
 
 <Container class="p-2 border border-1 rounded">
@@ -411,8 +413,8 @@
 			</div>
 		</div>
 	</div>
+	<TagPicker {BIZ} {useThisTag} {clearTag} />
 	{#if $showAdvancedSearch[BIZ]}
-		<TagPicker {BIZ} {useThisTag} {clearTag} />
 		<Row class="mb-3 d-flex justify-content-end">
 			{#each statuses as status, index (status)}
 				<Col xs="auto">
@@ -473,7 +475,7 @@
 						<i class="bi bi-arrow-return-left" />
 					</div>
 					<div
-						class="btn btn-primary"
+						class="btn btn-secondary"
 						on:click|preventDefault={() => {
 							$filterStorage[BIZ].starter = user.email;
 							searchNow();
@@ -482,7 +484,7 @@
 						{$_('extrafilter.me')}
 					</div>
 					<div
-						class="btn btn-primary btn-outline-primary m-0 py-1 px-3"
+						class="btn btn-secondary  m-0 py-1 px-3"
 						on:click|preventDefault={async () => {
 							$filterStorage[BIZ].starter = '';
 							await searchNow();

@@ -488,20 +488,26 @@
 				{#if checkDoable() && work.status === 'ST_RUN'}
 					<!-- 参数输入区  START -->
 					{#if work.kvarsArr.length > 0}
-						<span class="fw-bold fs-5">{$_('todo.nodeInput')}</span>
-						<Row cols={{ lg: 4, md: 2, xs: 1 }} class="m-2" id="todo_variable_area">
-							{#each work.kvarsArr as kvar, kvarIndex}
-								{#if showKVars[kvarIndex]}
-									<InputKVar
-										{work}
-										{kvar}
-										{kvarIndex}
-										on:kvar_value_input_changed={async (e) => {
-											await caculateFormula(e.detail);
-										}} />
-								{/if}
-							{/each}
-						</Row>
+						<div class="card w-100">
+							<div class="card-header">
+								<span class="fw-bold fs-3">{$_('todo.nodeInput')}</span>
+							</div>
+							<div class="card-body">
+								<Row cols={{ lg: 4, md: 2, xs: 1 }} class="m-2" id="todo_variable_area">
+									{#each work.kvarsArr as kvar, kvarIndex}
+										{#if showKVars[kvarIndex]}
+											<InputKVar
+												{work}
+												{kvar}
+												{kvarIndex}
+												on:kvar_value_input_changed={async (e) => {
+													await caculateFormula(e.detail);
+												}} />
+										{/if}
+									{/each}
+								</Row>
+							</div>
+						</div>
 					{/if}
 					<!-- 参数输入区  END -->
 					<input type="hidden" name="todoid" value={work.todoid} />
@@ -717,39 +723,47 @@
 			</div>
 		{/if}
 		{#if work.wf.kvarsArr.length > 0}
-			<div class="mx-0 my-3 p-3 kfk-highlight-2">
-				<div class="fw-bold fs-5">{$_('todo.workflowcontext')}</div>
-				<Row cols={{ lg: 4, md: 2, xs: 1 }}>
-					{#each work.wf.kvarsArr as kvar}
-						{#if kvar.name[0] !== '$'}
-							<KVarDisplay {work} {kvar} />
-						{/if}
-					{/each}
-				</Row>
-				{#if work.comment}
-					<CommentEntry bind:comment={work.comment} />
-				{/if}
+			<div class="card w-100 my-3 p-3 mx-0">
+				<div class="card-header">
+					<div class="fw-bold fs-3">{$_('todo.workflowcontext')}</div>
+				</div>
+				<div class="card-body">
+					<Row cols={{ lg: 4, md: 2, xs: 1 }}>
+						{#each work.wf.kvarsArr as kvar}
+							{#if kvar.name[0] !== '$'}
+								<KVarDisplay {work} {kvar} />
+							{/if}
+						{/each}
+					</Row>
+					{#if work.comment}
+						<CommentEntry bind:comment={work.comment} />
+					{/if}
+				</div>
 			</div>
 		{/if}
 		{#if work.rehearsal}
-			<div class="kfk-highlight-2 p-3 mt-1">
-				<div class="fs-3">Rehearsal Information:</div>
-				<p>
-					Doable: {checkDoable()} status: {work.status} revocable: {work.revocable}
-					Wfid: {work.wfid}
-					Workid: {work.workid}
-					Todoid: {work.todoid}
-				</p>
-				<p>{work.doer === user.email ? '' : `Rehearsal for ${work.doer}`}</p>
-				<div>
-					<ul>
-						Role: {work.role}
-						{#each JSON.parse(Parser.base64ToCode(work.doer_string, '[]')) as aDoer}
-							<li>
-								{aDoer.cn}({aDoer.uid})
-							</li>
-						{/each}
-					</ul>
+			<div class="card w-100">
+				<div class="card-header">
+					<span class="fw-bold fs-3">Rehearsal Information:</span>
+				</div>
+				<div class="card-body">
+					<p>
+						Doable: {checkDoable()} status: {work.status} revocable: {work.revocable}
+						Wfid: {work.wfid}
+						Workid: {work.workid}
+						Todoid: {work.todoid}
+					</p>
+					<p>{work.doer === user.email ? '' : `Rehearsal for ${work.doer}`}</p>
+					<div>
+						<ul>
+							Role: {work.role}
+							{#each JSON.parse(Parser.base64ToCode(work.doer_string, '[]')) as aDoer}
+								<li>
+									{aDoer.cn}({aDoer.uid})
+								</li>
+							{/each}
+						</ul>
+					</div>
 				</div>
 			</div>
 		{:else}

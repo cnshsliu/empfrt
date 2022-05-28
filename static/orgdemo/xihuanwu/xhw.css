@@ -9,16 +9,21 @@ body {
 	background-image: url(/orgdemo/xihuanwu/xhw.png);
 }
 
+.tnt-navmenu .nav-item {
+	text-align: center;
+}
+
 .tnt-navmenu .nav-link {
-	color: white;
+	color: #d8d4d0;
 }
 .tnt-navmenu .nav-link:hover {
 	color: #9796ff;
 }
 .tnt-navmenu .nav-link.active {
-	color: #9796ff;
+	font-weight: bold;
 	text-decoration: none;
 	text-decoration-thickness: 1px;
+	border-bottom: 1px solid #d8d4d0;
 }
 .tnt-navmenu .tnt-header-username {
 	color: white;

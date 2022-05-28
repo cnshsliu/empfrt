@@ -8,8 +8,8 @@
 		return {
 			props: {
 				team: await res.json(),
-				user: session.user
-			}
+				user: session.user,
+			},
 		};
 	}
 </script>
@@ -52,7 +52,7 @@
 		export: false,
 		rename: false,
 		copyto: false,
-		delete: false
+		delete: false,
 	};
 	export let form_name = '';
 	export let export_to_filename = team.teamid;
@@ -92,7 +92,7 @@
 			let ret = await api.post(
 				'team/role/delete',
 				{ teamid: team.teamid, role: name },
-				user.sessionToken
+				user.sessionToken,
 			);
 			refreshTeam(ret as Team);
 		}, 1);
@@ -118,7 +118,7 @@
 			.post(
 				'team/download',
 				{ teamid: team.teamid, filename: export_to_filename },
-				user.sessionToken
+				user.sessionToken,
 			)
 			.then((response) => {
 				const url = window.URL.createObjectURL(new Blob([response]));
@@ -142,9 +142,9 @@
 		const upload = fetch(`${API_SERVER}/team/import`, {
 			method: 'POST',
 			headers: {
-				Authorization: user.sessionToken
+				Authorization: user.sessionToken,
 			},
-			body: formData
+			body: formData,
 		})
 			.then((response) => response.json())
 			.then((result) => {
@@ -169,7 +169,7 @@
 		create: `${API_SERVER}/team/create`,
 		rename: `${API_SERVER}/team/rename`,
 		copyto: `${API_SERVER}/team/copyto`,
-		role_member_add: `${API_SERVER}/team/role/member/add`
+		role_member_add: `${API_SERVER}/team/role/member/add`,
 	};
 	async function showTab(tabId) {
 		return;
@@ -188,8 +188,7 @@
 						href={'#'}
 						on:click={() => {
 							goto('/settings');
-						}}
-					>
+						}}>
 						{$_('navmenu.settings')}
 					</a>
 				</li>
@@ -198,8 +197,7 @@
 						href={'#'}
 						on:click={() => {
 							goto('/team');
-						}}
-					>
+						}}>
 						{$_('setting.team.nav')}
 					</a>
 				</li>
@@ -213,8 +211,7 @@
 		class="kfk-tab-menu"
 		on:tab={(e) => {
 			showTab(e.detail);
-		}}
-	>
+		}}>
 		<TabPane tabId="Search" active>
 			<span slot="tab">
 				<Icon name="person-lines-fill" />Team
@@ -235,8 +232,7 @@
 					placeholder="Export to file"
 					class="kfk_input_team_name"
 					bind:value={export_to_filename}
-					autocomplete="off"
-				/>
+					autocomplete="off" />
 				<Button on:click={() => export_team()} color="primary">Export</Button>
 				{#if errmsg !== ''}{errmsg}{/if}
 			</div>
@@ -265,24 +261,22 @@
 									goto(`/team/${team.teamid}`, {
 										replaceState: true,
 										keepfocus: true,
-										noscroll: true
+										noscroll: true,
 									});
 									form_status['rename'] = false;
 									form.reset();
 									errmsg = '';
 								}
 								hide_all_form();
-							}
-						}}
-					>
+							},
+						}}>
 						Rename {team.teamid} to:
 						<input
 							name="teamid"
 							placeholder="Rename: new team name"
 							class="kfk_input_team_name"
 							value={team.teamid}
-							autocomplete="off"
-						/>
+							autocomplete="off" />
 						<input type="hidden" name="fromid" value={team.teamid} />
 						<Button type="submit" color="primary">Rename</Button>
 						{#if errmsg !== ''}{errmsg}{/if}
@@ -314,24 +308,22 @@
 								goto(`/team/${team.teamid}`, {
 									replaceState: true,
 									noscroll: true,
-									keepfocus: true
+									keepfocus: true,
 								});
 								form_status['copyto'] = false;
 								form.reset();
 								errmsg = '';
 							}
 							hide_all_form();
-						}
-					}}
-				>
+						},
+					}}>
 					Copy {team.teamid} to:
 					<input
 						name="teamid"
 						placeholder="New team name"
 						class="kfk_input_team_name"
 						value={team.teamid}
-						autocomplete="off"
-					/>
+						autocomplete="off" />
 					<input type="hidden" name="fromid" value={team.teamid} />
 					<Button type="submit" color="primary">Copy</Button>
 					{#if errmsg !== ''}{errmsg}{/if}
@@ -371,9 +363,8 @@
 								form.reset();
 								errmsg = '';
 							}
-						}
-					}}
-				>
+						},
+					}}>
 					<h4>Add New Role:</h4>
 					<input name="role" placeholder="New role id" bind:value={newrole} autocomplete="off" />
 					<input type="hidden" name="teamid" value={team.teamid} />
@@ -384,8 +375,9 @@
 							e.preventDefault();
 							newrole = '';
 						}}
-						color="secondary">Reset</Button
-					>
+						color="secondary">
+						Reset
+					</Button>
 					{#if errmsg !== ''}{errmsg}{/if}
 				</form>
 			</Col>
@@ -407,8 +399,7 @@
 						transition:scale|local={{ start: 0.7 }}
 						animate:flip={{ duration: 200 }}
 						on:focus={() => setMouseFocus()}
-						on:mouseover={() => setMouseOverObjid(aRole)}
-					>
+						on:mouseover={() => setMouseOverObjid(aRole)}>
 						<RolePreview {team} {user} {aRole} {mouseover_objid} {deleteRole} {refreshTeam} />
 					</div>
 				{/each}

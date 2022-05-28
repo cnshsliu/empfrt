@@ -3,7 +3,6 @@
 	import * as Utils from '$lib/utils';
 	import * as api from '$lib/api';
 	import TagPicker from '$lib/TagPicker.svelte';
-	import ExtraFilter from '$lib/form/ExtraFilter.svelte';
 	import { slide, fade } from 'svelte/transition';
 	import { setFadeMessage } from '$lib/Notifier';
 	import Searchlet from '$lib/Searchlet.svelte';
@@ -19,6 +18,9 @@
 		worklistChangeFlag,
 		mtcConfirm,
 		mtcConfirmReset,
+		forcePreDelete,
+		delayLoadOnMount,
+		workRefreshInterval,
 	} from '$lib/Stores';
 	import PageSize from '$lib/PageSize.svelte';
 	import { tspans } from '$lib/variables';
@@ -47,12 +49,11 @@
 
 	const ENDPOINT = 'work/search';
 	const BIZ = 'todo';
-	const AUTO_RELOAD_IN_MINUTES = 30;
-	const AUTO_RELOAD_EVERY_SECONDS = 30;
+	const AUTO_RELOAD_IN_MINUTES = 1;
+	const AUTO_RELOAD_EVERY_SECONDS = 15;
 	let myAutoRefreshId = new Date().getTime().toString();
 	let autoReloadStartAt = 0;
 	let loadTimer = null;
-	let reloadInterval = null;
 	let bypassCache = false;
 	let LOADING_TIMEOUT = 400;
 	if (!$filterStorage[BIZ]) {
@@ -63,7 +64,6 @@
 	}
 
 	if ($session.user.tenant === undefined) {
-		console.log(JSON.stringify($session.user.tenant));
 		setTimeout(async () => {
 			$mtcConfirm = {
 				title: $_('confirm.title.needReload') + 'Tenant id',
@@ -84,6 +84,7 @@
 
 	let loading = true;
 	let loadingFromServer = false;
+	let clearLoadingFromServerTimer = null;
 	let rowsCount = 0;
 	let show_calendar_select = false;
 	let user = $session.user;
@@ -122,11 +123,20 @@
 		},
 	});
 
-	const clearTag = async function () {
+	const clearTag = async function (preDelete = false) {
 		$filterStorage[BIZ].tplTag = '';
-		let tmp = await api.post('template/tplid/list', {}, user.sessionToken);
-		$session.tplIdsForSearch_for_todo = tmp.map((x) => x.tplid);
-		await searchNow();
+		try {
+			let tmp = await api.post(
+				'template/tplid/list',
+				{},
+				user.sessionToken,
+				preDelete ? api.CACHE_FLAG.preDelete : api.CACHE_FLAG.useIfExists,
+			);
+			$session.tplIdsForSearch_for_todo = tmp.map((x) => x.tplid);
+			await searchNow();
+		} catch (err) {
+			console.error(err);
+		}
 	};
 
 	const useThisTag = async function (tag, appendMode = false) {
@@ -183,8 +193,6 @@
 		if (false === Utils.objectEqual(payloadWithoutSkip, $lastQuery[BIZ])) {
 			payload.skip = 0;
 			$srPage[BIZ] = 0;
-			console.log('Query changed, skip  to 0');
-			//console.log(payloadWithoutSkip, $lastQuery[BIZ]);
 		}
 		$lastQuery[BIZ] = payloadWithoutSkip;
 
@@ -199,8 +207,12 @@
 			if (bypassCache === true) {
 				bypassCache = false;
 			}
-			setTimeout(() => {
+			if (clearLoadingFromServerTimer) {
+				clearTimeout(clearLoadingFromServerTimer);
+			}
+			clearLoadingFromServerTimer = setTimeout(() => {
 				loadingFromServer = false;
+				clearLoadingFromServerTimer = null;
 			}, 2000);
 			if (ret.error) {
 				if (ret.error === 'KICKOUT') {
@@ -252,7 +264,7 @@
 		}
 	};
 
-	async function searchNow(clearCache = false) {
+	async function searchNow(preDelete = false) {
 		if (Utils.isBlank($filterStorage[BIZ].tplTag)) {
 			$filterStorage[BIZ].tplTag = '';
 		}
@@ -270,11 +282,11 @@
 		load(
 			$srPage[BIZ],
 			'refresh',
-			clearCache ? api.CACHE_FLAG.preDelete : api.CACHE_FLAG.useIfExists,
+			preDelete ? api.CACHE_FLAG.preDelete : api.CACHE_FLAG.useIfExists,
 		).then((res) => {});
 	}
 
-	function resetQuery(clearCache = false) {
+	function resetQuery(preDelete = false) {
 		$filterStorage[BIZ].tplTag = '';
 		$filterStorage[BIZ].status = 'ST_RUN';
 		$filterStorage[BIZ].tplid = '';
@@ -286,23 +298,28 @@
 		show_calendar_select = false;
 		aSsPicked = '';
 		$srPage[BIZ] = 0;
-		searchNow(clearCache).then();
-		if (clearCache) {
+		if (preDelete) {
+			api.removeCacheByPath('work/search');
+		}
+		searchNow(preDelete).then();
+		if (preDelete) {
 			immediateReload();
 		}
 	}
 
 	function restartAutoRefresh() {
-		reloadInterval && clearInterval(reloadInterval);
 		$autorefreshid = myAutoRefreshId;
 		autoReloadStartAt = new Date().getTime();
-		reloadInterval = setInterval(() => {
+		console.log('New Interval');
+		$workRefreshInterval = setInterval(() => {
 			if ($autorefreshid === myAutoRefreshId) {
 				immediateReload();
 				if (new Date().getTime() - autoReloadStartAt > AUTO_RELOAD_IN_MINUTES * 60 * 1000) {
 					$autorefreshid = '0';
 				}
-			} else reloadInterval && clearInterval(reloadInterval);
+			} else {
+				$workRefreshInterval && clearInterval($workRefreshInterval as number);
+			}
 		}, AUTO_RELOAD_EVERY_SECONDS * 1000);
 	}
 
@@ -356,39 +373,65 @@
 		}
 	};
 
-	$: $worklistChangeFlag && immediateReload();
+	//在流程变化，通过goto回到本页时，设置 delayLoadOnMount，等待服务端完成工作，可获得最新的列表
+	//delayLoadOnMount缺省为0，
+	$: $worklistChangeFlag && $delayLoadOnMount === 0 && immediateReload();
 
 	onMount(async () => {
 		isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-		if ($showAdvancedSearch[BIZ] === undefined) {
-			//console.log('First time loading...');
-			LOADING_TIMEOUT = 0;
-			$showAdvancedSearch[BIZ] = false;
-			resetQuery();
-		} else {
-			LOADING_TIMEOUT = 400;
-			//console.log('Not first time loading...');
-			if ($showAdvancedSearch[BIZ] === false) {
-				//console.log('showAdvancedSearch === false...');
-				resetQuery();
-			} else {
-				//console.log('showAdvancedSearch === true...');
-				await searchNow();
-			}
+		if ($workRefreshInterval) {
+			console.log('Clear existing interval');
+			clearInterval($workRefreshInterval as number);
 		}
-
-		restartAutoRefresh();
+		setTimeout(
+			async () => {
+				if ($showAdvancedSearch[BIZ] === undefined) {
+					//console.log('First time loading...');
+					LOADING_TIMEOUT = 0;
+					$showAdvancedSearch[BIZ] = false;
+					resetQuery($forcePreDelete);
+					$forcePreDelete = false;
+				} else {
+					LOADING_TIMEOUT = 400;
+					//console.log('Not first time loading...');
+					if ($showAdvancedSearch[BIZ] === false) {
+						//console.log('showAdvancedSearch === false...');
+						resetQuery($forcePreDelete);
+						$forcePreDelete = false;
+					} else {
+						//console.log('showAdvancedSearch === true...');
+						await searchNow($forcePreDelete);
+						$forcePreDelete = false;
+					}
+				}
+				if ($delayLoadOnMount !== 0) $delayLoadOnMount = 0;
+				restartAutoRefresh();
+			},
+			$delayLoadOnMount ? $delayLoadOnMount : 0,
+		);
+		import('bootstrap').then((bootstrap) => {
+			const popoverTriggerList = [].slice.call(
+				document.querySelectorAll('[data-bs-toggle="popover"]'),
+			);
+			const popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+				return new bootstrap.Popover(popoverTriggerEl);
+			});
+		});
 	});
 
 	onDestroy(async () => {
 		bypassCache = false;
 		$autorefreshid = '0';
-		clearInterval(reloadInterval);
+		clearInterval($workRefreshInterval as number);
 	});
 
 	let showform = '';
 	let flexible = { name: '' };
 	const startFlexible = async () => {
+		const popoverList = [].slice.call(document.querySelectorAll('.popover'));
+		popoverList.map((popoverEl: any) => {
+			popoverEl.remove();
+		});
 		let res = await api.post('flexible/start', flexible, user.sessionToken);
 		if (res.error) {
 			setFadeMessage(res.message, 'warning');
@@ -407,6 +450,11 @@
 		<div class="ms-5 align-self-start flex-grow-1">
 			<div
 				class="btn btn-primary-outline"
+				data-bs-trigger="hover"
+				data-bs-toggle="popover"
+				data-bs-placement="top"
+				data-bs-title={$_('tips.flexible.title')}
+				data-bs-content={$_('tips.flexible.content')}
 				on:click|preventDefault={(e) => {
 					showform = showform === 'flexible' ? '' : 'flexible';
 				}}>
@@ -439,7 +487,10 @@
 					{/if}
 				</div>
 			</div>
-			<div class="btn btn-primary m-0 p-1" color="primary" on:click={toggleAdvancedSearch}>
+			<div
+				class="btn btn-primary m-0 p-1"
+				color="primary"
+				on:click|preventDefault={toggleAdvancedSearch}>
 				{#if $showAdvancedSearch[BIZ]}
 					<i class="bi bi-x-circle" />
 				{:else}
@@ -450,7 +501,7 @@
 			<div
 				class="btn btn-primary m-0 p-1 btn-lg"
 				color="primary"
-				on:click={(e) => {
+				on:click|preventDefault={(e) => {
 					resetQuery(true);
 				}}>
 				{$_('button.resetQuery')}
@@ -472,8 +523,8 @@
 			</div>
 		</div>
 	{/if}
+	<TagPicker {BIZ} {useThisTag} {clearTag} />
 	{#if $showAdvancedSearch[BIZ]}
-		<TagPicker {BIZ} {useThisTag} {clearTag} />
 		<Row class="mb-3 d-flex justify-content-end">
 			{#each statuses as status, index (status)}
 				<Col xs="auto">
@@ -516,42 +567,43 @@
 					</select>
 				</InputGroup>
 			</Col>
-			<Col>
-				<InputGroup class="kfk-input-template-name d-flex">
-					<InputGroupText>{$_('extrafilter.starter')}</InputGroupText>
-					<Input
-						class="flex-fill"
-						name="other_doer"
-						bind:value={$filterStorage[BIZ].doer}
-						aria-label="User Email"
-						placeholder="email" />
-					<Button
-						on:click={(e) => {
-							e.preventDefault();
-							searchNow();
-						}}
-						color="primary">
-						<i class="bi bi-arrow-return-left" />
-					</Button>
-					<Button
-						on:click={() => {
-							$filterStorage[BIZ].doer = user.email;
-							searchNow();
-						}}
-						color="secondary">
-						{$_('extrafilter.me')}
-					</Button>
-					<Button
-						on:click={async () => {
-							$filterStorage[BIZ].doer = '';
-							await searchNow();
-						}}
-						class="btn-outline-primary m-0 py-1 px-3"
-						color="light">
-						{$_('remotetable.any')}
-					</Button>
-				</InputGroup>
-			</Col>
+			{#if user.group === 'ADMIN'}
+				<Col>
+					<InputGroup class="kfk-input-template-name d-flex">
+						<InputGroupText>{$_('extrafilter.starter')}</InputGroupText>
+						<Input
+							class="flex-fill"
+							name="other_doer"
+							bind:value={$filterStorage[BIZ].doer}
+							aria-label="User Email"
+							placeholder="email" />
+						<Button
+							on:click={(e) => {
+								e.preventDefault();
+								searchNow();
+							}}
+							color="primary">
+							<i class="bi bi-arrow-return-left" />
+						</Button>
+						<Button
+							class="btn-secondary"
+							on:click={() => {
+								$filterStorage[BIZ].doer = user.email;
+								searchNow();
+							}}>
+							{$_('extrafilter.me')}
+						</Button>
+						<Button
+							on:click={async () => {
+								$filterStorage[BIZ].doer = '';
+								await searchNow();
+							}}
+							class="btn-secondary m-0 py-1 px-3">
+							{$_('remotetable.any')}
+						</Button>
+					</InputGroup>
+				</Col>
+			{/if}
 		</Row>
 
 		<Row cols={{ xs: 1, md: 2 }} class="mt-1">

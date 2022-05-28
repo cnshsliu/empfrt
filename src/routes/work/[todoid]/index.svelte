@@ -73,8 +73,15 @@
 	import type { User, Work } from '$lib/types';
 	import { title } from '$lib/title';
 	import { onMount, onDestroy } from 'svelte';
-	import { printing, notifyMessage, worklistChangeFlag } from '$lib/Stores';
-	import { mtcConfirm, mtcConfirmReset } from '$lib/Stores';
+	import {
+		printing,
+		notifyMessage,
+		worklistChangeFlag,
+		delayLoadOnMount,
+		forcePreDelete,
+		mtcConfirm,
+		mtcConfirmReset,
+	} from '$lib/Stores';
 	import { version } from '$lib/empstores';
 	import WorkPage from './workpage.svelte';
 	import ErrorNotify from '$lib/ErrorNotify.svelte';
@@ -146,8 +153,8 @@
 
 {#if work && work.doer}
 	<Container class={'mt-2 ' + ($printing ? 'nodisplay' : '')}>
-		<div class="d-flex">
-			<div class="flex-shrink-0" id="todo_title_area">
+		<div class="d-flex row">
+			<div class="col flex-shrink-0" id="todo_title_area">
 				<h3>
 					{work.title}
 					<sup>
@@ -158,12 +165,12 @@
 						{/if}
 					</sup>
 				</h3>
-			</div>
-			<div class="mx-3 align-self-center flex-grow-1">
-				{TimeTool.fromNow(work.createdAt)}
+				<div class="mx-3 align-self-center flex-grow-1">
+					{TimeTool.fromNow(work.createdAt)}
+				</div>
 			</div>
 			{#if work.rehearsal}
-				<div class="mx-3 align-self-center flex-grow-1">
+				<div class="col-auto mx-3 align-self-center">
 					<Button
 						class="btn-xs"
 						on:click={async (e) => {
@@ -179,6 +186,8 @@
 											.then((res) => {
 												api.removeCacheByPath('work/search');
 												$worklistChangeFlag++;
+												$forcePreDelete = true;
+												$delayLoadOnMount = 3000;
 												goto('/work');
 											});
 										mtcConfirmReset();
@@ -191,7 +200,7 @@
 				</div>
 			{/if}
 			{#if work.rehearsal || (work.wf.starter === user.email && work.from_nodeid === 'start')}
-				<div class="mx-3 align-self-center flex-grow-1">
+				<div class="col-auto mx-3 align-self-center">
 					<Button
 						class="btn-xs"
 						on:click={async (e) => {
@@ -207,6 +216,8 @@
 											.then((res) => {
 												api.removeCacheByPath('work/search');
 												$worklistChangeFlag++;
+												$forcePreDelete = true;
+												$delayLoadOnMount = 3000;
 												goto('/work');
 											});
 										mtcConfirmReset();

@@ -1,6 +1,10 @@
 import { writable } from 'svelte/store';
 export const printing = writable(false);
+export const bootstrap = writable();
+export const workRefreshInterval = writable();
 export const fetchCache = writable({});
+export const delayLoadOnMount = writable(0);
+export const forcePreDelete = writable(false);
 export const worklistChangeFlag = writable(0);
 export const showAdvancedSearch = writable({}); //Caution: please dont' give it any intial value
 export const srPage = writable({ todo: 0, tpl: 0, wf: 0 });
