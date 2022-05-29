@@ -189,7 +189,12 @@
 		</Row>
 		{#if orgchartroot && orgchartroot.ou === 'root'}
 			{orgchartroot.cn}
-			<Button on:click={refreshOrgChart} color="primary">
+			<Button
+				on:click={(e) => {
+					e.preventDefault();
+					refreshOrgChart();
+				}}
+				color="primary">
 				{$_('setting.orgchart.btn.refresh')}
 			</Button>
 			{#each orgchartlist as oce, index (oce)}

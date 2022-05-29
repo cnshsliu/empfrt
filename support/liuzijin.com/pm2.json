@@ -1,0 +1,4 @@
+{
+	"name": "mtc_server",
+	"script": "build/index.js"
+}

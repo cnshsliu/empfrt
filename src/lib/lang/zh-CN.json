@@ -651,7 +651,9 @@
 			"emp_email": "员工邮箱",
 			"emp_pwd": "员工密码",
 			"exportcsv": "导出组织结构到CSV文件",
-			"importcsv": "从CSV文件导入组织结构",
+			"exportxlsx": "导出组织结构到Excel XLSX文件",
+			"importcsv": "从.csv文件导入组织结构",
+			"importxlsx": "从Excel XLSX文件导入组织结构",
 			"btn": {
 				"refresh": "刷新",
 				"emp_create": "新建或删除员工",

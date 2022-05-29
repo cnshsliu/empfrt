@@ -1,0 +1,3 @@
+  VITE_API_SERVER="https://emp.liuzijin.com"
+  VITE_MTC_SERVER="https://www.liuzijin.com"
+  VITE_DEPLOY_MODE="private"

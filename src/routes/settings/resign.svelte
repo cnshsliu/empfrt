@@ -306,8 +306,8 @@
 			<CardBody>
 				<form>
 					<CardTitle>{$_('setting.resign.replaceuser')}</CardTitle>
-					{#if todoPrepareResult.length + wfPrepareResult.length + tplPrepareResult.length > 0}
-						<Row>
+					<Row>
+						{#if todoPrepareResult.length + wfPrepareResult.length + tplPrepareResult.length > 0}
 							<Col class="col-auto">
 								<input
 									class="form-check-input"
@@ -317,18 +317,16 @@
 							</Col><Col class="fw-bold">
 								{$_('setting.resign.selectall')}
 							</Col>
-							{#if todoPrepareResult.length + wfPrepareResult.length + tplPrepareResult.length > 0}
-								<Col class="col-auto mb-1">
-									<button class="btn btn-primary" on:click|preventDefault={executeReplace}>
-										{$_('setting.resign.replace')}
-									</button>
-									<button class="btn btn-warning" on:click|preventDefault={executeResign}>
-										{$_('setting.resign.execute')}
-									</button>
-								</Col>
-							{/if}
-						</Row>
-					{/if}
+						{/if}
+						<Col class="col-auto mb-1">
+							<button class="btn btn-primary" on:click|preventDefault={executeReplace}>
+								{$_('setting.resign.replace')}
+							</button>
+							<button class="btn btn-warning" on:click|preventDefault={executeResign}>
+								{$_('setting.resign.execute')}
+							</button>
+						</Col>
+					</Row>
 					<Row>
 						<InputGroup>
 							<InputGroupText>{$_('setting.resign.from')}</InputGroupText>

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { API_SERVER } from '$lib/Env';
 import ErrorProcessor from '$lib/errorProcessor';
 import { fetchCache } from '$lib/Stores';
@@ -17,14 +18,16 @@ type OPTS = {
 	mode?: string;
 	body?: string;
 };
-export async function sendSimple({ method, path, data = null, token = null }) {
-	const opts: OPTS = { method, headers: {} };
+export async function postSimple(path: string, data = null, token = null): Promise<any> {
+	return await sendSimple('POST', path, data, token);
+}
+export async function sendSimple(method: string, path: string, data = null, token = null) {
+	const opts: OPTS = { method: method, headers: {} };
 
 	if (data) {
 		opts.headers['Content-Type'] = 'application/json';
 		opts.body = JSON.stringify(data);
 	}
-	//console.debug(path, opts.body);
 
 	if (token) {
 		opts.headers['authorization'] = token;
@@ -33,13 +36,13 @@ export async function sendSimple({ method, path, data = null, token = null }) {
 	return await fetch(`${API_SERVER}/${path}`, opts as RequestInit);
 }
 
-async function send({
-	method,
-	path,
+async function send(
+	method: string,
+	path: string,
 	data = null,
 	token = null,
 	cacheFlag = CACHE_FLAG.bypass,
-}): Promise<any> {
+): Promise<any> {
 	const opts: OPTS = { method, headers: {} };
 	const cacheKey = { method: method, path: path, body: {}, token: '' };
 
@@ -133,23 +136,23 @@ async function send({
 }
 
 export function get(path: string, token: string): Promise<any> {
-	return send({ method: 'GET', path, data: null, token });
+	return send('GET', path, null, token);
 }
 
 export function del(path: string, token: string): Promise<any> {
-	return send({ method: 'DELETE', path, data: null, token });
+	return send('DELETE', path, null, token);
 }
 
 export function post(
 	path: string,
-	data: any = null,
+	data: Record<string, unknown>,
 	token: string = null,
 	cacheFlag = CACHE_FLAG.bypass,
 ): Promise<any> {
-	return send({ method: 'POST', path, data, token, cacheFlag });
+	return send('POST', path, data, token, cacheFlag);
 }
 
-export function hasCache(path: string, data: {}, token: string): boolean {
+export function hasCache(path: string, data: Record<string, unknown>, token: string): boolean {
 	const cacheKey = { method: 'POST', path: path, body: JSON.stringify(data), token: token };
 	const cacheID = MD5(JSON.stringify(cacheKey));
 	if (theCache[cacheID]) {
@@ -159,7 +162,7 @@ export function hasCache(path: string, data: {}, token: string): boolean {
 	}
 }
 
-export function getCache(path: string, data: {}, token: string): Promise<any> {
+export function getCache(path: string, data: Record<string, unknown>, token: string): Promise<any> {
 	const cacheKey = { method: 'POST', path: path, body: JSON.stringify(data), token: token };
 	const cacheID = MD5(JSON.stringify(cacheKey));
 	if (theCache[cacheID]) {
@@ -171,7 +174,7 @@ export function getCache(path: string, data: {}, token: string): Promise<any> {
 
 export function removeCacheByPath(path: string) {
 	for (const key in theCache) {
-		let value = theCache[key];
+		const value = theCache[key];
 		if (value.path === path) {
 			delete theCache[key];
 		}
@@ -179,6 +182,6 @@ export function removeCacheByPath(path: string) {
 	return null;
 }
 
-export function put(path: string, data: JSON, token: string): Promise<any> {
-	return send({ method: 'PUT', path, data, token });
+export function put(path: string, data: Record<string, unknown>, token: string): Promise<any> {
+	return send('PUT', path, data, token);
 }

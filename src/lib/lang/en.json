@@ -651,7 +651,9 @@
 			"emp_pwd": "Employee password",
 			"ou_name": "OU Name",
 			"exprotcsv": "Export the whole OrgChart to CSV file",
+			"exportxlsx": "Export OrgChart to Excel XLSX file",
 			"importcsv": "Import from Orgchart CSV file",
+			"importxlsx": "Import from Excel XLSX file",
 			"btn": {
 				"refresh": "Refresh",
 				"emp_create": "New or update employee",

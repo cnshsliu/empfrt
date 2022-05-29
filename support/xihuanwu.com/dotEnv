@@ -1,0 +1,3 @@
+  VITE_API_SERVER="https://emp.xihuanwu.com"
+  VITE_MTC_SERVER="https://mtc.xihuanwu.com"
+  VITE_DEPLOY_MODE="private"

@@ -1,22 +1,30 @@
-root,Company A
-,Lucas,lucas@example.com,Director of Board
-,Xing,xing@example.com,CEO
-,Tom,ysy@example.com,CTO
-00001,Platform Department
-,Tom,ysy@example.com,Director
-0000100001,System Group
-,Ted,ted@example.com,Leader
-,John,john@example.com,
-00002,Business Unit A
-,Hawk,hawk@example.com,GM:VP
-0000200001,Operation Department
-,Hawk,hawk@example.com,Director
-000020000100001,OP-Group-1
-,Hawk,hawk@example.com,Leader
-,Shawn,shawn@example.com,
-0000200002,BD
-,Qin,qin@example.com,Director
-000020000200001,BD-Group-1
-,Qin,qin@example.com,Leader
-,Michel,michel@example.com,
-,James,james@example.com,
+﻿root,Company A,,
+root,StevenJOBB,stevenjobb@companya.com,董事长
+root,Elen Duken,elenduken@companya.com,CEO
+root,AnnyMookuur,amookur@companya.com,CTO
+B0002,商家运营事业部,,
+B0002,陈安安,chenana@companya.com,事业部总经理
+B0002,郭多多,guododo@comapnay.com,
+F0001,业务一事业部,,
+F0001,张大大,zhangdada@companya.com,中心总:三面
+F000100001,B端运营,,
+F000100001,袁圆圆,yuanyuanyuan@companya.com,总监:一面
+F000100001,陈沉沉,chenchenchen@companya.com,
+F000100002,C端运营,,
+F000100002,张大大,zhangdada@companya.com,总监:一面
+F000100002,沈深深,shenshenshen@companya.com,
+F000100003,客户服务部,,
+F000100003,茹茹茹,rururu@companya.com,总监:一面
+F0002,技术中心,,
+F0002,杨阳洋,yangyangyang@companya.com,中心总:三面
+F000200001,平台研发部,,
+F000200001,杨阳洋,yangyangyang@companya.com,
+F00020000100001,全栈组,,
+F00020000100001,高高高,gaogaogao@companya.com,组长:一面
+F00020000100001,鹏鹏鹏,pengpengpeng@companya.com,
+F00020000100002,后端组,,
+F00020000100002,浩浩浩,haohaohao@companya.com,组长:一面
+F00020000100002,庄庄庄,zhuangzhuangzhuang@companya.com,
+V0001,高管面试专用,,
+V0001,STEVEN,steven@companya.com,一面:三面
+V0001,LiuMN,liumn@companya.com,

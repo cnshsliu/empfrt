@@ -6,24 +6,24 @@
 		CardHeader,
 		CardSubtitle,
 		CardText,
-		CardTitle
+		CardTitle,
 	} from 'sveltestrap';
 </script>
 
 <Card class="bg-light">
 	<CardHeader>
-		<CardTitle>OrgChart CSV file format</CardTitle>
+		<CardTitle>OrgChart XLSX file format</CardTitle>
 		<span class="text-right">
-			<a href="/orgdemo/companya/orgchat.csv" target="_blank">
-				download an example orgchart CSV file
+			<a href="/orgdemo/companya/orgchart.xlsx" target="_blank">
+				download an example orgchart XLSX file
 			</a>
 		</span>
 	</CardHeader>
 	<CardBody>
 		<CardSubtitle>Columns</CardSubtitle>
-		ID,CN,EMAIL,POSITION
+		OU,CN,EMAIL,POSITION
 		<ul>
-			<li>ID:</li>
+			<li>OU:</li>
 			Identification string
 			<ul>
 				<li>For top organization</li>
@@ -32,7 +32,7 @@
 				must have nx5 characters, every 5 characters represent a orgchart level. must have nx5 characters,
 				every 5 characters represent a orgchart level.
 				<li>For staff</li>
-				Must be empty, staff belongs to the last deparemnt
+				Must be the OU he/she is in, staff belongs to the last deparemnt
 			</ul>
 			<li>CN:</li>
 			Comon name

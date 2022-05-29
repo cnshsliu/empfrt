@@ -122,7 +122,7 @@
 			if (ret.error === 'NO_FREE_REG') {
 				errMsg = email.substring(email.indexOf('@') + 1) + $_('account.nofreereg');
 			} else {
-				errMsg = ret.message;
+				errMsg = ret.message as string;
 			}
 		}
 	};
@@ -211,18 +211,22 @@
 						disabled={enableSigninButton === false}>
 						{$_('account.signup')}
 					</button>
-					<div class="mt-3">{$_('register.emailverifytips')}</div>
-					<div class="mt-3">{$_('register.upgradeorgtips')}</div>
+					<div class="fw-light fs-6">
+						<div class="mt-3">{$_('register.emailverifytips')}</div>
+						<div class="mt-3">{$_('register.upgradeorgtips')}</div>
+					</div>
 				{:else}
-					{errMsg}
-					<a
-						href={'#'}
-						class="btn btn-primary"
-						on:click={(e) => {
-							errMsg = '';
-						}}>
-						{$_('register.dismiss_error')}
-					</a>
+					<div class="mt-3">
+						{errMsg}
+						<a
+							href={'#'}
+							class="btn btn-primary"
+							on:click={(e) => {
+								errMsg = '';
+							}}>
+							{$_('register.dismiss')}
+						</a>
+					</div>
 				{/if}
 			</form>
 		</Col>

@@ -2,6 +2,17 @@
 	import { Input, InputGroup, InputGroupText, Row, Col, Icon, Container } from 'sveltestrap';
 	import { _ } from '$lib/i18n';
 	import LocaleSwitcher from '$lib/LocaleSwitcher.svelte';
+	import { onMount } from 'svelte';
+	import * as api from '$lib/api';
+	import { session } from '$app/stores';
+
+	let siteInfo = null;
+
+	onMount(async () => {
+		/* setTimeout(async () => {
+			siteInfo = await api.post('site/getinfo', {}, $session.user.sessionToken);
+		}, 3000); */
+	});
 </script>
 
 <div class="container emp-footer tnt-footer">
@@ -37,8 +48,7 @@
 								<a
 									sveltekit:prefetch
 									class="fs-5 text-primary text-decoration-none"
-									href="/docs/about"
-								>
+									href="/docs/about">
 									{$_('footer.PLATFORM')}
 								</a>
 							</Col>
@@ -46,8 +56,7 @@
 								<a
 									sveltekit:prefetch
 									class="emp-footer-link tnt-footer-link text-decoration-none"
-									href="/docs/about"
-								>
+									href="/docs/about">
 									{$_('footer.video')}
 								</a>
 							</Col>
@@ -55,8 +64,7 @@
 								<a
 									sveltekit:prefetch
 									class="emp-footer-link tnt-footer-link text-decoration-none"
-									href="/docs/about"
-								>
+									href="/docs/about">
 									{$_('footer.howitworks')}
 								</a>
 							</Col>
@@ -64,8 +72,7 @@
 								<a
 									sveltekit:prefetch
 									class="emp-footer-link tnt-footer-link text-decoration-none"
-									href="/docs/about"
-								>
+									href="/docs/about">
 									{$_('footer.usecases')}
 								</a>
 							</Col>
@@ -73,8 +80,7 @@
 								<a
 									sveltekit:prefetch
 									class="emp-footer-link tnt-footer-link text-decoration-none"
-									href="/docs/about"
-								>
+									href="/docs/about">
 									{$_('footer.signup')}
 								</a>
 							</Col>
@@ -82,8 +88,7 @@
 								<a
 									sveltekit:prefetch
 									class="emp-footer-link tnt-footer-link text-decoration-none"
-									href="/docs/about"
-								>
+									href="/docs/about">
 									{$_('footer.signin')}
 								</a>
 							</Col>
@@ -97,8 +102,7 @@
 								<a
 									sveltekit:prefetch
 									class="fs-5 text-primary text-decoration-none"
-									href="/docs/about"
-								>
+									href="/docs/about">
 									{$_('footer.DEVELOPER')}
 								</a>
 							</Col>
@@ -106,8 +110,7 @@
 								<a
 									sveltekit:prefetch
 									class="emp-footer-link tnt-footer-link text-decoration-none"
-									href="/docs/about"
-								>
+									href="/docs/about">
 									{$_('footer.quickstart')}
 								</a>
 							</Col>
@@ -115,8 +118,7 @@
 								<a
 									sveltekit:prefetch
 									class="emp-footer-link tnt-footer-link text-decoration-none"
-									href="/docs/about"
-								>
+									href="/docs/about">
 									{$_('footer.examples')}
 								</a>
 							</Col>
@@ -124,8 +126,7 @@
 								<a
 									sveltekit:prefetch
 									class="emp-footer-link tnt-footer-link text-decoration-none"
-									href="/docs/about"
-								>
+									href="/docs/about">
 									{$_('footer.docsandhelp')}
 								</a>
 							</Col>
@@ -133,8 +134,7 @@
 								<a
 									sveltekit:prefetch
 									class="emp-footer-link tnt-footer-link text-decoration-none"
-									href="/docs/about"
-								>
+									href="/docs/about">
 									{$_('footer.discord')}
 								</a>
 							</Col>
@@ -142,8 +142,7 @@
 								<a
 									sveltekit:prefetch
 									class="emp-footer-link tnt-footer-link text-decoration-none"
-									href="/docs/about"
-								>
+									href="/docs/about">
 									{$_('footer.sdks')}
 								</a>
 							</Col>
@@ -151,8 +150,7 @@
 								<a
 									sveltekit:prefetch
 									class="emp-footer-link tnt-footer-link text-decoration-none"
-									href="/docs/about"
-								>
+									href="/docs/about">
 									{$_('footer.opensource')}
 								</a>
 							</Col>
@@ -166,8 +164,7 @@
 								<a
 									sveltekit:prefetch
 									class="fs-5 text-primary text-decoration-none"
-									href="/docs/about"
-								>
+									href="/docs/about">
 									{$_('footer.DEPLOYMENT')}
 								</a>
 							</Col>
@@ -175,8 +172,7 @@
 								<a
 									sveltekit:prefetch
 									class="emp-footer-link tnt-footer-link text-decoration-none"
-									href="/docs/about"
-								>
+									href="/docs/about">
 									{$_('footer.paas')}
 								</a>
 							</Col>
@@ -184,8 +180,7 @@
 								<a
 									sveltekit:prefetch
 									class="emp-footer-link tnt-footer-link text-decoration-none"
-									href="/docs/about"
-								>
+									href="/docs/about">
 									{$_('footer.privateinstall')}
 								</a>
 							</Col>

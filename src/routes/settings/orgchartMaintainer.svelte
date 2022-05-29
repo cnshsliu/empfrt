@@ -13,7 +13,7 @@
 	let user = $session.user;
 	let fileSaver = null;
 	let default_user_password = '';
-	let admin_password = '';
+	let admin_password = 'Jerome@99';
 
 	let new_ou_id = '';
 	let new_ou_name = '';
@@ -32,9 +32,9 @@
 			await fetch(`${API_SERVER}/orgchart/import`, {
 				method: 'POST',
 				headers: {
-					Authorization: user.sessionToken
+					Authorization: user.sessionToken,
 				},
-				body: formData
+				body: formData,
 			})
 				.then((response) => response.json())
 				.then(async (result) => {
@@ -52,23 +52,6 @@
 		} catch (err) {
 			console.error(err);
 		}
-	}
-
-	async function saveResult(res) {
-		if (fileSaver === null) {
-			fileSaver = await import('file-saver');
-		}
-		var BOM = '\uFEFF';
-		res = res.map((x) => {
-			x = x.replace(/[\r|\n]/, '');
-			return x + '\n';
-			//return x;
-		});
-		res.unshift(BOM);
-		var csvData = res;
-		var blob = new Blob(csvData, { type: 'text/csv;charset=UTF-8' });
-		fileSaver.saveAs(blob, 'orgchart.csv');
-		//res.map((x) => console.log(x));
 	}
 
 	let usersNotStaff = [];
@@ -109,17 +92,16 @@
 						{
 							password: admin_password,
 							content: `${new_user_ou_id},${new_user_name},${new_user_email},,,,`,
-							default_user_password: default_user_password
+							default_user_password: default_user_password,
 						},
-						user.sessionToken
+						user.sessionToken,
 					);
 					if (res.error) {
 						setFadeMessage(res.message, 'warning');
 					} else {
 						setFadeMessage('Success, refresh orgchart please', 'success');
 					}
-				}}
-			>
+				}}>
 				{$_('setting.orgchart.btn.emp_create')}
 			</Button>
 		</InputGroup>
@@ -135,17 +117,16 @@
 						{
 							password: admin_password,
 							content: `D,${delete_user_email},,,,,,`,
-							default_user_password: 'not required'
+							default_user_password: 'not required',
 						},
-						user.sessionToken
+						user.sessionToken,
 					);
 					if (res.error) {
 						setFadeMessage(res.message, 'warning');
 					} else {
 						setFadeMessage('Success, refresh orgchart please', 'success');
 					}
-				}}
-			>
+				}}>
 				{$_('setting.orgchart.btn.emp_delete')}l
 			</Button>
 		</InputGroup>
@@ -163,17 +144,16 @@
 						{
 							password: admin_password,
 							content: `${new_ou_id},${new_ou_name},,,,,`,
-							default_user_password: 'not required'
+							default_user_password: 'not required',
 						},
-						user.sessionToken
+						user.sessionToken,
 					);
 					if (res.error) {
 						setFadeMessage(res.message, 'warning');
 					} else {
 						setFadeMessage('Success, refresh orgchart please', 'success');
 					}
-				}}
-			>
+				}}>
 				{$_('setting.orgchart.btn.ou_create')}
 			</Button>
 		</InputGroup>
@@ -189,48 +169,54 @@
 						{
 							password: admin_password,
 							content: `D,${delete_ou_id},,,,,,`,
-							default_user_password: 'not required'
+							default_user_password: 'not required',
 						},
-						user.sessionToken
+						user.sessionToken,
 					);
 					if (res.error) {
 						setFadeMessage(res.message, 'warning');
 					} else {
 						setFadeMessage('Success, refresh orgchart please', 'success');
 					}
-				}}
-			>
+				}}>
 				{$_('setting.orgchart.btn.ou_delete')}
 			</Button>
 		</InputGroup>
 		<InputGroup class="mt-5">
-			<InputGroupText>{$_('setting.orgchart.exportcsv')}</InputGroupText>
+			<InputGroupText>{$_('setting.orgchart.exportxlsx')}</InputGroupText>
 			<Button
 				size="sm"
 				color="primary"
 				on:click={async (e) => {
 					e.preventDefault();
-					let res = await api.post(
-						'orgchart/export',
-						{ password: admin_password },
-						user.sessionToken
-					);
-					if (res.error) {
-						setFadeMessage(res.message, 'warning');
-					} else {
-						await saveResult(res);
-					}
-				}}
-			>
+					api
+						.postSimple('orgchart/export', { password: admin_password }, user.sessionToken)
+						.then((res) => {
+							return res.blob();
+						})
+						.then(async (data) => {
+							if (fileSaver === null) {
+								fileSaver = await import('file-saver');
+							}
+							fileSaver.saveAs(data, 'orgchart.xlsx');
+							/*
+							//If dont' like file-saver, you can save file like below:
+							var a = document.createElement('a');
+							a.href = window.URL.createObjectURL(data);
+							a.download = 'orgchart.xlsx';
+							a.click();
+							*/
+						});
+				}}>
 				{$_('setting.orgchart.btn.export')}
 			</Button>
 		</InputGroup>
 		<InputGroup class="mt-5">
-			<InputGroupText>{$_('setting.orgchart.importcsv')}</InputGroupText>
-			<input class="form-control" name="file" type="file" bind:files />
+			<InputGroupText>{$_('setting.orgchart.importxlsx')}</InputGroupText>
+			<input class="form-control" name="file" accept=".xlsx" type="file" bind:files />
 			<Button size="sm" on:click={uploadOrgChart} color="primary">
-				{$_('setting.orgchart.btn.import')}</Button
-			>
+				{$_('setting.orgchart.btn.import')}
+			</Button>
 		</InputGroup>
 		<OrgChartCsvFormat />
 		{#if errMsg}
@@ -247,15 +233,14 @@
 					<Col>
 						{uns.username}({uns.email})
 					</Col>
-					<Col
-						><Button
+					<Col>
+						<Button
 							on:click={async (e) => {
 								await deleteUser(uns.email);
-							}}
-						>
+							}}>
 							Delete
-						</Button></Col
-					>
+						</Button>
+					</Col>
 				</Row>
 			</Col>
 		{/each}

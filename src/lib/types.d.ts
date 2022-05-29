@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Can be made globally available by placing this
  * inside `global.d.ts` and removing `export` keyword
@@ -301,7 +302,7 @@ export interface FilterPicks {
 	debug?: string;
 }
 export interface EmpResponse {
-	error?: Record;
+	error?: string;
 	errMsg?: string;
 	user?: Record;
 	perm?: string;
