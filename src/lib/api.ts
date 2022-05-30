@@ -101,11 +101,12 @@ async function send(
 		.then((jsonText) => {
 			//console.log(path, 'Response etag', responseETag);
 			try {
-				let ret = JSON.parse(jsonText);
+				const ret = JSON.parse(jsonText);
 				if (ret.error) {
-					ret = ErrorProcessor.normalizeError(ret);
-					delete theCache[cacheID];
-					console.log(path, 'Clear cache key on error', cacheID);
+					if (theCache[cacheID]) {
+						delete theCache[cacheID];
+						console.log(path, 'Clear cache key on error', cacheID);
+					}
 				} else {
 					if (!(foundCache && returnCode304)) {
 						if (responseETag) {

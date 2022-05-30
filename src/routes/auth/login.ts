@@ -6,9 +6,9 @@ import { respond } from './_respond';
 //import { session } from '$app/stores';
 export async function post({ request, locals }) {
 	const body = await request.json();
-	let ret = await api.post('account/login', {
+	const ret = await api.post('account/login', {
 		email: body.email,
-		password: body.password
+		password: body.password,
 	});
 	if (ret.error) {
 		console.error('auth/login', ret);

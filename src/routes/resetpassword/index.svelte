@@ -23,7 +23,7 @@
 		}
 		const response: EmpResponse = (await post(`auth/register`, {
 			email,
-			password
+			password,
 		})) as unknown as EmpResponse;
 
 		if (response.error) {
@@ -115,9 +115,8 @@
 					required
 					name="email"
 					placeholder="Email"
-					bind:value={email}
-				/>
-				<label for="input-email"> {$_('account.yourEmail')}</label>
+					bind:value={email} />
+				<label for="input-email">{$_('account.yourEmail')}</label>
 				{#if needFullEmailToResetPassword}
 					<div class="w-100 text-center">{needFullEmailToResetPassword}</div>
 				{/if}
@@ -128,6 +127,7 @@
 			<Row class="d-flex text-center">
 				{#if showSendVerificationCode}
 					<Button
+						class="mt-3"
 						color="primary"
 						disabled={!email || (email && email.trim().length === 0)}
 						on:click={() => {
@@ -143,7 +143,7 @@
 							} else {
 								api
 									.post('account/resetPasswordRequest', {
-										email: email
+										email: email,
 									})
 									.then((res) => {
 										if (res.error) {
@@ -171,8 +171,7 @@
 										}
 									});
 							}
-						}}
-					>
+						}}>
 						{$_('account.sendvrfcode')}
 					</Button>
 				{:else if sendVerificationCodeResult}
@@ -184,8 +183,7 @@
 							finalErrMsg = '';
 							showSendVerificationCode = true;
 							sendVerificationCodeResult = '';
-						}}
-					>
+						}}>
 						Resend {resendCountdown > 0 ? '(' + resendCountdown + ')' : ''}
 					</Button>
 				{/if}
@@ -211,8 +209,7 @@
 									else verifyInputs[0].focus();
 
 									verifyCodeHas6Chars = verifyCodes.filter((x) => (x ? true : false)).length === 6;
-								}}
-							/>
+								}} />
 						</div>
 					{/each}
 				</Row>
@@ -231,9 +228,8 @@
 								on:input={(e) => {
 									e.preventDefault();
 									onInputPassword();
-								}}
-							/>
-							<label for="input-password"> {$_('account.choosePassword')}</label>
+								}} />
+							<label for="input-password">{$_('account.choosePassword')}</label>
 							{passwordCheckingMsgs}
 						</div>
 						<!-- svelte-ignore missing-declaration -->
@@ -249,9 +245,8 @@
 								on:input={(e) => {
 									e.preventDefault();
 									onInputPassword2();
-								}}
-							/>
-							<label for="input-password-repeat"> {$_('account.verifyPassword')}</label>
+								}} />
+							<label for="input-password-repeat">{$_('account.verifyPassword')}</label>
 							{password2CheckingMsgs}
 						</div>
 					</form>
@@ -265,7 +260,7 @@
 								.post('account/resetPassword', {
 									email: email,
 									password: password,
-									vrfcode: verifyCodes.join('')
+									vrfcode: verifyCodes.join(''),
 								})
 								.then((res) => {
 									if (res.error) {
@@ -282,8 +277,7 @@
 										showDirectLogin = true;
 									}
 								});
-						}}
-					>
+						}}>
 						{$_('account.changepassword')}
 					</button>
 				{/if}
@@ -310,8 +304,7 @@
 							$session = {};
 						} catch (e) {}
 						goto('/login');
-					}}
-				>
+					}}>
 					{$_('account.passwordchanged')}
 				</a>
 			</Col>

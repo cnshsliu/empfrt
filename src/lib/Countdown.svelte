@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { _ } from '$lib/i18n';
 	import { spring } from 'svelte/motion';
 	import { onMount } from 'svelte';
 	import { Row, Col } from 'sveltestrap';
@@ -31,7 +32,7 @@
 <div class="counter">
 	<Row cols="1">
 		<Col class={'text-center'}>
-			<div>Verification Email has been sent</div>
+			<div>{$_('login.verificationEmailSent')}</div>
 		</Col>
 		<Col class="w-100">
 			<div class="counter-viewport">
@@ -42,7 +43,7 @@
 			</div>
 		</Col>
 		<Col class={'text-center'}>
-			<div>秒后可再次发送</div>
+			<div>{$_('login.resendVerificationEmailLater')}</div>
 		</Col>
 	</Row>
 </div>

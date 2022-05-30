@@ -57,6 +57,7 @@
 				}, 1000);
 			}
 			errResponse = response;
+			errResponse.message = $_(`error.${errResponse.error}`);
 			if (response.error === 'login_no_user') {
 				isUserValid = ' is-invalid';
 				isPwdValid = '';
@@ -65,7 +66,7 @@
 				isPwdValid = ' is-invalid';
 				passwordErrorCount++;
 			}
-			if (response.error === 'login_emailVerified_false') {
+			if (response.error === 'LOGIN_EMAILVERIFIED_FALSE') {
 				show_resend_email_verification = true;
 				//resendCountdown = 0;
 				//theCountdown.reset(0);
@@ -89,7 +90,7 @@
 		if (response.error) {
 			setFadeMessage(response.message);
 		} else {
-			setFadeMessage('Please check your mailbox');
+			setFadeMessage($_('tips.check_email_please'));
 		}
 	}
 
@@ -181,7 +182,7 @@
 				</div>
 			</form>
 		</Col>
-		{#if showResetPassword}
+		{#if showResetPassword || passwordErrorCount > 2}
 			<Col class="text-center mt-5">
 				<NavLink
 					on:click={() => {
@@ -208,10 +209,11 @@
 		<Col>
 			{#if show_resend_email_verification && resendCountdown < 1}
 				<NavLink
+					class="btn btn-secondary mt-3"
 					on:click={() => {
 						resendEmailVerification();
 					}}>
-					Resend Verification Email
+					{$_('login.resendverificationemail')}
 				</NavLink>
 			{:else if resendCountdown > 0}
 				<svelte:component this={Countdown} bind:this={theCountdown} bind:resendCountdown />

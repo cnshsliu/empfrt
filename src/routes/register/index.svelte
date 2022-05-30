@@ -29,6 +29,7 @@
 	let fade_timer;
 	let errMsg = '';
 
+	let regSuccess = false;
 	async function submit(event) {
 		if (password !== password2) {
 			setFadeMessage('Passwords are not equal');
@@ -58,8 +59,7 @@
 		}
 
 		if (response.user) {
-			$session.user = response.user;
-			goto('/');
+			regSuccess = true;
 		}
 	}
 	let passwordCheckingMsgs = '';
@@ -145,90 +145,102 @@
 				<a href="/login">{$_('account.haveAnAccount')}</a>
 			</p>
 		</Col>
-		<Col>
-			<form on:submit|preventDefault={submit}>
-				<div class="form-floating">
-					<input
-						class="form-control form-control-lg mt-2"
-						id="input-email"
-						type="email"
-						required
-						name="email"
-						placeholder="Email"
-						bind:value={email}
-						on:change={checkFreeReg}
-						on:blur={checkFreeReg}
-						on:input={emailInputting} />
-					<label for="input-email">{$_('account.yourEmail')}</label>
-				</div>
-				{#if errMsg === ''}
+		{#if regSuccess === false}
+			<Col>
+				<form on:submit|preventDefault={submit}>
 					<div class="form-floating">
 						<input
 							class="form-control form-control-lg mt-2"
-							type="text"
-							id="input-username"
+							id="input-email"
+							type="email"
 							required
-							placeholder="Your display name"
-							bind:value={username} />
-						<label for="input-username">{$_('account.yourDisplayName')}</label>
+							name="email"
+							placeholder="Email"
+							bind:value={email}
+							on:change={checkFreeReg}
+							on:blur={checkFreeReg}
+							on:input={emailInputting} />
+						<label for="input-email">{$_('account.yourEmail')}</label>
 					</div>
-					<div class="form-floating">
-						<input
-							class="form-control form-control-lg mt-2"
-							type="password"
-							id="input-password"
-							name="new-password"
-							required
-							placeholder="Password"
-							autocomplete="new-password"
-							bind:value={password}
-							on:input={(e) => {
-								e.preventDefault();
-								onInputPassword();
-							}} />
-						<label for="input-password">{$_('account.choosePassword')}</label>
-						{passwordCheckingMsgs}
-					</div>
-					<!-- svelte-ignore missing-declaration -->
-					<div class="form-floating">
-						<input
-							class="form-control form-control-lg mt-2"
-							type="password"
-							id="input-password-repeat"
-							required
-							placeholder="Password Repeat"
-							autocomplete="new-password"
-							bind:value={password2}
-							on:input={(e) => {
-								e.preventDefault();
-								onInputPassword2();
-							}} />
-						<label for="input-password-repeat">{$_('account.verifyPassword')}</label>
-						{password2CheckingMsgs}
-					</div>
-					<button
-						class="w-100 btn btn-lg btn-primary pull-xs-right mt-3"
-						disabled={enableSigninButton === false}>
-						{$_('account.signup')}
-					</button>
-					<div class="fw-light fs-6">
-						<div class="mt-3">{$_('register.emailverifytips')}</div>
-						<div class="mt-3">{$_('register.upgradeorgtips')}</div>
-					</div>
-				{:else}
-					<div class="mt-3">
-						{errMsg}
-						<a
-							href={'#'}
-							class="btn btn-primary"
-							on:click={(e) => {
-								errMsg = '';
-							}}>
-							{$_('register.dismiss')}
-						</a>
-					</div>
-				{/if}
-			</form>
-		</Col>
+					{#if errMsg === ''}
+						<div class="form-floating">
+							<input
+								class="form-control form-control-lg mt-2"
+								type="text"
+								id="input-username"
+								required
+								placeholder="Your display name"
+								bind:value={username} />
+							<label for="input-username">{$_('account.yourDisplayName')}</label>
+						</div>
+						<div class="form-floating">
+							<input
+								class="form-control form-control-lg mt-2"
+								type="password"
+								id="input-password"
+								name="new-password"
+								required
+								placeholder="Password"
+								autocomplete="new-password"
+								bind:value={password}
+								on:input={(e) => {
+									e.preventDefault();
+									onInputPassword();
+								}} />
+							<label for="input-password">{$_('account.choosePassword')}</label>
+							{passwordCheckingMsgs}
+						</div>
+						<!-- svelte-ignore missing-declaration -->
+						<div class="form-floating">
+							<input
+								class="form-control form-control-lg mt-2"
+								type="password"
+								id="input-password-repeat"
+								required
+								placeholder="Password Repeat"
+								autocomplete="new-password"
+								bind:value={password2}
+								on:input={(e) => {
+									e.preventDefault();
+									onInputPassword2();
+								}} />
+							<label for="input-password-repeat">{$_('account.verifyPassword')}</label>
+							{password2CheckingMsgs}
+						</div>
+						<button
+							class="w-100 btn btn-lg btn-primary pull-xs-right mt-3"
+							disabled={enableSigninButton === false}>
+							{$_('account.signup')}
+						</button>
+						<div class="fw-light fs-6">
+							<div class="mt-3">{$_('register.emailverifytips')}</div>
+							<div class="mt-3">{$_('register.upgradeorgtips')}</div>
+						</div>
+					{:else}
+						<div class="mt-3">
+							{errMsg}
+							<a
+								href={'#'}
+								class="btn btn-primary"
+								on:click={(e) => {
+									errMsg = '';
+								}}>
+								{$_('register.dismiss')}
+							</a>
+						</div>
+					{/if}
+				</form>
+			</Col>
+		{/if}
+		{#if regSuccess}
+			<Col class="text-center">
+				<div class="mt-3">{username}</div>
+				<div class="mt-3">{email}</div>
+				<div class="mt-3">{$_('register.success')}</div>
+				<button class="btn btn-primary mt-3 w-100" on:click|preventDefault={() => goto('/login')}>
+					{$_('register.loginnow')}
+				</button>
+			</Col>
+		{/if}
 	</Row>
 </Container>

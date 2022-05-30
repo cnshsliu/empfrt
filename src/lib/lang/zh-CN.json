@@ -70,8 +70,10 @@
 		"dberror": "注册不成功",
 		"duplicate": "该账号已被注册",
 		"dismiss": "知道了",
-		"emailverifytips": "注册成功以后，将直接进入MTC服务页面，在下次登录之前，你需要查收邮箱验证你的邮箱地址",
-		"upgradeorgtips": "如果您需要升级为企业账号，请联系您在的客户代表。升级企业账号后，您和您的同事将可通过MTC进行工作协作，而您的账号自动成为管理员账号"
+		"emailverifytips": "注册成功以后，平台会发送邮箱地址验证链接给您，你需要查收邮箱验证你的邮箱地址",
+		"upgradeorgtips": "如果您是企业账号管理员，需要升级为企业账号，请联系您在的客户代表。升级企业账号后，您和您的同事将可通过MTC进行工作协作，而您的账号自动成为管理员账号",
+		"success": "注册成功",
+		"loginnow": "现在去登录"
 	},
 	"extrafilter": {
 		"template": "模板",
@@ -649,21 +651,25 @@
 			"ou_name": "部门名称",
 			"emp_name": "员工姓名",
 			"emp_email": "员工邮箱",
-			"emp_pwd": "员工密码",
+			"emp_pwd": "新员工缺省密码",
 			"exportcsv": "导出组织结构到CSV文件",
 			"exportxlsx": "导出组织结构到Excel XLSX文件",
 			"importcsv": "从.csv文件导入组织结构",
 			"importxlsx": "从Excel XLSX文件导入组织结构",
 			"btn": {
 				"refresh": "刷新",
-				"emp_create": "新建或删除员工",
+				"emp_create": "添加或修改员工",
 				"emp_delete": "删除员工",
 				"ou_create": "新建或修改部门",
 				"ou_delete": "删除部门",
 				"export": "导出",
-				"import": "导入"
+				"import": "导入",
+				"copyto": "拷贝到",
+				"moveto": "移动到",
+				"removeentry": "删除本条"
 			},
-			"resolver_label": "组织内角色查询"
+			"resolver_label": "组织内角色查询",
+			"copyormovestaffto": "将选中员工拷贝或移动到："
 		},
 		"members": {
 			"nav": "组织成员",
@@ -791,7 +797,22 @@
 	"login": {
 		"reset_password": "忘记密码吗？如需重置密码点这里",
 		"needfullemail": "重置密码须使用完整邮箱地址",
-		"resetpasswordresult": "重置密码的指引已发送到你的邮箱，请查收"
+		"resetpasswordresult": "重置密码的指引已发送到你的邮箱，请查收",
+		"resendverificationemail": "再次发送验证信息邮件",
+		"verificationEmailSent": "包含验证信息的邮件已发送，请查收",
+		"resendVerificationEmailLater": "秒后可再次发送",
+		"verify": {
+			"error": {
+				"ACCOUNT_ALREADY_VERIFIED": "该账户已经验证过了",
+				"ACCOUNT_USER_NOT_FOUND": "该账户不存在，无法验证",
+				"VERIFICATION_CODE_EXPIRED": "超过15分钟已过期"
+			},
+			"message": {
+				"EMAIL_VERIFIED": "验证成功",
+				"YOU_ARE_VERIFYING": "正在验证"
+			},
+			"needRelogin": "请重新登录"
+		}
 	},
 
 	"comment": {
@@ -809,7 +830,16 @@
 	},
 
 	"error": {
-		"NO_BRUTE": "请勿频繁操作"
+		"NO_BRUTE": "请勿频繁操作",
+		"LOGIN_EMAILVERIFIED_FALSE": "邮箱地址尚未验证",
+		"login_no_user": "账户不存在",
+		"duplicated_object": "重复对象已存在",
+		"password_format": "密码长度必须在6-12之间，包含大小写字母数字及特殊字符",
+		"username_format": "用户名长度必须在4-12之间，且只包含大小写字母和数字",
+		"email_exist": "Email已被占用",
+		"wfid_exist": "wfid已存在",
+		"login_failed": "登录失败，请检查ID或密码是否正确",
+		"ORGCHART_ENTRY_KEEP_LAST_ONE": "这是 该用户最后一条落位，彻底删除用户请使用删除邮箱功能"
 	},
 
 	"searchlet": {
@@ -850,11 +880,15 @@
 		"myfile": { "title": "我的文件", "body": "我上传的文件" }
 	},
 	"tips": {
-		"orgtag": { "title": "组织级分类标签", "content": "组织管理员可根据需要设定，点击进入设置" },
+		"orgtag": {
+			"title": "组织级分类标签",
+			"content": "组织管理员可根据需要设定，点击进入设置"
+		},
 		"flexible": {
 			"title": "创建灵活事项",
 			"content": "无须规划模版，灵活发布工作任务"
-		}
+		},
+		"check_email_please": "请查收邮件"
 	},
 	"search": {
 		"condition": {

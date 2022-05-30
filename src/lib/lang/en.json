@@ -70,8 +70,10 @@
 		"dberror": "Registration failed",
 		"duplicate": "Account already registered",
 		"dismiss": "Acknowledged",
-		"emailverifytips": "You will be directed to MTC main interface on successful registration, however, before your next login, you must reply to the confirmation email sent to you",
-		"upgradeorgtips": "If you are going to upgrade your account to enterprise-level, please contact Metatocome client representives. After upgrading succesfully, your workmates will be able to collaborate with MTC, and your account will be the Administrator automatically."
+		"emailverifytips": "After registration, you need to verify your email address by clicking the link in the email platform send to you",
+		"upgradeorgtips": "If you are enterprise account administrator, and are going to upgrade your account to enterprise-level, please contact Metatocome client representives. After upgrading succesfully, your workmates will be able to collaborate with MTC, and your account will be the Administrator automatically.",
+		"success": "Registration successfully",
+		"loginnow": "Go to login now"
 	},
 	"extrafilter": {
 		"template": "Template",
@@ -648,7 +650,7 @@
 			"ou_id": "OU_ID",
 			"emp_name": "Employee name",
 			"emp_email": "Employee email",
-			"emp_pwd": "Employee password",
+			"emp_pwd": "New employee default password",
 			"ou_name": "OU Name",
 			"exprotcsv": "Export the whole OrgChart to CSV file",
 			"exportxlsx": "Export OrgChart to Excel XLSX file",
@@ -661,9 +663,13 @@
 				"ou_create": "New or update OU",
 				"ou_delete": "Delete OU",
 				"export": "Export",
-				"import": "Import"
+				"import": "Import",
+				"copyto": "Copy to",
+				"moveto": "Move to",
+				"removeentry": "Remove from"
 			},
-			"resolver_label": "Org Role Query"
+			"resolver_label": "Org Role Query",
+			"copyormovestaffto": "Copy or move selected employee to: "
 		},
 		"members": {
 			"nav": "Members",
@@ -791,7 +797,22 @@
 	"login": {
 		"reset_password": "Forget password? reset it here",
 		"needfullemail": "Full email address is required",
-		"resetpasswordresult": "Reset password instruction has been sent to your email, check your email now please"
+		"resetpasswordresult": "Reset password instruction has been sent to your email, check your email now please",
+		"resendverificationemail": "Resend verification email",
+		"verificationEmailSent": "Verification Email has been sent",
+		"resendVerificationEmailLater": "seconds later could send again",
+		"verify": {
+			"error": {
+				"ACCOUNT_ALREADY_VERIFIED": "This account has been verified",
+				"ACCOUNT_USER_NOT_FOUND": "Account does not exist",
+				"VERIFICATION_CODE_EXPIRED": "15 minutes waiting time expired"
+			},
+			"message": {
+				"EMAIL_VERIFIED": "Verified Successfully",
+				"YOU_ARE_VERIFYING": "Verifying"
+			},
+			"needRelogin": "Please login again"
+		}
 	},
 
 	"comment": {
@@ -809,7 +830,16 @@
 	},
 
 	"error": {
-		"NO_BRUTE": "Please don't operate too frequently"
+		"NO_BRUTE": "Please don't operate too frequently",
+		"LOGIN_EMAILVERIFIED_FALSE": "Email Verification is required",
+		"login_no_user": "Account does not exist",
+		"duplicated_object": "Duplicated Objects",
+		"password_format": "Password length should be between 6-12, upper case, lower case letters and special characters must be included",
+		"username_format": "User name length should be between 4-12, upper case, lower case lettersand numbers are allowed",
+		"email_exist": "Email has been registered",
+		"wfid_exist": "wfid already",
+		"login_failed": "Login failed，check ID or password pls.",
+		"ORGCHART_ENTRY_KEEP_LAST_ONE": "This is the only one entry, delete email if confirmed"
 	},
 
 	"searchlet": {
@@ -857,7 +887,8 @@
 		"flexible": {
 			"title": "Flexible Actions",
 			"content": "Start to arrange tasks in a flexible way."
-		}
+		},
+		"check_email_please": "Check email please"
 	},
 	"search": {
 		"condition": {

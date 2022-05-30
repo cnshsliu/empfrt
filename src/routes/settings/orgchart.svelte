@@ -19,6 +19,7 @@
 	let posValue = '';
 	let user = $session.user;
 	let showOuId = true;
+	let theOrgChartMaitainer;
 
 	function findOu(ocl, ouId) {
 		let ret = null;
@@ -125,6 +126,12 @@
 
 	const refreshOrgChart = async () => {
 		let tmp = await expandOrgChartFromServer('root', 0, true);
+		let ous = [];
+		for (let i = 0; i < tmp.length; i++) {
+			if (tmp[i].uid === 'OU---') {
+				ous.push(tmp[i]);
+			}
+		}
 		orgchartroot = tmp[0];
 		orgchartlist = tmp.splice(1);
 	};
@@ -207,6 +214,7 @@
 									style={`padding-left:${20 * oce.level}px;`}
 									on:click={(e) => {
 										e.preventDefault();
+										theOrgChartMaitainer.setPickedOU({ ou: oce.ou, cn: oce.cn });
 										toggleExpandOU(oce.ou, oce.level, index);
 									}}>
 									<i class={oce.icon} />
@@ -216,7 +224,13 @@
 									{showOuId ? oce.ou : ''}
 								</div>
 							{:else}
-								<div style={`padding-left:${20 * oce.level}px;`}>
+								<div
+									class="clickable kfk-link"
+									style={`padding-left:${20 * oce.level}px;`}
+									on:click={(e) => {
+										e.preventDefault();
+										theOrgChartMaitainer.setPickedStaff({ ou: oce.ou, uid: oce.uid, cn: oce.cn });
+									}}>
 									<i class={oce.icon} color="primary" />
 									<!-- [E: {oce.expanded} D:{oce.display}] -->
 									{oce.cn}
@@ -273,6 +287,11 @@
 
 {#if authorizedAdmin}
 	<div>
-		<OrgChartMaintainer />
+		<svelte:component
+			this={OrgChartMaintainer}
+			bind:this={theOrgChartMaitainer}
+			on:refreshOrgChart={async (e) => {
+				await refreshOrgChart();
+			}} />
 	</div>
 {/if}
