@@ -636,7 +636,12 @@
 			"invite_ph": "用空格、逗号、分号分割的多个邮箱地址",
 			"joinapplication": "加入申请",
 			"refresh": "刷新",
-			"noapplication": "当前没有加入申请"
+			"noapplication": "当前没有加入申请",
+			"regfree": "允许/禁止",
+			"regfree_true": "当前已允许员工使用企业邮箱自主注册",
+			"regfree_false": "当前已禁止员工使用企业邮箱自主注册，管理员可通过导入组织结构来添加员工",
+			"set_regfree_true": "确认后，将允许员工使用企业邮箱自主注册",
+			"set_regfree_false": "确认后，将禁止员工使用企业邮箱自主注册"
 		},
 		"orgchart": {
 			"nav": "组织结构",

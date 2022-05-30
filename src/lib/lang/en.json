@@ -636,7 +636,12 @@
 			"invite_ph": "Email list to invite, separated by space or comma or semicolon",
 			"joinapplication": "Join applications",
 			"refresh": "Refresh",
-			"noapplication": "There is no application at thistime"
+			"noapplication": "There is no application at thistime",
+			"regfree": "Allow/Disallow",
+			"regfree_true": "Empoloyees are allowed to self-register with company email",
+			"regfree_false": "Self-registration is prohibited, however, administrators are able to add employee by importing org-chart",
+			"set_regfree_true": "On set, empoloyees will be allowed to self-register with company email",
+			"set_regree_false": "On set, Self-registration will be prohibited, however, administrators are able to add employee by importing org-chart"
 		},
 		"orgchart": {
 			"nav": "OrgChart",

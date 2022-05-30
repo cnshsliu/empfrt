@@ -6,6 +6,7 @@
 		Col,
 		InputGroup,
 		InputGroupText,
+		Label,
 		Input,
 		Card,
 		CardBody,
@@ -356,7 +357,7 @@
 								Set
 							</Button>
 						</InputGroup>
-						<InputGroup class="mb-1">
+						<InputGroup>
 							<InputGroupText>{$_('setting.tenant.ocadmins')}</InputGroupText>
 							<Input
 								type="text"
@@ -381,6 +382,37 @@
 									}
 
 									in_progress = false;
+								}}>
+								Set
+							</Button>
+						</InputGroup>
+						<InputGroup>
+							<InputGroupText>{$_('setting.tenant.regfree')}</InputGroupText>
+							<Input class="ms-3" type="checkbox" bind:checked={myorg.regfree} />
+							<div class="form-control border-0">
+								<Label>
+									{$_(`setting.tenant.set_regfree_${myorg.regfree}`)}
+								</Label>
+							</div>
+							<Button
+								on:click={async (e) => {
+									e.preventDefault();
+
+									let ret = await api.post(
+										'tnt/set/regfree',
+										{ regfree: myorg.regfree, password: password_for_admin },
+										user.sessionToken,
+									);
+									if (ret.error) {
+										setFadeMessage(ret.message, 'warning');
+									} else {
+										if (myorg.regfree) {
+											setFadeMessage($_('setting.tenant.regfree_true'));
+										} else {
+											setFadeMessage($_('setting.tenant.regfree_false'));
+										}
+										myorg.regfree = ret.regfree;
+									}
 								}}>
 								Set
 							</Button>
