@@ -357,7 +357,7 @@
 								Set
 							</Button>
 						</InputGroup>
-						<InputGroup>
+						<InputGroup class="mb-1">
 							<InputGroupText>{$_('setting.tenant.ocadmins')}</InputGroupText>
 							<Input
 								type="text"
@@ -386,7 +386,7 @@
 								Set
 							</Button>
 						</InputGroup>
-						<InputGroup>
+						<InputGroup class="mb-1">
 							<InputGroupText>{$_('setting.tenant.regfree')}</InputGroupText>
 							<Input class="ms-3" type="checkbox" bind:checked={myorg.regfree} />
 							<div class="form-control border-0">
