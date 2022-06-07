@@ -227,7 +227,7 @@
 					</NavItem>
 					<NavItem class="px-1">
 						<NavLink class="m-0 p-0" href="/workflow" active={$page.url.pathname === '/workflow'}>
-							{$_('navmenu.workflow')}
+							{$_('navmenu.workflow_mining')}
 						</NavLink>
 					</NavItem>
 					<NavItem class="px-1">

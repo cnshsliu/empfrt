@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { API_SERVER } from '$lib/Env';
-import ErrorProcessor from '$lib/errorProcessor';
 import { fetchCache } from '$lib/Stores';
 import MD5 from 'blueimp-md5';
 
@@ -18,9 +17,11 @@ type OPTS = {
 	mode?: string;
 	body?: string;
 };
+
 export async function postSimple(path: string, data = null, token = null): Promise<any> {
 	return await sendSimple('POST', path, data, token);
 }
+
 export async function sendSimple(method: string, path: string, data = null, token = null) {
 	const opts: OPTS = { method: method, headers: {} };
 
@@ -34,6 +35,16 @@ export async function sendSimple(method: string, path: string, data = null, toke
 	}
 
 	return await fetch(`${API_SERVER}/${path}`, opts as RequestInit);
+}
+
+export async function fetchMultiple(path: string, body: any, token: string): Promise<any> {
+	await fetch(`${API_SERVER}/${path}`, {
+		method: 'POST',
+		headers: {
+			Authorization: token,
+		},
+		body: body,
+	});
 }
 
 async function send(
@@ -89,7 +100,6 @@ async function send(
 	return fetch(fullPath, opts as RequestInit)
 		.then((response) => {
 			if (response.status === 304) {
-				//console.log(path, 'Got 304');
 				returnCode304 = true;
 				responseETag = response.headers.get('etag');
 				return theCache[cacheID].data;
@@ -99,7 +109,6 @@ async function send(
 			}
 		})
 		.then((jsonText) => {
-			//console.log(path, 'Response etag', responseETag);
 			try {
 				const ret = JSON.parse(jsonText);
 				if (ret.error) {

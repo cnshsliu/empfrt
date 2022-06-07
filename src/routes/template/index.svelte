@@ -500,49 +500,70 @@
 {:else if showform === 'import'}
 	{#if user.perms && ClientPermControl(user.perms, user.email, 'template', '', 'create')}
 		<form class="new" enctype="multipart/form-data">
-			<Container class="my-3" style="max-width:400px;">
-				<Row cols="1" class="mb-5">
-					<Col>
-						<div class="form-floating flex-fill">
-							<input
-								name="tplid"
-								id="input-tplid"
-								placeholder="New template name"
-								class="form-control"
-								bind:value={tplidImport} />
-							<label for="input-tplid">
-								{$_('template.import.name')}
-							</label>
-						</div>
-					</Col>
-					<Col class="mt-2">
-						<div class="form-floating flex-fill">
-							<input name="file" id="input-file" type="file" bind:files />
-						</div>
-					</Col>
-					<Col class="mt-3 mb-5">
-						<Row>
-							<Col class="col-8">
-								<div
-									class="btn btn-primary h-100 w-100"
-									on:click|preventDefault={importTemplate}
-									color="primary">
-									{$_('button.import')}
+			<Container class="mt-3">
+				<div class="card p-3">
+					<div class="card-header">{$_('template.import.from_local_disk')}</div>
+					<div class="card-body">
+						<Row cols="1" class="mb-5">
+							<Col>
+								<div class="form-floating flex-fill">
+									<input
+										name="tplid"
+										id="input-tplid"
+										placeholder="New template name"
+										class="form-control"
+										bind:value={tplidImport} />
+									<label for="input-tplid">
+										{$_('template.import.name')}
+									</label>
 								</div>
 							</Col>
-							<Col class="col-4">
-								<div
-									class="btn btn-primary h-100 w-100"
-									color="secondary"
-									on:click|preventDefault={(e) => {
-										showform = '';
-									}}>
-									{$_('button.cancel')}
+							<Col class="mt-2">
+								<div class="form-floating flex-fill">
+									<input
+										name="file"
+										id="import_template_file_select_button"
+										type="file"
+										bind:files />
 								</div>
+							</Col>
+							<Col class="mt-3">
+								<Row>
+									<Col class="col-8">
+										<div
+											class="btn btn-primary h-100 w-100"
+											on:click|preventDefault={importTemplate}
+											color="primary">
+											{$_('button.import')}
+										</div>
+									</Col>
+									<Col class="col-4">
+										<div
+											class="btn btn-secondary h-100 w-100"
+											color="secondary"
+											on:click|preventDefault={(e) => {
+												showform = '';
+											}}>
+											{$_('button.cancel')}
+										</div>
+									</Col>
+								</Row>
 							</Col>
 						</Row>
-					</Col>
-				</Row>
+						<Row>
+							<div class="text-center">
+								<a
+									href={'#'}
+									class="btn border-0 m-0 p-0 text-primary"
+									on:click={() => {
+										goto('/kshares');
+									}}>
+									{$_('template.import.from_process_hub')}
+								</a>
+							</div>
+						</Row>
+					</div>
+				</div>
 			</Container>
 		</form>
 	{:else}
@@ -885,6 +906,15 @@
 													class="nav-link ">
 													<Icon name="trash" />
 													{$_('remotetable.tplaction.deleteThisTempalte')}
+												</a>
+											</DropdownItem>
+											<DropdownItem>
+												<a
+													href={'#'}
+													on:click|preventDefault={() => goto(`analysis/tpl/${row.tplid}`)}
+													class="nav-link ">
+													<Icon name="graph-up-arrow" />
+													{$_('remotetable.tplaction.analysis')}
 												</a>
 											</DropdownItem>
 										{/if}

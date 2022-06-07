@@ -6,6 +6,7 @@
 		"template": "Template",
 		"planning": "Planning",
 		"workflow": "Monitoring",
+		"workflow_mining": "Mining",
 		"worklist": "My Works",
 		"settings": "Settings",
 		"teaming": "Teaming",
@@ -33,7 +34,7 @@
 			"secure": "Metatocome take the role of a pure collaboration engine running separatedly from other systems, and has separated authentication, and access control from enterprise's internal IT system. Metatocome use resource URI to refer to any internal or external IT resources."
 		},
 		"search": {
-			"placeholder": "Search shared cells"
+			"placeholder": "Search ProcessHub"
 		}
 	},
 	"account": {
@@ -86,6 +87,7 @@
 		"in": "In"
 	},
 	"remotetable": {
+		"executeNow": "Search Now",
 		"rowperpage": "Rows per page",
 		"colperrow": "Cols per row",
 		"rows-10": "10 items per page",
@@ -161,13 +163,15 @@
 			"lastUpdate": "Last Update",
 			"exportdata": "Export Data",
 			"editors": "Editors",
+			"analysis": "Process mining",
 			"scheduler": "Scheduler"
 		}
 	},
 	"title": {
 		"template": "Template",
 		"workflow": "Workflow",
-		"worklist": "Work list"
+		"worklist": "Work list",
+		"mining": "Process Mining"
 	},
 	"adhoc": {
 		"header": "Send out an Adhoc Task",
@@ -178,6 +182,7 @@
 		"foundduser": "Found {num} users"
 	},
 	"button": {
+		"postKShare": "Post to ProcessHub",
 		"check": "Check",
 		"toggleAdvancedSearch": "Advanced Search",
 		"resetQuery": "Reset/All",
@@ -202,7 +207,9 @@
 		"copy": "Copy",
 		"rename": "Rename",
 		"delete": "Delte",
-		"startnow": "Start Now"
+		"startnow": "Start Now",
+		"current_is_searching": "Search Mode",
+		"current_is_mining": "Mining Mode"
 	},
 	"template": {
 		"create": {
@@ -211,7 +218,9 @@
 		},
 		"import": {
 			"name": "Template name",
-			"tags": "Tags delimited by spaces/;/,"
+			"tags": "Tags delimited by spaces/;/,",
+			"from_local_disk": "Import from local file",
+			"from_process_hub": "Import domain exports shared best practices from Process Hub"
 		}
 	},
 	"recent": "Recent: ",
@@ -290,6 +299,9 @@
 	},
 
 	"tpl": {
+		"dropdown": "File",
+		"kshare": "Share PH",
+		"view": "View",
 		"prop": "Prop",
 		"new": "New",
 		"export": "Export",
@@ -899,6 +911,39 @@
 		"condition": {
 			"all": "All",
 			"template": "Search '{pattern}', Author: {author}"
+		}
+	},
+	"unit": {
+		"days": "days"
+	},
+	"kshare": {
+		"title": "Process Hub",
+		"description": "Management process best practice provided by domain exports, you may import and use them with one-click",
+		"all_scenarios": "All Scenarios",
+		"all_industries": "All Industries",
+		"topmenu": {
+			"All": "All",
+			"Scenarios": "Scenarios",
+			"Industries": "Industries"
+		},
+		"label": {
+			"All": "All",
+			"Close": "Close",
+			"Pick": "Pick it",
+			"Confirm": "Confirm",
+			"Cancel": "Cancel",
+			"only12": "Only show 12 randomly, click here to see them all"
+		},
+		"pickit": {
+			"placeholder": "Give it a name",
+			"error": {
+				"no_user": "Please login first",
+				"exists": {
+					"title": "This template already exists",
+					"body": "Please modify and try again"
+				}
+			},
+			"result": { "success": "Import successfully, go to templates menu to see it" }
 		}
 	}
 }

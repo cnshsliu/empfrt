@@ -60,7 +60,7 @@
 	};
 </script>
 
-<div class="row mt-1">
+<div class="row">
 	<div class="input-group">
 		<div class="input-group-text">
 			{$_('searchlet.existing')}

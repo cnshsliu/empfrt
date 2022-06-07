@@ -3,6 +3,9 @@
 		let tpl_mode = params.mode;
 		let tplid = params.tplid;
 		if (tplid && tplid.charAt(0) === '@') tplid = tplid.substring(1);
+		const res = await api.post('ksconfig/get', {}, session.user.sessionToken);
+		const scenarios = res.scenarios;
+		const industries = res.industries;
 		const jsonUrl = `/template/${tplid}&${tpl_mode}.json`;
 		try {
 			const res = await fetch(jsonUrl);
@@ -13,6 +16,8 @@
 					tplid: tplid,
 					tpl_mode,
 					user: session.user,
+					scenarios,
+					industries,
 				},
 			};
 		} catch (err) {
@@ -23,6 +28,8 @@
 					tplid: tplid,
 					tpl_mode,
 					user: session.user,
+					scenarios: [],
+					industries: [],
 				},
 			};
 		}
@@ -42,13 +49,32 @@
 	import { session } from '$app/stores';
 	import { title } from '$lib/title';
 	import * as api from '$lib/api';
-	import { Row, Col, Nav, NavLink, Input } from 'sveltestrap';
-	import { Icon, Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'sveltestrap';
+	import { Row, Col, Nav, NavLink, NavItem, Input } from 'sveltestrap';
+	import {
+		Dropdown,
+		DropdownToggle,
+		DropdownMenu,
+		DropdownItem,
+		Icon,
+		Button,
+		Modal,
+		ModalBody,
+		ModalFooter,
+		ModalHeader,
+	} from 'sveltestrap';
 	import { onMount } from 'svelte';
+	import { text_area_resize } from '$lib/autoresize_textarea';
+	import BadgeWithDel from '$lib/input/BadgeWithDel.svelte';
 	import { enhance } from '$lib/form';
 	export let tplid;
 	export let template: Template;
 	export let tpl_mode: string;
+
+	const all_scenarios_txt = $_('kshare.all_scenarios');
+	const all_industries_txt = $_('kshare.all_industries');
+
+	export let scenarios: string[];
+	export let industries: string[];
 
 	$title = template.tplid;
 	let Designer: any;
@@ -59,6 +85,7 @@
 	let showNodeId = false;
 	let newTplId = '';
 	let oldTplId = '';
+	let ksable = false;
 
 	const saveOneRecentTemplate = function (tplid) {
 		if (tplid === null || tplid === undefined || tplid === '') return;
@@ -82,6 +109,11 @@
 			recentTeams = JSON.parse(localStorage.getItem('recentTeams') ?? JSON.stringify([]));
 			saveOneRecentTemplate(tplid);
 		}
+
+		let tsadmin = await api.post('kshare/able', {}, user.sessionToken);
+		if (tsadmin.ksable) {
+			ksable = true;
+		}
 	});
 
 	let urls = {
@@ -99,6 +131,7 @@
 		copyto: false,
 		delete: false,
 		start: false,
+		kshare: false,
 	};
 	export let form_name = '';
 	export let export_to_filename = template.tplid;
@@ -114,7 +147,7 @@
 		theDesigner.documentEventOn();
 	}
 
-	function show_form(what: string) {
+	function showForm(what: string) {
 		hide_all_form();
 		form_status[what] = true;
 		form_name = what;
@@ -248,6 +281,8 @@
 		}
 		hide_all_form();
 	};
+
+	const kstpl = { name: '', desc: '', price: 0, tags: [], newtag: 'none' };
 </script>
 
 <svelte:head>
@@ -282,6 +317,110 @@
 		<Row class="mt-1 d-flex justify-content-center">
 			<Col class="d-flex justify-content-center">
 				<Nav>
+					<Dropdown class="nav-link">
+						<DropdownToggle caret class="m-0 py-0 bg-transparent border-0">
+							{$_('tpl.dropdown')}
+						</DropdownToggle>
+						<DropdownMenu>
+							{#if ClientPermControl(user.perms, user.email, 'template', template, 'create')}
+								<NavLink
+									class="kfk-link"
+									on:click={() => {
+										showForm('create');
+									}}>
+									<AniIcon icon="plus-circle" ani="aniShake" />
+									{$_('tpl.new')}
+								</NavLink>
+							{:else}
+								<NavLink disabled>
+									<Icon name="plus-circle" />
+									{$_('tpl.new')}
+								</NavLink>
+							{/if}
+							<NavLink
+								class="kfk-link"
+								on:click={() => {
+									showForm('export');
+								}}>
+								<AniIcon icon="cloud-download" ani="aniShake" />
+								{$_('tpl.export')}
+							</NavLink>
+							{#if ClientPermControl(user.perms, user.email, 'template', template, 'create')}
+								<NavLink
+									class="kfk-link"
+									on:click={() => {
+										oldTplId = template.tplid;
+										newTplId = template.tplid;
+										showForm('copyto');
+									}}>
+									<AniIcon icon="files" ani="aniShake" />
+									{$_('tpl.copyto')}
+								</NavLink>
+							{:else}
+								<NavLink class="kfk-link" disabled>
+									<Icon name="files" />
+									{$_('tpl.copyto')}
+								</NavLink>
+							{/if}
+							{#if template.ins === false}
+								{#if ClientPermControl(user.perms, user.email, 'template', template, 'update')}
+									<NavLink
+										class="kfk-link"
+										on:click={() => {
+											oldTplId = template.tplid;
+											newTplId = template.tplid;
+											showForm('rename');
+										}}>
+										<AniIcon icon="input-cursor-text" ani="aniShake" />
+										{$_('tpl.rename')}
+									</NavLink>
+								{:else}
+									<NavLink class="kfk-link" disabled>
+										<Icon name="input-cursor-text" />
+										{$_('tpl.rename')}
+									</NavLink>
+								{/if}
+							{/if}
+							{#if ksable}
+								<NavLink
+									class="kfk-link"
+									on:click={() => {
+										showForm('kshare');
+									}}>
+									<AniIcon icon="share" ani="aniShake" />
+									{$_('tpl.kshare')}
+								</NavLink>
+							{/if}
+						</DropdownMenu>
+					</Dropdown>
+					<Dropdown class="nav-link">
+						<DropdownToggle caret class="m-0 py-0 bg-transparent border-0">
+							{$_('tpl.view')}
+						</DropdownToggle>
+						<DropdownMenu>
+							<NavItem class="nav-link">
+								<input
+									type="checkbox"
+									class="form-check-input"
+									bind:checked={showNodeId}
+									on:change={async () => {
+										await theDesigner.showNodeIdDIV(showNodeId);
+									}} />
+								{$_('designer.showid')}
+							</NavItem>
+							<NavItem class="nav-link">
+								<input
+									type="checkbox"
+									class="form-check-input"
+									bind:checked={$filterStorage.curve}
+									on:change={async () => {
+										await theDesigner.setLineCurve($filterStorage.curve);
+									}} />
+								{$_('designer.curve')}
+							</NavItem>
+						</DropdownMenu>
+					</Dropdown>
+					<NavLink />
 					<NavLink
 						class="kfk-link"
 						on:click={() => {
@@ -290,82 +429,7 @@
 						<AniIcon icon="app" ani="aniShake" />
 						{$_('tpl.prop')}
 					</NavLink>
-					{#if ClientPermControl(user.perms, user.email, 'template', template, 'create')}
-						<NavLink
-							class="kfk-link"
-							on:click={() => {
-								show_form('create');
-							}}>
-							<AniIcon icon="plus-circle" ani="aniShake" />
-							{$_('tpl.new')}
-						</NavLink>
-					{:else}
-						<NavLink disabled>
-							<Icon name="plus-circle" />
-							{$_('tpl.new')}
-						</NavLink>
-					{/if}
-					<NavLink
-						class="kfk-link"
-						on:click={() => {
-							show_form('export');
-						}}>
-						<AniIcon icon="cloud-download" ani="aniShake" />
-						{$_('tpl.export')}
-					</NavLink>
-					{#if ClientPermControl(user.perms, user.email, 'template', template, 'create')}
-						<NavLink
-							class="kfk-link"
-							on:click={() => {
-								oldTplId = template.tplid;
-								newTplId = template.tplid;
-								show_form('copyto');
-							}}>
-							<AniIcon icon="files" ani="aniShake" />
-							{$_('tpl.copyto')}
-						</NavLink>
-					{:else}
-						<NavLink class="kfk-link" disabled>
-							<Icon name="files" />
-							{$_('tpl.copyto')}
-						</NavLink>
-					{/if}
 					{#if template.ins === false}
-						{#if ClientPermControl(user.perms, user.email, 'template', template, 'update')}
-							<NavLink
-								class="kfk-link"
-								on:click={() => {
-									oldTplId = template.tplid;
-									newTplId = template.tplid;
-									show_form('rename');
-								}}>
-								<AniIcon icon="input-cursor-text" ani="aniShake" />
-								{$_('tpl.rename')}
-							</NavLink>
-						{:else}
-							<NavLink class="kfk-link" disabled>
-								<Icon name="input-cursor-text" />
-								{$_('tpl.rename')}
-							</NavLink>
-						{/if}
-						<!--
-						{#if ClientPermControl(user.perms, user.email, 'template', template, 'delete')}
-							<NavLink
-								class="kfk-link"
-								on:click={() => {
-									show_form('delete');
-								}}
-							>
-								<AniIcon icon="trash" ani="aniShake" />
-								{$_('tpl.delete')}
-							</NavLink>
-						{:else}
-							<NavLink class="kfk-link" disabled>
-								<Icon name="trash" />
-								{$_('tpl.delete')}
-							</NavLink>
-						{/if}
-						-->
 						{#if ClientPermControl(user.perms, user.email, 'template', template, 'update')}
 							<NavLink
 								class="kfk-link"
@@ -390,7 +454,7 @@
 							<NavLink
 								class="kfk-link"
 								on:click={() => {
-									show_form('start');
+									showForm('start');
 								}}>
 								<AniIcon icon="hypnotize" ani="aniSpin" />
 								{$_('tpl.startit')}
@@ -403,24 +467,6 @@
 						{/if}
 					{/if}
 				</Nav>
-				<div class="ms-5">
-					<input
-						type="checkbox"
-						class="form-check-input"
-						bind:checked={showNodeId}
-						on:change={async () => {
-							await theDesigner.showNodeIdDIV(showNodeId);
-						}} />
-					{$_('designer.showid')}
-					<input
-						type="checkbox"
-						class="form-check-input"
-						bind:checked={$filterStorage.curve}
-						on:change={async () => {
-							await theDesigner.setLineCurve($filterStorage.curve);
-						}} />
-					{$_('designer.curve')}
-				</div>
 			</Col>
 		</Row>
 		<Row class="mt-2 d-flex justify-content-center">
@@ -619,7 +665,8 @@
 							</td>
 							<td>
 								<Button
-									on:click={() => {
+									on:click={(e) => {
+										e.preventDefault();
 										goto(`/template/start?tplid=${template.tplid}`, { replaceState: false });
 									}}
 									color="primary">
@@ -638,6 +685,99 @@
 							</td>
 						</tr>
 					</table>
+				{:else if form_status.kshare}
+					<div class="container">
+						<div class="row" id="kstpl_input_name">
+							<div class="input-group">
+								<span class="input-group-text">Share as:</span>
+								<input type="text" class="form-control" bind:value={kstpl.name} />
+							</div>
+						</div>
+						<div class="row" id="kstpl_input_desc">
+							<div class="input-group">
+								<span class="input-group-text">Share as:</span>
+								<textarea
+									placeholder="Description"
+									bind:value={kstpl.desc}
+									use:text_area_resize
+									class="form-control" />
+							</div>
+						</div>
+						<div class="row" id="kstpl_input_price">
+							<div class="input-group">
+								<span class="input-group-text">Price:</span>
+								<input class="form-control" type="number" bind:value={kstpl.price} />
+							</div>
+						</div>
+						<div class="row" id="kstpl_existingtags">
+							<div class="col">
+								{#each kstpl.tags as tag}
+									<BadgeWithDel
+										bind:text={tag}
+										withDeleteButton={true}
+										on:delete={async (e) => {
+											kstpl.tags = kstpl.tags.filter((x) => x != tag);
+										}} />
+								{/each}
+							</div>
+						</div>
+						<div class="row mb-3" id="kstpl_tagselector">
+							<div class="col">&nbsp;</div>
+							<div class="col-auto">
+								<select bind:value={kstpl.newtag} class="border rounded">
+									<option value={'none'}>Pick to add</option>
+									<option value={all_scenarios_txt}>{all_scenarios_txt}</option>
+									{#each scenarios as txt}
+										<option value={txt}>&nbsp;&nbsp;&nbsp;{txt}</option>
+									{/each}
+									<option value={all_industries_txt}>{all_industries_txt}</option>
+									{#each industries as txt}
+										<option value={txt}>&nbsp;&nbsp;&nbsp;{txt}</option>
+									{/each}
+								</select>
+							</div>
+							<div class="col-auto">
+								<button
+									class="btn btn-primary btn-sm py-0"
+									on:click|preventDefault={async () => {
+										if (kstpl.newtag === 'none') return;
+										kstpl.tags.push(kstpl.newtag);
+										kstpl.tags = [...new Set(kstpl.tags)];
+									}}>
+									Add
+								</button>
+							</div>
+						</div>
+						<div class="row" id="kstpl_postsubmit">
+							<div class="col">
+								<button
+									class="btn btn-primary"
+									on:click={async (e) => {
+										e.preventDefault();
+										const payload = { tplid: template.tplid, ...kstpl };
+										delete payload.newtag;
+										const res = await api.post(`/kshare/shareTemplate`, payload, user.sessionToken);
+										if (res.error) {
+											setFadeMessage(res.message, 'warning');
+										} else {
+											setFadeMessage('Post to processHub successfully', 'success');
+										}
+									}}
+									color="primary">
+									{$_('button.postKShare')}
+								</button>
+
+								<button
+									class="btn btn-secondary"
+									on:click={async (e) => {
+										e.preventDefault();
+										form_status.kshare = false;
+									}}>
+									{$_('button.cancel')}
+								</button>
+							</div>
+						</div>
+					</div>
 				{/if}
 			</Col>
 		</Row>

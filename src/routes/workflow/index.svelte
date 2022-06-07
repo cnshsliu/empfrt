@@ -4,9 +4,18 @@
 	import { _, date, time } from '$lib/i18n';
 	import * as Utils from '$lib/utils';
 	import * as api from '$lib/api';
+	import series from 'async/series';
 	import TagPicker from '$lib/TagPicker.svelte';
 	import AniIcon from '$lib/AniIcon.svelte';
-	import { showAdvancedSearch, srPage, lastQuery, worklistChangeFlag } from '$lib/Stores';
+	import Miner from './Miner.svelte';
+	import {
+		miningMode,
+		showAdvancedSearch,
+		srPage,
+		lastQuery,
+		lastMining,
+		worklistChangeFlag,
+	} from '$lib/Stores';
 	import { navigating, session } from '$app/stores';
 	import { mtcConfirm, mtcConfirmReset } from '$lib/Stores';
 	import { setFadeMessage } from '$lib/Notifier';
@@ -27,7 +36,10 @@
 	import { ClientPermControl } from '$lib/clientperm';
 	import { createEventDispatcher, getContext, setContext } from 'svelte';
 
-	const ENDPOINT = 'workflow/search';
+	const ENDPOINT_SEARCH = 'workflow/search';
+	const ENDPOINT_MINING = 'workflow/mining';
+	const MINING_BATCH_INTERVAL = 1000;
+	const MINING_BATCH_NUMBER = 3;
 	const BIZ = 'wf';
 	let loadTimer = null;
 	let LOADING_TIMEOUT = 400;
@@ -39,6 +51,7 @@
 	}
 
 	let rows: Workflow[] = [] as Workflow[];
+	let miningData = [];
 
 	let loading = true;
 	let rowsCount = 0;
@@ -144,15 +157,18 @@
 			payload['calendar_begin'] = $filterStorage[BIZ].calendar_begin;
 			payload['calendar_end'] = $filterStorage[BIZ].calendar_end;
 		}
+
 		let { skip: _skip, ...payloadWithoutSkip } = payload;
+		let { skip: __skip, limit: __limit, sortby: __sortBy, ...payloadForMining } = payload;
 		if (false === Utils.objectEqual(payloadWithoutSkip, $lastQuery[BIZ])) {
 			payload.skip = 0;
 			$srPage[BIZ] = 0;
 		}
 		$lastQuery[BIZ] = payloadWithoutSkip;
+		$lastMining = payloadForMining;
 
-		const loadPost = async () => {
-			const ret = await api.post(ENDPOINT, payload, user.sessionToken, cacheFlag);
+		const searchOnServer = async () => {
+			const ret = await api.post(ENDPOINT_SEARCH, payload, user.sessionToken, cacheFlag);
 			if (ret.error) {
 				if (ret.error === 'KICKOUT') {
 					setFadeMessage($_('session.forcetohome'));
@@ -165,19 +181,88 @@
 				rowsCount = ret.total;
 			}
 		};
-		loadTimer && clearTimeout(loadTimer);
-		if (
-			cacheFlag === api.CACHE_FLAG.useIfExists &&
-			api.hasCache(ENDPOINT, payload, user.sessionToken)
-		)
-			//Direct return cache without wait.
-			await loadPost();
-		else {
-			//Wait certain ms to fetch from server
-			loadTimer = setTimeout(async () => {
-				await loadPost();
-				loadTimer = null;
-			}, LOADING_TIMEOUT);
+
+		const getIndividualProcessData = async () => {
+			const tasks = [];
+			const batch = MINING_BATCH_NUMBER;
+			//把流程每「batch」作为一批，去服务器请求其details信息
+			for (let b = 0; b < miningData.length / batch + 1 && b * batch < miningData.length; b++) {
+				const batchWfIds = [];
+				//组织需要取其detail的工作流wfid数组，用于向服务器传递
+				for (let a = 0; a < batch; a++) {
+					const idx = b * batch + a;
+					if (idx >= miningData.length) break;
+					batchWfIds.push(miningData[idx].wfid);
+				}
+				tasks.push(function (callback) {
+					setTimeout(async function () {
+						console.log('workflow/detail', batchWfIds);
+						const details = await api.post(
+							'mining/workflow/details',
+							{ wfids: batchWfIds },
+							user.sessionToken,
+						);
+						if (details.error) {
+							console.error(details.message);
+						} else {
+							for (let m = 0; m < details.length; m++) {
+								miningData[b * batch + m].mdata = details[m];
+							}
+							miningData = miningData;
+							/*
+							for (let m = 0; m < details.length; m++) {
+								for (let k = 0; k < miningData.length; k++) {
+									if (miningData[k].wfid == details[m].wfid) {
+										miningData[k].mdata = details[m];
+										console.log('Set mdata ', details[m], ' for', miningData[k].wfid);
+										break;
+									}
+								}
+							}
+							 */
+						}
+						callback(null, b);
+					}, MINING_BATCH_INTERVAL);
+				});
+			}
+			console.log('Tasks number', tasks.length);
+			series(tasks, function (err, results) {
+				if (err) {
+					console.log(err);
+				} else {
+					console.log(results);
+				}
+			});
+		};
+
+		const miningOnServer = async () => {
+			const ret = await api.post(
+				ENDPOINT_MINING,
+				payloadForMining as unknown as Record<string, unknown>,
+				user.sessionToken,
+				cacheFlag,
+			);
+			miningData = ret;
+			await getIndividualProcessData();
+		};
+
+		if ($miningMode === false) {
+			loadTimer && clearTimeout(loadTimer);
+			if (
+				cacheFlag === api.CACHE_FLAG.useIfExists &&
+				api.hasCache(ENDPOINT_SEARCH, payload, user.sessionToken)
+			)
+				//Direct fetch from server without wait.
+				await searchOnServer();
+			else {
+				//Wait certain ms to fetch from server
+				loadTimer = setTimeout(async () => {
+					await searchOnServer();
+					loadTimer = null;
+				}, LOADING_TIMEOUT);
+			}
+		} else {
+			await miningOnServer();
 		}
 		loading = false;
 	}
@@ -194,12 +279,14 @@
 		) {
 			$filterStorage[BIZ].calendar_end = $filterStorage[BIZ].calendar_begin;
 		}
+		/*
 		if (
 			Parser.hasValue($filterStorage[BIZ].calendar_begin) &&
 			Parser.hasValue($filterStorage[BIZ].calendar_end)
 		) {
 			searchNow().then();
 		}
+			 */
 	};
 
 	async function searchNow(preDelete = false) {
@@ -243,6 +330,10 @@
 		}
 		searchNow(preDelete).then();
 	}
+
+	const toggleMining = async () => {
+		$miningMode = !$miningMode;
+	};
 
 	const toggleAdvancedSearch = async () => {
 		$showAdvancedSearch[BIZ] = !$showAdvancedSearch[BIZ];
@@ -372,7 +463,7 @@
 				resetQuery();
 			} else {
 				//console.log('showAdvancedSearch === true...');
-				await searchNow();
+				if ($miningMode === false) await searchNow();
 			}
 		}
 	});
@@ -388,10 +479,26 @@
 <Container class="p-2 border border-1 rounded">
 	<div class="d-flex">
 		<div class="flex-shrink-0 fs-3">
-			{$_('title.workflow')}
+			{#if $miningMode}
+				{$_('title.mining')}
+			{:else}
+				{$_('title.workflow')}
+			{/if}
 		</div>
 		<div class="ms-5 align-self-start flex-grow-1">&nbsp;</div>
 		<div class="justify-content-end">
+			<div
+				class="btn btn-outline-primary border-0 m-0 p-1"
+				color="primary"
+				on:click|preventDefault={toggleMining}>
+				{#if $miningMode}
+					<i class="bi bi-graph-up-arrow" />
+					{$_('button.current_is_mining')}
+				{:else}
+					<i class="bi bi-search" />
+					{$_('button.current_is_searching')}
+				{/if}
+			</div>
 			<div
 				class="btn btn-primary m-0 p-1"
 				color="primary"
@@ -424,7 +531,7 @@
 							bind:group={$filterStorage[BIZ].status}
 							value={status.value}
 							on:change={async () => {
-								await searchNow();
+								//await searchNow();
 							}} />
 						{status.label}
 					</label>
@@ -442,7 +549,7 @@
 						bind:value={$filterStorage[BIZ].tplid}
 						on:change|preventDefault={async (e) => {
 							e.preventDefault();
-							await searchNow();
+							//await searchNow();
 						}}>
 						<option value="">
 							{$_('extrafilter.allTemplate')}
@@ -466,19 +573,19 @@
 						bind:value={$filterStorage[BIZ].starter}
 						aria-label="User Email"
 						placeholder="email" />
-					<div
+					<!--div
 						class="btn btn-primary"
 						on:click|preventDefault={(e) => {
 							searchNow().then();
 						}}
 						color="primary">
 						<i class="bi bi-arrow-return-left" />
-					</div>
+					</div -->
 					<div
 						class="btn btn-secondary"
 						on:click|preventDefault={() => {
 							$filterStorage[BIZ].starter = user.email;
-							searchNow();
+							//searchNow();
 						}}
 						color="secondary">
 						{$_('extrafilter.me')}
@@ -487,7 +594,7 @@
 						class="btn btn-secondary  m-0 py-1 px-3"
 						on:click|preventDefault={async () => {
 							$filterStorage[BIZ].starter = '';
-							await searchNow();
+							//await searchNow();
 						}}
 						color="light">
 						{$_('remotetable.any')}
@@ -509,13 +616,13 @@
 							title={$_('remotetable.bywhat')}
 							placeholder={$_('remotetable.bywhat')}
 							bind:value={$filterStorage[BIZ].pattern} />
-						<div
+						<!--div
 							class="btn btn-primary"
 							on:click|preventDefault={(e) => {
 								searchNow().then();
 							}}>
 							<i class="bi bi-arrow-return-left" />
-						</div>
+						</div-->
 					</InputGroup>
 				</div>
 			</Col>
@@ -531,7 +638,7 @@
 						bind:value={$filterStorage[BIZ].tspan}
 						on:change={async (e) => {
 							e.preventDefault();
-							await load($srPage[BIZ], 'refresh', api.CACHE_FLAG.useIfExists);
+							//await load($srPage[BIZ], 'refresh', api.CACHE_FLAG.useIfExists);
 						}}>
 						{#each Object.keys(tspans) as key}
 							<option value={key}>{tspans[key]}</option>
@@ -544,7 +651,7 @@
 								$filterStorage[BIZ].calendar_begin = '';
 								$filterStorage[BIZ].calendar_end = '';
 								show_calendar_select = false;
-								await searchNow();
+								//await searchNow();
 							} else {
 								show_calendar_select = true;
 							}
@@ -579,345 +686,365 @@
 				</Col>
 			</Row>
 		{/if}
-		<Searchlet
-			objtype="wf"
-			bind:aSsPicked
-			on:searchlet={(msg) => {
-				let ss = JSON.parse(msg.detail.ss);
-				ss.pattern && ($filterStorage[BIZ].pattern = ss.pattern);
-				ss.status && ($filterStorage[BIZ].status = ss.status);
-				ss.tspan && ($filterStorage[BIZ].tspan = ss.tspan);
-				ss.starter && ($filterStorage[BIZ].starter = ss.starter);
-				if (ss.tplid) $filterStorage[BIZ].tplid = ss.tplid;
-				else $filterStorage[BIZ].tplid = '';
-				ss.calendar_begin && ($filterStorage[BIZ].calendar_begin = ss.calendar_begin);
-				ss.calendar_end && ($filterStorage[BIZ].calendar_end = ss.calendar_end);
+		<Row class="mt-1">
+			<Col>
+				<Searchlet
+					objtype="wf"
+					bind:aSsPicked
+					on:searchlet={(msg) => {
+						let ss = JSON.parse(msg.detail.ss);
+						ss.pattern && ($filterStorage[BIZ].pattern = ss.pattern);
+						ss.status && ($filterStorage[BIZ].status = ss.status);
+						ss.tspan && ($filterStorage[BIZ].tspan = ss.tspan);
+						ss.starter && ($filterStorage[BIZ].starter = ss.starter);
+						if (ss.tplid) $filterStorage[BIZ].tplid = ss.tplid;
+						else $filterStorage[BIZ].tplid = '';
+						ss.calendar_begin && ($filterStorage[BIZ].calendar_begin = ss.calendar_begin);
+						ss.calendar_end && ($filterStorage[BIZ].calendar_end = ss.calendar_end);
 
-				if ($filterStorage[BIZ].calendar_begin !== '' || $filterStorage[BIZ].calendar_end !== '') {
-					show_calendar_select = true;
-				} else {
-					show_calendar_select = false;
-				}
-				searchNow().then();
-			}}
-			on:resetSearchlet={(msg) => {
-				aSsPicked = '';
-				resetQuery(true);
-			}} />
+						if (
+							$filterStorage[BIZ].calendar_begin !== '' ||
+							$filterStorage[BIZ].calendar_end !== ''
+						) {
+							show_calendar_select = true;
+						} else {
+							show_calendar_select = false;
+						}
+						//searchNow().then();
+					}}
+					on:resetSearchlet={(msg) => {
+						aSsPicked = '';
+						resetQuery(true);
+					}} />
+			</Col>
+			<Col class="col-auto">
+				<div
+					class="btn btn-primary"
+					on:click|preventDefault={() => {
+						searchNow().then();
+					}}>
+					{$_('remotetable.executeNow')}
+				</div>
+			</Col>
+		</Row>
 	{/if}
 
-	{#key rowsCount}
-		<div class="mt-3 ">
-			<Pagination
-				page={$srPage[BIZ]}
-				pageSize={$filterStorage.pageSize}
-				count={rowsCount}
-				{isMobile}
-				on:pageChange={onPageChange} />
+	{#if $miningMode === false}
+		{#key rowsCount}
+			<div class="mt-3 ">
+				<Pagination
+					page={$srPage[BIZ]}
+					pageSize={$filterStorage.pageSize}
+					count={rowsCount}
+					{isMobile}
+					on:pageChange={onPageChange} />
+			</div>
+		{/key}
+		<div class="d-flex mt-2 p-0 w-100">
+			<div class="w-100">
+				<Row>
+					<Col>{$_('remotetable.sortBy')}:</Col>
+					<Col>
+						{$_('remotetable.title')}
+						<Sort
+							key="wftitle"
+							on:sort={onSort}
+							dir={$filterStorage[BIZ].sortby.indexOf('wftitle') < 0
+								? 'asc'
+								: $filterStorage[BIZ].sortby[0] === '-'
+								? 'desc'
+								: 'asc'} />
+					</Col>
+					<Col>
+						{$_('remotetable.status')}
+						<Sort
+							key="status"
+							on:sort={onSort}
+							dir={$filterStorage[BIZ].sortby.indexOf('status') < 0
+								? 'asc'
+								: $filterStorage[BIZ].sortby[0] === '-'
+								? 'desc'
+								: 'asc'} />
+					</Col>
+					<Col>
+						{$_('remotetable.starter')}
+						<Sort
+							key="starter"
+							on:sort={onSort}
+							dir={$filterStorage[BIZ].sortby.indexOf('starter') < 0
+								? 'asc'
+								: $filterStorage[BIZ].sortby[0] === '-'
+								? 'desc'
+								: 'asc'} />
+					</Col>
+					<Col>
+						{$_('remotetable.updatedAt')}
+						<Sort
+							key="updatedAt"
+							on:sort={onSort}
+							dir={$filterStorage[BIZ].sortby.indexOf('updatedAt') < 0
+								? 'asc'
+								: $filterStorage[BIZ].sortby[0] === '-'
+								? 'desc'
+								: 'asc'} />
+					</Col>
+				</Row>
+			</div>
+			<div class="flex-shrink-1">
+				<PageSize
+					on:pagesize={async (e) => {
+						await load(0, 'refresh', api.CACHE_FLAG.useIfExists);
+					}} />
+			</div>
+			<div class="flex-shrink-1">
+				<ColPerRowSelection />
+			</div>
 		</div>
-	{/key}
-	<div class="d-flex mt-2 p-0 w-100">
-		<div class="w-100">
-			<Row>
-				<Col>{$_('remotetable.sortBy')}:</Col>
-				<Col>
-					{$_('remotetable.title')}
-					<Sort
-						key="wftitle"
-						on:sort={onSort}
-						dir={$filterStorage[BIZ].sortby.indexOf('wftitle') < 0
-							? 'asc'
-							: $filterStorage[BIZ].sortby[0] === '-'
-							? 'desc'
-							: 'asc'} />
-				</Col>
-				<Col>
-					{$_('remotetable.status')}
-					<Sort
-						key="status"
-						on:sort={onSort}
-						dir={$filterStorage[BIZ].sortby.indexOf('status') < 0
-							? 'asc'
-							: $filterStorage[BIZ].sortby[0] === '-'
-							? 'desc'
-							: 'asc'} />
-				</Col>
-				<Col>
-					{$_('remotetable.starter')}
-					<Sort
-						key="starter"
-						on:sort={onSort}
-						dir={$filterStorage[BIZ].sortby.indexOf('starter') < 0
-							? 'asc'
-							: $filterStorage[BIZ].sortby[0] === '-'
-							? 'desc'
-							: 'asc'} />
-				</Col>
-				<Col>
-					{$_('remotetable.updatedAt')}
-					<Sort
-						key="updatedAt"
-						on:sort={onSort}
-						dir={$filterStorage[BIZ].sortby.indexOf('updatedAt') < 0
-							? 'asc'
-							: $filterStorage[BIZ].sortby[0] === '-'
-							? 'desc'
-							: 'asc'} />
-				</Col>
-			</Row>
-		</div>
-		<div class="flex-shrink-1">
-			<PageSize
-				on:pagesize={async (e) => {
-					await load(0, 'refresh', api.CACHE_FLAG.useIfExists);
-				}} />
-		</div>
-		<div class="flex-shrink-1">
-			<ColPerRowSelection />
-		</div>
-	</div>
-	<!-- code><pre>
+		<!-- code><pre>
 			{JSON.stringify(rows, null, 2)}
 	</pre></code -->
-	<Row cols={$filterStorage.col_per_row}>
-		{#each rows as row, index (row)}
-			<Col class="mb-2 card p-2">
-				<div class="">
+		<Row cols={$filterStorage.col_per_row}>
+			{#each rows as row, index (row)}
+				<Col class="mb-2 card p-2">
 					<div class="">
-						<div class="d-flex">
-							<div class="w-100">
-								<h5 class="">
-									<a
-										class="preview-link kfk-workflow-id tnt-workflow-id"
-										href="/workflow/{row.wfid}">
-										{row.wftitle}
-										{#if row.rehearsal}
-											<i class="bi-patch-check" />
-										{/if}
-									</a>
-								</h5>
-							</div>
-							<div class="flex-shrink-1">
-								<Dropdown class="m-0 p-0">
-									<DropdownToggle caret color="primary" class="btn-sm">
-										{$_('remotetable.actions')}
-									</DropdownToggle>
-									<DropdownMenu>
-										<DropdownItem>
-											<a
-												class="nav-link"
-												href={'#'}
-												on:click|preventDefault={() => opWorkflow(row, 'works_all')}>
-												<Icon name="list-check" />
-												{$_('remotetable.wfa.allWorks')}
-											</a>
-										</DropdownItem>
-										{#if ClientPermControl(user.perms, user.email, 'workflow', row, 'update')}
-											{#if row.status === 'ST_RUN'}
-												<DropdownItem>
-													<NavLink on:click={() => opWorkflow(row, 'pause')}>
-														<Icon name="pause-btn" />
-														{$_('remotetable.wfa.pause')}
-													</NavLink>
-												</DropdownItem>
+						<div class="">
+							<div class="d-flex">
+								<div class="w-100">
+									<h5 class="">
+										<a
+											class="preview-link kfk-workflow-id tnt-workflow-id"
+											href="/workflow/{row.wfid}">
+											{row.wftitle}
+											{#if row.rehearsal}
+												<i class="bi-patch-check" />
 											{/if}
-											{#if row.status === 'ST_PAUSE'}
-												<DropdownItem>
-													<NavLink on:click={() => opWorkflow(row, 'resume')}>
-														<Icon name="arrow-counterclockwise" />
-														{$_('remotetable.wfa.resume')}
-													</NavLink>
-												</DropdownItem>
-											{/if}
-											{#if row.status === 'ST_PAUSE' || row.status === 'ST_RUN'}
-												<DropdownItem>
-													<NavLink on:click={() => opWorkflow(row, 'stop')}>
-														<Icon name="slash-square" />
-														{$_('remotetable.wfa.stop')}
-													</NavLink>
-												</DropdownItem>
-											{/if}
-											{#if ['ST_RUN', 'ST_PAUSE', 'ST_STOP'].indexOf(row.status) > -1}
-												<DropdownItem>
-													<NavLink on:click={() => opWorkflow(row, 'restart')}>
-														<Icon name="caret-right-square" />
-														{$_('remotetable.wfa.restart')}
-													</NavLink>
-												</DropdownItem>
-											{/if}
-											<!-- DropdownItem>
+										</a>
+									</h5>
+								</div>
+								<div class="flex-shrink-1">
+									<Dropdown class="m-0 p-0">
+										<DropdownToggle caret color="primary" class="btn-sm">
+											{$_('remotetable.actions')}
+										</DropdownToggle>
+										<DropdownMenu>
+											<DropdownItem>
+												<a
+													class="nav-link"
+													href={'#'}
+													on:click|preventDefault={() => opWorkflow(row, 'works_all')}>
+													<Icon name="list-check" />
+													{$_('remotetable.wfa.allWorks')}
+												</a>
+											</DropdownItem>
+											{#if ClientPermControl(user.perms, user.email, 'workflow', row, 'update')}
+												{#if row.status === 'ST_RUN'}
+													<DropdownItem>
+														<NavLink on:click={() => opWorkflow(row, 'pause')}>
+															<Icon name="pause-btn" />
+															{$_('remotetable.wfa.pause')}
+														</NavLink>
+													</DropdownItem>
+												{/if}
+												{#if row.status === 'ST_PAUSE'}
+													<DropdownItem>
+														<NavLink on:click={() => opWorkflow(row, 'resume')}>
+															<Icon name="arrow-counterclockwise" />
+															{$_('remotetable.wfa.resume')}
+														</NavLink>
+													</DropdownItem>
+												{/if}
+												{#if row.status === 'ST_PAUSE' || row.status === 'ST_RUN'}
+													<DropdownItem>
+														<NavLink on:click={() => opWorkflow(row, 'stop')}>
+															<Icon name="slash-square" />
+															{$_('remotetable.wfa.stop')}
+														</NavLink>
+													</DropdownItem>
+												{/if}
+												{#if ['ST_RUN', 'ST_PAUSE', 'ST_STOP'].indexOf(row.status) > -1}
+													<DropdownItem>
+														<NavLink on:click={() => opWorkflow(row, 'restart')}>
+															<Icon name="caret-right-square" />
+															{$_('remotetable.wfa.restart')}
+														</NavLink>
+													</DropdownItem>
+												{/if}
+												<!-- DropdownItem>
 									<NavLink on:click={() => opWorkflow(row, 'setpboat')}>
 										<Icon name="caret-right-square" />
 										{$_('remotetable.wfa.setpboat')}
 									</NavLink>
 								</DropdownItem -->
-											<DropdownItem>
-												<NavLink on:click={() => opWorkflow(row, 'setting')}>
-													<Icon name="caret-right-square" />
-													{$_('remotetable.wfa.setting')}
-												</NavLink>
-											</DropdownItem>
-										{/if}
-										<DropdownItem>
-											{#if ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
-												<NavLink on:click={() => opWorkflow(row, 'startAnother')}>
-													<Icon name="caret-right-fill" />
-													{$_('remotetable.wfa.startAnother')}
-												</NavLink>
-											{:else}
-												<NavLink disabled>
-													<Icon name="caret-right-fill" />
-													Start Another
-													{$_('remotetable.wfa.startAnother')}
-												</NavLink>
+												<DropdownItem>
+													<NavLink on:click={() => opWorkflow(row, 'setting')}>
+														<Icon name="caret-right-square" />
+														{$_('remotetable.wfa.setting')}
+													</NavLink>
+												</DropdownItem>
 											{/if}
-										</DropdownItem>
-										<DropdownItem>
-											<NavLink on:click={() => opWorkflow(row, 'viewInstanceTemplate')}>
-												<Icon name="code" />
-												{$_('remotetable.wfa.viewInstanceTemplate')}
-											</NavLink>
-										</DropdownItem>
-										{#if user.group === 'ADMIN' || (user.email === row.starter && (row.rehearsal || row.pnodeid === 'start'))}
 											<DropdownItem>
-												<NavLink
-													on:click={(e) => {
-														e.preventDefault();
-														$mtcConfirm = {
-															title: $_('confirm.title.areyousure'),
-															body: $_('confirm.body.deleteWorkflow'),
-															buttons: [$_('confirm.button.confirm')],
-															callbacks: [
-																async () => {
-																	opWorkflow(row, 'destroy');
-																	mtcConfirmReset();
-																},
-															],
-														};
-													}}>
-													<Icon name="trash" />
-													{$_('remotetable.wfa.deleteThisWorkflow')}
-												</NavLink>
+												{#if ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
+													<NavLink on:click={() => opWorkflow(row, 'startAnother')}>
+														<Icon name="caret-right-fill" />
+														{$_('remotetable.wfa.startAnother')}
+													</NavLink>
+												{:else}
+													<NavLink disabled>
+														<Icon name="caret-right-fill" />
+														Start Another
+														{$_('remotetable.wfa.startAnother')}
+													</NavLink>
+												{/if}
 											</DropdownItem>
 											<DropdownItem>
-												<NavLink
-													on:click={(e) => {
-														e.preventDefault();
-														$mtcConfirm = {
-															title: $_('confirm.title.areyousure'),
-															body: $_('confirm.body.deleteWorkflow'),
-															buttons: [$_('confirm.button.confirm')],
-															callbacks: [
-																async () => {
-																	opWorkflow(row, 'restartthendestroy');
-																	mtcConfirmReset();
-																},
-															],
-														};
-													}}>
-													<Icon name="trash" />
-													{$_('remotetable.wfa.restartthendeleteThisWorkflow')}
+												<NavLink on:click={() => opWorkflow(row, 'viewInstanceTemplate')}>
+													<Icon name="code" />
+													{$_('remotetable.wfa.viewInstanceTemplate')}
 												</NavLink>
 											</DropdownItem>
-										{/if}
-									</DropdownMenu>
-								</Dropdown>
+											{#if user.group === 'ADMIN' || (user.email === row.starter && (row.rehearsal || row.pnodeid === 'start'))}
+												<DropdownItem>
+													<NavLink
+														on:click={(e) => {
+															e.preventDefault();
+															$mtcConfirm = {
+																title: $_('confirm.title.areyousure'),
+																body: $_('confirm.body.deleteWorkflow'),
+																buttons: [$_('confirm.button.confirm')],
+																callbacks: [
+																	async () => {
+																		opWorkflow(row, 'destroy');
+																		mtcConfirmReset();
+																	},
+																],
+															};
+														}}>
+														<Icon name="trash" />
+														{$_('remotetable.wfa.deleteThisWorkflow')}
+													</NavLink>
+												</DropdownItem>
+												<DropdownItem>
+													<NavLink
+														on:click={(e) => {
+															e.preventDefault();
+															$mtcConfirm = {
+																title: $_('confirm.title.areyousure'),
+																body: $_('confirm.body.deleteWorkflow'),
+																buttons: [$_('confirm.button.confirm')],
+																callbacks: [
+																	async () => {
+																		opWorkflow(row, 'restartthendestroy');
+																		mtcConfirmReset();
+																	},
+																],
+															};
+														}}>
+														<Icon name="trash" />
+														{$_('remotetable.wfa.restartthendeleteThisWorkflow')}
+													</NavLink>
+												</DropdownItem>
+											{/if}
+										</DropdownMenu>
+									</Dropdown>
+								</div>
 							</div>
-						</div>
-						<Row cols={{ md: 2, xs: 1 }}>
-							<Col>
-								<h6 class=" mb-2 text-muted">
-									{$_('remotetable.status')}:
-									{$_(`status.${row.status}`)}
-								</h6>
-							</Col>
-						</Row>
-						<Row cols={{ md: 2, xs: 1 }}>
-							<Col>{$_('remotetable.starter')}: {row.starterCN}</Col>
-							<Col>
-								{$_('remotetable.updatedAt')}: {$date(new Date(row.updatedAt))}
-								{$time(new Date(row.updatedAt))}
-							</Col>
-						</Row>
-						<a
-							class="fs-6 kfk-workflow-id tnt-workflow-id kfk-link px-2"
-							href={'#'}
-							on:click|preventDefault={() => opWorkflow(row, 'works_running')}>
-							{$_('remotetable.wfa.runningWorks')}
-						</a>
-						<a
-							href={'#'}
-							class="ms-3 fs-6 kfk-workflow-id tnt-workflow-id kfk-link px-2"
-							on:click={() => opWorkflow(row, 'viewTemplate')}>
-							{$_('remotetable.wfa.viewTemplate')}
-						</a>
-						{#if row.commentCount > 0 && row.allowdiscuss}
+							<Row cols={{ md: 2, xs: 1 }}>
+								<Col>
+									<h6 class=" mb-2 text-muted">
+										{$_('remotetable.status')}:
+										{$_(`status.${row.status}`)}
+									</h6>
+								</Col>
+							</Row>
+							<Row cols={{ md: 2, xs: 1 }}>
+								<Col>{$_('remotetable.starter')}: {row.starterCN}</Col>
+								<Col>
+									{$_('remotetable.updatedAt')}: {$date(new Date(row.updatedAt))}
+									{$time(new Date(row.updatedAt))}
+								</Col>
+							</Row>
+							<a
+								class="fs-6 kfk-workflow-id tnt-workflow-id kfk-link px-2"
+								href={'#'}
+								on:click|preventDefault={() => opWorkflow(row, 'works_running')}>
+								{$_('remotetable.wfa.runningWorks')}
+							</a>
 							<a
 								href={'#'}
 								class="ms-3 fs-6 kfk-workflow-id tnt-workflow-id kfk-link px-2"
-								on:click={() => showWorkflowDiscussion(row.wfid)}>
-								<AniIcon icon="chat-dots-fill" ani="aniShake" />
-								{row.commentCount > 0 ? row.commentCount : ''}
+								on:click={() => opWorkflow(row, 'viewTemplate')}>
+								{$_('remotetable.wfa.viewTemplate')}
 							</a>
-						{/if}
-						{#if settingFor === row.wfid}
-							<div class="mt-3">Set Title to:</div>
-							<InputGroup>
-								<Input bind:value={row.wftitle} />
-								<div
-									class="btn btn-primary btn-sm"
-									color="primary"
-									on:click|preventDefault={async (e) => {
-										e.preventDefault();
-										await api.post(
-											'workflow/set/title',
-											{ wfid: row.wfid, wftitle: row.wftitle },
-											user.sessionToken,
-										);
-										settingFor = '';
-									}}>
-									Set
+							{#if row.commentCount > 0 && row.allowdiscuss}
+								<a
+									href={'#'}
+									class="ms-3 fs-6 kfk-workflow-id tnt-workflow-id kfk-link px-2"
+									on:click={() => showWorkflowDiscussion(row.wfid)}>
+									<AniIcon icon="chat-dots-fill" ani="aniShake" />
+									{row.commentCount > 0 ? row.commentCount : ''}
+								</a>
+							{/if}
+							{#if settingFor === row.wfid}
+								<div class="mt-3">Set Title to:</div>
+								<InputGroup>
+									<Input bind:value={row.wftitle} />
+									<div
+										class="btn btn-primary btn-sm"
+										color="primary"
+										on:click|preventDefault={async (e) => {
+											e.preventDefault();
+											await api.post(
+												'workflow/set/title',
+												{ wfid: row.wfid, wftitle: row.wftitle },
+												user.sessionToken,
+											);
+											settingFor = '';
+										}}>
+										Set
+									</div>
+									<div
+										class="btn btn-primary btn-sm"
+										color="secondary"
+										on:click|preventDefault={async (e) => {
+											e.preventDefault();
+											settingFor = '';
+										}}>
+										Cancel
+									</div>
+								</InputGroup>
+								<div class="form-check form-switch">
+									<input
+										class="form-check-input"
+										type="checkbox"
+										role="switch"
+										id="flexSwitchCheckChecked"
+										checked={row.allowdiscuss}
+										on:change={async (e) => {
+											row.allowdiscuss = await toggleDiscuss(row);
+											row = row;
+										}} />
+									<label class="form-check-label" for="flexSwitchCheckChecked">
+										{row.allowdiscuss ? '允许讨论' : '已关闭讨论'} （切换以切换状态）
+									</label>
 								</div>
-								<div
-									class="btn btn-primary btn-sm"
-									color="secondary"
-									on:click|preventDefault={async (e) => {
-										e.preventDefault();
-										settingFor = '';
-									}}>
-									Cancel
-								</div>
-							</InputGroup>
-							<div class="form-check form-switch">
-								<input
-									class="form-check-input"
-									type="checkbox"
-									role="switch"
-									id="flexSwitchCheckChecked"
-									checked={row.allowdiscuss}
-									on:change={async (e) => {
-										row.allowdiscuss = await toggleDiscuss(row);
-										row = row;
-									}} />
-								<label class="form-check-label" for="flexSwitchCheckChecked">
-									{row.allowdiscuss ? '允许讨论' : '已关闭讨论'} （切换以切换状态）
-								</label>
-							</div>
-						{/if}
+							{/if}
+						</div>
 					</div>
-				</div>
-			</Col>
-		{/each}
-	</Row>
+				</Col>
+			{/each}
+		</Row>
 
-	{#key rowsCount}
-		<div class="mt-3 ">
-			<Pagination
-				page={$srPage[BIZ]}
-				pageSize={$filterStorage.pageSize}
-				count={rowsCount}
-				{isMobile}
-				on:pageChange={onPageChange} />
-		</div>
-	{/key}
+		{#key rowsCount}
+			<div class="mt-3 ">
+				<Pagination
+					page={$srPage[BIZ]}
+					pageSize={$filterStorage.pageSize}
+					count={rowsCount}
+					{isMobile}
+					on:pageChange={onPageChange} />
+			</div>
+		{/key}
+	{:else}
+		<Miner bind:wfs={miningData} />
+	{/if}
 </Container>

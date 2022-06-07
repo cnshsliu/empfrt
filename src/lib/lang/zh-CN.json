@@ -6,6 +6,7 @@
 		"template": "规划",
 		"planning": "业务规划",
 		"workflow": "运行监控",
+		"workflow_mining": "流程挖掘",
 		"worklist": "我的任务",
 		"settings": "设置",
 		"teaming": "组队",
@@ -33,7 +34,7 @@
 			"secure": "Metatocome承担智能协作者的角色，与其它应用系统独立并隔离，而企业内部应用系统及数据采用已有的独立授权机制。企业关键业务数据得以在既有的安全框架下得到安全保护"
 		},
 		"search": {
-			"placeholder": "搜索知名企业数字大脑"
+			"placeholder": "搜索ProcessHub"
 		}
 	},
 	"account": {
@@ -86,6 +87,7 @@
 		"in": "时间"
 	},
 	"remotetable": {
+		"executeNow": "执行搜索",
 		"rowperpage": "每页个数",
 		"colperrow": "每行个数",
 		"rows-10": "每页10个",
@@ -161,13 +163,15 @@
 			"lastUpdate": "上次更新",
 			"exportdata": "导出数据",
 			"editors": "编辑历史",
+			"analysis": "流程挖掘",
 			"scheduler": "执行计划"
 		}
 	},
 	"title": {
 		"template": "规划",
 		"workflow": "监控",
-		"worklist": "我的工作"
+		"worklist": "我的工作",
+		"mining": "流程挖掘"
 	},
 	"adhoc": {
 		"header": "发送一个独立任务",
@@ -178,6 +182,7 @@
 		"founduser": "找到{num}个用户"
 	},
 	"button": {
+		"postKShare": "确定上架ProcessHub",
 		"check": "检查",
 		"toggleAdvancedSearch": "高级查询",
 		"resetQuery": "重置/全部",
@@ -202,16 +207,20 @@
 		"copy": "拷贝",
 		"rename": "重命名",
 		"delete": "删除",
-		"startnow": "现在启动"
+		"startnow": "现在启动",
+		"current_is_searching": "当前为搜索模式",
+		"current_is_mining": "当前为挖掘模式"
 	},
 	"template": {
 		"create": {
-			"name": "模版名称",
+			"name": "新流程名称",
 			"tags": "用spaces或;或,分割的标签"
 		},
 		"import": {
-			"name": "模版名称",
-			"tags": "用spaces或;或,分割的标签"
+			"name": "新流程名称",
+			"tags": "用spaces或;或,分割的标签",
+			"from_local_disk": "从本地文件导入",
+			"from_process_hub": "转到ProcessHub, 从ProcessHub导入行业专家提供的最佳实践"
 		}
 	},
 	"recent": "最近使用: ",
@@ -290,6 +299,9 @@
 	},
 
 	"tpl": {
+		"dropdown": "操作",
+		"kshare": "上架PH",
+		"view": "显示",
 		"prop": "属性",
 		"new": "新建",
 		"export": "导出",
@@ -899,6 +911,35 @@
 		"condition": {
 			"all": "全部",
 			"template": "当前搜索 {pattern}, 作者: {author}"
+		}
+	},
+	"unit": {
+		"days": "天"
+	},
+	"kshare": {
+		"title": "ProcessHub 可导入的模版",
+		"description": "由行业专家提供的基于行业最佳实践的管理模版，可直接导入到本企业内使用",
+		"all_scenarios": "全场景",
+		"all_industries": "全行业",
+		"topmenu": { "All": "全部", "Scenarios": "场景", "Industries": "行业" },
+		"label": {
+			"All": "全部",
+			"Close": "关闭",
+			"Pick": "采纳",
+			"Confirm": "确定",
+			"Cancel": "取消",
+			"only12": "在此处，每一类只随机显示最多12个，点这里查看全部"
+		},
+		"pickit": {
+			"placeholder": "请输入要写入的模版的名称",
+			"error": {
+				"no_user": "请登录后导入",
+				"exists": {
+					"title": "该名称的模版已存在",
+					"body": "请修改名称后重试"
+				}
+			},
+			"result": { "success": "导入成功，请到业务规划菜单中查看" }
 		}
 	}
 }

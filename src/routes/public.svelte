@@ -7,15 +7,12 @@
 	import { title } from '$lib/title';
 	import type { WhichTab } from '$lib/types';
 	import { Container, Row, Col, InputGroup, Input, InputGroupText, Button } from 'sveltestrap';
+	import { onMount } from 'svelte';
+	import KShares from './kshares/index.svelte';
 	$title = 'HyperFlow';
 	export let user;
 	let tplid;
-	let shared = [];
-	let q = '';
-
-	const searchShared = async () => {
-		shared = (await api.post('shared/search', { q }, user.sessionToken)) as unknown as any[];
-	};
+	let homecardmouseover = -1;
 
 	let whichTab: WhichTab = get(whichTabStorage);
 	async function showTab(tabId) {
@@ -51,10 +48,6 @@
 			target: '/settings/files',
 		},
 	];
-
-	let homecardmouseover = -1;
-
-	import { onMount } from 'svelte';
 	onMount(async () => {});
 </script>
 
@@ -101,6 +94,8 @@
 				</div>
 			</div>
 		</div>
+		<div class="mt-5">&nbsp;</div>
+		<KShares adminMode={false} shownNumber={12} />
 
 		{#if user}
 			<div class="container mt-5 px-4 px-md-3">
@@ -117,7 +112,7 @@
 								on:mouseout={() => (homecardmouseover = -1)}
 								on:blur={() => (homecardmouseover = -1)}
 								on:click={() => goto(homecard.target)}>
-								<div class="card-header">
+								<div class="card-header  bg-success bg-opacity-10 bg-gradient">
 									<div class="col fw-bolder fs-4">
 										{homecard.title}
 									</div>
@@ -131,24 +126,6 @@
 				</div>
 			</div>
 		{/if}
-		<Container class="mt-5">
-			<section class="row mt-3  align-items-center">
-				<InputGroup>
-					<Input
-						bind:value={q}
-						type="search"
-						placeholder={$_('home.search.placeholder')}
-						style="outline:none" />
-					<Button
-						on:click={async (e) => {
-							e.preventDefault();
-							await searchShared();
-						}}>
-						<i class="bi bi-search" />
-					</Button>
-				</InputGroup>
-			</section>
-		</Container>
 	</div>
 	<div>
 		<div class="container masthead-followup px-4 px-md-3">
