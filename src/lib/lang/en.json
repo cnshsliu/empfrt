@@ -914,7 +914,10 @@
 		}
 	},
 	"unit": {
-		"days": "days"
+		"days": "Days",
+		"hours": "Hours",
+		"tasks": "Tasks",
+		"nodes": "Steps"
 	},
 	"kshare": {
 		"title": "Process Hub",

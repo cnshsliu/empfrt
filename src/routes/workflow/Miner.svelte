@@ -24,11 +24,13 @@
 				if (wfs[i].lasting > max.lasting) max.lasting = wfs[i].lasting;
 
 				if (Math.trunc(wfs[i].lasting) > 0) {
-					wfs[i].lastingText = Math.trunc(wfs[i].lasting) + $_('days');
+					wfs[i].lastingText = Math.trunc(wfs[i].lasting) + $_('unit.days');
+				} else {
+					wfs[i].lastingText = '';
 				}
 				if (wfs[i].lasting % 1 > 0) {
 					wfs[i].lastingText +=
-						Math.round(((wfs[i].lasting % 1) * 24 + Number.EPSILON) * 10) / 10 + 'H';
+						Math.round(((wfs[i].lasting % 1) * 24 + Number.EPSILON) * 10) / 10 + $_('unit.hours');
 				}
 				if (wfs[i].mdata.works && wfs[i].mdata.works.length > max.works_number) {
 					max.works_number = wfs[i].mdata.works.length;
@@ -59,16 +61,36 @@
 	const yTicks = [0, 5, 10, 15, 20];
 	const padding = { top: 20, right: 15, bottom: 20, left: 25 };
 
+	//三个初始值
 	let miningWidth = 10;
 	let width = 500;
 	let height = 300;
-	let number_of_bar_types = 3;
-	let number_of_empty_bars_between_wf = 2;
+	// 单个bar的高度
 	let realBarHeight = 20;
-	let realWfHeight =
+	//
+	// 两个工作流之间的间隔，相对与单个bar高度的倍数
+	let number_of_empty_bars_between_wf = 2;
+	//
+	// bars之间的间隔相对与单个bar高度的倍数
+	let divider_width_between_bars = 0.2;
+	//
+	// 下一个bar的Y位置跳过的单个bar高度的倍数
+	$: barSkip = 1 + divider_width_between_bars;
+	//
+	//用户所选择的bar类型的数量：lasting始终在
+	$: number_of_bar_types = Object.keys(barTypes).filter((x) => barTypes[x]).length;
+	//
+	//一个工作流的多个bars所占的总高度
+	$: realWfHeight =
 		realBarHeight *
-		(number_of_bar_types + (number_of_bar_types - 1) * 0.5 + number_of_empty_bars_between_wf);
+		(number_of_bar_types +
+			(number_of_bar_types - 1) * divider_width_between_bars +
+			number_of_empty_bars_between_wf);
+	//
+	//整个图标所占的总高度
 	$: realMiningHeight = realWfHeight * wfs.length;
+	//
+	// 工作流在Y轴上的分布
 	$: yScaleWf = scaleLinear()
 		.domain([0, wfs.length])
 		.range([padding.top, realMiningHeight - padding.bottom]);
@@ -87,6 +109,25 @@
 
 	$: innerWidth = width - (padding.left + padding.right);
 	$: barWidth = innerWidth / xTicks.length;
+
+	// works bar的X位置
+	const getWorkBarX = (aWf, i) => 0;
+	// works bar的Y位置
+	const getWorkBarY = (aWf, i) => yScaleWf(i) + realBarHeight * barSkip;
+	// works bar的宽度
+	const getWorkBarWidth = (aWf, i) => miningWidth * (aWf.mdata.works.length / max.all_number) || 1;
+	// works bar的高度
+	const getWorkBarHeight = (aWf, i) => realBarHeight;
+
+	// todos bar的X位置
+	const getTodoBarX = (aWf, i) => 0;
+	// todos bar的Y位置
+	const getTodoBarY = (aWf, i) =>
+		yScaleWf(i) + realBarHeight * (barTypes.works ? 2 * barSkip : barSkip);
+	// todos bar的宽度
+	const getTodoBarWidth = (aWf, i) => miningWidth * (aWf.mdata.todos.length / max.all_number) || 1;
+	// todos bar的高度
+	const getTodoBarHeight = (aWf, i) => realBarHeight;
 </script>
 
 <div>
@@ -99,6 +140,15 @@
 			{aWf.mdata.todos?.length}/{max.todos_number}
 		</div>
 	{/each}
+	<div class="row">
+		<div class="col">&nbsp;</div>
+		<div class="col-auto">
+			<input type="checkbox" bind:checked={barTypes.works} />
+			Works
+			<input type="checkbox" bind:checked={barTypes.todos} />
+			Todos
+		</div>
+	</div>
 	<div
 		bind:clientWidth={miningWidth}
 		style={`width:100%; margin:0 auto; height: ${realMiningHeight}px;`}>
@@ -115,31 +165,52 @@
 			<g class="lasting_text" style={`font-size: ${realBarHeight * 0.8}px`}>
 				{#each wfs as aWf, i}
 					<text
+						class={(miningWidth * (aWf.lasting / max.lasting) || 1) < 100 ? 'shorter' : ''}
 						x={miningWidth * (aWf.lasting / max.lasting) || 1}
 						y={yScaleWf(i) + realBarHeight * 0.5}>
 						{aWf.lastingText}
 					</text>
 				{/each}
 			</g>
-			{#if barTypes.todos}
-				<g class="todos_number">
-					{#each wfs as aWf, i}
-						<rect
-							x={0}
-							y={yScaleWf(i) + realBarHeight * 1.5}
-							width={miningWidth * (aWf.mdata.todos.length / max.all_number) || 1}
-							height={realBarHeight} />
-					{/each}
-				</g>
-			{/if}
 			{#if barTypes.works}
 				<g class="works_number">
 					{#each wfs as aWf, i}
 						<rect
-							x={0}
-							y={yScaleWf(i) + realBarHeight * 3}
-							width={miningWidth * (aWf.mdata.works.length / max.all_number) || 1}
-							height={realBarHeight} />
+							x={getWorkBarX(aWf, i)}
+							y={getWorkBarY(aWf, i)}
+							width={getWorkBarWidth(aWf, i)}
+							height={getWorkBarHeight(aWf, i)} />
+					{/each}
+				</g>
+				<g class="works_text" style={`font-size: ${realBarHeight * 0.8}px`}>
+					{#each wfs as aWf, i}
+						<text
+							class={getWorkBarWidth(aWf, i) < 100 ? 'shorter' : ''}
+							x={getWorkBarWidth(aWf, i)}
+							y={getWorkBarY(aWf, i) + getWorkBarHeight(aWf, i) * 0.5}>
+							{aWf.mdata.works.length}{$_('unit.nodes')}
+						</text>
+					{/each}
+				</g>
+			{/if}
+			{#if barTypes.todos}
+				<g class="todos_number">
+					{#each wfs as aWf, i}
+						<rect
+							x={getTodoBarX(aWf, i)}
+							y={getTodoBarY(aWf, i)}
+							width={getTodoBarWidth(aWf, i)}
+							height={getTodoBarHeight(aWf, i)} />
+					{/each}
+				</g>
+				<g class="todos_text" style={`font-size: ${realBarHeight * 0.8}px`}>
+					{#each wfs as aWf, i}
+						<text
+							class={getTodoBarWidth(aWf, i) < 100 ? 'shorter' : ''}
+							x={getTodoBarWidth(aWf, i)}
+							y={getTodoBarY(aWf, i) + getTodoBarHeight(aWf, i) * 0.5}>
+							{aWf.mdata.todos.length}{$_('unit.tasks')}
+						</text>
 					{/each}
 				</g>
 			{/if}
@@ -244,6 +315,35 @@
 		font-family: Helvetica, Arial;
 		font-weight: 100;
 		fill: #ffffff;
+	}
+
+	.lasting_text text.shorter {
+		text-anchor: start;
+		alignment-baseline: middle;
+		dominant-baseline: middle;
+		font-family: Helvetica, Arial;
+		font-weight: 100;
+		fill: #000000;
+	}
+
+	.works_text text,
+	.todos_text text {
+		text-anchor: end;
+		alignment-baseline: middle;
+		dominant-baseline: middle;
+		font-family: Helvetica, Arial;
+		font-weight: 100;
+		fill: #ffffff;
+	}
+
+	.works_text text.shorter,
+	.todos_text text.shorter {
+		text-anchor: start;
+		alignment-baseline: middle;
+		dominant-baseline: middle;
+		font-family: Helvetica, Arial;
+		font-weight: 100;
+		fill: #000000;
 	}
 
 	.todos_number rect {

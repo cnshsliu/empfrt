@@ -914,7 +914,10 @@
 		}
 	},
 	"unit": {
-		"days": "天"
+		"days": "天",
+		"hours": "小时",
+		"tasks": "个任务",
+		"nodes": "个步骤"
 	},
 	"kshare": {
 		"title": "ProcessHub 可导入的模版",
