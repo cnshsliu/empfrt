@@ -919,6 +919,9 @@
 		"tasks": "个任务",
 		"nodes": "个步骤"
 	},
+	"mining": {
+		"redlight_threshold": "红灯边界"
+	},
 	"kshare": {
 		"title": "ProcessHub 可导入的模版",
 		"description": "由行业专家提供的基于行业最佳实践的管理模版，可直接导入到本企业内使用",

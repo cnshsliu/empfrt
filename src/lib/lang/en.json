@@ -919,6 +919,9 @@
 		"tasks": "Tasks",
 		"nodes": "Steps"
 	},
+	"mining": {
+		"redlight_threshold": "Redlight Threshold"
+	},
 	"kshare": {
 		"title": "Process Hub",
 		"description": "Management process best practice provided by domain exports, you may import and use them with one-click",
