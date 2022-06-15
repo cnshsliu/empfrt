@@ -10,7 +10,7 @@
 		Col,
 		InputGroup,
 		InputGroupText,
-		Input
+		Input,
 	} from 'sveltestrap';
 
 	export let nodeInfo;
@@ -28,7 +28,7 @@
 
 <Container>
 	<Row cols="1" class="mt-2">
-		<ChangeID {jq} bind:idForInput={nodeInfo.nodeProps.SUB.id} {KFK} {readonly} />
+		<ChangeID {jq} bind:idForInput={nodeInfo.nodeProps.SUB.id} {KFK} {readonly} on:changeNodeId />
 		<Col>
 			<InputGroup size="sm">
 				<InputGroupText>
@@ -62,8 +62,7 @@
 					helpShowing ? showHelp() : showHelp('SUB');
 					helpShowing = !helpShowing;
 				}}
-				class="ms-auto p-0 m-0"
-			>
+				class="ms-auto p-0 m-0">
 				{#if helpShowing}
 					<Icon name="chevron-left" />
 					<Icon name="question-circle" />

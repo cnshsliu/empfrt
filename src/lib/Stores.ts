@@ -6,7 +6,18 @@ export const fetchCache = writable({});
 export const delayLoadOnMount = writable(0);
 export const forcePreDelete = writable(false);
 export const worklistChangeFlag = writable(0);
-export const miningMode = writable(true);
+export const miningMode = writable(false);
+export const miningConfig = writable({
+	showOnlyAboveThreshold: false,
+	withWhat: { process: true, todos: true },
+	barTypes: { lasting: true, works: true, todos: true },
+	redlight_unit: 'hour',
+	process_threshold_days: 7,
+	redlight_threshold_days: 1,
+	redlight_threshold_hours: 24,
+	dimension: 'time',
+	peopleby: 'tasks_number',
+});
 export const showAdvancedSearch = writable({}); //Caution: please dont' give it any intial value
 export const srPage = writable({ todo: 0, tpl: 0, wf: 0 });
 export const lastQuery = writable({ todo: {}, wf: {}, tpl: {} });

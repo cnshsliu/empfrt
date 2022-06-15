@@ -1,10 +1,13 @@
 <script context="module" lang="ts">
+	import * as api from '$lib/api';
 	import { setupI18n, isLocaleLoaded, locale, dir, _ } from '$lib/i18n';
 	export async function load({ url, params, session }) {
 		const { user } = session;
+
 		if (/^\/settings\/(.*)/.test(url.pathname) && !user) {
 			return { redirect: '/', status: 302 };
 		}
+		if (user) session.siteinfo = await api.post('site/info', {}, user.sessionToken);
 		return {
 			props: {
 				url,
@@ -14,7 +17,6 @@
 </script>
 
 <script lang="ts">
-	import * as api from '$lib/api';
 	import { Container } from 'sveltestrap';
 	import Confirm from '$lib/confirm.svelte';
 	import { bootstrap, printing, notifyMessage, mtcConfirm, mtcConfirmReset } from '$lib/Stores';

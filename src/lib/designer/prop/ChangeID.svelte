@@ -2,6 +2,8 @@
 	import { Input, Button, InputGroup, InputGroupText } from 'sveltestrap';
 	import { _ } from '$lib/i18n';
 	import * as utils from '$lib/utils';
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher();
 	export let jq;
 	export let idForInput;
 	export let KFK;
@@ -36,15 +38,19 @@
 				enableButton = false;
 			}
 		}
+		if (enableButton) {
+			dispatch('changeNodeId', { oldid: oldId, newid: inputValue });
+		}
 	};
 </script>
 
-<span class="fs-6">{$_('changeid.current')} </span><span class="fs-5">{oldId} </span>
+<span class="fs-6">{$_('changeid.current')}</span>
+<span class="fs-5">{oldId}</span>
 {#if !readonly}
 	<InputGroup>
 		<InputGroupText>{$_('changeid.changeto')}</InputGroupText>
 		<Input bind:value={idForInput} on:input={onInput} />
-		<Button
+		<!--Button
 			color={'primary'}
 			disabled={!enableButton}
 			on:click={async (e) => {
@@ -68,12 +74,11 @@
 						}
 					}
 				}
-			}}
-		>
+			}}>
 			{$_('changeid.set')}
-		</Button>
+		</Button -->
 	</InputGroup>
 	<InputGroup class="mb-3">
-		<span class="fs-6 primary"> {errmsg} </span>
+		<span class="fs-6 primary">{errmsg}</span>
 	</InputGroup>
 {/if}

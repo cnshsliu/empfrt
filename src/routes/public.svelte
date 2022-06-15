@@ -8,12 +8,15 @@
 	import type { WhichTab } from '$lib/types';
 	import { Container, Row, Col, InputGroup, Input, InputGroupText, Button } from 'sveltestrap';
 	import { onMount } from 'svelte';
+	import CronBuilder from '$lib/CronBuilder.svelte';
+	import { session } from '$app/stores';
 	import KShares from './kshares/index.svelte';
 	$title = 'HyperFlow';
 	export let user;
 	let tplid;
 	let homecardmouseover = -1;
 
+	let cronexpr = '* * * * 1';
 	let whichTab: WhichTab = get(whichTabStorage);
 	async function showTab(tabId) {
 		whichTab = get(whichTabStorage);
@@ -94,8 +97,13 @@
 				</div>
 			</div>
 		</div>
+		<div class="m-2 p-2">
+			<CronBuilder bind:cronexpr />
+		</div>
 		<div class="mt-5">&nbsp;</div>
-		<KShares adminMode={false} shownNumber={12} />
+		{#if $session.siteinfo?.ksenabled && user.group === 'ADMIN'}
+			<KShares adminMode={false} shownNumber={12} />
+		{/if}
 
 		{#if user}
 			<div class="container mt-5 px-4 px-md-3">

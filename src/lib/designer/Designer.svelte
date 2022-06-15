@@ -471,6 +471,23 @@
 		modalSize = hid ? 'xl' : modalSize;
 	};
 
+	const changeNodeId = function (nodeprop, fromTo: { oldid: string; newid: string }) {
+		try {
+			if (
+				document.querySelector(`#${nodeprop.id}`) !== null &&
+				document.querySelector(`#${fromTo.newid}`) === null
+			) {
+				console.log(`change ${nodeprop.id} to ${fromTo.newid}`);
+				KFK.changeId(nodeprop.id, fromTo.newid);
+				nodeprop.id = fromTo.newid;
+			} else {
+				console.log(nodeprop.id, 'does not exist or', fromTo.newid, 'already exist');
+			}
+		} catch (err) {
+			console.log(err);
+		}
+	};
+
 	let tmp;
 	$: readonly = tpl_mode !== 'edit';
 	$: {
@@ -664,15 +681,53 @@
 							bind:scenario={KFK.scenario}
 							{workid}
 							on:readInProp
-							on:editInProp />
+							on:editInProp
+							on:changeNodeId={(e) => {
+								changeNodeId(nodeInfo.nodeProps.ACTION, e.detail);
+							}} />
 					{:else if nodeInfo.nodeType === 'INFORM'}
-						<Inform {nodeInfo} {roleOptions} {showHelp} {readonly} {jq} {KFK} />
+						<Inform
+							{nodeInfo}
+							{roleOptions}
+							{showHelp}
+							{readonly}
+							{jq}
+							{KFK}
+							on:changeNodeId={(e) => {
+								changeNodeId(nodeInfo.nodeProps.INFORM, e.detail);
+							}} />
 					{:else if nodeInfo.nodeType === 'SCRIPT'}
-						<ScriptProp {nodeInfo} {showHelp} {readonly} {jq} {KFK} scenario={KFK.scenario} />
+						<ScriptProp
+							{nodeInfo}
+							{showHelp}
+							{readonly}
+							{jq}
+							{KFK}
+							scenario={KFK.scenario}
+							on:changeNodeId={(e) => {
+								changeNodeId(nodeInfo.nodeProps.SCRIPT, e.detail);
+							}} />
 					{:else if nodeInfo.nodeType === 'TIMER'}
-						<Timer {nodeInfo} {showHelp} {readonly} {jq} {KFK} />
+						<Timer
+							{nodeInfo}
+							{showHelp}
+							{readonly}
+							{jq}
+							{KFK}
+							on:changeNodeId={(e) => {
+								changeNodeId(nodeInfo.nodeProps.TIMER, e.detail);
+							}} />
 					{:else if nodeInfo.nodeType === 'SUB'}
-						<Sub {nodeInfo} {errMsg} {showHelp} {readonly} {jq} {KFK} />
+						<Sub
+							{nodeInfo}
+							{errMsg}
+							{showHelp}
+							{readonly}
+							{jq}
+							{KFK}
+							on:changeNodeId={(e) => {
+								changeNodeId(nodeInfo.nodeProps.SUB, e.detail);
+							}} />
 					{:else if nodeInfo.nodeType === 'CONNECT'}
 						<Connect {nodeInfo} {showHelp} {readonly} />
 					{/if}

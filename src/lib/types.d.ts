@@ -227,6 +227,9 @@ export interface NodeInfo {
 		label: string;
 		ACTION?: any;
 		SUB?: any;
+		INFORM?: any;
+		SCRIPT?: any;
+		TIMER?: any;
 	};
 }
 
@@ -255,6 +258,9 @@ export interface NodePropJSON {
 	withrvk: boolean;
 	withadhoc: boolean;
 	withcmt: boolean;
+	repeaton: string;
+	cronrun: number;
+	cronexpr: string;
 }
 
 export interface SearchResult {

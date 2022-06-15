@@ -463,7 +463,19 @@
 		</div>
 		<div class="ms-5 align-self-start flex-grow-1">
 			<div
-				class="btn btn-primary-outline"
+				class="btn btn-primary"
+				data-bs-trigger="hover"
+				data-bs-toggle="popover"
+				data-bs-placement="top"
+				data-bs-title={$_('tips.newwork.title')}
+				data-bs-content={$_('tips.newwork.content')}
+				on:click|preventDefault={(e) => {
+					goto('/template');
+				}}>
+				{$_('flexible.btn_goto_template')}
+			</div>
+			<div
+				class="btn btn-primary"
 				data-bs-trigger="hover"
 				data-bs-toggle="popover"
 				data-bs-placement="top"

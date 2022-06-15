@@ -11,7 +11,7 @@
 		InputGroupText,
 		Input,
 		TabContent,
-		TabPane
+		TabPane,
 	} from 'sveltestrap';
 	import RolePicker from '$lib/designer/prop/RolePicker.svelte';
 	import ChangeID from './ChangeID.svelte';
@@ -27,7 +27,12 @@
 
 <Container>
 	<Row cols="1">
-		<ChangeID {jq} bind:idForInput={nodeInfo.nodeProps.INFORM.id} {KFK} {readonly} />
+		<ChangeID
+			{jq}
+			bind:idForInput={nodeInfo.nodeProps.INFORM.id}
+			{KFK}
+			{readonly}
+			on:changeNodeId />
 		<Col>
 			<InputGroup size="sm">
 				<InputGroupText>
@@ -43,8 +48,7 @@
 				<RolePicker
 					bind:role={nodeInfo.nodeProps.INFORM.role}
 					bind:existingRoles={roleOptions}
-					{readonly}
-				/>
+					{readonly} />
 			</Col>
 		</TabPane>
 		<TabPane tabId="content" tab={$_('prop.inform.content')}>
@@ -66,8 +70,7 @@
 							bind:value={nodeInfo.nodeProps.INFORM.content}
 							type="textarea"
 							class="kfk-code-input"
-							disabled={readonly}
-						/>
+							disabled={readonly} />
 					</InputGroup>
 				</Col>
 			</Row>
@@ -80,8 +83,7 @@
 					helpShowing ? showHelp() : showHelp('INFORM');
 					helpShowing = !helpShowing;
 				}}
-				class="ms-auto p-0 m-0"
-			>
+				class="ms-auto p-0 m-0">
 				{#if helpShowing}
 					<Icon name="chevron-left" />
 					<Icon name="question-circle" />

@@ -4,10 +4,10 @@
 		"doc": "文档",
 		"discuss": "讨论",
 		"template": "规划",
-		"planning": "业务规划",
+		"planning": "工作规划",
 		"workflow": "运行监控",
 		"workflow_mining": "流程挖掘",
-		"worklist": "我的任务",
+		"worklist": "我的工作",
 		"settings": "设置",
 		"teaming": "组队",
 		"messages": "消息"
@@ -118,7 +118,7 @@
 		"createdAt": "下达时间",
 		"lasting": "天数",
 		"actions": "操作",
-		"author": "作者",
+		"author": "规划者",
 		"belongTo": "所属流程",
 		"template": {
 			"set": {
@@ -132,7 +132,7 @@
 		},
 		"me": "我",
 		"any": "任何人",
-		"startIt": "启动",
+		"startIt": "开始这项工作",
 		"wfa": {
 			"runningWorks": "进行中的工作任务",
 			"allWorks": "所有工作任务",
@@ -161,7 +161,7 @@
 			"setOwner": "设置流程Owner",
 			"deleteThisTempalte": "删除这个模版",
 			"lastUpdate": "上次更新",
-			"exportdata": "导出数据",
+			"exportdata": "流程数据",
 			"editors": "编辑历史",
 			"analysis": "流程挖掘",
 			"scheduler": "执行计划"
@@ -170,7 +170,7 @@
 	"title": {
 		"template": "规划",
 		"workflow": "监控",
-		"worklist": "我的工作",
+		"worklist": "我的代办工作",
 		"mining": "流程挖掘"
 	},
 	"adhoc": {
@@ -330,7 +330,8 @@
 				"participant": "参与人",
 				"instruction": "操作指引",
 				"variables": "节点参数",
-				"code": "节点脚本"
+				"code": "节点脚本",
+				"crontab": "Crontab"
 			},
 			"placeholder": {
 				"instruct": "可以使用简单HTML格式，也可使用Handlebars嵌入流程变量,like {{varname.label}}, {{varname.value}}",
@@ -350,7 +351,10 @@
 				"tryteam": "使用组队",
 				"tryuser": "使用用户",
 				"tryresult": "结果",
-				"csv": "从CSV获取",
+				"csv": "从CSV文件获取",
+				"csv_placeholder": "CSV上传文件变量名",
+				"repeaton1": "如用户决策为",
+				"repeaton2": "则重复执行本工作项",
 				"allowpbo": "允许修改PBO",
 				"trykvar": "测试变量",
 				"trywfid": "测试流程"
@@ -377,6 +381,12 @@
 			"button": {
 				"addnewvar": "+ 增加新变量",
 				"tryit": "开始测试"
+			},
+			"cronrun": {
+				"note": "用于控制在特定时间，重复下发当前任务, 使用Crontab标准语法。错误的Crontab设置可能达不到预想效果，请务必查询Crontab表达式的语法",
+				"nocron": "不重复下发任务",
+				"runthencron": "先下发一次，然后依Crontab定义下发",
+				"onlycron": "仅依照Crontab定义下发任务"
 			}
 		},
 		"script": {
@@ -882,7 +892,8 @@
 	},
 	"flexible": {
 		"placeholder": "请输入一件事项（项目）的名称",
-		"btn_showform": "发起灵活事项",
+		"btn_goto_template": "开始一件新的工作",
+		"btn_showform": "发起新的灵活事项",
 		"btn_create": "开始",
 		"res_success": "已启动，请在【我的任务】中查看"
 	},
@@ -905,7 +916,47 @@
 			"title": "创建灵活事项",
 			"content": "无须规划模版，灵活发布工作任务"
 		},
-		"check_email_please": "请查收邮件"
+		"newwork": {
+			"title": "开始一件规划好的工作",
+			"content": "去工作规划中找到要启动的工作来启动"
+		},
+		"check_email_please": "请查收邮件",
+		"designer": {
+			"action": {
+				"allowpbo": {
+					"title": "是否允许",
+					"content": "用户在此步可修改主要业务对象"
+				}
+			},
+			"kvar": {
+				"btn": {
+					"dash": {
+						"title": "删除",
+						"content": "点击删除本参数"
+					},
+					"plus": {
+						"title": "添加",
+						"content": "点击添加一个新参数"
+					},
+					"up": {
+						"title": "单点向上移动",
+						"content": "Shift-单点向上拷贝"
+					},
+					"down": {
+						"title": "单点向下移动",
+						"content": "Shift-单点向下拷贝"
+					},
+					"double-up": {
+						"title": "单点移动到顶部",
+						"content": "Shift-单点拷贝到顶部"
+					},
+					"double-down": {
+						"title": "单点移动到底部",
+						"content": "Shift-单点拷贝到底部"
+					}
+				}
+			}
+		}
 	},
 	"search": {
 		"condition": {
@@ -920,14 +971,43 @@
 		"nodes": "个步骤"
 	},
 	"mining": {
-		"redlight_threshold": "红灯边界"
+		"total": "共{total}项, 满足挖掘条件{number}项",
+		"work_redlight_threshold": "任务红灯",
+		"process_redlight_threshold": "流程红灯",
+		"OR": "或者",
+		"AND": "并且",
+		"process_threshold": "流程运行超过",
+		"redlight_threshold": "任务运行超过",
+		"show": {
+			"show": "显示",
+			"works": "任务节点",
+			"todos": "任务单项",
+			"only_above_threshold": "仅显示亮灯项",
+			"with_process": "包括：",
+			"with_todos": "包括："
+		},
+		"nav": {
+			"time": "时间维度",
+			"people": "人员维度"
+		},
+		"task": {
+			"number": "按任务数量",
+			"longest": "单任务最长时长",
+			"average": "任务平均时长",
+			"total": "任务总时长",
+			"processes": "发起流程数量"
+		}
 	},
 	"kshare": {
 		"title": "ProcessHub 可导入的模版",
 		"description": "由行业专家提供的基于行业最佳实践的管理模版，可直接导入到本企业内使用",
 		"all_scenarios": "全场景",
 		"all_industries": "全行业",
-		"topmenu": { "All": "全部", "Scenarios": "场景", "Industries": "行业" },
+		"topmenu": {
+			"All": "全部",
+			"Scenarios": "分场景",
+			"Industries": "分行业"
+		},
 		"label": {
 			"All": "全部",
 			"Close": "关闭",
@@ -946,6 +1026,57 @@
 				}
 			},
 			"result": { "success": "导入成功，请到业务规划菜单中查看" }
+		}
+	},
+	"cron": {
+		"title": {
+			"expr": "Crontab表达式",
+			"month": "月度",
+			"date": "日期",
+			"weekday": "星期",
+			"hour": "小时",
+			"result": "解析结果",
+			"notset": "不指定",
+			"single": "单项",
+			"range": "区间",
+			"every": "间隔",
+			"from": "从",
+			"to": "到",
+			"and": "以及"
+		},
+		"month": {
+			"0": "不指定",
+			"1": "一月",
+			"2": "二月",
+			"3": "三月",
+			"4": "四月",
+			"5": "五月",
+			"6": "六月",
+			"7": "七月",
+			"8": "八月",
+			"9": "九月",
+			"10": "十月",
+			"11": "十一月",
+			"12": "十二月"
+		},
+		"weekday": {
+			"0": "不指定",
+			"1": "星期一",
+			"2": "星期二",
+			"3": "星期三",
+			"4": "星期四",
+			"5": "星期五",
+			"6": "星期六",
+			"7": "星期日"
+		},
+		"date": {
+			"unit": "号"
+		},
+		"hour": {
+			"unit": "点"
+		},
+		"miniute": {
+			"unit": "分"
 		}
 	}
 }

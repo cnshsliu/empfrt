@@ -330,7 +330,8 @@
 				"participant": "Participant",
 				"instruction": "Instruction",
 				"variables": "Variables",
-				"code": "Script code"
+				"code": "Script code",
+				"crontab": "Crontab"
 			},
 			"placeholder": {
 				"instruct": "may use simple HTML format and Handlebars to include Kvars",
@@ -350,7 +351,10 @@
 				"tryteam": "with Team",
 				"tryuser": "with User",
 				"tryresult": "Result",
-				"csv": "From CSV",
+				"csv": "From CSV File",
+				"csv_placeholder": "CSV file input variable name",
+				"repeaton1": "If user choice is",
+				"repeaton2": ", then repeat this task",
 				"allowpbo": "Allow to edit PBO",
 				"trykvar": "Try with Vars",
 				"trywfid": "Try with wfid"
@@ -377,6 +381,12 @@
 			"button": {
 				"addnewvar": "+ Add new variable",
 				"tryit": "Try it"
+			},
+			"cronrun": {
+				"note": "Used to dispatch task on specific time with Crontab standard expression. Make sure you are familiar with Crontab, unexpected behaviour may occur otherwise",
+				"nocron": "Don't disptach repeatedly",
+				"runthencron": "Dispatch first, then follow Crontab definition",
+				"onlycron": "Only dispatch task following Crontab definition"
 			}
 		},
 		"script": {
@@ -882,6 +892,7 @@
 	},
 	"flexible": {
 		"placeholder": "Input issue name",
+		"btn_goto_template": "Start a new task",
 		"btn_showform": "Start a flexible issue",
 		"btn_create": "Start it",
 		"res_success": "Started, see it in 'My Task'"
@@ -905,7 +916,47 @@
 			"title": "Flexible Actions",
 			"content": "Start to arrange tasks in a flexible way."
 		},
-		"check_email_please": "Check email please"
+		"newwork": {
+			"title": "Start a new planned workflow",
+			"content": "Select a planned workflow and start it"
+		},
+		"check_email_please": "Check email please",
+		"designer": {
+			"action": {
+				"allowpbo": {
+					"title": "Whether allow user to",
+					"content": "Modify PBO on this step"
+				}
+			},
+			"kvar": {
+				"btn": {
+					"dash": {
+						"title": "Delete",
+						"content": "Click to delete this variable"
+					},
+					"plus": {
+						"title": "Add",
+						"content": "Click to create a new variable"
+					},
+					"up": {
+						"title": "Click to move up",
+						"content": "Shift-Click to copy to upper"
+					},
+					"down": {
+						"title": "Click to move down",
+						"content": "Shift-Click to copy to lower"
+					},
+					"double-up": {
+						"title": "Click to move to top",
+						"content": "Shift-Click to copy to top"
+					},
+					"double-down": {
+						"title": "Click to move to bottom",
+						"content": "Shift-Click to copy to bottom"
+					}
+				}
+			}
+		}
 	},
 	"search": {
 		"condition": {
@@ -920,7 +971,32 @@
 		"nodes": "Steps"
 	},
 	"mining": {
-		"redlight_threshold": "Redlight Threshold"
+		"total": "{number} of {total}",
+		"work_redlight_threshold": "Task Redlight Threshold",
+		"process_redlight_threshold": "Process Redlight Threshold",
+		"OR": "or",
+		"AND": "and",
+		"process_threshold": "Process longer than",
+		"redlight_threshold": "Tasks longer than",
+		"show": {
+			"show": "Show",
+			"works": "Process Steps",
+			"todos": "Individual Tasks",
+			"only_above_threshold": "Only above threshold",
+			"with_process": "Include",
+			"with_todos": "Include"
+		},
+		"nav": {
+			"time": "by Time",
+			"people": "by People"
+		},
+		"task": {
+			"number": "Task Number",
+			"longest": "Task Longest Lasting",
+			"average": "Task Average Lasting",
+			"total": "Task Total Lasting",
+			"processes": "Started processes"
+		}
 	},
 	"kshare": {
 		"title": "Process Hub",
@@ -950,6 +1026,57 @@
 				}
 			},
 			"result": { "success": "Import successfully, go to templates menu to see it" }
+		}
+	},
+	"cron": {
+		"title": {
+			"expr": "Crontab Expression",
+			"month": "Month",
+			"date": "Date",
+			"weekday": "WDay",
+			"hour": "Hour",
+			"result": "Result",
+			"notset": "Not Set",
+			"single": "Single",
+			"range": "Range",
+			"every": "every",
+			"from": "From",
+			"to": "to",
+			"and": "and"
+		},
+		"month": {
+			"0": "Not Set",
+			"1": "January",
+			"2": "February",
+			"3": "March",
+			"4": "April",
+			"5": "May",
+			"6": "June",
+			"7": "July",
+			"8": "August",
+			"9": "September",
+			"10": "October",
+			"11": "November",
+			"12": "December"
+		},
+		"weekday": {
+			"0": "Not Set",
+			"1": "Monday",
+			"2": "Tuesday",
+			"3": "Wednesday",
+			"4": "Tursday",
+			"5": "Friday",
+			"6": "Saturday",
+			"7": "Sundy"
+		},
+		"date": {
+			"unit": "D"
+		},
+		"hour": {
+			"unit": "H"
+		},
+		"miniute": {
+			"unit": "M"
 		}
 	}
 }

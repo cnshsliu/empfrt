@@ -20,7 +20,7 @@
 	let user = $session.user;
 	let fileSaver = null;
 	let default_user_password = '';
-	let admin_password = 'Jerome@99';
+	let admin_password = '';
 
 	let new_ou_id = '';
 	let new_ou_name = '';

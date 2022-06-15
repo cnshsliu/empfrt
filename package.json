@@ -57,6 +57,7 @@
 		"jquery-ui-dist": "^1.12.1",
 		"lodash": "^4.17.21",
 		"moment": "^2.29.1",
+		"node-cron": "^3.0.1",
 		"sanitize-html": "^2.6.0",
 		"short-uuid": "^4.2.0",
 		"svelte-filepond": "^0.2.0",

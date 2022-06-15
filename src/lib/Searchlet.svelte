@@ -91,7 +91,7 @@
 			}}>
 			{$_('searchlet.new')}
 		</div>
-		<div class="btn btn-secondary" on:click|preventDefault={resetSearchlet}>
+		<div class="btn btn-secondary ms-3" on:click|preventDefault={resetSearchlet}>
 			{$_('searchlet.reset')}
 		</div>
 	</div>

@@ -4,6 +4,7 @@
 	import { filterStorage } from '$lib/empstores';
 	import { ClientPermControl } from '$lib/clientperm';
 	import * as api from '$lib/api';
+	import CronBuilder from '$lib/CronBuilder.svelte';
 	import { session } from '$app/stores';
 	import TableDesigner from '$lib/TableDesigner.svelte';
 	import { qtb } from '$lib/utils';
@@ -39,6 +40,7 @@
 	let todos = [];
 	let errmsg = '';
 
+	let oldId = nodeInfo.nodeProps.ACTION.id;
 	let TimeTool = null;
 	let helpShowing = false;
 	let thePDSResolver;
@@ -107,6 +109,14 @@
 
 	onMount(async () => {
 		TimeTool = (await import('$lib/TimeTool')).default;
+		import('bootstrap').then((bootstrap) => {
+			const popoverTriggerList = [].slice.call(
+				document.querySelectorAll('[data-bs-toggle="popover"]'),
+			);
+			const popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+				return new bootstrap.Popover(popoverTriggerEl);
+			});
+		});
 	});
 	let user = $session.user;
 	let previewInstruct = false;
@@ -136,7 +146,12 @@
 <Container>
 	<Row cols="1">
 		<Col>
-			<ChangeID {jq} bind:idForInput={nodeInfo.nodeProps.ACTION.id} {KFK} {readonly} />
+			<ChangeID
+				{jq}
+				bind:idForInput={nodeInfo.nodeProps.ACTION.id}
+				{KFK}
+				{readonly}
+				on:changeNodeId />
 		</Col>
 		<Col>
 			<InputGroup size="sm">
@@ -178,7 +193,11 @@
 						bind:checked={nodeInfo.nodeProps.ACTION.withcsv}
 						disabled={readonly} />
 					{#if nodeInfo.nodeProps.ACTION.withcsv}
-						<Input bind:value={nodeInfo.nodeProps.ACTION.csv} disabled={readonly} />
+						<Input
+							class="ms-2"
+							bind:value={nodeInfo.nodeProps.ACTION.csv}
+							disabled={readonly}
+							placeholder="csv variable name" />
 					{/if}
 				</InputGroup>
 			</Col>
@@ -274,6 +293,19 @@
 						disabled={readonly} />
 				</InputGroup>
 			</Col>
+			<Col>
+				<InputGroup>
+					<InputGroupText>
+						{$_('prop.action.p10t.repeaton1')}
+					</InputGroupText>
+					<Input
+						id="repeaton1"
+						type="text"
+						bind:value={nodeInfo.nodeProps.ACTION.repeaton}
+						disabled={readonly} />
+					<InputGroupText>{$_('prop.action.p10t.repeaton2')}</InputGroupText>
+				</InputGroup>
+			</Col>
 			{#if nodeInfo.nodeProps.ACTION.withcsv === false}
 				<Col>
 					<div class="my-3">
@@ -323,31 +355,47 @@
 		<TabPane tabId="variables" tab={$_('prop.action.tab.variables')} active={isActive('variables')}>
 			{#if !readonly}
 				<InputGroup size="sm">
-					<Button
-						color="primary"
-						size="sm"
-						disabled={readonly}
-						on:click={(e) => {
-							e.preventDefault();
-							kvarsArr.push({
-								name: '',
-								label: '',
-								value: '',
-								breakrow: false,
-								placeholder: '',
-								required: true,
-							});
-							kvarsArr = kvarsArr;
-						}}>
-						{$_('prop.action.button.addnewvar')}
-					</Button>
-					<Input
-						id="chk_addpbo"
-						class="ms-auto"
-						type="checkbox"
-						label={$_('prop.action.p10t.allowpbo')}
-						bind:checked={nodeInfo.nodeProps.ACTION.allowpbo}
-						disabled={readonly} />
+					<div>&nbsp;</div>
+					<div class="ms-auto me-5">
+						<Button
+							color="primary"
+							size="sm"
+							disabled={readonly}
+							on:click={(e) => {
+								e.preventDefault();
+								kvarsArr.push({
+									name: '',
+									label: '',
+									value: '',
+									breakrow: false,
+									placeholder: '',
+									required: true,
+								});
+								kvarsArr = kvarsArr;
+							}}>
+							{$_('prop.action.button.addnewvar')}
+						</Button>
+					</div>
+					<div
+						class="form-check"
+						data-bs-trigger="hover"
+						data-bs-toggle="popover"
+						data-bs-placement="top"
+						data-bs-title={$_('tips.designer.action.allowpbo.title')}
+						data-bs-content={$_('tips.designer.action.allowpbo.content')}>
+						<input
+							placeholder=""
+							class="form-check-input"
+							id="chk_addpbo"
+							type="checkbox"
+							name=""
+							value=""
+							data-bs-original-title=""
+							title="" />
+						<label class="form-check-label" for="chk_addpbo">
+							{$_('prop.action.p10t.allowpbo')}
+						</label>
+					</div>
 				</InputGroup>
 			{:else}
 				<InputGroup size="sm">
@@ -457,6 +505,11 @@
 												<td>
 													<Button
 														class="m-0 p-0"
+														data-bs-trigger="hover"
+														data-bs-toggle="popover"
+														data-bs-placement="top"
+														data-bs-title={$_('tips.designer.kvar.btn.dash.title')}
+														data-bs-content={$_('tips.designer.kvar.btn.dash.content')}
 														on:click={(e) => {
 															e.preventDefault();
 															kvarsArr.splice(index, 1);
@@ -468,6 +521,11 @@
 												<td>
 													<Button
 														class="m-0 p-0"
+														data-bs-trigger="hover"
+														data-bs-toggle="popover"
+														data-bs-placement="top"
+														data-bs-title={$_('tips.designer.kvar.btn.plus.title')}
+														data-bs-content={$_('tips.designer.kvar.btn.plus.content')}
 														on:click={(e) => {
 															e.preventDefault();
 															kvarsArr.splice(index + 1, 0, {
@@ -488,12 +546,21 @@
 												<td>
 													<Button
 														class="m-0 p-0"
+														data-bs-trigger="hover"
+														data-bs-toggle="popover"
+														data-bs-placement="top"
+														data-bs-title={$_('tips.designer.kvar.btn.up.title')}
+														data-bs-content={$_('tips.designer.kvar.btn.up.content')}
 														on:click={(e) => {
 															e.preventDefault();
-															if (index > 0) {
-																kvarsArr.splice(index - 1, 0, kvarsArr.splice(index, 1)[0]);
-																kvarsArr = kvarsArr;
+															if (e.shiftKey === false) {
+																if (index > 0) {
+																	kvarsArr.splice(index - 1, 0, kvarsArr.splice(index, 1)[0]);
+																}
+															} else {
+																kvarsArr.splice(index, 0, { ...kvarsArr[index] });
 															}
+															kvarsArr = kvarsArr;
 														}}>
 														<Icon name="chevron-up" />
 													</Button>
@@ -501,12 +568,21 @@
 												<td>
 													<Button
 														class="m-0 p-0"
+														data-bs-trigger="hover"
+														data-bs-toggle="popover"
+														data-bs-placement="top"
+														data-bs-title={$_('tips.designer.kvar.btn.double-up.title')}
+														data-bs-content={$_('tips.designer.kvar.btn.double-up.content')}
 														on:click={(e) => {
 															e.preventDefault();
-															if (index > 0) {
-																kvarsArr.splice(0, 0, kvarsArr.splice(index, 1)[0]);
-																kvarsArr = kvarsArr;
+															if (e.shiftKey === false) {
+																if (index > 0) {
+																	kvarsArr.splice(0, 0, kvarsArr.splice(index, 1)[0]);
+																}
+															} else {
+																kvarsArr.splice(0, 0, { ...kvarsArr[index] });
 															}
+															kvarsArr = kvarsArr;
 														}}>
 														<Icon name="chevron-double-up" />
 													</Button>
@@ -516,12 +592,21 @@
 												<td>
 													<Button
 														class="m-0 p-0"
+														data-bs-trigger="hover"
+														data-bs-toggle="popover"
+														data-bs-placement="top"
+														data-bs-title={$_('tips.designer.kvar.btn.down.title')}
+														data-bs-content={$_('tips.designer.kvar.btn.down.content')}
 														on:click={(e) => {
 															e.preventDefault();
-															if (index < kvarsArr.length - 1) {
-																kvarsArr.splice(index + 1, 0, kvarsArr.splice(index, 1)[0]);
-																kvarsArr = kvarsArr;
+															if (e.shiftKey === false) {
+																if (index < kvarsArr.length - 1) {
+																	kvarsArr.splice(index + 1, 0, kvarsArr.splice(index, 1)[0]);
+																}
+															} else {
+																kvarsArr.splice(index + 1, 0, { ...kvarsArr[index] });
 															}
+															kvarsArr = kvarsArr;
 														}}>
 														<Icon name="chevron-down" />
 													</Button>
@@ -529,12 +614,21 @@
 												<td>
 													<Button
 														class="m-0 p-0"
+														data-bs-trigger="hover"
+														data-bs-toggle="popover"
+														data-bs-placement="top"
+														data-bs-title={$_('tips.designer.kvar.btn.double-down.title')}
+														data-bs-content={$_('tips.designer.kvar.btn.double-down.content')}
 														on:click={(e) => {
 															e.preventDefault();
-															if (index < kvarsArr.length - 1) {
-																kvarsArr.push(kvarsArr.splice(index, 1)[0]);
-																kvarsArr = kvarsArr;
+															if (e.shiftKey === false) {
+																if (index < kvarsArr.length - 1) {
+																	kvarsArr.push(kvarsArr.splice(index, 1)[0]);
+																}
+															} else {
+																kvarsArr.push({ ...kvarsArr[index] });
 															}
+															kvarsArr = kvarsArr;
 														}}>
 														<Icon name="chevron-double-down" />
 													</Button>
@@ -558,6 +652,56 @@
 					bind:value={nodeInfo.nodeProps.ACTION.code}
 					disabled={readonly} />
 			</InputGroup>
+		</TabPane>
+		<TabPane tabId="crontab" tab={$_('prop.action.tab.crontab')} active={isActive('crontab')}>
+			<Row>
+				<div class="">
+					{$_('prop.action.cronrun.note')}
+				</div>
+			</Row>
+			<Row>
+				<div class="">
+					<label>
+						<input
+							type="radio"
+							bind:group={nodeInfo.nodeProps.ACTION.cronrun}
+							name="mode_cronrun"
+							value={0} />
+						{$_('prop.action.cronrun.nocron')}
+					</label>
+				</div>
+				<div class="">
+					<label>
+						<input
+							type="radio"
+							bind:group={nodeInfo.nodeProps.ACTION.cronrun}
+							name="mode_cronrun"
+							value={1} />
+						{$_('prop.action.cronrun.runthencron')}
+					</label>
+				</div>
+				<div class="">
+					<label>
+						<input
+							type="radio"
+							bind:group={nodeInfo.nodeProps.ACTION.cronrun}
+							name="mode_cronrun"
+							value={2} />
+						{$_('prop.action.cronrun.onlycron')}
+					</label>
+				</div>
+			</Row>
+			{#if nodeInfo.nodeProps.ACTION.cronrun === 1 || nodeInfo.nodeProps.ACTION.cronrun === 2}
+				<Row>
+					<InputGroup>
+						<div class="ms-3 inline-block">{$_('cron.title.expr')}</div>
+						<div class="ms-3 inline-block">{nodeInfo.nodeProps.ACTION.cronexpr}</div>
+					</InputGroup>
+				</Row>
+				<Row>
+					<CronBuilder bind:cronexpr={nodeInfo.nodeProps.ACTION.cronexpr} />
+				</Row>
+			{/if}
 		</TabPane>
 		{#if scenario === 'workflow' && workid}
 			<TabPane tabId="tasks" tab="Tasks" active={isActive('tasks')}>

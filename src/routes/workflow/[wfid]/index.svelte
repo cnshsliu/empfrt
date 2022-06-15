@@ -57,10 +57,10 @@
 	import { ClientPermControl } from '$lib/clientperm';
 	export let workflow: Workflow;
 	export let wfid: string;
-	export let iframeMode = false;
 	export let showComment = false;
 
 	$title = workflow.wftitle;
+	let fileSaver;
 	let theDesigner: any;
 	let pointToOrigin = '';
 	let comments = [];
@@ -130,7 +130,7 @@
 			<Comments bind:comments bind:pointToOrigin />
 		</div>
 	{/if}
-	<ProcessTrack {user} bind:wf={workflow} {wfid} {iframeMode} {onPrint} />
+	<ProcessTrack {user} bind:wf={workflow} {wfid} {onPrint} />
 {:else}
 	<ErrorNotify
 		title="Error Found"

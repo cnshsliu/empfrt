@@ -10,7 +10,7 @@
 		Icon,
 		InputGroup,
 		InputGroupText,
-		Input
+		Input,
 	} from 'sveltestrap';
 	import { onMount } from 'svelte';
 	import { session } from '$app/stores';
@@ -40,7 +40,12 @@
 
 <Container>
 	<Row cols="1">
-		<ChangeID {jq} bind:idForInput={nodeInfo.nodeProps.SCRIPT.id} {KFK} {readonly} />
+		<ChangeID
+			{jq}
+			bind:idForInput={nodeInfo.nodeProps.SCRIPT.id}
+			{KFK}
+			{readonly}
+			on:changeNodeId />
 		<Col>
 			<InputGroup size="sm">
 				<InputGroupText>
@@ -58,24 +63,21 @@
 				bind:group={nodeInfo.nodeProps.SCRIPT.runmode}
 				value="SYNC"
 				label={$_('prop.script.syncmode')}
-				disabled={readonly}
-			/>
+				disabled={readonly} />
 			<Input
 				class="ms-1"
 				type="radio"
 				bind:group={nodeInfo.nodeProps.SCRIPT.runmode}
 				value="ASYNC"
 				label={$_('prop.script.asyncmode')}
-				disabled={readonly}
-			/>
+				disabled={readonly} />
 		</Col>
 		<Col>
 			<Input
 				bind:value={nodeInfo.nodeProps.SCRIPT.code}
 				type="textarea"
 				class="kfk-code-input"
-				disabled={readonly}
-			/>
+				disabled={readonly} />
 		</Col>
 		{#if enableRerun}
 			<Button
@@ -84,12 +86,11 @@
 					let ret = await api.post(
 						'workflow/node/rerun',
 						{ wfid: KFK.theWf.wfid, nodeid: nodeInfo.nodeProps.SCRIPT.id },
-						user.sessionToken
+						user.sessionToken,
 					);
 					console.log(ret);
 					enableRerun = false;
-				}}
-			>
+				}}>
 				Rerun This Script <br />
 				(Lab Function, may cause problems)
 			</Button>
@@ -112,7 +113,7 @@
 								let ret = await api.post(
 									'code/try',
 									{ code: nodeInfo.nodeProps.SCRIPT.code },
-									user.sessionToken
+									user.sessionToken,
 								);
 								checkingStatus = '';
 								if (ret.error) {
@@ -120,8 +121,7 @@
 								} else {
 									consoleMsg = ret.message;
 								}
-							}}
-						>
+							}}>
 							{$_('prop.script.tryrun')}
 						</Button>
 					</div>
@@ -132,11 +132,11 @@
 			<Col>
 				<pre>
 				<code>
-					{#if consoleMsg.indexOf("Error:")>-1 }
-					 {consoleMsg}
-					{:else}
-					All good
-					{/if}
+					{#if consoleMsg.indexOf('Error:') > -1}
+							{consoleMsg}
+						{:else}
+							All good
+						{/if}
 				</code>
 			</pre>
 			</Col>
@@ -147,8 +147,7 @@
 					helpShowing ? showHelp() : showHelp('SCRIPT');
 					helpShowing = !helpShowing;
 				}}
-				class="ms-auto p-0 m-0"
-			>
+				class="ms-auto p-0 m-0">
 				{#if helpShowing}
 					<Icon name="chevron-left" />
 					<Icon name="question-circle" />

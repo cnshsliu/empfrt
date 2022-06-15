@@ -4,7 +4,7 @@
 	import { _, date, time } from '$lib/i18n';
 	import * as Utils from '$lib/utils';
 	import * as api from '$lib/api';
-	import series from 'async/series';
+	import { series } from 'async';
 	import TagPicker from '$lib/TagPicker.svelte';
 	import AniIcon from '$lib/AniIcon.svelte';
 	import Miner from './Miner.svelte';
@@ -38,7 +38,7 @@
 
 	const ENDPOINT_SEARCH = 'workflow/search';
 	const ENDPOINT_MINING = 'workflow/mining';
-	const MINING_BATCH_INTERVAL = 1000;
+	const MINING_BATCH_INTERVAL = 500;
 	const MINING_BATCH_NUMBER = 3;
 	const BIZ = 'wf';
 	let loadTimer = null;
@@ -209,17 +209,6 @@
 								miningData[b * batch + m].mdata = details[m];
 							}
 							miningData = miningData;
-							/*
-							for (let m = 0; m < details.length; m++) {
-								for (let k = 0; k < miningData.length; k++) {
-									if (miningData[k].wfid == details[m].wfid) {
-										miningData[k].mdata = details[m];
-										console.log('Set mdata ', details[m], ' for', miningData[k].wfid);
-										break;
-									}
-								}
-							}
-							 */
 						}
 						callback(null, b);
 					}, MINING_BATCH_INTERVAL);

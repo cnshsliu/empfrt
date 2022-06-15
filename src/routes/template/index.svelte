@@ -8,6 +8,7 @@
 	import { setFadeMessage } from '$lib/Notifier';
 	import * as api from '$lib/api';
 	import Cover from '$lib/display/Cover.svelte';
+	import CronBuilder from '$lib/CronBuilder.svelte';
 	import { API_SERVER } from '$lib/Env';
 	import { TagStorage } from '$lib/empstores';
 	import { enhance } from '$lib/form';
@@ -16,6 +17,7 @@
 	import {
 		showAdvancedSearch,
 		srPage,
+		miningMode,
 		lastQuery,
 		mtcConfirm,
 		mtcConfirmReset,
@@ -55,6 +57,7 @@
 
 	const ENDPOINT = 'template/search';
 	const BIZ = 'tpl';
+	let fileSaver = null;
 	let loadTimer = null;
 	let LOADING_TIMEOUT = 400;
 	if (!$filterStorage[BIZ]) {
@@ -89,7 +92,7 @@
 	let editlogs: any = [];
 	let editCronFor = '';
 	let cronStarters = '';
-	let cronExpr = '1 * * * *';
+	let cronexpr = '1 * * * *';
 	let crons = [];
 	let thePdsResolver;
 	let searchTimer = null;
@@ -361,7 +364,7 @@
 	const addCron = async function (e, tplid) {
 		let ret = (await api.post(
 			'template/addcron',
-			{ tplid: tplid, expr: cronExpr, starters: cronStarters },
+			{ tplid: tplid, expr: cronexpr, starters: cronStarters },
 			user.sessionToken,
 		)) as unknown as any;
 		if (ret.error) {
@@ -753,6 +756,7 @@
 		{#each rows as row, index (row)}
 			<Col class="mb-2 card p-2">
 				<Row>
+					<!-- 封面 -->
 					<Col class="col-auto">
 						{#if row.hasCover}
 							<Cover tplid={row.tplid} style={'cover-90'} />
@@ -774,7 +778,7 @@
 					</Col>
 					<Col>
 						<div class="d-flex">
-							<!-- 模版名称 即 下拉菜单行  -->
+							<!-- 模版名称 以及 下拉菜单行  -->
 							<div class="w-100">
 								<h5 class="">
 									<a class="kfk-workflow-id tnt-workflow-id" href={`/template/${row.tplid}&read`}>
@@ -782,7 +786,7 @@
 									</a>
 									{#if row.cron > 0}
 										<div
-											class="btn btn-primary m-0 ms-3 p-0"
+											class="btn btn-primary m-0 ms-3 px-2 py-0"
 											on:click|preventDefault={(e) => {
 												showCronTable(e, row.tplid);
 											}}>
@@ -837,7 +841,7 @@
 													goto('/work');
 												}}
 												class="nav-link ">
-												<Icon name="bar-chart-steps" />
+												<Icon name="list-task" />
 												{$_('remotetable.tplaction.seeWorklist')}
 											</a>
 										</DropdownItem>
@@ -864,15 +868,6 @@
 											<DropdownItem>
 												<a
 													href={'#'}
-													on:click|preventDefault={() => exportData(row.tplid)}
-													class="nav-link ">
-													<Icon name="cloud-download" />
-													{$_('remotetable.tplaction.exportdata')}
-												</a>
-											</DropdownItem>
-											<DropdownItem>
-												<a
-													href={'#'}
 													on:click|preventDefault={async (e) => {
 														e.preventDefault();
 														editlogs = await api.post(
@@ -884,7 +879,7 @@
 														visi_rds_input = row.visi;
 													}}
 													class="nav-link ">
-													<Icon name="ui-checks-grid" />
+													<Icon name="person-plus-fill" />
 													{$_('remotetable.tplaction.editors')}
 												</a>
 											</DropdownItem>
@@ -895,7 +890,7 @@
 														showCronTable(e, row.tplid);
 													}}
 													class="nav-link ">
-													<Icon name="ui-checks-grid" />
+													<Icon name="clock-fill" />
 													{$_('remotetable.tplaction.scheduler')}
 												</a>
 											</DropdownItem>
@@ -911,10 +906,41 @@
 											<DropdownItem>
 												<a
 													href={'#'}
-													on:click|preventDefault={() => goto(`analysis/tpl/${row.tplid}`)}
+													on:click|preventDefault={() => {
+														$filterStorage['wf'].tplid = row.tplid;
+														$showAdvancedSearch['wf'] = true;
+														$miningMode = true;
+														goto('/workflow');
+													}}
 													class="nav-link ">
 													<Icon name="graph-up-arrow" />
 													{$_('remotetable.tplaction.analysis')}
+												</a>
+											</DropdownItem>
+											<DropdownItem>
+												<a
+													href={'#'}
+													on:click={async (e) => {
+														e.preventDefault();
+														api
+															.postSimple(
+																'mining/data',
+																{ tplid: row.tplid, wfid: '' },
+																user.sessionToken,
+															)
+															.then((res) => {
+																return res.blob();
+															})
+															.then(async (data) => {
+																if (fileSaver === null) {
+																	fileSaver = await import('file-saver');
+																}
+																fileSaver.saveAs(data, `${row.tplid}_report.xlsx`);
+															});
+													}}
+													class="nav-link">
+													<Icon name="cloud-download" />
+													{$_('remotetable.tplaction.exportdata')}
 												</a>
 											</DropdownItem>
 										{/if}
@@ -923,7 +949,7 @@
 							</div>
 							<!-- END of 当个模版的下拉菜单 -->
 						</div>
-						<!-- 模版名称 即 下拉菜单行  -->
+						<!-- 作者 以及 启动按钮  -->
 						<Row cols={{ md: 2, xs: 1 }}>
 							<Col>
 								{$_('remotetable.author')}:
@@ -948,6 +974,7 @@
 							</Col>
 						</Row>
 						{#if editlogfor === row.tplid}
+							<!-- 编辑历史  -->
 							<Container>
 								<Row>
 									<div
@@ -971,6 +998,7 @@
 							</Container>
 						{/if}
 						{#if editCronFor === row.tplid}
+							<!-- Crontab editor -->
 							<Container class="border border-2 rounded py-2 bg-light">
 								<Row>
 									<!-- svelte-ignore missing-declaration -->
@@ -1016,7 +1044,7 @@
 												label={'Starters'}
 												btnText={'Check'} />
 										{/if}
-										<Input bind:value={cronExpr} />
+										<Input bind:value={cronexpr} />
 										<div
 											class="btn btn-primary"
 											color="primary"
@@ -1033,6 +1061,9 @@
 											Start Now
 										</div>
 									</InputGroup>
+								</Row>
+								<Row>
+									<CronBuilder bind:cronexpr />
 								</Row>
 							</Container>
 						{/if}

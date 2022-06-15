@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-empty-interface */
 /// <reference types="@sveltejs/kit" />
 
 declare namespace App {
@@ -19,6 +21,7 @@ declare namespace App {
 		tplIdsForSearch_for_todo?: any[];
 		tplIdsForSearch_for_wf?: any[];
 		delegators?: any[];
+		siteinfo?: unknown;
 	}
 
 	interface Stuff {}

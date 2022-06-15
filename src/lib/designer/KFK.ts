@@ -657,7 +657,7 @@ class KFKclass {
 	}
 
 	myuid() {
-		return suuid.generate();
+		return `n${suuid.generate()}`;
 	}
 
 	getNodeLabel(jqDIV: myJQuery) {
@@ -917,6 +917,9 @@ class KFKclass {
 				withadhoc: false,
 				withcmt: true,
 				code: '',
+				repeaton: '',
+				cronrun: 0,
+				cronexpr: '',
 			},
 			SCRIPT: { id: '', label: '', code: '', runmode: 'ASYNC' },
 			INFORM: { id: '', label: '', role: '', subject: '', content: '' },
@@ -957,6 +960,9 @@ class KFKclass {
 			ret.ACTION.withrvk = blankToDefault(jqDIV.attr('rvk'), 'no') === 'yes';
 			ret.ACTION.withadhoc = blankToDefault(jqDIV.attr('adhoc'), 'yes') === 'yes';
 			ret.ACTION.withcmt = blankToDefault(jqDIV.attr('cmt'), 'yes') === 'yes';
+			ret.ACTION.repeaton = blankToDefault(jqDIV.attr('repeaton')?.trim(), '');
+			ret.ACTION.cronrun = parseInt(blankToDefault(jqDIV.attr('cronrun'), '0'));
+			ret.ACTION.cronexpr = blankToDefault(jqDIV.attr('cronexpr'), '');
 
 			if (that.workflow) {
 				const theWork = jqDIV.find('.work').first();
@@ -1065,6 +1071,9 @@ ret='DEFAULT'; `,
 			jqDIV.attr('rvk', propJSON.withrvk ? 'yes' : 'no');
 			jqDIV.attr('adhoc', propJSON.withadhoc ? 'yes' : 'no');
 			jqDIV.attr('cmt', propJSON.withcmt ? 'yes' : 'no');
+			jqDIV.attr('repeaton', propJSON.repeaton);
+			jqDIV.attr('cronrun', propJSON.cronrun);
+			jqDIV.attr('cronexpr', propJSON.cronexpr);
 
 			const code = propJSON.code;
 			const appData_code = code.trim();

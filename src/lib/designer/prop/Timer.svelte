@@ -10,7 +10,7 @@
 		Col,
 		InputGroup,
 		InputGroupText,
-		Input
+		Input,
 	} from 'sveltestrap';
 
 	export let nodeInfo;
@@ -24,7 +24,7 @@
 		nodeInfo.nodeProps.TIMER.code = '+0:0:0:0:15:0';
 	}
 	let g = nodeInfo.nodeProps.TIMER.code.match(
-		/(start)?(\+?)(\d+:)?(\d+:)?(\d+:)?(\d+:)?(\d+:)?(\d+)?/
+		/(start)?(\+?)(\d+:)?(\d+:)?(\d+:)?(\d+:)?(\d+:)?(\d+)?/,
 	);
 	let t = [];
 	let procType = 'START+';
@@ -35,7 +35,7 @@
 			parseInt(g[5]),
 			parseInt(g[6]),
 			parseInt(g[7]),
-			parseInt(g[8])
+			parseInt(g[8]),
 		];
 		if (g[1] && g[2]) {
 			//如果 start+ 开头
@@ -105,7 +105,7 @@
 
 <Container>
 	<Row cols="1">
-		<ChangeID {jq} bind:idForInput={nodeInfo.nodeProps.TIMER.id} {KFK} {readonly} />
+		<ChangeID {jq} bind:idForInput={nodeInfo.nodeProps.TIMER.id} {KFK} {readonly} on:changeNodeId />
 		<Col>
 			<InputGroup size="sm">
 				<InputGroupText>
@@ -121,7 +121,7 @@
 				<InputGroupText>
 					{$_('prop.timer.code')}
 				</InputGroupText>
-				<span class="kfk-timer-code ms-1"> {nodeInfo.nodeProps.TIMER.code} </span>
+				<span class="kfk-timer-code ms-1">{nodeInfo.nodeProps.TIMER.code}</span>
 			</InputGroup>
 		</Col>
 		<Col>
@@ -144,24 +144,21 @@
 					bind:group={timerCodePrefix}
 					value="start+"
 					label={$_('prop.timer.fromstart')}
-					disabled={readonly}
-				/>
+					disabled={readonly} />
 				<Input
 					class="ms-1"
 					type="radio"
 					bind:group={timerCodePrefix}
 					value="+"
 					label={$_('prop.timer.fromnow')}
-					disabled={readonly}
-				/>
+					disabled={readonly} />
 				<Input
 					class="ms-1"
 					type="radio"
 					bind:group={timerCodePrefix}
 					value=""
 					label={$_('prop.timer.fix')}
-					disabled={readonly}
-				/>
+					disabled={readonly} />
 			</InputGroup>
 		</Col>
 		<Col>
@@ -212,8 +209,7 @@
 					helpShowing ? showHelp() : showHelp('TIMER');
 					helpShowing = !helpShowing;
 				}}
-				class="ms-auto p-0 m-0"
-			>
+				class="ms-auto p-0 m-0">
 				{#if helpShowing}
 					<Icon name="chevron-left" />
 					<Icon name="question-circle" />

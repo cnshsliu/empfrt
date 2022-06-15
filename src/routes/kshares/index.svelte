@@ -42,6 +42,7 @@
 	let user = $session.user;
 	let updatingKsTplPath = '';
 	let pickingKsTplPath = '';
+	let designPrepared = '';
 	let files;
 	let kstplmouseover = -1;
 
@@ -386,6 +387,18 @@
 										<div class="col-auto">
 											<div
 												class="btn btn-primary btn-sm py-0"
+												on:click|preventDefault={async () => {
+													let kstplid = await api.post(
+														'kstpl/preparedesign',
+														{ ksid: kstpl.ksid },
+														user.sessionToken,
+													);
+													goto(`/template/${kstplid}&edit`);
+												}}>
+												Design
+											</div>
+											<div
+												class="btn btn-primary btn-sm py-0"
 												on:click|preventDefault={() => {
 													updatingKsTplPath = updatingKsTplPath === kstpl.ksid ? '' : kstpl.ksid;
 												}}>
@@ -510,7 +523,6 @@
 																	{ ksid: kstpl.ksid, pickto: kstpl.pickto },
 																	user.sessionToken,
 																);
-
 																if (ret.error) {
 																	if (ret.error === 'ALREADY_EXIST') {
 																		setFadeMessage(
@@ -522,6 +534,7 @@
 																	}
 																} else {
 																	setFadeMessage($_('kshare.pickit.result.success'), 'warning');
+																	api.removeCacheByPath('template/search');
 																}
 															}
 														}}>
