@@ -9,6 +9,7 @@
 	import { Container, Row, Col, InputGroup, Input, InputGroupText, Button } from 'sveltestrap';
 	import { onMount } from 'svelte';
 	import CronBuilder from '$lib/CronBuilder.svelte';
+	import { siteinfo } from '$lib/Stores';
 	import { session } from '$app/stores';
 	import KShares from './kshares/index.svelte';
 	$title = 'HyperFlow';
@@ -51,7 +52,11 @@
 			target: '/settings/files',
 		},
 	];
-	onMount(async () => {});
+	onMount(async () => {
+		if (!$siteinfo) {
+			$siteinfo = await api.post('site/info', {}, user.sessionToken);
+		}
+	});
 </script>
 
 <svelte:head>
@@ -101,7 +106,7 @@
 			<CronBuilder bind:cronexpr />
 		</div>
 		<div class="mt-5">&nbsp;</div>
-		{#if $session.siteinfo?.ksenabled && user.group === 'ADMIN'}
+		{#if $siteinfo?.ksenabled && user.group === 'ADMIN'}
 			<KShares adminMode={false} shownNumber={12} />
 		{/if}
 

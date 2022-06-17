@@ -245,6 +245,7 @@
 	const rebuildFromExpr = (expr: string) => {
 		//expr = '0 10-23,4,5 10-15,3,31 1-3,7,8,9 1-3,6,7';
 		//expr = '0 3 * * 1-3,7';
+		if (expr === '') expr = '0 8 * * 1';
 		let tmp = expr.split(/ /);
 		let tb = {
 			minute: 0,
@@ -377,8 +378,12 @@
 
 <div>Crontab编辑器</div>
 <div class="row">
-	<div class="col-2">{$_('cron.title.result')}:</div>
-	<div class="col-auto fs-5 fw-bold">{crondescription}</div>
+	<div class="col-2">{$_('cron.title.expr')}</div>
+	<div class="col-auto fs-6 fw-bold">{cronexpr}</div>
+</div>
+<div class="row">
+	<div class="col-2">{$_('cron.title.result')}</div>
+	<div class="col-auto fs-6 fw-bold">{crondescription}</div>
 </div>
 <div class="row">
 	<div class="col-2">{$_('cron.title.month')}</div>

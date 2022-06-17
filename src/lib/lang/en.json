@@ -353,8 +353,6 @@
 				"tryresult": "Result",
 				"csv": "From CSV File",
 				"csv_placeholder": "CSV file input variable name",
-				"repeaton1": "If user choice is",
-				"repeaton2": ", then repeat this task",
 				"allowpbo": "Allow to edit PBO",
 				"trykvar": "Try with Vars",
 				"trywfid": "Try with wfid"
@@ -384,9 +382,12 @@
 			},
 			"cronrun": {
 				"note": "Used to dispatch task on specific time with Crontab standard expression. Make sure you are familiar with Crontab, unexpected behaviour may occur otherwise",
+				"repeaton1": "If user choice is not",
+				"repeaton2": "then stop crontab dispatching",
+				"norepeat": "Don't disptach repeatedly",
 				"nocron": "Don't disptach repeatedly",
-				"runthencron": "Dispatch first, then follow Crontab definition",
-				"onlycron": "Only dispatch task following Crontab definition"
+				"runthencron": "Dispatch task first, then dispatch automatically following Crontab",
+				"onlycron": "Only dispatch task automatically following Crontab"
 			}
 		},
 		"script": {

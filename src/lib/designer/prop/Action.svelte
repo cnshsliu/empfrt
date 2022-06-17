@@ -293,19 +293,6 @@
 						disabled={readonly} />
 				</InputGroup>
 			</Col>
-			<Col>
-				<InputGroup>
-					<InputGroupText>
-						{$_('prop.action.p10t.repeaton1')}
-					</InputGroupText>
-					<Input
-						id="repeaton1"
-						type="text"
-						bind:value={nodeInfo.nodeProps.ACTION.repeaton}
-						disabled={readonly} />
-					<InputGroupText>{$_('prop.action.p10t.repeaton2')}</InputGroupText>
-				</InputGroup>
-			</Col>
 			{#if nodeInfo.nodeProps.ACTION.withcsv === false}
 				<Col>
 					<div class="my-3">
@@ -676,29 +663,53 @@
 							type="radio"
 							bind:group={nodeInfo.nodeProps.ACTION.cronrun}
 							name="mode_cronrun"
-							value={1} />
-						{$_('prop.action.cronrun.runthencron')}
+							value={2} />
+						{$_('prop.action.cronrun.onlycron')}
 					</label>
 				</div>
+				{#if nodeInfo.nodeProps.ACTION.cronrun === 2}
+					<Row>
+						<InputGroup>
+							<InputGroupText>
+								{$_('prop.action.cronrun.repeaton1')}
+							</InputGroupText>
+							<Input
+								id="repeaton1"
+								type="text"
+								bind:value={nodeInfo.nodeProps.ACTION.repeaton}
+								disabled={readonly} />
+							<InputGroupText>{$_('prop.action.cronrun.repeaton2')}</InputGroupText>
+						</InputGroup>
+					</Row>
+				{/if}
 				<div class="">
 					<label>
 						<input
 							type="radio"
 							bind:group={nodeInfo.nodeProps.ACTION.cronrun}
 							name="mode_cronrun"
-							value={2} />
-						{$_('prop.action.cronrun.onlycron')}
+							value={1} />
+						{$_('prop.action.cronrun.runthencron')}
 					</label>
 				</div>
+				{#if nodeInfo.nodeProps.ACTION.cronrun === 1}
+					<Row>
+						<InputGroup>
+							<InputGroupText>
+								{$_('prop.action.cronrun.repeaton1')}
+							</InputGroupText>
+							<Input
+								id="repeaton1"
+								type="text"
+								bind:value={nodeInfo.nodeProps.ACTION.repeaton}
+								disabled={readonly} />
+							<InputGroupText>{$_('prop.action.cronrun.repeaton2')}</InputGroupText>
+						</InputGroup>
+					</Row>
+				{/if}
 			</Row>
 			{#if nodeInfo.nodeProps.ACTION.cronrun === 1 || nodeInfo.nodeProps.ACTION.cronrun === 2}
-				<Row>
-					<InputGroup>
-						<div class="ms-3 inline-block">{$_('cron.title.expr')}</div>
-						<div class="ms-3 inline-block">{nodeInfo.nodeProps.ACTION.cronexpr}</div>
-					</InputGroup>
-				</Row>
-				<Row>
+				<Row class="border mt-3">
 					<CronBuilder bind:cronexpr={nodeInfo.nodeProps.ACTION.cronexpr} />
 				</Row>
 			{/if}

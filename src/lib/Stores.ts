@@ -3,6 +3,7 @@ export const printing = writable(false);
 export const bootstrap = writable();
 export const workRefreshInterval = writable();
 export const fetchCache = writable({});
+export const siteinfo = writable(null);
 export const delayLoadOnMount = writable(0);
 export const forcePreDelete = writable(false);
 export const worklistChangeFlag = writable(0);

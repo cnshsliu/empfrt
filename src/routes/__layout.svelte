@@ -7,7 +7,6 @@
 		if (/^\/settings\/(.*)/.test(url.pathname) && !user) {
 			return { redirect: '/', status: 302 };
 		}
-		if (user) session.siteinfo = await api.post('site/info', {}, user.sessionToken);
 		return {
 			props: {
 				url,

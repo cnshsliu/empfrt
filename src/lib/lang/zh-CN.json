@@ -353,8 +353,6 @@
 				"tryresult": "结果",
 				"csv": "从CSV文件获取",
 				"csv_placeholder": "CSV上传文件变量名",
-				"repeaton1": "如用户决策为",
-				"repeaton2": "则重复执行本工作项",
 				"allowpbo": "允许修改PBO",
 				"trykvar": "测试变量",
 				"trywfid": "测试流程"
@@ -384,9 +382,12 @@
 			},
 			"cronrun": {
 				"note": "用于控制在特定时间，重复下发当前任务, 使用Crontab标准语法。错误的Crontab设置可能达不到预想效果，请务必查询Crontab表达式的语法",
+				"repeaton1": "如用户决策为",
+				"repeaton2": "则继续，否则停止自动下发",
+				"norepeat": "不重复下发任务",
 				"nocron": "不重复下发任务",
-				"runthencron": "先下发一次，然后依Crontab定义下发",
-				"onlycron": "仅依照Crontab定义下发任务"
+				"runthencron": "先下发一次，然后依Crontab定义自动下发",
+				"onlycron": "仅依Crontab定义自动下发"
 			}
 		},
 		"script": {
@@ -1030,7 +1031,7 @@
 	},
 	"cron": {
 		"title": {
-			"expr": "Crontab表达式",
+			"expr": "表达式",
 			"month": "月度",
 			"date": "日期",
 			"weekday": "星期",
