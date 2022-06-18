@@ -339,7 +339,8 @@
 				"instruction": "Instruction",
 				"variables": "Variables",
 				"code": "Script code",
-				"crontab": "Repeat"
+				"crontab": "Repeat",
+				"others": "Others"
 			},
 			"placeholder": {
 				"instruct": "may use simple HTML format and Handlebars to include Kvars",

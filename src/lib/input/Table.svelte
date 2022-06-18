@@ -2,6 +2,8 @@
 	import { _ } from '$lib/i18n';
 	import { createEventDispatcher } from 'svelte';
 	import Parser from '$lib/parser';
+	import { onMount } from 'svelte';
+	import { inputs } from '$lib/empstores';
 	const dispatch = createEventDispatcher();
 	import * as api from '$lib/api';
 	import ColDefCompiler from '$lib/coldefcompiler';
@@ -63,7 +65,16 @@
 
 		//kvar.value = Parser.codeToBase64(JSON.stringify(theTableValue));
 		kvar.value = theTableValue;
+		dispatch('kvar_value_input_changed', kvar);
 	};
+
+	onMount(async () => {
+		if ($inputs[kvar.name] && $inputs[kvar.name].rows) {
+			rows = $inputs[kvar.name].rows;
+			//avgrow = $inputs[kvar.name].avgrow;
+			//sumrow = $inputs[kvar.name].sumrow;
+		}
+	});
 </script>
 
 {#each rows as row, rowIndex}
@@ -80,8 +91,7 @@
 								rows.splice(rowIndex, 0, JSON.parse(JSON.stringify(rows[rowIndex])));
 								rows = rows;
 								resetKVarValue();
-							}}
-						>
+							}}>
 							{$_('inputtable.copyto.above')}
 						</DropdownItem>
 						<DropdownItem
@@ -89,8 +99,7 @@
 								rows.splice(rowIndex + 1, 0, JSON.parse(JSON.stringify(rows[rowIndex])));
 								rows = rows;
 								resetKVarValue();
-							}}
-						>
+							}}>
 							{$_('inputtable.copyto.below')}
 						</DropdownItem>
 						<DropdownItem
@@ -99,8 +108,7 @@
 								rows.splice(rowIndex, 1);
 								rows = rows;
 								resetKVarValue();
-							}}
-						>
+							}}>
 							{$_('inputtable.delete')}
 						</DropdownItem>
 						<DropdownItem
@@ -111,8 +119,7 @@
 									rows = rows;
 									resetKVarValue();
 								}
-							}}
-						>
+							}}>
 							{$_('inputtable.move.up')}
 						</DropdownItem>
 						<DropdownItem
@@ -123,8 +130,7 @@
 									rows = rows;
 									resetKVarValue();
 								}
-							}}
-						>
+							}}>
 							{$_('inputtable.move.down')}
 						</DropdownItem>
 						<DropdownItem
@@ -135,8 +141,7 @@
 									rows = rows;
 									resetKVarValue();
 								}
-							}}
-						>
+							}}>
 							{$_('inputtable.move.top')}
 						</DropdownItem>
 						<DropdownItem
@@ -147,8 +152,7 @@
 									rows = rows;
 									resetKVarValue();
 								}
-							}}
-						>
+							}}>
 							{$_('inputtable.move.bottom')}
 						</DropdownItem>
 					</DropdownMenu>
@@ -163,7 +167,8 @@
 							<FormText color="muted">
 								{colDef.label}
 								{#if rehearsal}
-									<br />{colIndex}
+									<br />
+									{colIndex}
 									{colDef.type}
 								{/if}
 							</FormText>
@@ -187,8 +192,7 @@
 											resetKVarValue();
 											onInputTimer = null;
 										}, 200);
-									}}
-								>
+									}}>
 									{#if colDef.type === 'select'}
 										{#each colDef.options as anOpt}
 											<option value={anOpt}>{anOpt}</option>

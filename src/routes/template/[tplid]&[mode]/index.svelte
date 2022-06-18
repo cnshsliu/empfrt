@@ -133,6 +133,7 @@
 		start: false,
 		kshare: false,
 	};
+
 	export let form_name = '';
 	export let export_to_filename = template.tplid;
 	export let user: User;

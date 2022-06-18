@@ -5,6 +5,7 @@ import type { WorkStatus, WhichTab, FilterPicks } from '$lib/types';
 export const TagStorage = storage('tags', {});
 export const wfMonitorInterval = storage('wfminterval', 0);
 export const kshareCate = storage('ksharecate', 'scenario');
+export const inputs = storage('inputs', {});
 export const emailDomainForLogin = storage('edforlogin', { domain: '@' });
 export const WorkStatusStorage = storage<WorkStatus>('work_status', { status: 'ST_DONE' });
 export const debugOption = storage<string>('debugOption', 'no');

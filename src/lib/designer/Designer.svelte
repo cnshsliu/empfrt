@@ -593,7 +593,7 @@
 {:else}
 	<div id="templatehelp" class="kfk-workflow-info">Help</div>
 {/if}
-<Modal isOpen={openModal} {toggle} size={modalSize}>
+<Modal isOpen={openModal} {toggle} backdrop="static" size={modalSize}>
 	<ModalHeader {toggle}>{nodeInfo.nodeProps.label}</ModalHeader>
 	<ModalBody>
 		<Container>

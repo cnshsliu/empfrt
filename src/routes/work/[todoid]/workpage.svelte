@@ -23,7 +23,7 @@
 	import { onMount, tick } from 'svelte';
 	import { FormGroup, Input, Label, InputGroup, InputGroupText } from 'sveltestrap';
 	import { Button } from 'sveltestrap';
-	import { debugOption } from '$lib/empstores';
+	import { inputs, debugOption } from '$lib/empstores';
 	import WorkFile from '$lib/workfile.svelte';
 	import List from '$lib/input/List.svelte';
 	import { printing, notifyMessage, worklistChangeFlag } from '$lib/Stores';
@@ -445,7 +445,14 @@
 		if (localStorage) {
 			recentUsers = JSON.parse(localStorage.getItem('recentUsers') ?? JSON.stringify([]));
 		}
-		await caculateFormula(null);
+
+		for (let i = 0; i < work.kvarsArr.length; i++) {
+			if ($inputs[work.kvarsArr[i].name]) {
+				work.kvarsArr[i].value = $inputs[work.kvarsArr[i].name];
+			}
+		}
+
+		caculateFormula(null);
 	});
 </script>
 
@@ -501,7 +508,9 @@
 												{kvar}
 												{kvarIndex}
 												on:kvar_value_input_changed={async (e) => {
-													await caculateFormula(e.detail);
+													console.log('set inputs ', kvar.name, 'to', kvar.value);
+													$inputs[kvar.name] = kvar.value;
+													caculateFormula(e.detail);
 												}} />
 										{/if}
 									{/each}
@@ -528,6 +537,7 @@
 										color="primary"
 										on:click={async (e) => {
 											e.preventDefault();
+											$inputs = {};
 											await _doneWork();
 										}}>
 										{$_('button.done')}
@@ -541,6 +551,7 @@
 										color="primary"
 										on:click={async (e) => {
 											e.preventDefault();
+											$inputs = {};
 											await _doneWork(aChoice);
 										}}>
 										{aChoice}
@@ -558,6 +569,7 @@
 									class="w-100"
 									on:click={(e) => {
 										e.preventDefault();
+										$inputs = {};
 										_sendbackWork();
 									}}>
 									{$_('button.sendback')}
@@ -569,6 +581,7 @@
 									class="w-100"
 									on:click={(e) => {
 										e.preventDefault();
+										$inputs = {};
 										_revokeWork();
 									}}>
 									{$_('button.revoke')}

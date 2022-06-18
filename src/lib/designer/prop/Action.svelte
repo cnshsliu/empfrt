@@ -144,7 +144,7 @@
 {/if}
 -->
 <Container>
-	<Row cols="1">
+	<Row cols="1" class="mb-3">
 		<Col>
 			<ChangeID
 				{jq}
@@ -159,19 +159,6 @@
 					{$_('prop.label')}
 				</InputGroupText>
 				<Input bind:value={nodeInfo.nodeProps.ACTION.label} disabled={readonly} />
-			</InputGroup>
-		</Col>
-		<Col>
-			<InputGroup size="sm">
-				<InputGroupText>
-					{$_('prop.bot')}
-				</InputGroupText>
-				<Input
-					class="ms-1"
-					type="checkbox"
-					label="WECOM"
-					bind:checked={nodeInfo.nodeProps.ACTION.bot.wecom}
-					disabled={readonly} />
 			</InputGroup>
 		</Col>
 	</Row>
@@ -861,6 +848,23 @@
 				{/each}
 			</TabPane>
 		{/if}
+		<TabPane tabId="others" tab={$_('prop.action.tab.others')} active={isActive('others')}>
+			<Row>
+				<Col>
+					<InputGroup size="sm">
+						<InputGroupText>
+							{$_('prop.bot')}
+						</InputGroupText>
+						<Input
+							class="ms-1"
+							type="checkbox"
+							label="WECOM"
+							bind:checked={nodeInfo.nodeProps.ACTION.bot.wecom}
+							disabled={readonly} />
+					</InputGroup>
+				</Col>
+			</Row>
+		</TabPane>
 		<!--variables-->
 	</TabContent>
 	<Row cols="1">

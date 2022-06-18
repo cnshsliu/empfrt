@@ -111,7 +111,11 @@
 						dispatch('kvar_value_input_changed', kvar);
 					}} />
 			{:else if kvar.type === 'tbl'}
-				<InputTable {kvar} rehearsal={work.rehearsal} readonly={false} />
+				<InputTable
+					{kvar}
+					rehearsal={work.rehearsal}
+					readonly={false}
+					on:kvar_value_input_changed />
 			{:else if kvar.type === 'file'}
 				<WorkFile
 					{work}

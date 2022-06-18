@@ -339,7 +339,8 @@
 				"instruction": "操作指引",
 				"variables": "节点参数",
 				"code": "节点脚本",
-				"crontab": "重复执行"
+				"crontab": "重复执行",
+				"others": "其它"
 			},
 			"placeholder": {
 				"instruct": "可以使用简单HTML格式，也可使用Handlebars嵌入流程变量,like {{varname.label}}, {{varname.value}}",

@@ -6,7 +6,6 @@
 	const dispatch = createEventDispatcher();
 	export let jq;
 	export let idForInput;
-	export let KFK;
 	export let readonly;
 	let oldId = idForInput;
 	let errmsg = $_('changeid.meaningful');
