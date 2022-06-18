@@ -186,6 +186,9 @@ export interface KVarDefInput {
 	coldef?: string;
 	visi?: string;
 	formula?: string;
+	min?: number;
+	max?: number;
+	step?: number;
 }
 
 export interface KFKclass {

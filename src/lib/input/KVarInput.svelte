@@ -24,6 +24,9 @@
 	let userCheckingResult = '';
 	const FULLWITHINPUTTYPES = ['textarea', 'tbl', 'file', 'csv'];
 
+	if (kvar.type === 'number' && kvar.min && kvar.value < kvar.min) kvar.value = kvar.min;
+	if (kvar.type === 'number' && kvar.max && kvar.value > kvar.max) kvar.value = kvar.max;
+
 	const onInputUser = async function (kvar, ser) {
 		kvar.class = 'LOADING';
 		if (check_timer) clearTimeout(check_timer);
@@ -84,8 +87,7 @@
 	<Col
 		class={kvar.type === 'tbl'
 			? 'p-3  w-100 border border-1 rounded w-100'
-			: ' p-1 ' + (FULLWITHINPUTTYPES.includes(kvar.type) ? ' w-100' : '')}
-	>
+			: ' p-1 ' + (FULLWITHINPUTTYPES.includes(kvar.type) ? ' w-100' : '')}>
 		{#if $debugOption === 'yes'}
 			<div class="text-wrap text-break">{JSON.stringify(kvar)}</div>
 		{/if}
@@ -107,8 +109,7 @@
 					on:change={(e) => {
 						e.preventDefault();
 						dispatch('kvar_value_input_changed', kvar);
-					}}
-				/>
+					}} />
 			{:else if kvar.type === 'tbl'}
 				<InputTable {kvar} rehearsal={work.rehearsal} readonly={false} />
 			{:else if kvar.type === 'file'}
@@ -119,8 +120,7 @@
 					forWhich={work.wfid}
 					forKey={kvar.name}
 					forKvar={kvar.label}
-					filetype={'file'}
-				/>
+					filetype={'file'} />
 			{:else if kvar.type === 'csv'}
 				<WorkFile
 					{work}
@@ -147,8 +147,7 @@
 					on:uidCheckResult={(e) => {
 						csvUIDCheckResult[kvar.name] = e.detail;
 						csvUIDCheckResult = csvUIDCheckResult;
-					}}
-				/>
+					}} />
 				{#if csvUIDCheckResult[kvar.name]}
 					<div>{$_('csv.uidnotfound')}</div>
 					<div>{csvUIDCheckResult[kvar.name]}</div>
@@ -157,7 +156,7 @@
 				{#if csvFileServerIds[kvar.name]}
 					<CsvDisplay fileId={csvFileServerIds[kvar.name]} />
 				{/if}
-			{:else if ['select', 'checkbox', 'radio', 'user'].includes(kvar.type) === false}
+			{:else if ['select', 'checkbox', 'radio', 'user', 'number'].includes(kvar.type) === false}
 				<Input
 					type={['dt', 'datetime'].includes(kvar.type)
 						? 'datetime-local'
@@ -172,8 +171,22 @@
 					on:change={(e) => {
 						e.preventDefault();
 						dispatch('kvar_value_input_changed', kvar);
-					}}
-				/>
+					}} />
+			{:else if kvar.type === 'number'}
+				<Input
+					type="number"
+					name={kvar.name}
+					bind:value={kvar.value}
+					id={kvar.id ? kvar.id : `input_${kvar.name}`}
+					min={kvar.min}
+					max={kvar.max}
+					step={kvar.step}
+					placeholder={kvar.placeholder}
+					required={kvar.required}
+					on:change={(e) => {
+						e.preventDefault();
+						dispatch('kvar_value_input_changed', kvar);
+					}} />
 			{:else if kvar.type === 'user'}
 				<Input
 					class={cssClasses}
@@ -191,12 +204,10 @@
 						e.preventDefault();
 						dispatch('kvar_value_input_changed', kvar);
 					}}
-					aria-describedby={'validationServerUsernameFeedback' + kvarIndex}
-				/>
+					aria-describedby={'validationServerUsernameFeedback' + kvarIndex} />
 				<div
 					id={'validationServerUsernameFeedback' + kvarIndex}
-					class="invalid-feedback text-danger"
-				>
+					class="invalid-feedback text-danger">
 					{userCheckingResult}
 				</div>
 				{#if cssClasses === 'valid'}
@@ -213,8 +224,7 @@
 						on:change={(e) => {
 							e.preventDefault();
 							dispatch('kvar_value_input_changed', kvar);
-						}}
-					/>
+						}} />
 				</div>
 			{:else if kvar.type === 'radio'}
 				{#each kvar.options as option}
@@ -228,8 +238,7 @@
 							//eslint-disable-next-line
 							let selectedValue = e.target.value;
 							dispatch('kvar_value_input_changed', { name: kvar.name, value: selectedValue });
-						}}
-					/>
+						}} />
 				{/each}
 			{:else if kvar.type === 'select'}
 				<List
@@ -246,8 +255,7 @@
 							whichtoChange = tmp[0];
 							serverListKey = tmp[1];
 						}
-					}}
-				/>
+					}} />
 			{/if}
 		</FormGroup>
 	</Col>

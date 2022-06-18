@@ -78,6 +78,7 @@
 	}
 
 	export let label = $_('prop.action.kvar.visi');
+	export let placeholder = '';
 	export let value = '';
 	export let readonly = false;
 	export let btnText = $_('button.resolve');
@@ -128,7 +129,7 @@
 	<InputGroupText>
 		{label}
 	</InputGroupText>
-	<input class="form-control" bind:value disabled={readonly} use:inputing />
+	<input class="form-control" bind:value disabled={readonly} use:inputing {placeholder} />
 	<Button
 		on:click={() => {
 			showExtra = !showExtra;

@@ -8,7 +8,6 @@
 	import type { WhichTab } from '$lib/types';
 	import { Container, Row, Col, InputGroup, Input, InputGroupText, Button } from 'sveltestrap';
 	import { onMount } from 'svelte';
-	import CronBuilder from '$lib/CronBuilder.svelte';
 	import { siteinfo } from '$lib/Stores';
 	import { session } from '$app/stores';
 	import KShares from './kshares/index.svelte';
@@ -101,9 +100,6 @@
 					</div>
 				</div>
 			</div>
-		</div>
-		<div class="m-2 p-2">
-			<CronBuilder bind:cronexpr />
 		</div>
 		<div class="mt-5">&nbsp;</div>
 		{#if $siteinfo?.ksenabled && user.group === 'ADMIN'}

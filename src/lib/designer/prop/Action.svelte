@@ -430,6 +430,21 @@
 										? $_('prop.action.kvar.ou_placeholder')
 										: $_('prop.action.kvar.sel_placeholder')} />
 							</InputGroup>
+						{:else if kvar.name.startsWith('number_')}
+							<InputGroup size="sm">
+								<InputGroupText>
+									{$_('prop.action.kvar.number.min')}
+								</InputGroupText>
+								<Input bind:value={kvar.min} disabled={readonly} placeholder="" type="number" />
+								<InputGroupText>
+									{$_('prop.action.kvar.number.max')}
+								</InputGroupText>
+								<Input bind:value={kvar.max} disabled={readonly} placeholder="" type="number" />
+								<InputGroupText>
+									{$_('prop.action.kvar.number.step')}
+								</InputGroupText>
+								<Input bind:value={kvar.step} disabled={readonly} placeholder="" type="number" />
+							</InputGroup>
 						{:else if kvar.name.startsWith('tbl_')}
 							<InputGroup size="sm">
 								<InputGroupText>
@@ -657,6 +672,31 @@
 						{$_('prop.action.cronrun.nocron')}
 					</label>
 				</div>
+				<div class="">
+					<label>
+						<input
+							type="radio"
+							bind:group={nodeInfo.nodeProps.ACTION.cronrun}
+							name="mode_cronrun"
+							value={3} />
+						{$_('prop.action.cronrun.byrepeaton')}
+					</label>
+				</div>
+				{#if nodeInfo.nodeProps.ACTION.cronrun === 3}
+					<Row>
+						<InputGroup>
+							<InputGroupText>
+								{$_('prop.action.cronrun.repeaton1')}
+							</InputGroupText>
+							<Input
+								id="repeaton1"
+								type="text"
+								bind:value={nodeInfo.nodeProps.ACTION.repeaton}
+								disabled={readonly} />
+							<InputGroupText>{$_('prop.action.cronrun.repeaton3')}</InputGroupText>
+						</InputGroup>
+					</Row>
+				{/if}
 				<div class="">
 					<label>
 						<input

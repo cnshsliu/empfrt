@@ -184,6 +184,7 @@
 	"button": {
 		"postKShare": "确定上架ProcessHub",
 		"check": "检查",
+		"addcron": "添加这条Crontab定期启动工作流计划",
 		"toggleAdvancedSearch": "高级查询",
 		"resetQuery": "重置/全部",
 		"refreshtodos": "刷新工作列表",
@@ -215,6 +216,13 @@
 		"create": {
 			"name": "新流程名称",
 			"tags": "用spaces或;或,分割的标签"
+		},
+		"addcron": {
+			"title": "定期自动启动工作流",
+			"cronStarters": "启动时自动设置启动者为",
+			"cronStarters_placeholder": "请使用PDS格式指定单人或多人",
+			"existing": "已添加的定期执行计划",
+			"addnew": "添加新的定期执行计划"
 		},
 		"import": {
 			"name": "新流程名称",
@@ -331,7 +339,7 @@
 				"instruction": "操作指引",
 				"variables": "节点参数",
 				"code": "节点脚本",
-				"crontab": "Crontab"
+				"crontab": "重复执行"
 			},
 			"placeholder": {
 				"instruct": "可以使用简单HTML格式，也可使用Handlebars嵌入流程变量,like {{varname.label}}, {{varname.value}}",
@@ -374,6 +382,11 @@
 				"visi": "对谁可见",
 				"breakrow": "是否换行",
 				"ID": "编号(可选）",
+				"number": {
+					"min": "最小值",
+					"max": "最大值",
+					"step": "步幅"
+				},
 				"required": "是否必填"
 			},
 			"button": {
@@ -384,8 +397,10 @@
 				"note": "用于控制在特定时间，重复下发当前任务, 使用Crontab标准语法。错误的Crontab设置可能达不到预想效果，请务必查询Crontab表达式的语法",
 				"repeaton1": "如用户决策为",
 				"repeaton2": "则继续，否则停止自动下发",
+				"repeaton3": "则重复，否则停止重复",
 				"norepeat": "不重复下发任务",
 				"nocron": "不重复下发任务",
+				"byrepeaton": "由用户选择决定",
 				"runthencron": "先下发一次，然后依Crontab定义自动下发",
 				"onlycron": "仅依Crontab定义自动下发"
 			}

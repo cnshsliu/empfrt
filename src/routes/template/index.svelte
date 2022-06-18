@@ -47,6 +47,9 @@
 		Icon,
 		Container,
 		Row,
+		Card,
+		CardBody,
+		CardHeader,
 		Col,
 		InputGroup,
 		InputGroupText,
@@ -92,7 +95,7 @@
 	let editlogs: any = [];
 	let editCronFor = '';
 	let cronStarters = '';
-	let cronexpr = '1 * * * *';
+	let cronexpr = '0 8 * * *';
 	let crons = [];
 	let thePdsResolver;
 	let searchTimer = null;
@@ -984,7 +987,7 @@
 											e.preventDefault();
 											editlogfor = '';
 										}}>
-										Close
+										{$_('button.close')}
 									</div>
 								</Row>
 								{#each editlogs as elog}
@@ -999,73 +1002,87 @@
 						{/if}
 						{#if editCronFor === row.tplid}
 							<!-- Crontab editor -->
-							<Container class="border border-2 rounded py-2 bg-light">
-								<Row>
+							<Card>
+								<CardHeader>
 									<!-- svelte-ignore missing-declaration -->
-									<div
-										class="btn btn-primary"
-										color="primary"
-										on:click={(e) => {
-											e.preventDefault();
-											editCronFor = '';
-										}}>
-										Close
-									</div>
-								</Row>
-								{#each crons as cron}
 									<Row>
-										<Col>{cron.starters}</Col><Col>
-											<a
-												rel="external"
-												href="https://crontab.guru/#{cron.expr.replace(/ /g, '_')}"
-												target="_crontabgenerator">
-												{cron.expr}
-											</a>
-										</Col>
-										<Col>
+										<Col class="fs-5 fw-bold">{$_('template.addcron.title')}</Col>
+										<Col class="col-auto">
 											<div
-												class="btn btn-primary btn-sm"
-												on:click={async (e) => {
-													await deleteCrontab(e, cron.tplid, cron._id);
+												class="btn btn-primary m-1"
+												color="primary"
+												on:click={(e) => {
+													e.preventDefault();
+													editCronFor = '';
 												}}>
-												Del
+												{$_('button.close')}
 											</div>
 										</Col>
 									</Row>
-								{/each}
-								<Row>
-									<InputGroup class="p-0">
-										<!-- 只有管理员可以指定其它用户，普通用户没有这个输入框，只能自己用 -->
-										{#if user.group === 'ADMIN'}
-											<PDSResolver
-												bind:this={thePdsResolver}
-												bind:value={cronStarters}
-												readonly={false}
-												label={'Starters'}
-												btnText={'Check'} />
-										{/if}
-										<Input bind:value={cronexpr} />
-										<div
-											class="btn btn-primary"
-											color="primary"
-											on:click={(e) => {
-												addCron(e, row.tplid);
-											}}>
-											Add
-										</div>
-										<div
-											class="btn btn-primary ms-1"
-											on:click={(e) => {
-												startNow(e, row.tplid);
-											}}>
-											Start Now
-										</div>
-									</InputGroup>
-								</Row>
-								<Row>
-									<CronBuilder bind:cronexpr />
-								</Row>
-							</Container>
+								</CardHeader>
+								<CardBody>
+									<Card class="mt-1">
+										<CardHeader class="fs-5 fw-bold mt-1">
+											{$_('template.addcron.existing')}
+										</CardHeader>
+										<CardBody>
+											{#each crons as cron}
+												<Row>
+													<Col>{cron.starters}</Col><Col>
+														<a
+															rel="external"
+															href="https://crontab.guru/#{cron.expr.replace(/ /g, '_')}"
+															target="_crontabgenerator">
+															{cron.expr}
+														</a>
+													</Col>
+													<Col>
+														<div
+															class="btn btn-primary btn-sm"
+															on:click={async (e) => {
+																await deleteCrontab(e, cron.tplid, cron._id);
+															}}>
+															Del
+														</div>
+													</Col>
+												</Row>
+											{/each}
+										</CardBody>
+									</Card>
+									<Card class="mt-1">
+										<CardHeader class="fs-5 fw-bold mt-1">
+											{$_('template.addcron.addnew')}
+										</CardHeader>
+										<CardBody>
+											{#if user.group === 'ADMIN'}
+												<Row>
+													<!-- 只有管理员可以指定其它用户，普通用户没有这个输入框，只能自己用 -->
+													<PDSResolver
+														bind:this={thePdsResolver}
+														bind:value={cronStarters}
+														readonly={false}
+														placeholder={$_('template.addcron.cronStarters_placeholder')}
+														label={$_('template.addcron.cronStarters')}
+														btnText={$_('button.check')} />
+												</Row>
+											{/if}
+											<Row>
+												<CronBuilder bind:cronexpr />
+											</Row>
+											<Row>
+												<div
+													class="btn btn-primary"
+													color="primary"
+													on:click={(e) => {
+														addCron(e, row.tplid);
+													}}>
+													{$_('button.addcron')}
+												</div>
+											</Row>
+										</CardBody>
+									</Card>
+								</CardBody>
+							</Card>
 						{/if}
 						<ItemEditor
 							{rows}

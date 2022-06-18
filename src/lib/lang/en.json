@@ -184,6 +184,7 @@
 	"button": {
 		"postKShare": "Post to ProcessHub",
 		"check": "Check",
+		"addcron": "Add this Crontab automatically-start-workflow-plan",
 		"toggleAdvancedSearch": "Advanced Search",
 		"resetQuery": "Reset/All",
 		"refreshtodos": "Refresh Worklist",
@@ -215,6 +216,13 @@
 		"create": {
 			"name": "Template name",
 			"tags": "Tags delimited by spaces/;/,"
+		},
+		"addcron": {
+			"title": "Automatically start workflow",
+			"cronStarters": "Set Starter to",
+			"cronStarters_placeholder": "One or more people specified in PDS format",
+			"existing": "Existing Crontab plan",
+			"addnew": "Add new Crontab plan"
 		},
 		"import": {
 			"name": "Template name",
@@ -331,7 +339,7 @@
 				"instruction": "Instruction",
 				"variables": "Variables",
 				"code": "Script code",
-				"crontab": "Crontab"
+				"crontab": "Repeat"
 			},
 			"placeholder": {
 				"instruct": "may use simple HTML format and Handlebars to include Kvars",
@@ -374,6 +382,11 @@
 				"visi": "Visible",
 				"breakrow": "Break row",
 				"ID": "ID",
+				"number": {
+					"min": "Min",
+					"max": "Max",
+					"step": "Step"
+				},
 				"required": "Required"
 			},
 			"button": {
@@ -384,8 +397,10 @@
 				"note": "Used to dispatch task on specific time with Crontab standard expression. Make sure you are familiar with Crontab, unexpected behaviour may occur otherwise",
 				"repeaton1": "If user choice is not",
 				"repeaton2": "then stop crontab dispatching",
+				"repeaton3": "then stop repeating",
 				"norepeat": "Don't disptach repeatedly",
 				"nocron": "Don't disptach repeatedly",
+				"byrepeaton": "According to user choice",
 				"runthencron": "Dispatch task first, then dispatch automatically following Crontab",
 				"onlycron": "Only dispatch task automatically following Crontab"
 			}
