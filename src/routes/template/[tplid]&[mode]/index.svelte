@@ -264,7 +264,7 @@
 		);
 		if (ret.error) {
 			if (ret.error === 'ALREADY_EXIST') {
-				setFadeMessage('同名模板已存在, 请重新录入', 'warning');
+				setFadeMessage($_('tpl.copy_duplicated', { values: { tplid: newTplId } }), 'warning');
 			} else {
 				setFadeMessage(ret.message, 'warning');
 			}
@@ -278,6 +278,7 @@
 				noscroll: true,
 				keepfocus: true,
 			});
+			setFadeMessage($_('tpl.copy_successed', { values: { tplid: newTplId } }), 'success');
 			//await theDesigner.loadTemplate(template.tplid, tpl_mode);
 		}
 		hide_all_form();

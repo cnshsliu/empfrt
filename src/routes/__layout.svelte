@@ -142,7 +142,7 @@
 {/if}
 {#if showNotify}
 	<div
-		class={'text-center fixed-bottom fs-3 bg-' +
+		class={'text-center fixed-bottom fs-3 bg-opacity-90 bg-' +
 			$notifyMessage.type +
 			(['success'].includes($notifyMessage.type) ? ' text-white' : '')}>
 		{$notifyMessage.message}

@@ -53,6 +53,7 @@
 	let rows: Workflow[] = [] as Workflow[];
 	let miningData = [];
 
+	let multiple_selecting = false;
 	let loading = true;
 	let rowsCount = 0;
 	let show_calendar_select = false;
@@ -433,6 +434,35 @@
 		$filterStorage.todo.workTitlePattern = 'wf:' + ret.wfid;
 	};
 
+	async function __deleteWorkflowMultiple() {
+		let wfids = rows.filter((x) => x.checked).map((x) => x.wfid);
+		if (wfids.length < 1) return;
+		$mtcConfirm = {
+			title: $_('confirm.delete.workflow-multi.title', { values: { count: wfids.length } }),
+			body: $_('confirm.delete.workflow-multi.body', { values: { count: wfids.length } }),
+			buttons: [$_('confirm.delete.workflow-multi.yes')],
+			callbacks: [
+				async () => {
+					mtcConfirmReset();
+					let res = await api.post('workflow/destroy/multi', { wfids: wfids }, user.sessionToken);
+					if (res.error) {
+						setFadeMessage(res.message, 'warning');
+					} else {
+						api.removeCacheByPath('workflow/search');
+						api.removeCacheByPath('work/search');
+						$worklistChangeFlag++;
+						let tmp = [];
+						for (let r = 0; r < rows.length; r++) {
+							if (wfids.includes(rows[r].wfid) === false) tmp.push(rows[r]);
+						}
+						rowsCount = tmp.length;
+						rows = tmp;
+					}
+				},
+			],
+		};
+	}
+
 	let isMobile = false;
 	onMount(async () => {
 		if ($filterStorage[BIZ].pattern && $filterStorage[BIZ].pattern.startsWith('wf:')) {
@@ -456,6 +486,7 @@
 			}
 		}
 	});
+
 	const toggleDiscuss = async (row) => {
 		return await api.post(
 			'comment/toggle',
@@ -788,15 +819,64 @@
 			<div class="flex-shrink-1">
 				<ColPerRowSelection />
 			</div>
+			{#if user.group === 'ADMIN'}
+				<div class="flex-shrink-1 text-nowrap">
+					<div
+						class="btn m-0 p-1"
+						on:click|preventDefault={() => (multiple_selecting = !multiple_selecting)}>
+						{#if multiple_selecting}
+							{$_('remotetable.multi-select-cancel')}
+						{:else}
+							{$_('remotetable.multi-select')}
+						{/if}
+					</div>
+				</div>
+			{/if}
 		</div>
 		<!-- code><pre>
 			{JSON.stringify(rows, null, 2)}
 	</pre></code -->
+		{#if multiple_selecting}
+			<Row>
+				<div
+					class="btn col"
+					on:click|preventDefault={(e) => {
+						for (let r = 0; r < rows.length; r++) {
+							rows[r].checked = true;
+						}
+					}}>
+					{$_('remotetable.multi-select-all')}
+				</div>
+				<div
+					class="btn col"
+					on:click|preventDefault={(e) => {
+						for (let r = 0; r < rows.length; r++) {
+							rows[r].checked = false;
+						}
+					}}>
+					{$_('remotetable.multi-select-none')}
+				</div>
+				{#if rows.filter((x) => x.checked).length > 0}
+					<div
+						class="btn col"
+						on:click|preventDefault={(e) => {
+							__deleteWorkflowMultiple();
+						}}>
+						{$_('remotetable.multi-select-delete')}
+					</div>
+				{/if}
+			</Row>
+		{/if}
 		<Row cols={$filterStorage.col_per_row}>
 			{#each rows as row, index (row)}
 				<Col class="mb-2 card p-2">
-					<div class="">
-						<div class="">
+					<Row>
+						{#if multiple_selecting}
+							<Col class="col-auto">
+								<input type="checkbox" bind:checked={row.checked} />
+							</Col>
+						{/if}
+						<Col>
 							<div class="d-flex">
 								<div class="w-100">
 									<h5 class="">
@@ -1017,8 +1097,8 @@
 									</label>
 								</div>
 							{/if}
-						</div>
-					</div>
+						</Col>
+					</Row>
 				</Col>
 			{/each}
 		</Row>

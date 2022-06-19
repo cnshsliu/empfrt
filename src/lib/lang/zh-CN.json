@@ -120,6 +120,11 @@
 		"actions": "操作",
 		"author": "规划者",
 		"belongTo": "所属流程",
+		"multi-select": "选择多个",
+		"multi-select-cancel": "取消多选",
+		"multi-select-all": "选择全部",
+		"multi-select-none": "全部不选",
+		"multi-select-delete": "删除所选",
 		"template": {
 			"set": {
 				"title": "设置当前模版",
@@ -127,6 +132,7 @@
 				"setauthor": "将作者指定为（输入用户邮箱前缀）",
 				"setdesc": "设置说明描述信息",
 				"setvisito": "对谁可见 (使用PDS格式指定)",
+				"selecttocopyfrom": "选择一个模版拷贝其设计",
 				"tplid": "修改模版名称ID"
 			}
 		},
@@ -269,6 +275,7 @@
 	},
 
 	"todo": {
+		"completed": "已完成",
 		"status": "任务状态",
 		"Starter": "发起人ID",
 		"StarterOU": "发起人部门",
@@ -314,6 +321,8 @@
 		"new": "新建",
 		"export": "导出",
 		"copyto": "复制",
+		"copy_duplicated": "模版{tplid}已存在",
+		"copy_successed": "成功拷贝到{tplid}",
 		"rename": "重命名",
 		"delete": "删除",
 		"editit": "编辑模式",
@@ -518,6 +527,16 @@
 			"template": {
 				"title": "删除模版",
 				"body": "删除模版不可撤回，请确认要删除",
+				"yes": "确定删除"
+			},
+			"template-multi": {
+				"title": "删除{count}个模版",
+				"body": "删除{count}个模版，不可撤回，请确认要删除",
+				"yes": "确定删除"
+			},
+			"workflow-multi": {
+				"title": "删除{count}个流程",
+				"body": "删除{count}个流程，不可撤回，请确认要删除",
 				"yes": "确定删除"
 			}
 		}

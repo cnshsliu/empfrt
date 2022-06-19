@@ -70,6 +70,7 @@
 		$filterStorage[BIZ].sortby = '-updatedAt';
 	}
 
+	let multiple_selecting = false;
 	let rows = [];
 	let user = $session.user;
 	let rowsCount = 0;
@@ -111,6 +112,10 @@
 		create: `${API_SERVER}/template/create`,
 	};
 	$: filteredRows = rows;
+
+	if (!$session.tplIds) {
+		$session.tplIds = [];
+	}
 
 	function hide_all_form() {
 		Object.keys(form_status).forEach((key) => {
@@ -303,6 +308,33 @@
 		}
 	}
 
+	async function __deleteTemplateMultiple() {
+		let tplids = rows.filter((x) => x.checked).map((x) => x.tplid);
+		if (tplids.length < 1) return;
+		$mtcConfirm = {
+			title: $_('confirm.delete.template-multi.title', { values: { count: tplids.length } }),
+			body: $_('confirm.delete.template-multi.body', { values: { count: tplids.length } }),
+			buttons: [$_('confirm.delete.template-multi.yes')],
+			callbacks: [
+				async () => {
+					mtcConfirmReset();
+					let res = await api.post('template/delete/multi', { tplids: tplids }, user.sessionToken);
+					if (res.error) {
+						setFadeMessage(res.message, 'warning');
+					} else {
+						api.removeCacheByPath('template/search');
+						let tmp = [];
+						for (let r = 0; r < rows.length; r++) {
+							if (tplids.includes(rows[r].tplid) === false) tmp.push(rows[r]);
+						}
+						rowsCount = tmp.length;
+						rows = tmp;
+					}
+				},
+			],
+		};
+	}
+
 	let allTags: any = {
 		org: [],
 		mine: [],
@@ -349,6 +381,14 @@
 			} else {
 				await searchNow();
 			}
+		}
+
+		if (!$session.tplIds) {
+			$session.tplIds = [];
+		}
+		if ($session.tplIds.length < 1) {
+			let tmp = await api.post('template/tplid/list', {}, user.sessionToken);
+			$session.tplIds = tmp.map((x) => x.tplid);
 		}
 	});
 	const stateContext = getContext('state');
@@ -751,15 +791,64 @@
 		<div class="flex-shrink-1">
 			<ColPerRowSelection />
 		</div>
+		{#if user.group === 'ADMIN'}
+			<div class="flex-shrink-1 text-nowrap">
+				<div
+					class="btn m-0 p-1"
+					on:click|preventDefault={() => (multiple_selecting = !multiple_selecting)}>
+					{#if multiple_selecting}
+						{$_('remotetable.multi-select-cancel')}
+					{:else}
+						{$_('remotetable.multi-select')}
+					{/if}
+				</div>
+			</div>
+		{/if}
 	</div>
 	<!-- code><pre>
 			{JSON.stringify(rows, null, 2)}
 	</pre></code -->
+	{#if multiple_selecting}
+		<Row>
+			<div
+				class="btn col"
+				on:click|preventDefault={(e) => {
+					for (let r = 0; r < rows.length; r++) {
+						rows[r].checked = true;
+					}
+				}}>
+				{$_('remotetable.multi-select-all')}
+			</div>
+			<div
+				class="btn col"
+				on:click|preventDefault={(e) => {
+					for (let r = 0; r < rows.length; r++) {
+						rows[r].checked = false;
+					}
+				}}>
+				{$_('remotetable.multi-select-none')}
+			</div>
+			{#if rows.filter((x) => x.checked).length > 0}
+				<div
+					class="btn col"
+					on:click|preventDefault={(e) => {
+						__deleteTemplateMultiple();
+					}}>
+					{$_('remotetable.multi-select-delete')}
+				</div>
+			{/if}
+		</Row>
+	{/if}
 	<Row cols={$filterStorage.col_per_row}>
 		{#each rows as row, index (row)}
 			<Col class="mb-2 card p-2">
 				<Row>
 					<!-- 封面 -->
+					{#if multiple_selecting}
+						<Col class="col-auto">
+							<input type="checkbox" bind:checked={row.checked} />
+						</Col>
+					{/if}
 					<Col class="col-auto">
 						{#if row.hasCover}
 							<Cover tplid={row.tplid} style={'cover-90'} />

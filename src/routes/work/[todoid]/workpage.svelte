@@ -228,7 +228,7 @@
 			api.removeCacheByPath('work/search');
 			$worklistChangeFlag++;
 			dispatch('statusChanged', ret);
-			setFadeMessage('Completed', 'success');
+			setFadeMessage($_('todo.completed'), 'success');
 			//If have endpoint, post to endpoint
 			if (
 				work.wf.endpoint &&
@@ -447,8 +447,8 @@
 		}
 
 		for (let i = 0; i < work.kvarsArr.length; i++) {
-			if ($inputs[work.kvarsArr[i].name]) {
-				work.kvarsArr[i].value = $inputs[work.kvarsArr[i].name];
+			if ($inputs[work.todoid] && $inputs[work.todoid][work.kvarsArr[i].name]) {
+				work.kvarsArr[i].value = $inputs[work.todoid][work.kvarsArr[i].name];
 			}
 		}
 
@@ -508,9 +508,23 @@
 												{kvar}
 												{kvarIndex}
 												on:kvar_value_input_changed={async (e) => {
-													console.log('set inputs ', kvar.name, 'to', kvar.value);
-													$inputs[kvar.name] = kvar.value;
+													if (!$inputs[work.todoid]) {
+														$inputs[work.todoid] = {
+															___ts__: new Date().getTime(),
+														};
+													}
+													$inputs[work.todoid][kvar.name] = kvar.value;
+													$inputs[work.todoid]['___ts__'] = new Date().getTime();
 													caculateFormula(e.detail);
+													for (const [key, value] of Object.entries($inputs)) {
+														if (key !== work.todoid) {
+															if (!value['___ts__']) {
+																delete $inputs[key];
+															} else if (new Date().getTime() - value['___ts__'] > 10000) {
+																delete $inputs[key];
+															}
+														}
+													}
 												}} />
 										{/if}
 									{/each}
@@ -537,7 +551,7 @@
 										color="primary"
 										on:click={async (e) => {
 											e.preventDefault();
-											$inputs = {};
+											$inputs[work.todoid] = {};
 											await _doneWork();
 										}}>
 										{$_('button.done')}
@@ -551,7 +565,7 @@
 										color="primary"
 										on:click={async (e) => {
 											e.preventDefault();
-											$inputs = {};
+											$inputs[work.todoid] = {};
 											await _doneWork(aChoice);
 										}}>
 										{aChoice}
@@ -569,7 +583,7 @@
 									class="w-100"
 									on:click={(e) => {
 										e.preventDefault();
-										$inputs = {};
+										$inputs[work.todoid] = {};
 										_sendbackWork();
 									}}>
 									{$_('button.sendback')}
@@ -581,7 +595,7 @@
 									class="w-100"
 									on:click={(e) => {
 										e.preventDefault();
-										$inputs = {};
+										$inputs[work.todoid] = {};
 										_revokeWork();
 									}}>
 									{$_('button.revoke')}

@@ -113,6 +113,7 @@
 			{:else if kvar.type === 'tbl'}
 				<InputTable
 					{kvar}
+					objid={work.todoid}
 					rehearsal={work.rehearsal}
 					readonly={false}
 					on:kvar_value_input_changed />

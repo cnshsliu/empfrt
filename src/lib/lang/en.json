@@ -120,6 +120,11 @@
 		"actions": "Actions",
 		"author": "Author",
 		"belongTo": "Belonging to",
+		"multi-select": "Multi-select",
+		"multi-select-cancel": "Cancel",
+		"multi-select-all": "Select all",
+		"multi-select-none": "Select none",
+		"multi-select-delete": "Delete Selected",
 		"template": {
 			"set": {
 				"title": "Template Settings",
@@ -127,6 +132,7 @@
 				"setauthor": "Set author to（user id/email prefix）",
 				"setdesc": "Set description",
 				"setvisito": "Set visible for (specify with PDS format)",
+				"selecttocopyfrom": "Select to copy from",
 				"tplid": "Rename Template ID"
 			}
 		},
@@ -269,6 +275,7 @@
 	},
 
 	"todo": {
+		"completed": "Completed",
 		"status": "Task Status",
 		"Starter": "Starter UID",
 		"StarterOU": "Starter Department",
@@ -314,6 +321,8 @@
 		"new": "New",
 		"export": "Export",
 		"copyto": "Copy to",
+		"copy_duplicated": "{tplid} Already exists",
+		"copy_successed": "Successfully copy to {tplid}",
 		"rename": "Rename",
 		"delete": "Delete",
 		"editit": "Edit it",
@@ -517,7 +526,17 @@
 		"delete": {
 			"template": {
 				"title": "Delete Template",
-				"body": "Deletion is not revokable",
+				"body": "Deletion is not revocable",
+				"yes": "Confirm to delete"
+			},
+			"template-multi": {
+				"title": "Delete {count} templates",
+				"body": "Delete {count} templates，can not undo",
+				"yes": "Confirm to delete"
+			},
+			"workflow-multi": {
+				"title": "Delete {count} workflows",
+				"body": "Delete {count} workflows, can not undo",
 				"yes": "Confirm to delete"
 			}
 		}

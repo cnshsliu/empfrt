@@ -92,6 +92,7 @@ export interface Workflow {
 	history?: any;
 	commentCount: number;
 	allowdiscuss: boolean;
+	checked: boolean;
 }
 
 export interface Work {

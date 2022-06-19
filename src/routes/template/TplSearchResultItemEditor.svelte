@@ -21,6 +21,7 @@
 	export let tplid_input: string = row.tplid;
 	export let author_input: string = '';
 	let tag_input: string = '';
+	let copyfromtplid = '';
 	export let setFadeMessage: any;
 	export let reloadTags: any;
 	export let SetFor: any;
@@ -31,6 +32,19 @@
 			user.sessionToken,
 		);
 	};
+
+	async function copyDocFrom(fromtplid, totplid) {
+		if (ClientPermControl(user.perms, user.email, 'template', '', 'create') === false) {
+			setFadeMessage("You don't have permission");
+			return;
+		}
+		await api.post(
+			'template/copyfrom',
+			{ fromtplid: copyfromtplid, totplid: totplid },
+			user.sessionToken,
+		);
+		setFadeMessage('Success');
+	}
 </script>
 
 {#if row.visi}
@@ -353,6 +367,26 @@
 							}
 						}}>
 						{$_('button.clear')}
+					</Button>
+				</InputGroup>
+			</Row>
+			<Row>
+				<InputGroup>
+					<div class="form-floating flex-fill">
+						<select class="form-control" bind:value={copyfromtplid}>
+							<option value="">{$_('remotetable.template.set.selecttocopyfrom')}</option>
+							{#each $session.tplIds as tplid}
+								<option value={tplid}>{tplid}</option>
+							{/each}
+						</select>
+					</div>
+					<Button
+						color="primary"
+						on:click={async (e) => {
+							e.preventDefault();
+							await copyDocFrom(copyfromtplid, row.tplid);
+						}}>
+						{$_('button.copy')}
 					</Button>
 				</InputGroup>
 			</Row>

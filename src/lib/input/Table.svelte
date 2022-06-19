@@ -13,6 +13,7 @@
 
 	let user = $session.user;
 	export let kvar: any;
+	export let objid: string;
 	export let rehearsal: boolean = false;
 	export let readonly: boolean = false;
 	let compileResult = ColDefCompiler.compileColDef(kvar.coldef);
@@ -69,10 +70,10 @@
 	};
 
 	onMount(async () => {
-		if ($inputs[kvar.name] && $inputs[kvar.name].rows) {
-			rows = $inputs[kvar.name].rows;
-			//avgrow = $inputs[kvar.name].avgrow;
-			//sumrow = $inputs[kvar.name].sumrow;
+		if ($inputs[objid] && $inputs[objid][kvar.name] && $inputs[objid][kvar.name].rows) {
+			rows = $inputs[objid][kvar.name].rows;
+			//avgrow = $inputs[objid][kvar.name].avgrow;
+			//sumrow = $inputs[objid][kvar.name].sumrow;
 		}
 	});
 </script>

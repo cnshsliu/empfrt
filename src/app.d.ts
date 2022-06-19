@@ -20,6 +20,7 @@ declare namespace App {
 		showAdvancedSearch?: boolean;
 		tplIdsForSearch_for_todo?: any[];
 		tplIdsForSearch_for_wf?: any[];
+		tplIds?: any[];
 		delegators?: any[];
 		siteinfo?: unknown;
 	}
