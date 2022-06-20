@@ -104,6 +104,13 @@
 <form class="new" enctype="multipart/form-data">
 	<Container class="text-nowrap">
 		<div class="mt-5" />
+		<InputGroup class="mt-5">
+			<InputGroupText>{$_('setting.orgchart.importxlsx')}</InputGroupText>
+			<input class="form-control" name="file" accept=".xlsx" type="file" bind:files />
+			<Button size="sm" on:click={uploadOrgChart} color="primary">
+				{$_('setting.orgchart.btn.import')}
+			</Button>
+		</InputGroup>
 		<InputGroup>
 			<InputGroupText>{$_('setting.orgchart.adminpwd')}</InputGroupText>
 			<Input bind:value={admin_password} type="password" required={true} />
@@ -313,13 +320,6 @@
 						});
 				}}>
 				{$_('setting.orgchart.btn.export')}
-			</Button>
-		</InputGroup>
-		<InputGroup class="mt-5">
-			<InputGroupText>{$_('setting.orgchart.importxlsx')}</InputGroupText>
-			<input class="form-control" name="file" accept=".xlsx" type="file" bind:files />
-			<Button size="sm" on:click={uploadOrgChart} color="primary">
-				{$_('setting.orgchart.btn.import')}
 			</Button>
 		</InputGroup>
 		<OrgChartCsvFormat />
