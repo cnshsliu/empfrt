@@ -6,6 +6,7 @@
 	import { _ } from '$lib/i18n';
 	import { session } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import TenantMenu from './tenantmenu.svelte';
 	import * as api from '$lib/api';
 	import { Row, Col, Container, Button } from 'sveltestrap';
 	import BadgeWithDel from '$lib/input/BadgeWithDel.svelte';
@@ -146,53 +147,7 @@
 <form>
 	<Container class="mt-3 mb-3 text-nowrap">
 		<Row>
-			<nav aria-label="breadcrumb">
-				<ol class="breadcrumb">
-					<li class="breadcrumb-item kfk-tag">
-						<a
-							class="kfk-link"
-							href={'#'}
-							on:click={() => {
-								goto('/settings');
-							}}>
-							{$_('navmenu.settings')}
-						</a>
-					</li>
-					<li class="breadcrumb-item active kfk-tag" aria-current="page">
-						<a
-							class="kfk-link"
-							href={'#'}
-							on:click={() => {
-								goto('/settings/tenant');
-							}}>
-							{$_('setting.tenant.nav')}
-						</a>
-					</li>
-					<li class="breadcrumb-item active" aria-current="page">
-						{$_('setting.orgchart.nav')}
-					</li>
-					<li class="breadcrumb-item active kfk-tag" aria-current="page">
-						<a
-							class="kfk-link"
-							href={'#'}
-							on:click={() => {
-								goto('/settings/members');
-							}}>
-							{$_('setting.members.nav')}
-						</a>
-					</li>
-					<li class="breadcrumb-item active kfk-tag" aria-current="page">
-						<a
-							class="kfk-link"
-							href={'#'}
-							on:click={() => {
-								goto('/settings/resign');
-							}}>
-							{$_('setting.resign.nav')}
-						</a>
-					</li>
-				</ol>
-			</nav>
+			<TenantMenu />
 		</Row>
 		{#if orgchartroot && orgchartroot.ou === 'root'}
 			{orgchartroot.cn}

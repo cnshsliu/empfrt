@@ -214,7 +214,7 @@
 				{$_('setting.orgchart.btn.moveto')}
 			</button>
 		</InputGroup>
-		<InputGroup class="mt-2">
+		<!--InputGroup class="mt-2">
 			<InputGroupText>{$_('setting.orgchart.emp_email')}</InputGroupText>
 			<Input bind:value={delete_user_email} />
 			<Button
@@ -238,7 +238,7 @@
 				}}>
 				{$_('setting.orgchart.btn.emp_delete')}
 			</Button>
-		</InputGroup>
+		</InputGroup -->
 		<InputGroup class="mt-2">
 			<InputGroupText>{$_('setting.orgchart.ou_id')}</InputGroupText>
 			<Input bind:value={new_ou_id} />

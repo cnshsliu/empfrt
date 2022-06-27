@@ -696,6 +696,10 @@
 			"refresh": "刷新",
 			"noapplication": "当前没有加入申请",
 			"regfree": "允许/禁止",
+			"allow_regfree": "允许用户使用企业邮箱自主注册到企业",
+			"allowemptypbo": "启动工作流程时允许不指定主要业务对象",
+			"allowemptypbo_true": "已设置为：允许不指定",
+			"allowemptypbo_false": "已设置为：必须指定",
 			"regfree_true": "当前已允许员工使用企业邮箱自主注册",
 			"regfree_false": "当前已禁止员工使用企业邮箱自主注册，管理员可通过导入组织结构来添加员工",
 			"set_regfree_true": "确认后，将允许员工使用企业邮箱自主注册",
@@ -809,6 +813,9 @@
 				"body": "{from}的账号将被做离职冻结，不再可用",
 				"doit": "确认离职冻结"
 			}
+		},
+		"tenant_others": {
+			"nav": "其它"
 		}
 	},
 

@@ -561,6 +561,7 @@
 													return;
 												}
 												pickingKsTplPath = pickingKsTplPath === kstpl.ksid ? '' : kstpl.ksid;
+												kstpl.pickto = kstpl.name;
 											}}>
 											{pickingKsTplPath === kstpl.ksid
 												? $_('kshare.label.Close')

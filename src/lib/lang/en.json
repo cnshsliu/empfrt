@@ -696,10 +696,14 @@
 			"refresh": "Refresh",
 			"noapplication": "There is no application at thistime",
 			"regfree": "Allow/Disallow",
+			"allow_regfree": "Allow empoloyees to self-register with company email",
+			"allowemptypbo": "Allow empty PBO on starting new process",
+			"allowemptypbo_true": "Set to: allow empty PBO",
+			"allowemptypbo_false": "Set to: must provide PBO",
 			"regfree_true": "Empoloyees are allowed to self-register with company email",
 			"regfree_false": "Self-registration is prohibited, however, administrators are able to add employee by importing org-chart",
 			"set_regfree_true": "On set, empoloyees will be allowed to self-register with company email",
-			"set_regree_false": "On set, Self-registration will be prohibited, however, administrators are able to add employee by importing org-chart"
+			"set_regfree_false": "On set, Self-registration will be prohibited, however, administrators are able to add employee by importing org-chart"
 		},
 		"orgchart": {
 			"nav": "OrgChart",
@@ -809,6 +813,9 @@
 				"body": "Resign {from} account will be frozen, no operation will be allowed.",
 				"doit": "Confirm Resign"
 			}
+		},
+		"tenant_others": {
+			"nav": "Others"
 		}
 	},
 

@@ -1,15 +1,13 @@
 .org-logo {
 	border-radius: 12px;
-	background-image: url(http://companya.com:9999/static/logo.jpg);
+	background-image: url(/orgdemo/companya/logo.png);
 }
-
+.tnt-navmenu {
+	background-image: url(/orgdemo/companya/background.jpg);
+}
 body {
-	background-image: url(http://companya.com:9999/static/background1.jpg);
+	background-image: url(/orgdemo/companya/background.jpg);
 }
-a {
-	color: white;
-}
-
 .tnt-footer {
 	background-color: rgba(255, 255, 255, 0.6);
 }
@@ -29,4 +27,24 @@ a {
 	margin-top: 100px;
 	background-color: rgba(255, 255, 255, 0.8);
 	min-height: 400px;
+}
+.tnt-navmenu .nav-item {
+	text-align: center;
+}
+
+.tnt-navmenu .nav-link {
+	color: #29282d;
+}
+.tnt-navmenu .nav-link:hover {
+	color: #29282d;
+}
+.tnt-navmenu .nav-link.active {
+	font-weight: bold;
+	text-decoration: none;
+	text-decoration-thickness: 1px;
+	border-bottom: 1px solid #d8d4d0;
+}
+.tnt-navmenu .tnt-header-username {
+	color: #29282d;
+	padding-left: 20px;
 }

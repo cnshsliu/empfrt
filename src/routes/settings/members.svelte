@@ -10,6 +10,7 @@
 		Input,
 	} from 'sveltestrap';
 	import TimeZone from '$lib/Timezone';
+	import TenantMenu from './tenantmenu.svelte';
 	import { goto } from '$app/navigation';
 	import { session } from '$app/stores';
 	import { setFadeMessage } from '$lib/Notifier';
@@ -29,11 +30,13 @@
 
 	async function refreshMyOrg() {
 		myorg = await api.post('tnt/my/org', {}, user.sessionToken);
+		console.log(myorg);
 	}
 
 	let orgMembers: OrgMembers;
 	async function refreshMembers() {
 		orgMembers = (await api.post('tnt/members', {}, user.sessionToken)) as unknown as OrgMembers;
+		console.log(orgMembers);
 		if (orgMembers && orgMembers.members && orgMembers.members.length > 0) {
 			//当前用户放到最顶部，并且不支持被选中
 			orgMembers.members = orgMembers.members.filter((x) => x.email !== user.email);
@@ -54,11 +57,7 @@
 			.filter((x) => x.checked)
 			.map((x) => x.email)
 			.join(':');
-		let res = await api.post(
-			'tnt/member/remove',
-			{ ems, password: password_for_admin },
-			user.sessionToken,
-		);
+		let res = await api.post('tnt/member/remove', { ems }, user.sessionToken);
 		if (res.error) {
 			setFadeMessage(res.message, 'warning');
 		} else {
@@ -74,7 +73,7 @@
 			.join(':');
 		let res = await api.post(
 			'tnt/member/setgroup',
-			{ ems, password: password_for_admin, member_group: set_group_to },
+			{ ems, member_group: set_group_to },
 			user.sessionToken,
 		);
 		if (res.error) {
@@ -91,7 +90,7 @@
 			.join(':');
 		let res = await api.post(
 			'tnt/member/setpassword',
-			{ ems, password: password_for_admin, set_password_to: set_password_to },
+			{ ems, set_password_to: set_password_to },
 			user.sessionToken,
 		);
 		if (res.error) {
@@ -112,53 +111,7 @@
 <form>
 	<Container class="mt-3">
 		<Row>
-			<nav aria-label="breadcrumb">
-				<ol class="breadcrumb">
-					<li class="breadcrumb-item kfk-tag">
-						<a
-							class="kfk-link"
-							href={'#'}
-							on:click={() => {
-								goto('/settings');
-							}}>
-							{$_('navmenu.settings')}
-						</a>
-					</li>
-					<li class="breadcrumb-item active kfk-tag" aria-current="page">
-						<a
-							class="kfk-link"
-							href={'#'}
-							on:click={() => {
-								goto('/settings/tenant');
-							}}>
-							{$_('setting.tenant.nav')}
-						</a>
-					</li>
-					<li class="breadcrumb-item active kfk-tag" aria-current="page">
-						<a
-							class="kfk-link"
-							href={'#'}
-							on:click={() => {
-								goto('/settings/orgchart');
-							}}>
-							{$_('setting.orgchart.nav')}
-						</a>
-					</li>
-					<li class="breadcrumb-item active" aria-current="page">
-						{$_('setting.members.nav')}
-					</li>
-					<li class="breadcrumb-item active kfk-tag" aria-current="page">
-						<a
-							class="kfk-link"
-							href={'#'}
-							on:click={() => {
-								goto('/settings/resign');
-							}}>
-							{$_('setting.resign.nav')}
-						</a>
-					</li>
-				</ol>
-			</nav>
+			<TenantMenu />
 		</Row>
 		{#if myorg.adminorg === false}
 			{#if myorg.owner === user.email}
@@ -211,7 +164,7 @@
 					</tbody>
 				</table>
 			</Col>
-			<Col class="d-flex justify-content-end mt-2">
+			<!-- Col class="d-flex justify-content-end mt-2">
 				<InputGroup class="mb-1">
 					<InputGroupText>{$_('setting.adminpwd')}</InputGroupText>
 					<Input
@@ -219,7 +172,7 @@
 						bind:value={password_for_admin}
 						placeholder={$_('setting.adminpwd_ph')} />
 				</InputGroup>
-			</Col>
+			</Col -->
 			<Col class="d-flex justify-content-end mt-2">
 				<InputGroup class="mb-1">
 					<InputGroupText>{$_('setting.members.removeselected')}?</InputGroupText>

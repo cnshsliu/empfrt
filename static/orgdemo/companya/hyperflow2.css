@@ -1,8 +1,50 @@
 .org-logo {
-  border-radius: 12px;
-  background-image: url(http://companya.com:9999/static/logo.jpg);
+	border-radius: 12px;
+	background-image: url(/orgdemo/companya/logo.jpg);
+}
+.tnt-navmenu {
+	background-image: url(/orgdemo/companya/background2.jpg);
+}
+body {
+	background-image: url(/orgdemo/companya/background2_main.jpg);
+}
+.tnt-footer {
+	background-color: rgba(255, 255, 255, 0.6);
 }
 
-body {
-  background-image: url(http://companya.com:9999/static/background2.jpg);
+.tnt-workflow-id,
+.tnt-template-id,
+.tnt-team-id {
+	color: #ffffff;
+}
+.tnt-odd {
+	background-color: rgba(255, 255, 255, 0.3);
+}
+.tnt-footer-link {
+	color: rgba(0, 0, 0, 0.8);
+}
+.tnt-footer {
+	margin-top: 100px;
+	background-color: rgba(255, 255, 255, 0.8);
+	min-height: 400px;
+}
+.tnt-navmenu .nav-item {
+	text-align: center;
+}
+
+.tnt-navmenu .nav-link {
+	color: #f0ede8;
+}
+.tnt-navmenu .nav-link:hover {
+	color: #d8d4d0;
+}
+.tnt-navmenu .nav-link.active {
+	font-weight: bold;
+	text-decoration: none;
+	text-decoration-thickness: 1px;
+	border-bottom: 1px solid #d8d4d0;
+}
+.tnt-navmenu .tnt-header-username {
+	color: #d8d4d0;
+	padding-left: 20px;
 }

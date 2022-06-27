@@ -3,6 +3,7 @@
 	import * as api from '$lib/api';
 	import { mtcConfirm, mtcConfirmReset } from '$lib/Stores';
 	import { tick } from 'svelte';
+	import TenantMenu from './tenantmenu.svelte';
 	import suuid from 'short-uuid';
 	import {
 		Card,
@@ -254,53 +255,9 @@
 </script>
 
 <Container class="mt-3">
-	<nav aria-label="breadcrumb">
-		<ol class="breadcrumb">
-			<li class="breadcrumb-item kfk-tag">
-				<a
-					class="kfk-link"
-					href={'#'}
-					on:click={() => {
-						goto('/settings');
-					}}>
-					{$_('navmenu.settings')}
-				</a>
-			</li>
-			<li class="breadcrumb-item active kfk-tag" aria-current="page">
-				<a
-					class="kfk-link"
-					href={'#'}
-					on:click={() => {
-						goto('/settings/tenant');
-					}}>
-					{$_('setting.tenant.nav')}
-				</a>
-			</li>
-			<li class="breadcrumb-item active kfk-tag" aria-current="page">
-				<a
-					class="kfk-link"
-					href={'#'}
-					on:click={() => {
-						goto('/settings/orgchart');
-					}}>
-					{$_('setting.orgchart.nav')}
-				</a>
-			</li>
-			<li class="breadcrumb-item active kfk-tag" aria-current="page">
-				<a
-					class="kfk-link"
-					href={'#'}
-					on:click={() => {
-						goto('/settings/members');
-					}}>
-					{$_('setting.members.nav')}
-				</a>
-			</li>
-			<li class="breadcrumb-item active" aria-current="page">
-				{$_('setting.resign.nav')}
-			</li>
-		</ol>
-	</nav>
+	<Row>
+		<TenantMenu />
+	</Row>
 	{#if user.group === 'ADMIN'}
 		<Card>
 			<CardBody>
