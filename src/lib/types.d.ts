@@ -42,7 +42,9 @@ export interface Org {
 	login_background: string;
 	page_background: string;
 	orgmode: boolean;
+	feedsview: number;
 	timezone: string;
+	allowchecker: boolean;
 	smtp: smtpDef;
 	adminorg: boolean;
 }
