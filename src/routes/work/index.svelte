@@ -224,6 +224,9 @@
 			} else {
 				rows = ret.objs;
 				rowsCount = ret.total;
+				for (let i = 0; i < rows.length; i++) {
+					rows[i]['postponeday'] = 1;
+				}
 			}
 		};
 		loadTimer && clearTimeout(loadTimer);
@@ -384,6 +387,20 @@
 		} catch (e) {}
 		goto('/login');
 		setFadeMessage($_('session.relogin'), 'warning');
+	};
+
+	const postpone = async (todoid: string, days: number) => {
+		$mtcConfirm = {
+			title: $_('confirm.title.postpone'),
+			body: $_('confirm.body.postpone', { values: { days: days } }),
+			buttons: [$_('confirm.button.confirm')],
+			callbacks: [
+				async () => {
+					api.post('/work/postpone', { todoid, days }, user.sessionToken);
+					resetQuery(true);
+				},
+			],
+		};
 	};
 
 	onMount(async () => {
@@ -816,8 +833,8 @@
 	<Row cols={$filterStorage.col_per_row}>
 		{#each rows as row, index (row)}
 			<Col class="mb-2 card p-2">
-				<div class="d-flex">
-					<div class="w-100">
+				<div class="row">
+					<div class="col">
 						<h5 class="">
 							<a
 								class="preview-link   kfk-work-id tnt-work-id"
@@ -839,9 +856,29 @@
 							</a>
 						</h5>
 					</div>
-					<div class="flex-shrink-1 text-nowrap ">
+					<div class="col-auto text-nowrap ">
 						{$_('remotetable.lasting')}:
 						{row.lastdays}
+					</div>
+					<div class="col-auto text-nowrap ">
+						<a
+							href={'#'}
+							class="btn btn-primary btn-sm"
+							on:click={async (e) => {
+								e.preventDefault();
+								await postpone(row.todoid, row.postponeday);
+							}}>
+							{$_('remotetable.postpone.text')}
+						</a>
+						<select bind:value={row.postponeday}>
+							{#each [1, 2, 3, 4, 5, 6, 7] as day}
+								<option value={day}>
+									{$_('remotetable.postpone.' + (day === 1 ? 'single' : 'plural'), {
+										values: { days: day },
+									})}
+								</option>
+							{/each}
+						</select>
 					</div>
 				</div>
 				<Row cols={{ md: 2, xs: 1 }}>
