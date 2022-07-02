@@ -512,6 +512,7 @@
 		},
 		"body": {
 			"postpone": "Postpone for {days} days(s)",
+			"cancelpostpone": "Cancel postpone",
 			"needReload": "Application should be refreshed",
 			"deletefile": "File will be delete permanately, plase confirm",
 			"restartthendestroy": "Destroy this rehearsal and start a new one",

@@ -401,7 +401,10 @@
 	const postpone = async (todoid: string, days: number) => {
 		$mtcConfirm = {
 			title: $_('confirm.title.postpone'),
-			body: $_('confirm.body.postpone', { values: { days: days } }),
+			body:
+				days > 0
+					? $_('confirm.body.postpone', { values: { days: days } })
+					: $_('confirm.body.cancelpostpone'),
 			buttons: [$_('confirm.button.confirm')],
 			callbacks: [
 				async () => {
@@ -877,8 +880,7 @@
 						{row.lastdays}
 					</div>
 					<div class="col-auto text-nowrap ">
-						<a
-							href={'#'}
+						<div
 							class="btn btn-primary btn-sm"
 							data-bs-trigger="hover"
 							data-bs-toggle="popover"
@@ -890,7 +892,7 @@
 								await postpone(row.todoid, row.postponeday);
 							}}>
 							{$_('remotetable.postpone.text')}
-						</a>
+						</div>
 						<select bind:value={row.postponeday}>
 							{#each [1, 2, 3, 4, 5, 6, 7] as day}
 								<option value={day}>
@@ -907,14 +909,13 @@
 						<div class="col">&nbsp;</div>
 						<div class="col-auto">
 							{$_('remotetable.postpone.in')}{row.fromNow}
-							<a
-								href={'#'}
+							<div
 								class="btn btn-sm m-0 p-0"
 								on:click|preventDefault={(e) => {
 									postpone(row.todoid, 0);
 								}}>
 								{$_('button.cancel')}
-							</a>
+							</div>
 						</div>
 					</div>
 				{/if}
