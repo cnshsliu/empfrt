@@ -17,6 +17,7 @@ const TimeTool = {
 	},
 	fromNow: function (atime) {
 		return dayjs(atime).fromNow();
-	}
+	},
+	dayjs: dayjs,
 };
 export default TimeTool;

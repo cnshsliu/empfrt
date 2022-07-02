@@ -125,6 +125,9 @@
 		"multi-select-all": "Select all",
 		"multi-select-none": "Select none",
 		"multi-select-delete": "Delete Selected",
+		"visifor": "Only visible for: ",
+		"tags": "Tags: ",
+		"desc": "Description: ",
 		"template": {
 			"set": {
 				"title": "Template Settings",
@@ -153,6 +156,7 @@
 			"deleteThisWorkflow": "Delete This Workflow",
 			"setpboat": "Set PBO checkpoint",
 			"setTitle": "Set Title",
+			"renameto": "Rename to",
 			"setting": "Settings",
 			"restartthendeleteThisWorkflow": "Restart And Delete This"
 		},
@@ -173,6 +177,7 @@
 			"scheduler": "Scheduler"
 		},
 		"postpone": {
+			"in": "Postponed，expire in ",
 			"text": "Postpone",
 			"single": "{days} Day",
 			"plural": "{days} Days"
@@ -206,6 +211,9 @@
 		"clear": "Clear",
 		"set": "Set",
 		"close": "Close",
+		"closeeditlog": "Close Edit Log",
+		"closecronsetting": "Close Crontab Setting",
+		"closetemplatesetting": "Close Template Setting",
 		"done": "Done",
 		"adhoc": "New Adhoc",
 		"sendback": "Push back",
@@ -1127,6 +1135,12 @@
 		},
 		"miniute": {
 			"unit": "M"
+		}
+	},
+	"popover": {
+		"postpone": {
+			"title": "Postpone",
+			"content": "Postpone to selected days"
 		}
 	}
 }

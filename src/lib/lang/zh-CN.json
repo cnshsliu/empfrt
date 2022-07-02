@@ -125,6 +125,9 @@
 		"multi-select-all": "选择全部",
 		"multi-select-none": "全部不选",
 		"multi-select-delete": "删除所选",
+		"visifor": "仅这些人可见: ",
+		"tags": "归类标签: ",
+		"desc": "描述说明: ",
 		"template": {
 			"set": {
 				"title": "设置当前模版",
@@ -153,6 +156,7 @@
 			"deleteThisWorkflow": "删除这个流程",
 			"setpboat": "何时可添加PBO",
 			"setTitle": "设置流程名称",
+			"renameto": "重命名流程为",
 			"setting": "设置",
 			"restartthendeleteThisWorkflow": "重启并删除当前流程"
 		},
@@ -173,6 +177,7 @@
 			"scheduler": "执行计划"
 		},
 		"postpone": {
+			"in": "已延后，到期 ",
 			"text": "延后",
 			"single": "{days}天",
 			"plural": "{days}天"
@@ -206,6 +211,9 @@
 		"clear": "清除",
 		"set": "设置",
 		"close": "关闭",
+		"closeeditlog": "关闭编辑历史",
+		"closecronsetting": "关闭定时计划设置",
+		"closetemplatesetting": "关闭模板设置",
 		"done": "完成",
 		"adhoc": "新建独立任务",
 		"sendback": "打回上一步",
@@ -1127,6 +1135,12 @@
 		},
 		"miniute": {
 			"unit": "分"
+		}
+	},
+	"popover": {
+		"postpone": {
+			"title": "延后再现",
+			"content": "延后若干天后再看到"
 		}
 	}
 }

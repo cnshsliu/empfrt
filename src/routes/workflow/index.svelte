@@ -877,8 +877,8 @@
 							</Col>
 						{/if}
 						<Col>
-							<div class="d-flex">
-								<div class="w-100">
+							<div class="row">
+								<div class="col">
 									<h5 class="">
 										<a
 											class="preview-link kfk-workflow-id tnt-workflow-id"
@@ -890,7 +890,7 @@
 										</a>
 									</h5>
 								</div>
-								<div class="flex-shrink-1">
+								<div class="col-auto">
 									<Dropdown class="m-0 p-0">
 										<DropdownToggle caret color="primary" class="btn-sm">
 											{$_('remotetable.actions')}
@@ -1016,86 +1016,94 @@
 										</DropdownMenu>
 									</Dropdown>
 								</div>
+								<!-- 下拉菜单 -->
 							</div>
-							<Row cols={{ md: 2, xs: 1 }}>
-								<Col>
-									<h6 class=" mb-2 text-muted">
+							<!-- 第一行,包括进程名称及下拉菜单 -->
+							<Row>
+								<Col class="fs-6 ps-4">
+									<span>
 										{$_('remotetable.status')}:
 										{$_(`status.${row.status}`)}
-									</h6>
+									</span>
+									<span class="ms-3">{$_('remotetable.starter')}: {row.starterCN}</span>
+									<span class="ms-3">
+										{$_('remotetable.updatedAt')}: {$date(new Date(row.updatedAt))}
+										{$time(new Date(row.updatedAt))}
+									</span>
 								</Col>
 							</Row>
-							<Row cols={{ md: 2, xs: 1 }}>
-								<Col>{$_('remotetable.starter')}: {row.starterCN}</Col>
-								<Col>
-									{$_('remotetable.updatedAt')}: {$date(new Date(row.updatedAt))}
-									{$time(new Date(row.updatedAt))}
+							<Row>
+								<Col class="fs-8 ps-4">
+									<a
+										class="kfk-workflow-id tnt-workflow-id kfk-link"
+										href={'#'}
+										on:click|preventDefault={() => opWorkflow(row, 'works_running')}>
+										{$_('remotetable.wfa.runningWorks')}
+									</a>
+									<a
+										href={'#'}
+										class="ms-3 kfk-workflow-id tnt-workflow-id kfk-link"
+										on:click={() => opWorkflow(row, 'viewTemplate')}>
+										{$_('remotetable.wfa.viewTemplate')}
+									</a>
+									{#if row.commentCount > 0 && row.allowdiscuss}
+										<a
+											href={'#'}
+											class="ms-3 kfk-workflow-id tnt-workflow-id kfk-link"
+											on:click={() => showWorkflowDiscussion(row.wfid)}>
+											<AniIcon icon="chat-dots-fill" ani="aniShake" />
+											{row.commentCount > 0 ? row.commentCount : ''}
+										</a>
+									{/if}
 								</Col>
 							</Row>
-							<a
-								class="fs-6 kfk-workflow-id tnt-workflow-id kfk-link px-2"
-								href={'#'}
-								on:click|preventDefault={() => opWorkflow(row, 'works_running')}>
-								{$_('remotetable.wfa.runningWorks')}
-							</a>
-							<a
-								href={'#'}
-								class="ms-3 fs-6 kfk-workflow-id tnt-workflow-id kfk-link px-2"
-								on:click={() => opWorkflow(row, 'viewTemplate')}>
-								{$_('remotetable.wfa.viewTemplate')}
-							</a>
-							{#if row.commentCount > 0 && row.allowdiscuss}
-								<a
-									href={'#'}
-									class="ms-3 fs-6 kfk-workflow-id tnt-workflow-id kfk-link px-2"
-									on:click={() => showWorkflowDiscussion(row.wfid)}>
-									<AniIcon icon="chat-dots-fill" ani="aniShake" />
-									{row.commentCount > 0 ? row.commentCount : ''}
-								</a>
-							{/if}
 							{#if settingFor === row.wfid}
-								<div class="mt-3">Set Title to:</div>
-								<InputGroup>
-									<Input bind:value={row.wftitle} />
-									<div
-										class="btn btn-primary btn-sm"
-										color="primary"
-										on:click|preventDefault={async (e) => {
-											e.preventDefault();
-											await api.post(
-												'workflow/set/title',
-												{ wfid: row.wfid, wftitle: row.wftitle },
-												user.sessionToken,
-											);
-											settingFor = '';
-										}}>
-										Set
-									</div>
-									<div
-										class="btn btn-primary btn-sm"
-										color="secondary"
-										on:click|preventDefault={async (e) => {
-											e.preventDefault();
-											settingFor = '';
-										}}>
-										Cancel
-									</div>
-								</InputGroup>
-								<div class="form-check form-switch">
-									<input
-										class="form-check-input"
-										type="checkbox"
-										role="switch"
-										id="flexSwitchCheckChecked"
-										checked={row.allowdiscuss}
-										on:change={async (e) => {
-											row.allowdiscuss = await toggleDiscuss(row);
-											row = row;
-										}} />
-									<label class="form-check-label" for="flexSwitchCheckChecked">
-										{row.allowdiscuss ? '允许讨论' : '已关闭讨论'} （切换以切换状态）
-									</label>
-								</div>
+								<Row class="ms-3">
+									<Col>
+										<div class="mt-3">{$_('remotetable.wfa.renameto')}</div>
+										<InputGroup>
+											<Input bind:value={row.wftitle} />
+											<div
+												class="btn btn-primary btn-sm"
+												color="primary"
+												on:click|preventDefault={async (e) => {
+													e.preventDefault();
+													await api.post(
+														'workflow/set/title',
+														{ wfid: row.wfid, wftitle: row.wftitle },
+														user.sessionToken,
+													);
+													settingFor = '';
+												}}>
+												{$_('button.rename')}
+											</div>
+											<div
+												class="btn btn-primary btn-sm ms-1"
+												color="secondary"
+												on:click|preventDefault={async (e) => {
+													e.preventDefault();
+													settingFor = '';
+												}}>
+												{$_('button.cancel')}
+											</div>
+										</InputGroup>
+										<div class="form-check form-switch">
+											<input
+												class="form-check-input"
+												type="checkbox"
+												role="switch"
+												id="flexSwitchCheckChecked"
+												checked={row.allowdiscuss}
+												on:change={async (e) => {
+													row.allowdiscuss = await toggleDiscuss(row);
+													row = row;
+												}} />
+											<label class="form-check-label" for="flexSwitchCheckChecked">
+												{row.allowdiscuss ? '允许讨论' : '已关闭讨论'} （切换以切换状态）
+											</label>
+										</div>
+									</Col>
+								</Row>
 							{/if}
 						</Col>
 					</Row>

@@ -3,6 +3,7 @@
 	import * as Utils from '$lib/utils';
 	import * as api from '$lib/api';
 	import TagPicker from '$lib/TagPicker.svelte';
+	import TimeTool from '$lib/TimeTool';
 	import { slide, fade } from 'svelte/transition';
 	import { setFadeMessage } from '$lib/Notifier';
 	import Searchlet from '$lib/Searchlet.svelte';
@@ -196,6 +197,7 @@
 		}
 		$lastQuery[BIZ] = payloadWithoutSkip;
 
+		payload['showpostponed'] = $session.showpostponed;
 		const loadPost = async () => {
 			loadingFromServer = true;
 			const ret = await api.post(
@@ -225,7 +227,14 @@
 				rows = ret.objs;
 				rowsCount = ret.total;
 				for (let i = 0; i < rows.length; i++) {
+					//设置postpone下拉列表的缺省选择项
 					rows[i]['postponeday'] = 1;
+					//计算已存在的postpone的显示值
+					if (rows[i].postpone > 0) {
+						rows[i].fromNow = TimeTool.fromNow(
+							TimeTool.dayjs(rows[i].postPonedAt).add(rows[i].postpone, 'day'),
+						);
+					}
 				}
 			}
 		};
@@ -731,33 +740,40 @@
 				</Col>
 			</Row>
 		{/if}
-		<Searchlet
-			objtype="todo"
-			bind:aSsPicked
-			on:searchlet={(msg) => {
-				let ss = JSON.parse(msg.detail.ss);
-				ss.pattern && ($filterStorage[BIZ].pattern = ss.pattern);
-				ss.status && ($filterStorage[BIZ].status = ss.status);
-				ss.tspan && ($filterStorage[BIZ].tspan = ss.tspan);
-				if (ss.doer) $filterStorage[BIZ].doer = ss.doer;
-				else $filterStorage[BIZ].doer = user.email;
-				if (ss.tplid) $filterStorage[BIZ].tplid = ss.tplid;
-				else $filterStorage[BIZ].tplid = '';
-				ss.calendar_begin && ($filterStorage[BIZ].calendar_begin = ss.calendar_begin);
-				ss.calendar_end && ($filterStorage[BIZ].calendar_end = ss.calendar_end);
+		<Row class="mt-1">
+			<Col>
+				<Searchlet
+					objtype="todo"
+					bind:aSsPicked
+					on:searchlet={(msg) => {
+						let ss = JSON.parse(msg.detail.ss);
+						ss.pattern && ($filterStorage[BIZ].pattern = ss.pattern);
+						ss.status && ($filterStorage[BIZ].status = ss.status);
+						ss.tspan && ($filterStorage[BIZ].tspan = ss.tspan);
+						if (ss.doer) $filterStorage[BIZ].doer = ss.doer;
+						else $filterStorage[BIZ].doer = user.email;
+						if (ss.tplid) $filterStorage[BIZ].tplid = ss.tplid;
+						else $filterStorage[BIZ].tplid = '';
+						ss.calendar_begin && ($filterStorage[BIZ].calendar_begin = ss.calendar_begin);
+						ss.calendar_end && ($filterStorage[BIZ].calendar_end = ss.calendar_end);
 
-				if ($filterStorage[BIZ].calendar_begin !== '' || $filterStorage[BIZ].calendar_end !== '') {
-					show_calendar_select = true;
-				} else {
-					show_calendar_select = false;
-				}
+						if (
+							$filterStorage[BIZ].calendar_begin !== '' ||
+							$filterStorage[BIZ].calendar_end !== ''
+						) {
+							show_calendar_select = true;
+						} else {
+							show_calendar_select = false;
+						}
 
-				searchNow().then();
-			}}
-			on:resetSearchlet={(msg) => {
-				aSsPicked = '';
-				resetQuery(true);
-			}} />
+						searchNow().then();
+					}}
+					on:resetSearchlet={(msg) => {
+						aSsPicked = '';
+						resetQuery(true);
+					}} />
+			</Col>
+		</Row>
 	{/if}
 
 	{#key rowsCount}
@@ -864,6 +880,11 @@
 						<a
 							href={'#'}
 							class="btn btn-primary btn-sm"
+							data-bs-trigger="hover"
+							data-bs-toggle="popover"
+							data-bs-placement="top"
+							data-bs-title={$_('popover.postpone.title')}
+							data-bs-content={$_('popover.postpone.content')}
 							on:click={async (e) => {
 								e.preventDefault();
 								await postpone(row.todoid, row.postponeday);
@@ -881,24 +902,38 @@
 						</select>
 					</div>
 				</div>
-				<Row cols={{ md: 2, xs: 1 }}>
-					<Col>
+				{#if row.postpone > 0}
+					<div class="row">
+						<div class="col">&nbsp;</div>
+						<div class="col-auto">
+							{$_('remotetable.postpone.in')}{row.fromNow}
+							<a
+								href={'#'}
+								class="btn btn-sm m-0 p-0"
+								on:click|preventDefault={(e) => {
+									postpone(row.todoid, 0);
+								}}>
+								{$_('button.cancel')}
+							</a>
+						</div>
+					</div>
+				{/if}
+				<div class="row">
+					<div class="col-auto">
 						{$_('remotetable.status')}:
 						{$_('status.' + row.status)}
-					</Col>
-					<Col>
-						<div>
-							{$_('remotetable.updatedAt')}:
-							{#if row.doneat}
-								{$date(new Date(row.doneat))}
-								{$time(new Date(row.doneat))}
-							{:else}
-								{$date(new Date(row.createdAt))}
-								{$time(new Date(row.createdAt))}
-							{/if}
-						</div>
-					</Col>
-				</Row>
+					</div>
+					<div class="col">
+						{$_('remotetable.updatedAt')}:
+						{#if row.doneat}
+							{$date(new Date(row.doneat))}
+							{$time(new Date(row.doneat))}
+						{:else}
+							{$date(new Date(row.createdAt))}
+							{$time(new Date(row.createdAt))}
+						{/if}
+					</div>
+				</div>
 				<Row class="fs-6">
 					<Col class="kfk-tag">
 						{$_('remotetable.belongTo')}:
@@ -924,6 +959,18 @@
 				</Row>
 			</Col>
 		{/each}
+	</Row>
+	<Row>
+		<div class="col">&nbsp;</div>
+		<div class="col-auto">
+			<input
+				type="checkbox"
+				bind:checked={$session.showpostponed}
+				on:change={(e) => {
+					resetQuery(true);
+				}} />
+			显示延后工作项
+		</div>
 	</Row>
 
 	{#key rowsCount}

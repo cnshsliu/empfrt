@@ -869,9 +869,9 @@
 						{/if}
 					</Col>
 					<Col>
-						<div class="d-flex">
+						<div class="row">
 							<!-- 模版名称 以及 下拉菜单行  -->
-							<div class="w-100">
+							<div class="col">
 								<h5 class="">
 									<a class="kfk-workflow-id tnt-workflow-id" href={`/template/${row.tplid}&read`}>
 										{row.tplid}
@@ -887,7 +887,7 @@
 									{/if}
 								</h5>
 							</div>
-							<div class="flex-shrink-1">
+							<div class="col-auto">
 								<!-- 当个模版的下拉菜单 -->
 								<Dropdown class="m-0 p-0">
 									<DropdownToggle caret color="primary" class="btn-sm">
@@ -1042,16 +1042,16 @@
 							<!-- END of 当个模版的下拉菜单 -->
 						</div>
 						<!-- 作者 以及 启动按钮  -->
-						<Row cols={{ md: 2, xs: 1 }}>
-							<Col>
+						<div class="row">
+							<div class="col-auto">
 								{$_('remotetable.author')}:
 								{row.authorName
 									? row.authorName
 									: row.author.indexOf('@') > -1
 									? row.author.substring(0, row.author.indexOf('@'))
 									: row.author}
-							</Col>
-							<Col>
+							</div>
+							<div class="col">
 								{#if user.perms && ClientPermControl(user.perms, user.email, 'workflow', '', 'create')}
 									<a
 										href={'#'}
@@ -1063,31 +1063,35 @@
 										{$_('remotetable.startIt')}
 									</a>
 								{/if}
-							</Col>
-						</Row>
+							</div>
+						</div>
 						{#if editlogfor === row.tplid}
 							<!-- 编辑历史  -->
-							<Container>
-								<Row>
-									<div
-										class="btn btn-primary"
-										color="primary"
-										on:click|preventDefault={(e) => {
-											e.preventDefault();
-											editlogfor = '';
-										}}>
-										{$_('button.close')}
-									</div>
-								</Row>
-								{#each editlogs as elog}
-									<Row>
-										<Col>{TimeTool.format(elog.updatedAt, 'YYYY-MM-DD HH:mm:ss')}</Col><Col>
-											{elog.editorName}
-										</Col>
-										<Col>{elog.editor}</Col>
-									</Row>
-								{/each}
-							</Container>
+							<div class="row">
+								<div class="col">
+									<Container>
+										<Row>
+											<div
+												class="btn btn-primary"
+												color="primary"
+												on:click|preventDefault={(e) => {
+													e.preventDefault();
+													editlogfor = '';
+												}}>
+												{$_('button.closeeditlog')}
+											</div>
+										</Row>
+										{#each editlogs as elog}
+											<Row>
+												<Col>{TimeTool.format(elog.updatedAt, 'YYYY-MM-DD HH:mm:ss')}</Col><Col>
+													{elog.editorName}
+												</Col>
+												<Col>{elog.editor}</Col>
+											</Row>
+										{/each}
+									</Container>
+								</div>
+							</div>
 						{/if}
 						{#if editCronFor === row.tplid}
 							<!-- Crontab editor -->
@@ -1104,7 +1108,7 @@
 													e.preventDefault();
 													editCronFor = '';
 												}}>
-												{$_('button.close')}
+												{$_('button.closecronsetting')}
 											</div>
 										</Col>
 									</Row>

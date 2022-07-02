@@ -61,12 +61,12 @@
 					visi_rds_input = '';
 				}
 			}}>
-			<AniIcon icon="people-fill" ani="aniShake" />
+			{$_('remotetable.visifor')}
 			{row.visi}
 		</div>
 	{:else}
 		<div class="">
-			<AniIcon icon="people-fill" ani="aniShake" />
+			{$_('remotetable.visifor')}
 			{row.visi}
 		</div>
 	{/if}
@@ -84,12 +84,12 @@
 					SetFor.setDescFor = row.tplid;
 				}
 			}}>
-			<AniIcon icon="card-text" ani="aniShake" />
+			{$_('remotetable.desc')}
 			{row.desc}
 		</div>
 	{:else}
 		<div class="">
-			<AniIcon icon="card-text" ani="aniShake" />
+			{$_('remotetable.desc')}
 			{row.desc}
 		</div>
 	{/if}
@@ -104,7 +104,7 @@
 				SetFor.setTagFor = '';
 			}
 		}}>
-		<AniIcon icon="tag" ani="aniShake" />
+		{$_('remotetable.tags')}
 		{#each row.tags as tag, tagIndex}
 			{#if tag.owner === user.email}
 				<BadgeWithDel
@@ -142,7 +142,7 @@
 						SetFor.setVisiFor = '';
 						visi_rds_input = '';
 					}}>
-					{$_('button.close')}
+					{$_('button.closetemplatesetting')}
 				</Button>
 			</InputGroup>
 		</div>
