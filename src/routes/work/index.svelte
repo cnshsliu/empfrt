@@ -97,6 +97,7 @@
 		{ value: 'ST_RUN', label: $_('status.ST_RUN') },
 		{ value: 'ST_PAUSE', label: $_('status.ST_PAUSE') },
 		{ value: 'ST_DONE', label: $_('status.ST_DONE') },
+		{ value: 'ST_FOOTPRINT', label: $_('status.ST_FOOTPRINT') },
 	];
 
 	if (!$session.tplIdsForSearch_for_todo) {
@@ -470,11 +471,14 @@
 
 	let showform = '';
 	let flexible = { name: '' };
-	const startFlexible = async () => {
+	const hidePopover = async () => {
 		const popoverList = [].slice.call(document.querySelectorAll('.popover'));
 		popoverList.map((popoverEl: any) => {
 			popoverEl.remove();
 		});
+	};
+	const startFlexible = async () => {
+		hidePopover();
 		let res = await api.post('flexible/start', flexible, user.sessionToken);
 		if (res.error) {
 			setFadeMessage(res.message, 'warning');
@@ -499,6 +503,7 @@
 				data-bs-title={$_('tips.newwork.title')}
 				data-bs-content={$_('tips.newwork.content')}
 				on:click|preventDefault={(e) => {
+					hidePopover();
 					goto('/template');
 				}}>
 				{$_('flexible.btn_goto_template')}
@@ -511,6 +516,7 @@
 				data-bs-title={$_('tips.flexible.title')}
 				data-bs-content={$_('tips.flexible.content')}
 				on:click|preventDefault={(e) => {
+					hidePopover();
 					showform = showform === 'flexible' ? '' : 'flexible';
 				}}>
 				{$_('flexible.btn_showform')}
@@ -880,28 +886,25 @@
 						{row.lastdays}
 					</div>
 					<div class="col-auto text-nowrap ">
-						<div
-							class="btn btn-primary btn-sm"
-							data-bs-trigger="hover"
-							data-bs-toggle="popover"
-							data-bs-placement="top"
-							data-bs-title={$_('popover.postpone.title')}
-							data-bs-content={$_('popover.postpone.content')}
-							on:click={async (e) => {
-								e.preventDefault();
-								await postpone(row.todoid, row.postponeday);
-							}}>
-							{$_('remotetable.postpone.text')}
-						</div>
-						<select bind:value={row.postponeday}>
-							{#each [1, 2, 3, 4, 5, 6, 7] as day}
-								<option value={day}>
-									{$_('remotetable.postpone.' + (day === 1 ? 'single' : 'plural'), {
-										values: { days: day },
-									})}
-								</option>
-							{/each}
-						</select>
+						{#if row.status === 'ST_RUN'}
+							<div
+								class="btn btn-primary btn-sm"
+								on:click={async (e) => {
+									e.preventDefault();
+									await postpone(row.todoid, row.postponeday);
+								}}>
+								{$_('remotetable.postpone.text')}
+							</div>
+							<select bind:value={row.postponeday}>
+								{#each [1, 2, 3, 4, 5, 6, 7] as day}
+									<option value={day}>
+										{$_('remotetable.postpone.' + (day === 1 ? 'single' : 'plural'), {
+											values: { days: day },
+										})}
+									</option>
+								{/each}
+							</select>
+						{:else}&nbsp;{/if}
 					</div>
 				</div>
 				{#if row.postpone > 0}

@@ -23,7 +23,7 @@ declare namespace App {
 		tplIds?: any[];
 		delegators?: any[];
 		siteinfo?: unknown;
-		showpostponed: false;
+		showpostponed: boolean;
 	}
 
 	interface Stuff {}

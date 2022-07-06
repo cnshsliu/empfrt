@@ -7,6 +7,7 @@
 	import { _ } from '$lib/i18n';
 	import Parser from '$lib/parser';
 	import Confirm from '$lib/confirm.svelte';
+	import * as utils from '$lib/utils';
 	import suuid from 'short-uuid';
 	import { Status } from '$lib/status';
 	import { wfMonitorInterval, filterStorage } from '$lib/empstores';
@@ -148,6 +149,14 @@
 		}
 		toggle();
 		if (nodeInfo.nodeType !== 'TPL') {
+			const oldId = nodeInfo.jqDiv.attr('id');
+			const newId = nodeInfo.nodeProps[nodeInfo.nodeType].id;
+			if (
+				nodeInfo.nodeProps[nodeInfo.nodeType] &&
+				nodeInfo.jqDiv.attr('id') !== nodeInfo.nodeProps[nodeInfo.nodeType].id
+			) {
+				KFK.changeId(nodeInfo.jqDiv.attr('id'), nodeInfo.nodeProps[nodeInfo.nodeType].id);
+			}
 			KFK.setNodeProperties(nodeInfo.jqDiv, nodeInfo.nodeProps);
 		} else {
 			await api.post(
@@ -472,17 +481,21 @@
 	};
 
 	const changeNodeId = function (nodeprop, fromTo: { oldid: string; newid: string }) {
+		return;
 		try {
+			nodeprop.newid = fromTo.newid;
+			/*
 			if (
-				document.querySelector(`#${nodeprop.id}`) !== null &&
+				document.querySelector(`#${fromTo.oldid}`) !== null &&
 				document.querySelector(`#${fromTo.newid}`) === null
 			) {
-				console.log(`change ${nodeprop.id} to ${fromTo.newid}`);
-				KFK.changeId(nodeprop.id, fromTo.newid);
+				console.log(`change ${fromTo.oldid} to ${fromTo.newid}`);
+				KFK.changeId(fromTo.oldid, fromTo.newid);
 				nodeprop.id = fromTo.newid;
 			} else {
-				console.log(nodeprop.id, 'does not exist or', fromTo.newid, 'already exist');
+				console.log(fromTo.oldid, 'does not exist or', fromTo.newid, 'already exist');
 			}
+			*/
 		} catch (err) {
 			console.log(err);
 		}
@@ -683,7 +696,8 @@
 							on:readInProp
 							on:editInProp
 							on:changeNodeId={(e) => {
-								changeNodeId(nodeInfo.nodeProps.ACTION, e.detail);
+								console.log('Designer got', e.detail);
+								//changeNodeId(nodeInfo.nodeProps.ACTION, e.detail);
 							}} />
 					{:else if nodeInfo.nodeType === 'INFORM'}
 						<Inform
@@ -697,16 +711,7 @@
 								changeNodeId(nodeInfo.nodeProps.INFORM, e.detail);
 							}} />
 					{:else if nodeInfo.nodeType === 'SCRIPT'}
-						<ScriptProp
-							{nodeInfo}
-							{showHelp}
-							{readonly}
-							{jq}
-							{KFK}
-							scenario={KFK.scenario}
-							on:changeNodeId={(e) => {
-								changeNodeId(nodeInfo.nodeProps.SCRIPT, e.detail);
-							}} />
+						<ScriptProp {nodeInfo} {showHelp} {readonly} {jq} {KFK} scenario={KFK.scenario} />
 					{:else if nodeInfo.nodeType === 'TIMER'}
 						<Timer
 							{nodeInfo}

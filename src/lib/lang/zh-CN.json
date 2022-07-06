@@ -202,6 +202,7 @@
 		"check": "检查",
 		"addcron": "添加这条Crontab定期启动工作流计划",
 		"toggleAdvancedSearch": "高级查询",
+		"footprint": "足迹",
 		"resetQuery": "重置/全部",
 		"refreshtodos": "刷新工作列表",
 		"create": "新建",
@@ -259,7 +260,8 @@
 		"ST_STOP": "已中止",
 		"ST_REVOKED": "已撤回",
 		"ST_RETURNED": "已退回",
-		"ST_IGNORE": "已忽略"
+		"ST_IGNORE": "已忽略",
+		"ST_FOOTPRINT": "足迹"
 	},
 
 	"start": {

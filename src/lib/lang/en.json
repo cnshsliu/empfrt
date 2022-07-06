@@ -202,6 +202,7 @@
 		"check": "Check",
 		"addcron": "Add this Crontab automatically-start-workflow-plan",
 		"toggleAdvancedSearch": "Advanced Search",
+		"footprint": "Footprint",
 		"resetQuery": "Reset/All",
 		"refreshtodos": "Refresh Worklist",
 		"create": "Create",
@@ -259,7 +260,8 @@
 		"ST_STOP": "Stopped",
 		"ST_REVOKED": "Revoked",
 		"ST_RETURNED": "Returned",
-		"ST_IGNORE": "Ignored"
+		"ST_IGNORE": "Ignored",
+		"ST_FOOTPRINT": "Footprint"
 	},
 
 	"start": {
