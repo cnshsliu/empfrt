@@ -522,6 +522,9 @@
 		<div id="selectingrect" class="selectingrect" />
 	</div>
 </div>
+<div id="theName" class="bg-none padlayout spaceToHide ms-2">
+	{workflow ? workflow.wftitle : template ? template.tplid : ''}
+</div>
 <div id="leftPanel" class="bg-white padlayout spaceToHide noshow">
 	<ListGroup class="mt-3">
 		<ListGroupItem
@@ -757,3 +760,10 @@
 	</ModalFooter>
 </Modal>
 <Confirm bind:this={theConfirm} />
+
+<style>
+	#theName {
+		position: absolute;
+		top: 150px;
+	}
+</style>

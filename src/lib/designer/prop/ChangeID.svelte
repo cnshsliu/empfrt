@@ -7,7 +7,7 @@
 	export let jq;
 	export let idForInput;
 	export let readonly;
-	export let KFK;
+	//export let KFK;
 	let oldId = idForInput;
 	let errmsg = $_('changeid.meaningful');
 	let enableButton = false;
