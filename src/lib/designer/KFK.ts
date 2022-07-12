@@ -897,6 +897,7 @@ class KFKclass {
 			ACTION: {
 				id: '',
 				role: '',
+				cc: '',
 				label: '',
 				bot: { wecom: false },
 				kvars: '',
@@ -922,7 +923,7 @@ class KFKclass {
 				cronexpr: '',
 			},
 			SCRIPT: { id: '', label: '', code: '', runmode: 'ASYNC' },
-			INFORM: { id: '', label: '', role: '', subject: '', content: '' },
+			INFORM: { id: '', label: '', role: '', cc: '', subject: '', content: '' },
 			TIMER: { id: '', label: '', code: '' },
 			//alone: means not a sub process, but a standalone process
 			SUB: { id: '', label: '', sub: '', alone: false },
@@ -934,7 +935,8 @@ class KFKclass {
 			ret.label = 'START';
 		} else if (jqDIV.hasClass('ACTION')) {
 			ret.ACTION.id = jqDIV.attr('id').trim();
-			ret.ACTION.role = blankToDefault(jqDIV.attr('role'), 'DEFAULT');
+			ret.ACTION.role = blankToDefault(jqDIV.attr('role'), 'STARTER');
+			ret.ACTION.cc = blankToDefault(jqDIV.attr('cc'), '');
 			ret.ACTION.label = blankToDefault(jqDIV.find('p').first().text(), 'Activity').trim();
 			ret.ACTION.bot.wecom =
 				blankToDefault(jqDIV.attr('wecom'), 'false').toLowerCase() === 'true' ? true : false;
@@ -995,7 +997,8 @@ ret='DEFAULT'; `,
 			ret.INFORM.id = jqDIV.attr('id');
 			ret.INFORM.label = blankToDefault(jqDIV.find('p').first().text(), 'Email').trim();
 			ret.label = ret.INFORM.label;
-			ret.INFORM.role = blankToDefault(jqDIV.attr('role'), 'DEFAULT');
+			ret.INFORM.role = blankToDefault(jqDIV.attr('role'), 'STARTER');
+			ret.INFORM.cc = blankToDefault(jqDIV.attr('cc'), '');
 			ret.INFORM.subject = that.base64ToCode(
 				blankToDefault(jqDIV.find('subject').first().text(), '').trim(),
 			);
@@ -1030,6 +1033,7 @@ ret='DEFAULT'; `,
 			propJSON = props.ACTION;
 			this.setNodeLabel(jqDIV, propJSON.label);
 			jqDIV.attr('role', propJSON.role.trim());
+			jqDIV.attr('cc', propJSON.cc.trim());
 			jqDIV.attr('wecom', propJSON.bot.wecom ? 'true' : 'false');
 			if (propJSON.withcsv && propJSON.csv && propJSON.csv.trim())
 				jqDIV.attr('csv', propJSON.csv.trim());
@@ -1117,6 +1121,10 @@ ret='DEFAULT'; `,
 			theRole = theRole ? theRole.trim() : '';
 			if (theRole !== role.trim() && role.trim() !== 'DEFAULT' && hasValue(role.trim())) {
 				jqDIV.attr('role', role.trim());
+			}
+			const cc = propJSON.cc;
+			if (jqDIV.attr('cc') !== cc.trim() && cc.trim() !== 'DEFAULT' && hasValue(cc.trim())) {
+				jqDIV.attr('cc', cc.trim());
 			}
 			if (jqDIV.find('subject').length > 0) {
 				node_subject = jqDIV.find('subject').first().text().trim();

@@ -378,7 +378,9 @@
 				"withadhoc": "with Adhoc",
 				"withcmt": "with Comment",
 				"sr": "Keep single running task if looped",
-				"pds": "PDS",
+				"pds": "Participants",
+				"define_pds": "Task's owner",
+				"define_cc": "CC to",
 				"pick": "Pick PDS",
 				"try": "Try a PDS",
 				"tryteam": "with Team",
@@ -388,7 +390,9 @@
 				"csv_placeholder": "CSV file input variable name",
 				"allowpbo": "Allow to edit PBO",
 				"trykvar": "Try with Vars",
-				"trywfid": "Try with wfid"
+				"trywfid": "Try with wfid",
+				"csvfile_varname": "varialbe name for csv file",
+				"useuserincsv": "Use participants defined in CSV"
 			},
 			"kvar": {
 				"basic": "Basic",

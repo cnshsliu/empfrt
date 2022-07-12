@@ -241,6 +241,7 @@ export interface NodePropJSON {
 	subject: string;
 	content: string;
 	role: string;
+	cc: string;
 	bot: { wecom: boolean };
 	code: string;
 	runmode: string;

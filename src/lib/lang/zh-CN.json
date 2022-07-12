@@ -378,7 +378,9 @@
 				"withadhoc": "独立任务按钮",
 				"withcmt": "附加备注",
 				"sr": "循环中出现时，始终单一工作项",
-				"pds": "参与者字符串",
+				"pds": "参与者定义",
+				"define_pds": "该任务的执行者",
+				"define_cc": "该任务的知情者",
 				"pick": "可参考定义",
 				"try": "测试参与者定义字符串",
 				"tryteam": "使用组队",
@@ -388,7 +390,9 @@
 				"csv_placeholder": "CSV上传文件变量名",
 				"allowpbo": "允许修改PBO",
 				"trykvar": "测试变量",
-				"trywfid": "测试流程"
+				"trywfid": "测试流程",
+				"csvfile_varname": "csv文件变量名",
+				"useuserincsv": "使用CSV文件第一列中所 定义的用户"
 			},
 			"kvar": {
 				"basic": "基础",

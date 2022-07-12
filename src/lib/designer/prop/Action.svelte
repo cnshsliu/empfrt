@@ -184,7 +184,7 @@
 							class="ms-2"
 							bind:value={nodeInfo.nodeProps.ACTION.csv}
 							disabled={readonly}
-							placeholder="csv variable name" />
+							placeholder={$_('prop.action.p10t.csvfile_varname')} />
 					{/if}
 				</InputGroup>
 			</Col>
@@ -282,11 +282,14 @@
 			</Col>
 			{#if nodeInfo.nodeProps.ACTION.withcsv === false}
 				<Col>
-					<div class="my-3">
-						<RolePicker
-							bind:role={nodeInfo.nodeProps.ACTION.role}
-							bind:existingRoles={roleOptions}
-							{readonly} />
+					<div class="row">
+						<div class="col-auto" style="min-width:8rem;">{$_('prop.action.p10t.define_pds')}</div>
+						<div class="col my-3">
+							<RolePicker
+								bind:role={nodeInfo.nodeProps.ACTION.role}
+								bind:existingRoles={roleOptions}
+								{readonly} />
+						</div>
 					</div>
 				</Col>
 				{#if nodeInfo.nodeProps.ACTION.doer}
@@ -294,9 +297,20 @@
 						Who: {doerHTML}
 					</Col>
 				{/if}
+				<Col>
+					<div class="row">
+						<div class="col-auto">{$_('prop.action.p10t.define_cc')}</div>
+						<div class="col my-3">
+							<RolePicker
+								bind:role={nodeInfo.nodeProps.ACTION.cc}
+								bind:existingRoles={roleOptions}
+								{readonly} />
+						</div>
+					</div>
+				</Col>
 			{:else}
 				<Col>
-					<div class="my-3">Use participants defined in CSV.</div>
+					<div class="my-3">{$_('prop.action.p10t.useuserincsv')}</div>
 				</Col>
 			{/if}
 		</TabPane>
